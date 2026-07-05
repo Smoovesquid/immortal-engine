@@ -8,6 +8,7 @@ import { renderAsciiMapBlock } from './ai/asciiMap.js';
 import { buildAiHashTrace } from './ai/aiHashTrace.js';
 import { reviewNarration } from './ref/index.js';
 import { observeCoherenceShadow } from './coherence/shadowObserver.js';
+import { coherenceValidateMode, coherenceRejects, coherenceSafeFloor, logShadowCompare } from './coherence/validator.js';
 import { anthropicSamplingFields } from './llmModelRules.js';
 
 const ANTHROPIC_API = 'https://api.anthropic.com/v1/messages';
@@ -1508,9 +1509,86 @@ export async function augmentNarration({
   ref = {}            // THE REF (Tier 2) — { enabled, judge, regenerate, budget }. Default OFF.
 } = {}) {
   const base = String(baseNarration ?? '').trim();
-  if (!enabled) return base;
-  if (!apiKey)  return base;
-  if (typeof fetchImpl !== 'function') return base;
+
+  // ── the finalize() choke point (CG-2 / CG-LIVE-2 §3 Candidate A) ───────────
+  // EVERY delivery path out of augmentNarration exits through finalize(text):
+  // the offline/keyless early-returns, the LLM-error path, the validator-reject
+  // path, AND the happy path. This single auditable seam is where the promoted
+  // coherence validator lives, so no return path (including the ones the old
+  // shadow observer was blind to — the validator-rejected turns) can escape the
+  // coherence check. With COHERENCE_VALIDATE OFF (default) finalize returns its
+  // input verbatim — byte-identical to today. Defined as a closure so it captures
+  // `world`/`outcome`/`base` without threading them through every call site.
+  //
+  // Modes (coherenceValidateMode()):
+  //   off            → return `text` unchanged (byte-identical; the shadow observer
+  //                    still runs on its own COHERENCE_SHADOW flag, as today).
+  //   shadow-compare → compute the would-block decision + the fallback text, LOG
+  //                    both, but return `text` UNCHANGED (decide-but-don't-act).
+  //   on             → a fail-severity coherence pointer REJECTS `text`; fall back
+  //                    to `base`; if base ALSO fails → the coherence-safe floor.
+  // NEVER throws (wrapped); NEVER a new LLM call; deterministic given the inputs.
+  const finalize = (text) => {
+    const delivered = String(text ?? '').trim();
+    try {
+      const mode = coherenceValidateMode();
+      if (mode === 'off') return delivered;
+
+      const verdict = coherenceRejects({ world, candidate: delivered, outcome });
+
+      if (mode === 'shadow-compare') {
+        // Decide-but-don't-act: compute what the fallback WOULD be, log it, ship
+        // the original text untouched. This is the human-eyeball stage.
+        if (verdict.blocks) {
+          const baseVerdict = coherenceRejects({ world, candidate: base, outcome });
+          const fallbackKind = baseVerdict.blocks ? 'floor' : 'base';
+          const fallbackText = baseVerdict.blocks
+            ? coherenceSafeFloor(base, { world, outcome })
+            : base;
+          logShadowCompare({
+            seed: String(world?.meta?.seed ?? ''),
+            persona: String(world?.meta?.campaignId ?? ''),
+            input: String(outcome?.input ?? ''),
+            dm: delivered,
+            wouldBlock: true,
+            fallbackKind,
+            fallbackText,
+            pointers: verdict.fails,
+          });
+        } else {
+          logShadowCompare({
+            seed: String(world?.meta?.seed ?? ''),
+            persona: String(world?.meta?.campaignId ?? ''),
+            input: String(outcome?.input ?? ''),
+            dm: delivered,
+            wouldBlock: false,
+            fallbackKind: null,
+            fallbackText: null,
+            pointers: [],
+          });
+        }
+        return delivered; // shadow-compare NEVER alters the delivered narration
+      }
+
+      // mode === 'on' — live rejection.
+      if (!verdict.blocks) return delivered;
+      // The candidate contradicts canon: fall back to the grounded base. But the
+      // base is NOT guaranteed coherent (CG-LIVE-1b) — re-check it, and if the
+      // base ALSO flags, degrade to the coherence-safe floor (§2). Never ship a
+      // flagged base silently.
+      const baseVerdict = coherenceRejects({ world, candidate: base, outcome });
+      if (!baseVerdict.blocks) return base;
+      return coherenceSafeFloor(base, { world, outcome });
+    } catch {
+      // The choke point must never break a turn — degrade to the delivered text
+      // (or base if delivered somehow went empty). Invariant 3.
+      return delivered || base;
+    }
+  };
+
+  if (!enabled) return finalize(base);
+  if (!apiKey)  return finalize(base);
+  if (typeof fetchImpl !== 'function') return finalize(base);
 
   // Merge server-side place chunks into the narrator context.
   // placeChunks is retrieved server-side (ragRetriever) and passed in;
@@ -1521,14 +1599,14 @@ export async function augmentNarration({
   try {
     candidate = await callLLM({ ctx, baseNarration: base, apiKey, model, fetchImpl });
   } catch {
-    return base;
+    return finalize(base);
   }
 
   const ok = validateNarrationCandidate(ensureWorld(world), candidate, {
     baseNarration: base,
     ctx
   });
-  if (!ok) return base;
+  if (!ok) return finalize(base);
 
   // THE REF (Tier 2) — a selective second opinion on the SOFT-source turns only,
   // AFTER the deterministic validator (Tier 1) has accepted the candidate. With
@@ -1549,7 +1627,11 @@ export async function augmentNarration({
   // SIDE-EFFECT ONLY; never touches the return; never throws (wraps itself in try/catch).
   observeCoherenceShadow({ world, candidate: finalNarration, outcome });
 
-  return finalNarration;
+  // The coherence validator (CG-2) runs at the SAME choke point every other path
+  // uses — after the observer logs the post-Ref prose. In 'on' mode a fail-class
+  // desync in finalNarration is rejected here and replaced by base / the safe
+  // floor; OFF (default) this returns finalNarration verbatim (byte-identical).
+  return finalize(finalNarration);
 }
 
 // ── Legacy compatibility shim ─────────────────────────────────────────────────

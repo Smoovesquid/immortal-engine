@@ -1,0 +1,8 @@
+# CG-2 (CG-LIVE-2) coherence-validate shadow-compare run output — never commit
+# the raw logs. The validator's shadow-compare mode
+# (engine/coherence/validator.js → logShadowCompare) appends <date>.jsonl here
+# only when COHERENCE_VALIDATE=shadow-compare. Each record carries the would-block
+# decision + the fallback text (base|floor) so a human eyeballs every would-be
+# swap before any player sees one.
+*.jsonl
+!.gitignore

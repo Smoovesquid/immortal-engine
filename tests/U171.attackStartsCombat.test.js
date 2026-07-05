@@ -32,22 +32,33 @@ const startsC = (seed, text) => {
   return playerMove(w, byId, text).world.combat?.active === true;
 };
 
+// OCC-STORY-1: a PRONOUN ref ("his face") resolves to a person in LINE OF SIGHT, and the sleeping
+// player's wake cottage is now (correctly) empty of strangers — you can't throw a dagger "at his
+// face" in an empty bedroom. So the pronoun-ref cases step the player OUTSIDE first, where the
+// townsfolk actually are, giving "his/her" a referent. (Named-target and grab-by-name cases below
+// auto-seek the NPC and need no co-location — they still pass unchanged.)
+const startsCOutside = (seed, text) => {
+  const { w, byId } = world(seed);
+  const outside = playerMove(w, byId, 'I step outside').world;
+  return playerMove(outside, byId, text).world.combat?.active === true;
+};
+
 // ── Throw + pronoun ref ("at his face") ──────────────────────────────────────
 
 test('U171-01: "I throw my dagger at his face" starts combat (pronoun+bodypart ref)', () => {
   // Baseline: before the GENERIC_WORD fix this returned false; after it resolves
   // "his face" to the first present NPC via the generic-person word "his".
-  assert.equal(startsC('stonewatch-hollow', 'I throw my dagger at his face'), true,
+  assert.equal(startsCOutside('stonewatch-hollow', 'I throw my dagger at his face'), true,
     '"throw at his face" should start combat');
 });
 
 test('U171-02: "I throw my dagger at her head" starts combat (her pronoun)', () => {
-  assert.equal(startsC('stonewatch-hollow', 'I throw my dagger at her head'), true,
+  assert.equal(startsCOutside('stonewatch-hollow', 'I throw my dagger at her head'), true,
     '"throw at her head" should start combat');
 });
 
 test('U171-03: "I hurl a rock at him" starts combat (bare pronoun)', () => {
-  assert.equal(startsC('stonewatch-hollow', 'I hurl a rock at him'), true,
+  assert.equal(startsCOutside('stonewatch-hollow', 'I hurl a rock at him'), true,
     '"hurl at him" should start combat');
 });
 

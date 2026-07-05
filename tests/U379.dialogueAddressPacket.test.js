@@ -43,9 +43,8 @@ import { newWorld } from '../engine/state.js';
 import { worldHash } from '../engine/worldHash.js';
 import { normalizeManifest, normalizePack } from '../engine/rulesets.js';
 import { directQuestionIntent } from '../engine/grace/answerability.js';
-import { occupantsOfRoom } from '../engine/structures/roomOccupancy.js';
-import { normalizeTopology } from '../engine/structures/topology.js';
 import { moveWithinInterior } from '../engine/structures/interiors.js';
+import { coLocatePlayerNearNpcInBuilding } from './support/presence.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -69,33 +68,28 @@ function settlementWorld(seed = 'ashfen-reach') {
 
 const surface = (r) => `${r.output?.narration || ''} ${r.output?.mechanics || ''}`.trim();
 
-// Find an NPC in a DIFFERENT room of the same building than the player's start room
-// (the ROM-1 same-structure auto-seek fixture, same pattern as U372-C).
-function findSameStructureTarget(w) {
-  const interior = w.scene?.interior;
-  if (!interior) return null;
-  const struct = String(interior.structureKey || '');
-  const topo = normalizeTopology(w.structures?.byId?.[struct]?.topology);
-  for (const r of (topo?.rooms || [])) {
-    if (String(r.id) === String(interior.roomId)) continue;
-    const occ = occupantsOfRoom(w, struct, String(r.id));
-    if (occ.length) return { npc: occ[0], roomId: String(r.id), structureKey: struct };
-  }
-  return null;
+// OCC-STORY-1: the wake cottage is now empty of strangers by design, so the auto-seek "named target
+// elsewhere under the same roof" fixture is built by co-locating the player and a real settlement NPC
+// in DIFFERENT rooms of the same materialized building (a constructed, deterministic co-location) —
+// the ROM-1 same-structure auto-seek pattern, same as U372-C. Returns { w, target } where target is
+// { npc, roomId, structureKey }.
+function hazardWorld() {
+  const near = coLocatePlayerNearNpcInBuilding(boot());
+  if (!near) return null;
+  return { w: near.w, target: { npc: near.npc, roomId: near.targetRoomId, structureKey: String(near.w.scene.interior.structureKey || '') } };
 }
 
 // ── (a) THE HAZARD — the mandatory auto-seek-invariance proof ───────────────
 
-test('U379-hazard: precondition — tallow places a named NPC in another room of the wake-room building', () => {
-  const w = boot();
-  const target = findSameStructureTarget(w);
-  assert.ok(target, 'tallow must have an auto-seekable same-structure NPC for this fixture to be meaningful');
+test('U379-hazard: precondition — a named NPC stands in another room of the player\'s building (auto-seek fixture)', () => {
+  const hz = hazardWorld();
+  assert.ok(hz && hz.target, 'the co-located fixture must have an auto-seekable same-structure NPC');
 });
 
 test('U379-hazard: "talk to <same-structure NPC>" auto-seeks (moves the room) AND resolves via the dialogue-enter return — never reaches the graduated call-sites\' fresh-vs-shared fork on a moved world', () => {
-  const w = boot();
-  const target = findSameStructureTarget(w);
-  assert.ok(target, 'precondition: same-structure target exists');
+  const hz = hazardWorld();
+  assert.ok(hz && hz.target, 'precondition: same-structure target exists');
+  const { w, target } = hz;
   const startRoom = String(w.scene.interior.roomId);
   assert.notEqual(target.roomId, startRoom, 'precondition: the target is genuinely in a different room');
 
@@ -109,14 +103,12 @@ test('U379-hazard: "talk to <same-structure NPC>" auto-seeks (moves the room) AN
 });
 
 test('U379-hazard: byte-identical + deterministic auto-seek-then-dialogue turn across two independent runs', () => {
-  const w1 = boot();
-  const w2 = boot();
-  const t1 = findSameStructureTarget(w1);
-  const t2 = findSameStructureTarget(w2);
-  assert.equal(t1.npc.name, t2.npc.name, 'same seed must yield the same auto-seek target across independent boots');
+  const hz1 = hazardWorld();
+  const hz2 = hazardWorld();
+  assert.equal(hz1.target.npc.name, hz2.target.npc.name, 'same seed must yield the same auto-seek target across independent boots');
 
-  const r1 = playerMove(w1, PACKS, `talk to ${t1.npc.name}`);
-  const r2 = playerMove(w2, PACKS, `talk to ${t2.npc.name}`);
+  const r1 = playerMove(hz1.w, PACKS, `talk to ${hz1.target.npc.name}`);
+  const r2 = playerMove(hz2.w, PACKS, `talk to ${hz2.target.npc.name}`);
   assert.equal(surface(r1), surface(r2), 'identical auto-seek-then-dialogue input must produce identical surface across runs');
   assert.equal(worldHash(r1.world), worldHash(r2.world), 'identical auto-seek-then-dialogue input must produce identical worldHash across runs');
 });
@@ -132,9 +124,9 @@ test('U379-hazard: byte-identical + deterministic auto-seek-then-dialogue turn a
 // text shapes the graduated sites care about).
 
 test('U379-hazard: directQuestionIntent(text, w) is invariant across a same-structure room move (the actual mechanism autoSeekWithinStructure uses)', () => {
-  const w = boot();
-  const target = findSameStructureTarget(w);
-  assert.ok(target, 'precondition: same-structure target exists');
+  const hz = hazardWorld();
+  assert.ok(hz && hz.target, 'precondition: same-structure target exists');
+  const { w, target } = hz;
 
   const moved = moveWithinInterior(w, target.roomId);
   assert.equal(String(moved.scene?.interior?.roomId || ''), target.roomId, 'precondition: the move actually changed rooms');

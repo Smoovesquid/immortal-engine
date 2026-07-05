@@ -107,7 +107,11 @@ test('U316-D1: a BARE look-around (no presence question) stays room-scoped — n
 });
 
 test('U316-D2: a real unknown-NPC demonstrative ("who is that?") still opens dialogue (locked C4)', () => {
-  const w = settlementWorld();
+  // OCC-STORY-1: "who is that?" opens dialogue with a person in LINE OF SIGHT. The wake cottage is now
+  // empty of strangers by design, and the hand-synthesized outdoor state (interior:null) lacks the
+  // player's real outdoor walk-position that presence resolution needs — so we use the REAL egress
+  // ("step outside"), which puts the player among the townsfolk. More faithful to actual play, too.
+  const w = playerMove(beginAdventure(newWorld({ seed: 'ashfen-reach', fate: 0.3, mode: 'escape', pack: { primaryId: 'fantasy', mixerId: null } }), PACKS).world, PACKS, 'I step outside').world;
   const { output } = playerMove(w, PACKS, 'who is that?');
   assert.match(output.mechanics || '', /\[dialogue enter/i, surface({ output }));
 });

@@ -24,6 +24,9 @@ function packs() {
 function inCombatWorld() {
   const byId = packs();
   let w = beginAdventure(newWorld({ seed: 'stonewatch-hollow', fate: 0.3, mode: 'escape', pack: { primaryId: 'fantasy', mixerId: null } }), byId).world;
+  // OCC-STORY-1: the wake cottage is now empty of strangers by design — you can't attack "the nearest
+  // stranger" in your own bedroom. Step outside, where the townsfolk are, then engage.
+  w = playerMove(w, byId, 'I step outside').world;
   const r = playerMove(w, byId, 'I attack the nearest stranger with my hatchet');
   return { world: r.world, byId };
 }

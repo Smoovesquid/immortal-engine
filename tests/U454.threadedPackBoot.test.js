@@ -131,20 +131,23 @@ test('U454-E: default fantasy/tallow boot (real normalizePack idiom) — post-PA
   assert.ok((result.world.instrument?.threads || []).length >= 1,
     'PACK-1: default tallow boot must now seed at least one pack thread into the instrument');
 
-  // RELOCKED for MR-2a (v31): the default boot's worldHash shifts ONCE MORE (from the
-  // FACT-1 value 7aa7b987… to ea4a2fec…) because MR-2a adds canon door records to
-  // every structure — worldHash includes w.structures, and each structure now
-  // carries a doors[] (interior doors + one exterior front door, seeded states). This
-  // is a deliberate SCHEMA enrichment (WORLD_VERSION 30→31), not a determinism break:
-  // the boot remains byte-identical to itself under replay (asserted ×2 below).
-  // Captured 2026-07-05 after MR-2a authored door state at ensureWorld's tail.
-  // (Prior anchors: PACK-3 ca6c4b5d… → FACT-1 7aa7b987… → MR-2a ea4a2fec….)
-  const HASH_AFTER_MR2A = 'ea4a2fec20118f64c1953e1b2d8e84c994b76fe33b6d9149edbe9a7be344ff30';
-  assert.equal(worldHash(result.world), HASH_AFTER_MR2A,
-    'default fantasy/tallow boot worldHash pinned post-MR-2a (canon door records on every structure)');
+  // RELOCKED for OCC-STORY-1 (2026-07-05): the default boot's worldHash shifts ONCE MORE (from the
+  // MR-2a value ea4a2fec… to 86432691…) because settlement-NPC PLACEMENT is now story-driven, and the
+  // boot MATERIALIZES each present NPC's tactical position (pos) from that placement (see
+  // engine/map/spatial/tacticalPos.placementForWorld, fed by roomOccupancy). Previously every indoor
+  // NPC piled into the one materialized building — the player's wake cottage — so e.g. "the Lingerer"
+  // was stored at pos {frame:"struct:…cottage…"}; now the wake cottage holds no strangers and the
+  // Lingerer stands out in the settlement, stored at pos {frame:"region",…}. worldHash includes those
+  // NPC positions, so it moves. This is a deliberate PLACEMENT correction (occupancy stays a pure
+  // derived read — no new stored fields, no WORLD_VERSION bump), NOT a determinism break: the boot
+  // remains byte-identical to itself under replay (asserted ×2 below; U19/U21/U22/U27/U30 green).
+  // (Prior anchors: PACK-3 ca6c4b5d… → FACT-1 7aa7b987… → MR-2a ea4a2fec… → OCC-STORY-1 86432691….)
+  const HASH_AFTER_OCC_STORY1 = '86432691381365f09f106ae2eace55781b20012ba5b33d0920f4734296e7c18f';
+  assert.equal(worldHash(result.world), HASH_AFTER_OCC_STORY1,
+    'default fantasy/tallow boot worldHash pinned post-OCC-STORY-1 (story-driven NPC placement moves stored positions)');
 
-  // Same seed => identical world (the enrichment is deterministic).
+  // Same seed => identical world (the placement is deterministic).
   const w2 = newWorld({ seed: 'tallow', fate: 0.3, mode: 'escape', pack: { primaryId: 'fantasy', mixerId: null } });
-  assert.equal(worldHash(beginAdventure(w2, PACKS).world), HASH_AFTER_MR2A,
-    'default tallow boot must be deterministic ×2 after MR-2a');
+  assert.equal(worldHash(beginAdventure(w2, PACKS).world), HASH_AFTER_OCC_STORY1,
+    'default tallow boot must be deterministic ×2 after OCC-STORY-1');
 });

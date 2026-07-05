@@ -22,7 +22,7 @@ import { beginAdventure, playerMove } from '../engine/playloop.js';
 import { normalizeManifest, normalizePack } from '../engine/rulesets.js';
 import { occupantsOfRoom } from '../engine/structures/roomOccupancy.js';
 import { normalizeTopology } from '../engine/structures/topology.js';
-import { coLocatePlayerWithNpc } from './support/presence.js';
+import { coLocatePlayerWithNpc, coLocatePlayerNearNpcInBuilding } from './support/presence.js';
 
 const __dirname = path.dirname(new URL(import.meta.url).pathname);
 function packs() {
@@ -59,21 +59,17 @@ test('U372-B: the same assault, once an NPC is actually present, engages the rea
 });
 
 test('U372-C: a NAMED target elsewhere in the same building is auto-sought — combat starts and the player moves', () => {
-  const w = boot();
-  const interior = w.scene.interior;
-  const struct = String(interior.structureKey || '');
-  const topo = normalizeTopology(w.structures?.byId?.[struct]?.topology);
-  // Find an NPC in THIS building but a DIFFERENT room than the player's (the seek case).
-  let target = null;
-  for (const r of (topo?.rooms || [])) {
-    if (String(r.id) === String(interior.roomId)) continue;
-    const occ = occupantsOfRoom(w, struct, String(r.id));
-    if (occ.length) { target = { npc: occ[0], roomId: String(r.id) }; break; }
-  }
-  assert.ok(target, 'tallow places an NPC in another room of the wake-room building (the auto-seek fixture)');
-  assert.equal(roomOccupants(w).some(n => String(n.name) === String(target.npc.name)), false, 'the target is NOT in the player\'s starting room');
+  // OCC-STORY-1: the wake cottage is now empty of strangers by design, so the auto-seek "elsewhere
+  // under the same roof" case uses a constructed co-location — the player in one room of a building,
+  // a real settlement NPC in another room of the SAME building. The mechanic under test (naming a
+  // same-building target auto-seeks: combat starts AND the player is walked into the target's room)
+  // is unchanged.
+  const near = coLocatePlayerNearNpcInBuilding(boot());
+  assert.ok(near, 'tallow has a co-locatable NPC for the same-building auto-seek fixture');
+  const { w, npc, targetRoomId } = near;
+  assert.equal(roomOccupants(w).some(n => String(n.name) === String(npc.name)), false, 'the target is NOT in the player\'s starting room');
 
-  const { world: after } = playerMove(w, PACKS, `I attack ${target.npc.name}`);
+  const { world: after } = playerMove(w, PACKS, `I attack ${npc.name}`);
   assert.ok(after.combat?.active, 'the same-building target is reachable — combat starts');
-  assert.equal(String(after.scene?.interior?.roomId || ''), target.roomId, 'the player was walked into the target\'s room (auto-seek moved the token)');
+  assert.equal(String(after.scene?.interior?.roomId || ''), targetRoomId, 'the player was walked into the target\'s room (auto-seek moved the token)');
 });

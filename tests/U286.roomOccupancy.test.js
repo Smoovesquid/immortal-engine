@@ -14,6 +14,7 @@ import { newWorld } from '../engine/state.js';
 import { beginAdventure, playerMove } from '../engine/playloop.js';
 import { normalizeManifest, normalizePack } from '../engine/rulesets.js';
 import { occupantsOfRoom, outdoorOccupants } from '../engine/structures/roomOccupancy.js';
+import { placementFor, drawnBuildings } from '../engine/structures/storyAnchors.js';
 import { normalizeTopology } from '../engine/structures/topology.js';
 import { buildLocationSurvey } from '../engine/grace/gracefulAdjudication.js';
 
@@ -29,14 +30,26 @@ const boot = () => beginAdventure(newWorld({ seed: 'tallow', fate: 0.3, mode: 'e
 const nodeNpcs = (w) => (w.map.nodes.find(n => n.id === w.map.currentNodeId)?.settlement?.npcs) || [];
 const rooms = (w, sk) => (normalizeTopology(w.structures?.byId?.[sk]?.topology)?.rooms || []).map(r => r.id);
 
-test('U286: occupancy partitions the roster — every NPC is in exactly one place (a room or outdoors)', () => {
+test('U286: occupancy partitions the roster — every NPC is in exactly one place (a building or outdoors)', () => {
+  // OCC-STORY-1: the partition is now over {outdoors} ∪ {ALL drawn buildings} — an NPC's STORY ANCHOR
+  // may put them in a building the player can't be inside (a decorative smithy/well), so the old
+  // "outdoors + the wake cottage's rooms == everyone" no longer holds (the wake cottage is now empty
+  // of strangers by design). We assert the true partition via placementFor: every NPC lands in
+  // exactly one place, either outdoors or exactly one drawn building.
   const w = boot();
-  const sk = w.scene.interior.structureKey;
-  const rids = rooms(w, sk);
-  assert.ok(rids.length > 1, 'precondition: a multi-room building');
-  let total = outdoorOccupants(w).length; // some folk are out in the open
-  for (const rid of rids) total += occupantsOfRoom(w, sk, rid).length;
-  assert.equal(total, nodeNpcs(w).length, 'each NPC is placed in exactly one place (room or outdoors)');
+  const nodeId = w.map.currentNodeId;
+  const wakeKey = w.scene.interior.structureKey;
+  const npcs = nodeNpcs(w);
+  const buildingKeys = new Set(drawnBuildings(w, nodeId).map(b => b.key));
+  let placedOnce = 0;
+  for (const npc of npcs) {
+    const p = placementFor(w, npc, { nodeId, seed: w.meta.seed, wakeKey });
+    const outdoors = p.where === 'outdoors';
+    const inBuilding = p.where === 'building' && buildingKeys.has(String(p.key));
+    assert.ok(outdoors !== inBuilding, `NPC ${npc.name} must be in exactly one place, got ${JSON.stringify(p)}`);
+    if (outdoors || inBuilding) placedOnce++;
+  }
+  assert.equal(placedOnce, npcs.length, 'each NPC is placed in exactly one place (a drawn building or outdoors)');
 });
 
 test('U286: occupancy is deterministic', () => {
@@ -48,21 +61,42 @@ test('U286: occupancy is deterministic', () => {
 });
 
 test('U286: a private (empty) room lists no people; an occupied room names its own', () => {
+  // OCC-STORY-1: the tallow wake cottage is now EMPTY of strangers by design (no one is anchored to
+  // the player's home), so the empty-room case is verified against it directly. For the occupied-room
+  // case we build a fixture where an NPC's anchor IS the building the player stands in — the tallow
+  // node has no other enterable populated interior (its non-home buildings are decorative). The
+  // through-a-window sight of outdoor folk is a separate line-of-sight path (see U286 window test).
   const w = boot();
   const sk = w.scene.interior.structureKey;
   const names = nodeNpcs(w).filter(n => !n.hostile).map(n => n.name);
-  const occCount = (rid) => occupantsOfRoom(w, sk, rid).filter(n => !n.hostile).length;
-  const empty = rooms(w, sk).find(rid => occCount(rid) === 0);
-  const full = rooms(w, sk).find(rid => occCount(rid) > 0);
-  const surveyIn = (rid) => buildLocationSurvey({ ...w, scene: { ...w.scene, interior: { ...w.scene.interior, roomId: rid } } });
-  if (empty) {
-    const s = surveyIn(empty);
-    for (const nm of names) assert.ok(!s.includes(nm), `an empty room must not name ${nm}: ${s}`);
+  const surveyIn = (world, rid) => buildLocationSurvey({ ...world, scene: { ...world.scene, interior: { ...world.scene.interior, roomId: rid } } });
+
+  // Empty case: the wake cottage's rooms hold no strangers. Naming is line-of-sight — a room with no
+  // occupants and no window onto outdoor folk names nobody. (Window-visible outdoor folk are allowed;
+  // the innermost cottage room has no window, so we survey there.)
+  const innerRid = rooms(w, sk).find(rid => occupantsOfRoom(w, sk, rid).filter(n => !n.hostile).length === 0
+    && !/window/i.test(surveyIn(w, rid)));
+  if (innerRid) {
+    const s = surveyIn(w, innerRid);
+    for (const nm of names) assert.ok(!s.includes(nm), `an empty inner room must not name ${nm}: ${s}`);
   }
-  if (full) {
-    const s = surveyIn(full);
-    assert.ok(names.some(nm => s.includes(nm)), `an occupied room should name an occupant: ${s}`);
-  }
+
+  // Occupied case: a single-building fixture where the sole roster NPC is anchored to this building.
+  // (No wakeKey → nothing excluded; a smithy building + a smith NPC → kind-matched anchor here.)
+  const topo = { kind: 'rooms', rooms: [{ id: 'r:entry', tags: ['entry'] }, { id: 'r:back' }], edges: [{ a: 'r:entry', b: 'r:back' }] };
+  const fx = {
+    meta: { seed: 'occ-fixture' },
+    time: { hours: 5 }, // daytime → the smith is at their post
+    scene: { interior: { structureKey: 'smithy1', roomId: 'r:entry' } },
+    map: { currentNodeId: 'town', nodes: [{ id: 'town', settlement: { npcs: [{ id: 'smith0', name: 'Bruna Ironside', role: 'smith' }] } }] },
+    structures: { byId: { smithy1: { id: 'smithy1', nodeId: 'town', buildingType: 'smithy', topology: topo } } }
+  };
+  const occ = [...occupantsOfRoom(fx, 'smithy1', 'r:entry'), ...occupantsOfRoom(fx, 'smithy1', 'r:back')];
+  assert.ok(occ.some(n => n.name === 'Bruna Ironside'), `the smith should be anchored to the smithy: ${JSON.stringify(occ.map(n => n.name))}`);
+  const occRoom = occupantsOfRoom(fx, 'smithy1', 'r:entry').length ? 'r:entry' : 'r:back';
+  const s = surveyIn(fx, occRoom);
+  // An un-met NPC is named by role in line-of-sight prose ("a smith is here"), not by proper name.
+  assert.ok(/\bsmith\b/i.test(s), `an occupied room should name its occupant (by role): ${s}`);
 });
 
 test('U286: a multi-building node splits its roster BETWEEN buildings (partition holds)', () => {

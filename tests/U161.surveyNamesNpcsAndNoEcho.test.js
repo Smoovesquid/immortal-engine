@@ -6,6 +6,7 @@ import { newWorld } from '../engine/state.js';
 import { beginAdventure, playerMove } from '../engine/playloop.js';
 import { handleMetaQuestion } from '../engine/grace/gracefulAdjudication.js';
 import { normalizeManifest, normalizePack } from '../engine/rulesets.js';
+import { coLocatePlayerWithNpc } from './support/presence.js';
 
 // Opus gate (2026-06-16): (1) the interior survey said "No one else is under this
 // roof" while canon listed many NPCs present (a hallucinated emptiness); (2) the
@@ -29,19 +30,22 @@ function world(seed = 'ashfen-reach') {
 }
 
 test('U161: interior survey describes the room and registers present people, no exterior leak', () => {
-  const { w } = world();
-  assert.ok(w.scene?.interior, 'precondition: the start is inside an interior');
-  const node = w.map.nodes.find(n => n.id === w.map.currentNodeId);
-  const ans = handleMetaQuestion('what do I see around me?', w);
-  // Room-scoped: describes the room / the way out, never the hallucinated-empty
-  // denial ("No one under this roof") nor the exterior compass-exit shape.
-  assert.match(ans, /room|way out/i, ans);
-  assert.doesNotMatch(ans, /No one else is under this roof/, ans);
-  assert.doesNotMatch(ans, /to the (?:north|south|east|west) lies/i, ans);
-  // A present, non-hostile person IS registered (home boot → by name).
-  const firstSociable = (node.settlement?.npcs || []).find(n => n && !n.hostile);
-  if (firstSociable) {
-    assert.match(ans, /\bis here\b|\bare here\b/i, `present people should be registered: ${ans}`);
+  // OCC-STORY-1: the wake cottage is empty of strangers by design, so to test that the survey
+  // REGISTERS a present person we co-locate the player with a real settlement NPC first. The two
+  // properties under test are unchanged: (a) the survey is room-scoped (no exterior compass leak, no
+  // hallucinated-empty denial), and (b) a person standing right there is registered.
+  const { w: w0 } = world();
+  assert.ok(w0.scene?.interior, 'precondition: the start is inside an interior');
+  // (a) room-scoped shape — checked on the plain wake survey.
+  const wakeAns = handleMetaQuestion('what do I see around me?', w0);
+  assert.match(wakeAns, /room|way out/i, wakeAns);
+  assert.doesNotMatch(wakeAns, /No one else is under this roof/, wakeAns);
+  assert.doesNotMatch(wakeAns, /to the (?:north|south|east|west) lies/i, wakeAns);
+  // (b) a present, non-hostile person IS registered once someone is actually in the room.
+  const co = coLocatePlayerWithNpc(w0);
+  if (co) {
+    const ans = handleMetaQuestion('what do I see around me?', co.w);
+    assert.match(ans, /\bis here\b|\bare here\b|\bright here\b/i, `present people should be registered: ${ans}`);
   }
 });
 

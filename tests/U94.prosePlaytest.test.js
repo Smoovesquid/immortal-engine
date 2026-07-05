@@ -112,6 +112,9 @@ describe('U94-C: talk-to-NPC mid-combat does not crash', () => {
     let found = false;
     for (const seed of ['alpha', 'bravo', 'charlie', 'delta', 'echo']) {
       let w = begin(seed);
+      // OCC-STORY-1: the wake cottage is empty of strangers by design — step outside, where the
+      // townsfolk (and the seeded bandit) are, so "attack the nearest enemy" has a target.
+      ({ world: w } = playerMove(w, packs, 'I step outside'));
       for (let i = 0; i < 25 && !w.combat?.active; i++) {
         ({ world: w } = playerMove(w, packs, 'attack the nearest enemy'));
       }

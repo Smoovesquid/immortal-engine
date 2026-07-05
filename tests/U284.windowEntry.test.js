@@ -13,6 +13,7 @@ import { newWorld } from '../engine/state.js';
 import { beginAdventure, playerMove } from '../engine/playloop.js';
 import { roomWindowFacings } from '../engine/structures/roomWindows.js';
 import { normalizeManifest, normalizePack } from '../engine/rulesets.js';
+import { occupantsOfRoom } from '../engine/structures/roomOccupancy.js';
 
 const __dirname = path.dirname(new URL(import.meta.url).pathname);
 function loadPacks() {
@@ -24,6 +25,29 @@ function loadPacks() {
 const PACKS = loadPacks();
 const boot = () => beginAdventure(newWorld({ seed: 'tallow', fate: 0.3, mode: 'escape', pack: { primaryId: 'fantasy', mixerId: null } }), PACKS).world;
 const outside = () => playerMove(boot(), PACKS, 'I step outside').world;
+
+// OCC-STORY-1: the wake cottage is empty of strangers by design, so the CLIMB-INTO room (the wake
+// structure's entry) has no witnesses by default. To test the WITNESSED climb we must put someone in
+// that room: drop the home-exclusion, collapse to a single-NPC roster with no decorative buildings
+// (so the wake structure is the NPC's only anchor), and scan the clock for an hour that lands them
+// indoors — occupancy is a pure function of the hour, so this is deterministic. Returns a world set
+// up outside that structure with exactly one witness in the room you'd climb into.
+const outsideWithWitness = () => {
+  const w = outside();
+  const nid = String(w.map.currentNodeId);
+  const wakeStruct = Object.values(w.structures.byId).find(s => String(s.nodeId) === nid);
+  const npc = (w.map.nodes.find(n => n.id === nid)?.settlement?.npcs || []).find(n => n && !n.hostile);
+  const rooms = (wakeStruct?.topology?.rooms || []);
+  const entry = (rooms.find(r => (r.tags || []).includes('entry')) || rooms[0] || {}).id;
+  for (let hours = 0; hours < 24; hours++) {
+    const wt = {
+      ...w, meta: { ...w.meta, homeNodeId: '' }, time: { ...w.time, hours },
+      map: { ...w.map, nodes: w.map.nodes.map(n => String(n.id) === nid ? { ...n, settlement: { ...(n.settlement || {}), buildings: [], npcs: npc ? [npc] : [] } } : n) }
+    };
+    if (occupantsOfRoom(wt, wakeStruct.id, entry).length) return wt;
+  }
+  return w; // no sociable NPC — caller's witnessed-branch assertion will be a no-op via the guard
+};
 
 test('U284: precondition — stepping out puts you outside at a building', () => {
   const w = outside();
@@ -96,8 +120,8 @@ test('U284: "fire into the window" in combat is a real ranged line IN (not a bou
 });
 
 test('U284: climbing in where there are witnesses is a contested stealth check (deterministic)', () => {
-  const a = playerMove(outside(), PACKS, 'climb in the window');
-  const b = playerMove(outside(), PACKS, 'climb in the window');
+  const a = playerMove(outsideWithWitness(), PACKS, 'climb in the window');
+  const b = playerMove(outsideWithWitness(), PACKS, 'climb in the window');
   assert.match(a.output.mechanics || '', /window:enter\|(unseen|spotted)/, a.output.mechanics);
   assert.match(a.output.mechanics || '', /stealth:\d/, 'a witnessed climb rolls a stealth check');
   assert.ok(a.world.scene?.interior, 'spotted or not, you still get in');

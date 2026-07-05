@@ -105,9 +105,16 @@ we are deepening known families, not discovering new ones. Clusters → owners (
   Asha 8→1 HP; zero relocks.
 - **INT-4 take:already-held (1)** — "grab the lantern and set the pallet on fire" → "lantern already
   tucked in your pack," arson never resolves. Evidence #3 for the queued throw/hurl/use-held row.
-  **→ INT-4-HELD DISPATCHED 2026-07-04-pm9** (Opus worktree, U458–U459; grace+playloop object-action
-  lane; possession = precondition, never the resolution; letter-where object-state question in scope
-  if same seam, else flagged).
+  **INT-4-HELD ✅ LANDED v0.28.22 b072** (`c106f303` → `bb8e3628`): ROOT — TWO classifiers ate the
+  verb: `detectPhysicalAssault`'s forced-into-harm branch called `refLooksPersonal("the lantern")`
+  (any "the <noun>" reads personal) → no-target person-assault; `tryTakeRevealedContainerItem`'s
+  `grab` match fired take:already-held before the compound arson could resolve; and FIRE_RE only knew
+  contiguous "set fire" (split "set X on fire" never reached the material-aware fire ruling). FIX —
+  `refIsPresentObject` fall-through, `TAKE_THEN_ACTION_RE` bail (mirrors the READ bail), FIRE_RE
+  verb-led broadening (question-safe). No new world fields — arson resolves through the EXISTING
+  `resolveFireRuling` furniture deltas (spread/hazard escalation stays P-80/DX). U458–U459 (11) +
+  **corpus C25 ×2 LOCKED — convergence 127/127**. Letter-where question CONFIRMED different seam
+  (question-router + inventory-canon answer) → folded into the answerability wave below.
 - **Answerability info-asks (2)** — "who runs this outpost?" stonewalled with "no record" while Elske
   (representative) + Dalla (innkeeper) stand present and answerable; "nearest person, let me talk to
   them" listed names + [clarify:who] punt instead of opening the obvious dialogue. = the egress

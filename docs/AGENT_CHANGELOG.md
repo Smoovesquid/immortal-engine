@@ -2013,6 +2013,18 @@ other agents. (none active)
   atk-vs-AC + 13-phrasing set + honest-fallback/defense regressions); no relocks; no state.js touch.
 - Integration ladder GREEN: convergence 125/125, suite 9844/0, determinism green. v0.28.21 b071.
 
+## 2026-07-04 — Basecamp (INT-4-HELD integration → v0.28.22 build 072)
+
+- Landed INT-4-HELD (`c106f303` → `bb8e3628`): held-object actions resolve as ACTIONS — two
+  classifiers ate the verb (refLooksPersonal treated "the lantern" as a person → no-target assault;
+  the take-gate intercepted compound arson) + FIRE_RE missed split "set X on fire". Verb-first fixes
+  (`refIsPresentObject`, `TAKE_THEN_ACTION_RE`, question-safe FIRE_RE broadening — the 1-line
+  llmPhysics.js edit reviewed + accepted at integration). No new world fields; arson uses the
+  existing resolveFireRuling deltas. U458–U459 (11 subtests) + corpus C25 ×2 LOCKED.
+- Letter-where question confirmed a different seam (question-router + inventory canon) — folded into
+  the answerability wave. Integration ladder GREEN: **convergence 127/127**, suite 9855/0,
+  determinism green. v0.28.22 b072.
+
 2026-07-04 — Sonnet (worker worktree, PERC-1) — LOGIC DONE, WIRING PENDING (playloop.js fenced)
 - Packet/seam: `docs/PACKETS.md` PERC-1 — 2026-07-04 gate (Chaos-griefer, CRUNCH_INCONSISTENCY): "Wait — is
   the ceiling still on fire or not? I stand in the middle of the room and look up." rolled a NATURAL 1 vs DC

@@ -87,6 +87,43 @@ done_when · rollback`.
   that slowness is intended; it's what fast travel is priced against.
 - **rollback:** revert the commit (journeys return to premium-free). Contract: `docs/POSITION_AS_CANON.md` §3.
 
+### GATE 2026-07-05 — morning fresh measure (v0.28.29 · **3/48** · `opus-gate-2026-07-05.md`)
+**The honest read:** 14/48 → 8/48 → **3/48 (6%) on the same Ref-off config** — the best score the gate has
+ever recorded. All eight of 07-04-3's fixes HELD (CBT-AGENCY, INT-4-HELD, ANS-2, INFO-HONESTY all silent),
+and the seven builds landed since (PACK-1/PACK-3 content, FACT-1 factions, MAP-3DR/tilt) introduced ZERO
+regressions. **Rules Lawyer went 12/12 clean for the first time** — the RL-1 rules-answer cluster (8/14 on
+07-04-2) is fully quiet. Chao1: 2 modes this run, **0 categorically new** (S_obs 5, CI [5,5]) — still
+deepening known families, none discovered. Judge errors: 3 (marked, scored legacy-pass per series
+convention — worth an eye if the count grows). Cost $0.92, ledger $15.24. Clusters → owners (all 3):
+- **SEEK-PERSON deadend (1, high — the actionable head):** _"I get up and go find someone in the
+  settlement who can tell me who founded this outpost."_ → **"That way is blocked from here."** — a
+  compound seek-to-ask intent (egress + find-a-person + info goal) bounced as a bare navigation refusal.
+  Candidate seams: interior-egress route (the AG-1→3b egress-door pattern) vs. travel resolver firing its
+  blocked-exit line on a destination-less "go find someone" (misroute). NB this is the SURVIVING member of
+  the AG-4 family post-INFO-HONESTY — fold it into the AG-4 re-scope. LLM-off repro FIRST (tallow, exact
+  utterance from a fresh boot, ~turn 5 context in the jsonl).
+- **DIALOGUE-ENTER empty first exchange (1, low):** _"Oh, hi Asha — sorry, I didn't realize you were
+  standing there. Who are you?"_ → `[dialogue enter | Asha]` renders atmosphere ("letting her words settle")
+  with ZERO spoken words — the enter utterance carried a direct self-question and the first exchange must
+  deliver her actual answer (self-intro from modeled role/tenure — NBIO-1 precedent). Seam: dialogue-enter →
+  npc-voice bridge. ⚠️ `dialogue.js` = SERIAL taste-critical lane.
+- **MIXED-outcome loot unresolved (1, low):** _"I ignore the smoke and rip open the iron-bound chest to
+  loot it."_ → roll 15 vs DC 14 → mixed; narration opens the lid but never resolves the LOOT intent nor
+  states the cost/complication the margin-1 mixed owes (the ignored smoke was RIGHT THERE as the cost).
+  Seam: mixed-outcome narration floor for container-force (genericGroundedOutcome / composer mixed branch).
+- **CG-2 shadow-compare (ran live on this gate's server):** 48 turns validated → **1 would-block**, and it
+  argues AGAINST flipping live as-is: the detector was RIGHT (CG-6 clock desync — candidate narrated
+  "midday light", canon `clock.segment` = morning; a true, cosmetic canon miss on the locket turn) but the
+  base fallback it would have delivered is WORSE than the sin — `Wizard: Elske Nightherd shrugs. "Can't
+  say. No record I've ever seen."` — a non-sequitur NPC dodge in the banned "no record" pattern, swapped in
+  over a turn whose only flaw was a time-of-day word. Verdict material for Tim's review: CG-6 severity
+  wants tiering (cosmetic time-desync → reword/pass, not block), or the fallback needs to re-check against
+  the same detectors before it's allowed to replace (the "re-checks the base" step exists in `on` mode —
+  the swap should also lose to the candidate when the base fails HARDER). Also: the log's
+  `persona:"campaign"`/`turn:null` fields aren't threaded from the gate — label before more shadow runs.
+  Log: `docs/playtests/coherence-validate/2026-07-05.jsonl` (gitignored raw, by design). **Tim's go/no-go
+  review is a five-minute look at ONE swap**, not an hour of transcript.
+
 ### GATE 2026-07-04-3 — evening re-baseline error analysis (v0.28.19 · **8/48** · `opus-gate-2026-07-04-3.md`)
 **The honest read:** 14/48 → **8/48 on the same Ref-off config** — the day's six landings HELD under the
 judge: ZERO movement / geography / map / perception failures (FP-2, TAC-2/4, ROADS-1, PERC-1, RL-1,
@@ -614,7 +651,7 @@ file) · P4 SERIAL (`engine/ref/rubric.js`, shared with the live Ref) · P6 last
 - **NEXT (not this packet):** CG-LIVE-2 = flip the observer to an actual REGENERATE trigger once the live FP
   rate is proven boring — Tim's go, after reading the shadow data.
 
-### AG-4 — pointed questions answered in the fiction (the info-seek sink stops voicing database-misses through people)  ·  Phase 0  ·  **QUEUED 2026-07-04 → dispatched (Sonnet worktree lane)**
+### AG-4 — pointed questions answered in the fiction (the info-seek sink stops voicing database-misses through people)  ·  Phase 0  ·  **PARKED 2026-07-04 — brief STALE, re-scope before any dispatch** *(status reconciled 2026-07-05: the row said "dispatched" but the lane never ran — parked per Tim, map was the day's focus. Gate-2 found the dominant "no record" dodge cluster did NOT recur — NODE-DESYNC-1 dissolved it — and INFO-HONESTY b073 + ANS-2 b074 since banned no-record language at the delivery gate. Re-audit sub-fixes a/b/c against the current build before cutting a new brief.)*
 - **provenance:** Tim's 2026-07-04 Ref-pull decision ("what to improve instead: the base DM's dead-ends — answer
   pointed questions in the fiction without conjuring an absent speaker") + the v0.28.3 gate's dominant cluster
   (5 of 9 fails, `opus-gate-2026-07-04.md`; NB that run was Ref-ON, which inflated the count — but the class

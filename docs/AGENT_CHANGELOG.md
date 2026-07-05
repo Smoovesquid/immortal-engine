@@ -2182,3 +2182,27 @@ other agents. (none active)
   question hedges" net.
 - Rollback: revert this commit (the deterministic hedge + LLM-polish guard both return to the prior
   ungrounded-floor behavior; playloop.js was never touched, so no playloop revert is needed).
+
+## 2026-07-05 — Basecamp (fresh gate 3/48 + CG-2 shadow verdict; measurement, no engine edits)
+
+- **Opus gate on v0.28.29 (b078): 3/48 (6%)** — best ever recorded; trend 14/48 → 8/48 → 3/48 on the
+  same Ref-off config. All eight 07-04-3 fixes HELD; seven builds of content/map landings since
+  (PACK-1/3, FACT-1, MAP-3DR/tilt) = ZERO regressions; Rules Lawyer 12/12 clean for the first time
+  (RL-1 cluster silent). Chao1 0 new modes (S_obs 5, CI [5,5]). Judge errors 3 (marked, legacy-pass
+  convention). Report `docs/playtests/opus-gate-2026-07-05.md`; audit jsonl committed alongside.
+  Cost $0.92 → ledger $15.24 (.budget.json).
+- Three residual fails filed as clusters → owners in PACKETS §GATE 2026-07-05: SEEK-PERSON deadend
+  (high — "go find someone who can tell me who founded this outpost" → "That way is blocked from
+  here."; fold into the AG-4 re-scope), DIALOGUE-ENTER empty first exchange (low — "Who are you?"
+  answered with atmosphere, zero spoken words; dialogue.js = serial lane), MIXED-outcome loot
+  unresolved (low — margin-1 chest-force narrates lid-open, no loot resolution, no cost stated).
+- **CG-2 shadow-compare ran on the gate server (COHERENCE_VALIDATE=shadow-compare): 48 turns → 1
+  would-block, and it argues AGAINST flipping live as-is.** Detector RIGHT (CG-6 clock desync:
+  "midday light" vs canon morning — cosmetic), fallback WORSE (an Elske "no record" shrug — the
+  banned dodge pattern — over a turn whose only flaw was a time word). Review material for Tim:
+  tier CG-6 cosmetic severity, and/or make the swap lose when the base fails harder than the
+  candidate. Swap log `docs/playtests/coherence-validate/2026-07-05.jsonl` (gitignored raw).
+- Docs reconciliation: AG-4 row corrected ("dispatched" → PARKED, brief stale — the lane never ran;
+  gate-2 finding + INFO-HONESTY b073 supersede parts of sub-fix a).
+- No version bump: measurement + docs only, no shipped game change. Gate server :5200 stopped after
+  the run.

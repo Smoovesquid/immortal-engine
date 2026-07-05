@@ -208,7 +208,16 @@ done_when · rollback`.
   **MAP-REAL STAGE 1 (position truth) COMPLETE** — engine writes the doorstep, every reader consumes
   `pos`, the probe stands guard in `npm run check`.
 
-### MR-2a — walls block + doors become canon (the WORLD_VERSION packet)  ·  Phase 1/2 (MAP-REAL stage 2)  ·  **CUT + DISPATCHED 2026-07-05-eve (Opus worktree; design `docs/briefs/MR-2-FUNCTIONAL-INK.md` §2a; U503–U506; dispatched under Tim's autonomous-continuation grant — integration held to Basecamp's gate)**
+### MR-2a — walls block + doors become canon (the WORLD_VERSION packet)  ·  Phase 1/2 (MAP-REAL stage 2)  ·  **✅ LANDED v0.29.0 b087 (worker `c81b6d22` → integrated `d412a598`; WORLD_VERSION 30→31; U503–U506 28/28; suite 10133/0; playtest:quick+full 550 runs clean; old-save-warn demonstrated; GEOMETRY_BREACH armed)**
+- Doors = canon state {open|shut|barred|locked} + exterior front-door RECORD (MR-1a's derivation now
+  the legacy fallback) · walkable mask · `door` op via applyDeltas · interior moves + egress enforce
+  states honestly (DM Test — no soft-locks, U506 property-tested) · forced entry mints a ledger fact.
+
+### DOOR-FORCE-1 — bare "force the door" flips canon door state  ·  Phase 2 follow-up  ·  **QUEUED (worker's honest scope flag, 2026-07-05)**
+- A bare/unnamed "force the door" still routes to the pre-existing generic physics-force resolver
+  (predates door canon): it rolls + narrates but does NOT flip the new door state. Named-room moves and
+  egress DO enforce canon. Unify every force-phrasing through the `door` op — touches the combat-resolve
+  seam, so it's its own packet; cut on the INT-3 template when the serial slot is free.
 - Walkable mask from plans · exterior front-door record (MR-1a's flag) + door states {open|shut|barred|
   locked} as stored canon (ONE WORLD_VERSION bump, full 6-step protocol) · `door` op via applyDeltas ·
   interior room-moves respect door states TODAY (locked door = honest in-fiction resolution, DM Test) ·

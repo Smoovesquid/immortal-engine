@@ -2591,3 +2591,13 @@ other agents. (none active)
 - Position truth is now closed end-to-end: MR-1a (write) + MR-1b (read) + MR-ORACLE (standing guard).
   Remaining in flight: MR-2a (door canon, Opus). U381 flake re-confirmed pre-existing by this worker
   on a clean baseline — stays the quiet-window item.
+
+## 2026-07-05 — Basecamp (second window) — MR-2a integrated → v0.29.0 build 087 "doors are real" (WORLD_VERSION 31)
+
+- Cherry-picked `c81b6d22` → `d412a598` (one conflict: package.json version line — resolved to the
+  worker's 0.29.0 milestone over mainline's 0.28.37). Ladder GREEN: 10133/0, convergence 131/131,
+  probe clean w/ GEOMETRY_BREACH armed; mainline playtest:quick 50/0/0. Old-save warn (v30→v31)
+  demonstrated in the worker's report; 15 version-embedded test-string files updated per protocol.
+- Worker's honest scope flag → DOOR-FORCE-1 queued (bare force-phrasing doesn't flip canon state yet).
+- MAP-REAL stage 2 status: 2a ✅ · next 2b (DM grounds architecture, serial) + 2c (house-builder
+  loader, parallel) — cutting both now under the autonomy grant. Claimed test numbers → U507+ next.

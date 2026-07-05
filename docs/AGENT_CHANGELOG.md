@@ -2541,3 +2541,11 @@ other agents. (none active)
   uncommitted dirt observed mid-integration then committed by that lane — walls/doors/windows/curved
   walls landing fast). MR-2's authored-truth source is growing; integration stays hands-off its file.
 - **Next: MR-1 brief to Tim** (serial slot free, placeFromNode.js now free too — both blockers cleared).
+
+## 2026-07-05 — Basecamp (second window) — MR-1a cut + dispatched (Tim OK'd the doorstep-egress brief)
+
+- MR-1a (engine serial lane, Opus worktree): exit writes the door-threshold pos delta; backfill →
+  legacy repair only; probe wired into check; flips U497's todo; U498–U500. The ONE hot-file dispatch
+  in flight (playloop/state). MR-1b (TAC-4: marker consumes pos, ux/uy → tween) auto-follows landing.
+- Claimed test numbers now U491–U500 across in-flight lanes (allocator re-offers low numbers until
+  workers merge — next free U501+).

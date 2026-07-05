@@ -182,6 +182,12 @@ done_when · rollback`.
 - **→ MR-1 is now UNBLOCKED** (SL-5 landed v0.28.33, the engine serial slot is free). Cut MR-1 on the
   `POSITION_AS_CANON.md` §7 template with this diagnosis as its evidence block; brief to Tim for OK.
 
+### MR-1a — egress writes the doorstep: exit lands you at the door you used  ·  Phase 1 (MAP-REAL stage 1, engine serial)  ·  **CUT + DISPATCHED 2026-07-05-eve (Opus worktree; brief `docs/briefs/MR-1a-doorstep-egress.md`; U498–U500 + flips U497's todo; Tim OK on record)**
+- Oracle targeting data: exit NULLS `pos` → `ensureWorld` backfill re-seeds via `placeNearNode` ±50-cell
+  jitter (247 ft measured). Fix: threshold crossing WRITES the door's outside cell (`POSITION_AS_CANON`
+  §2/§3), backfill demoted to legacy-save repair. Done = probe green, U497 todo flipped ON,
+  `playtest:position` wired into `npm run check`. **MR-1b (TAC-4 renderer read) dispatches on landing.**
+
 ### TT-OCC — minis never stand inside ink that isn't theirs  ·  Phase 1 (map fidelity)  ·  **✅ LANDED v0.28.35 b084 (worker `2a11a820` → integrated `1d8d8bc7`; U494 5/5 + U495 6/6; suite 10079/0; ring-search exclusion w/ stroke+figure margin; pixel-verified on the bug node `n0_2935788122`; zero relocks incl. U398/U410/U480)**
 - Renderer-side: outdoor people-minis must not render inside building floorplan ink (TT-INK rooflessness
   makes an outdoor scatter point read as "in your bedroom" — the exact confusion Tim hit). Placement of

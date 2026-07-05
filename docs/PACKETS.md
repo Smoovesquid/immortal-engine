@@ -167,11 +167,20 @@ done_when · rollback`.
   loader) → MR-3 fog-procgen wild + story behaviors on the sheet. Tim's standing asset ledger:
   `docs/MINIS_WISHLIST.md` (all lanes append).
 
-### MR-ORACLE — position-truth probe in the harness  ·  Phase 0/1  ·  **CUT + DISPATCHED 2026-07-05-pm (harness lane, parallel; U496–U497)**
-- After each scripted transition (wake/exit/enter/walk/journey): assert marker vs fiction anchor +
-  interior moves vs room topology. Designed to run RED on today's build (the 1 km bug becomes a failing
-  test BEFORE the fix — anti-whack-a-mole insurance). Ships as optional `playtest:position` mode; wires
-  into `npm run check` only when MR-1 lands.
+### MR-ORACLE — position-truth probe in the harness  ·  Phase 0/1  ·  **✅ LANDED v0.28.34 b083 (worker `2174e2bd` → integrated `de5a923e`; U496 14/14 · U497 4/4+1 todo; suite 10068/0; probe RED-by-design, byte-identical reruns)**
+- **THE LAYER DIAGNOSIS (MR-1's targeting data): BOTH layers lie.** (1) Engine canonical `pos`
+  teleports **49 cells (247 ft)** from the exited structure on "go outside" — `backfillTacticalPositions`
+  → `placeNearNode` ±50-cell seeded jitter in `engine/map/spatial/tacticalPos.js` — instead of the
+  doorstep. (2) The renderer view-model token (`placeFromWorldNode().tokens`) is pinned to the lane
+  entry and **never consumes `pos` at all** — so MR-1 must fix BOTH the engine write (doorstep egress)
+  and the view-model read, or the marker stays wrong even after the engine is right. Tim's "~1 km" was
+  the same bug measured at the marker's map projection.
+- Probe = `npm run playtest:position` (optional mode; wires into `npm run check` when MR-1 lands; U497
+  carries the expected-fail doorstep invariant as a `todo` MR-1 flips on). Also surfaced, data-only (not
+  asserted): `walk east` on the deterministic floor drops `currentNodeId` to null (between-nodes state)
+  — TAC-2/NODE-DESYNC territory, feed to MR-1's brief as context.
+- **→ MR-1 is now UNBLOCKED** (SL-5 landed v0.28.33, the engine serial slot is free). Cut MR-1 on the
+  `POSITION_AS_CANON.md` §7 template with this diagnosis as its evidence block; brief to Tim for OK.
 
 ### TT-OCC — minis never stand inside ink that isn't theirs  ·  Phase 1 (map fidelity)  ·  **CUT + DISPATCHED 2026-07-05-pm (renderer lane, parallel; U494–U495) — PROMOTED: Tim's always-open-plans ruling makes placement rules the only defense**
 - Renderer-side: outdoor people-minis must not render inside building floorplan ink (TT-INK rooflessness

@@ -2511,3 +2511,18 @@ other agents. (none active)
   OCC-STORY-1's worker is unmerged — U491–497 are ALL claimed by in-flight lanes; next free is U498+.
 - Go-outside 1 km teleport (Tim's live repro, v0.28.32 wake cottage → "go outside") is MR-ORACLE's
   first scripted repro + MR-1's headline done-when.
+
+## 2026-07-05 — Basecamp (second window) — MR-ORACLE integrated → v0.28.34 build 083
+
+- Cherry-picked worker `2174e2bd` → `de5a923e`, clean. Ladder GREEN on mainline: suite 10068/0
+  (+19: U496 14, U497 4+1 todo), convergence 131/131, determinism green. Probe verified live on the
+  mainline: `npm run playtest:position` prints one POSITION_DESYNC finding — "(go-outside) exit: body
+  is 49 cells (247 ft) from the exited structure … a teleport, not a doorstep" — RED by design until
+  MR-1. Layer diagnosis recorded in the MR-ORACLE PACKETS row: engine `pos` jitter-teleports
+  (`placeNearNode` ±50 cells, `engine/map/spatial/tacticalPos.js`) AND the renderer token never reads
+  `pos` — MR-1 must fix write AND read. Worker also surfaced (data-only): deterministic-floor
+  `walk east` → `currentNodeId` null between nodes (TAC-2/NODE-DESYNC context for MR-1). U381 flake
+  seen once in the worker's early run, passed everywhere after — still the known quiet-window item.
+- SL-5 landed v0.28.33 b082 (sibling window) while lanes ran → **the engine serial slot is FREE; MR-1
+  is unblocked** — next Basecamp move: cut MR-1 with the diagnosis as evidence, brief to Tim.
+- Still in flight: OCC-STORY-1 (engine occupancy, Opus) · TT-OCC (renderer, Sonnet).

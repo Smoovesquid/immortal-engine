@@ -2526,3 +2526,18 @@ other agents. (none active)
 - SL-5 landed v0.28.33 b082 (sibling window) while lanes ran → **the engine serial slot is FREE; MR-1
   is unblocked** — next Basecamp move: cut MR-1 with the diagnosis as evidence, brief to Tim.
 - Still in flight: OCC-STORY-1 (engine occupancy, Opus) · TT-OCC (renderer, Sonnet).
+
+## 2026-07-05 — Basecamp (second window) — TT-OCC integrated → v0.28.35 build 084
+
+- Cherry-picked worker `2a11a820` → `1d8d8bc7`. First post-pick check showed 1 fail → same-run capture
+  + isolation rerun proved it was the KNOWN load-flake (U497's `# TODO` line is NOT a fail — TAP todo);
+  fresh check GREEN: suite 10079/0, convergence 131/131. Worker's honesty flags carried: first-attempt
+  push-away exclusion FAILED on dense geometry (40–75% stuck) and was replaced with ring-search before
+  shipping; one env-noise check failure mid-verify (its own background processes), green before/after.
+- Ghost-Galen class closed renderer-side: outdoor minis get margin-aware placement clear of ALL building
+  ink (stroke width + figure footprint accounted). Live receipt: zero building-fill pixels within the
+  token footprint on the exact bug node.
+- Sibling lane note: house-builder is under ACTIVE live edit in the main checkout (b8e82cd2, 889a308c,
+  uncommitted dirt observed mid-integration then committed by that lane — walls/doors/windows/curved
+  walls landing fast). MR-2's authored-truth source is growing; integration stays hands-off its file.
+- **Next: MR-1 brief to Tim** (serial slot free, placeFromNode.js now free too — both blockers cleared).

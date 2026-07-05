@@ -182,7 +182,7 @@ done_when · rollback`.
 - **→ MR-1 is now UNBLOCKED** (SL-5 landed v0.28.33, the engine serial slot is free). Cut MR-1 on the
   `POSITION_AS_CANON.md` §7 template with this diagnosis as its evidence block; brief to Tim for OK.
 
-### TT-OCC — minis never stand inside ink that isn't theirs  ·  Phase 1 (map fidelity)  ·  **CUT + DISPATCHED 2026-07-05-pm (renderer lane, parallel; U494–U495) — PROMOTED: Tim's always-open-plans ruling makes placement rules the only defense**
+### TT-OCC — minis never stand inside ink that isn't theirs  ·  Phase 1 (map fidelity)  ·  **✅ LANDED v0.28.35 b084 (worker `2a11a820` → integrated `1d8d8bc7`; U494 5/5 + U495 6/6; suite 10079/0; ring-search exclusion w/ stroke+figure margin; pixel-verified on the bug node `n0_2935788122`; zero relocks incl. U398/U410/U480)**
 - Renderer-side: outdoor people-minis must not render inside building floorplan ink (TT-INK rooflessness
   makes an outdoor scatter point read as "in your bedroom" — the exact confusion Tim hit). Placement of
   the fix: `public/map` lane (drawModel/placeFromNode token scatter or render3d gating). Done = live

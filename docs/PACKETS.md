@@ -87,7 +87,7 @@ done_when · rollback`.
   that slowness is intended; it's what fast travel is priced against.
 - **rollback:** revert the commit (journeys return to premium-free). Contract: `docs/POSITION_AS_CANON.md` §3.
 
-### SEEK-PERSON — "go find someone who can tell me X" resolves in the fiction (the person-goal bridge)  ·  Phase 0  ·  **CUT + DISPATCHED 2026-07-05 (Opus playloop worktree — the serial slot is free, map lane is renderer-only)**
+### SEEK-PERSON — "go find someone who can tell me X" resolves in the fiction (the person-goal bridge)  ·  Phase 0  ·  **✅ LANDED v0.28.32 b081 (worker `5cd7ade9`; U485–U487 8/8; suite 10023/0; recovered after the session-switch halt — verified + integrated by the conductor).** LLM-off repro GREEN: the exact gate utterance ("I get up and go find someone…who founded this outpost") now → *"You step out into the open air. You approach Asha the guard…"* (bridges outside, delivers a real canon person, enters dialogue), NOT "that way is blocked from here", NOT a "no record" dodge, node stable (no NODE-DESYNC). Honest-miss guard for the empty settlement resolves in-place (no exit, C9-safe). **Brief items 2 & 3 NOT delivered** — the worker halted before its final report: (2) the locket sensory-probe→info-sink misroute (CG-2b evidence) was NOT touched by this diff → still open, see below; (3) the AG-4 a/b/c re-scope verdict was never written → AG-4 stays PARKED, re-audit still owed.
 - **provenance:** GATE 2026-07-05's one high-sev fail (Lore-hound): from the wake interior, _"I get up and
   go find someone in the settlement who can tell me who founded this outpost."_ → **"That way is blocked
   from here."** Seam pinned at boot: the interior-movement blocked bank (`engine/playloop.js:2045`) sits
@@ -106,6 +106,13 @@ done_when · rollback`.
 - **done_when:** the exact gate utterance, LLM-off on a fresh tallow boot, exits the interior and resolves
   the seek in fiction; blocked bank still fires for true dead-ends (wall-holds cases keep their tests);
   `npm run check` green.  ·  **rollback:** revert the lane's commit.
+- **FOLLOW-UP OPEN — SEEK-2 (locket sensory-probe misroute):** the CG-2b evidence turn ("The broken locket
+  — I open it. Is there a portrait or anything inside?") routed a PHYSICAL read of a held object into the
+  info-sink and produced the base "no record" dodge. SEEK-PERSON did NOT touch this (different seam:
+  sensory-probe classification, not person-search). Small targeted packet owed: a sensory probe of a
+  present/held object gets a truthful world-grounded sensory answer or honest-uncertainty read (DS-1a /
+  honest-search `baf1b51` precedent), never the info-record decline. Playloop info-seek seam; cut when the
+  serial slot next opens.
 
 ### SL-5 — "Aldermere wants something" (Phase 1's named next)  ·  **DRAFT READY 2026-07-05 (`docs/briefs/SL-5-DRAFT.md`, landed from the drafting lane) — awaiting Tim's three taste calls, then build**
 - **The Armory finding (why this packet shrank):** the want loop is ALREADY LIVE end-to-end — ask-a-concern
@@ -119,8 +126,9 @@ done_when · rollback`.
 - **TASTE CALLS SETTLED (Tim, 2026-07-05 — all three defaults confirmed):** 2 worries FIXED BY SEED
   (Greenwood-road + chapel, stable all session) · bandit camp FOLDED into the road worry (two dangers,
   not three) · cold-open ships SAME PACKET. The draft's §6 proposed row is now the spec verbatim.
-- **BUILD QUEUED behind SEEK-PERSON** (the cold-open line touches the boot scene in `playloop.js` — the
-  serial slot frees when that lane lands; dispatch SL-5 immediately after, same-day).
+- **BUILD UNBLOCKED (2026-07-05): SEEK-PERSON landed (v0.28.32), the playloop serial slot is now FREE.**
+  SL-5 (+ the SEEK-2 locket follow-up) is the next playloop dispatch — spec is the draft's §6 row verbatim
+  with the settled taste calls baked in.
 
 ### GATE 2026-07-05 — morning fresh measure (v0.28.29 · **3/48** · `opus-gate-2026-07-05.md`)
 **The honest read:** 14/48 → 8/48 → **3/48 (6%) on the same Ref-off config** — the best score the gate has

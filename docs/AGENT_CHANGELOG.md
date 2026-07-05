@@ -2334,3 +2334,29 @@ other agents. (none active)
   **Operational flag: two windows (this conductor + a Haiku window) were committing and pushing to the
   same v2-polish on the shared checkout — that race caused a divergence this session; one window should
   own the branch.**
+
+## 2026-07-05 — Basecamp (SEEK-PERSON → v0.28.32 build 081; second recovered lane, day close)
+
+- SEEK-PERSON (the playloop lane, Opus) was the OTHER subagent halted by the session switch — mid-flight,
+  uncommitted, unverified (126-line playloop.js change + 3 tests present in the worktree). Recovered by
+  the conductor: read the full implementation (complete, well-reasoned), committed it in the worktree,
+  cherry-picked to main (playloop.js was byte-identical on origin since the worktree base → clean apply),
+  then verified from scratch.
+- **What it fixes:** a social search voiced indoors ("go find someone who can tell me who founded this
+  outpost") named no PLACE, so the INT-4-TRAVEL place-bridge missed it and "go FIND …" mis-read as a
+  room-move → the interior blocked bank fired "That way is blocked from here" (a navigation refusal for a
+  social intent — GATE 2026-07-05's one high-sev fail). Now: seek-person is excluded from the blocked
+  bank; the bridge exits the interior and resolves the seek on the node roster (a real canon person, or an
+  honest in-fiction miss); an EMPTY settlement resolves the miss IN PLACE (no exit, no position change —
+  sidesteps both the "no record" info-decline and the egress-repair clobber; C9-safe). extractFindPersonRef
+  widened (generic person family → "someone"; contested seeks — rob/fight/kill — still ROLL, U262 held).
+- **Verified:** U485–U487 8/8; full ladder GREEN suite 10023/0 (+8), convergence 131/131, determinism
+  green (zero regression in the hot playloop file). LLM-off repro of the EXACT gate utterance:
+  → *"You step out into the open air. You approach Asha the guard; measured eyes meet yours."* + mech
+  `[dialogue enter | Asha | role:guard]`; node stable (no NODE-DESYNC). v0.28.32 b081 "find you a face".
+- **NOT delivered (worker halted before its report), tracked honestly:** brief item 2 (locket
+  sensory-probe→info-sink misroute) untouched → filed as SEEK-2 follow-up in PACKETS; item 3 (AG-4 a/b/c
+  re-scope verdict) never written → AG-4 stays PARKED. The playloop serial slot is now FREE → SL-5
+  (taste calls settled) + SEEK-2 are the next playloop dispatch.
+- Both session-switch-halted lanes are now HOME. Two windows sharing v2-polish caused one divergence
+  today (the Carl race) — resolved non-destructively; flagged for one-window-owns-the-branch going forward.

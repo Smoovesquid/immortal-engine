@@ -2608,3 +2608,12 @@ other agents. (none active)
   served. MR-2b (Opus, serial: llmAdapter/composer/guard/coherence seams; U507–U509) and MR-2c
   (Sonnet, parallel: structures loader + authored-plan registry; U510–U512) dispatched per
   MR-2-FUNCTIONAL-INK design under the autonomy grant. Claimed numbers now U491–U512 (next U513+).
+
+## 2026-07-05 — Basecamp (second window) — MR-2b integrated → v0.29.1 build 088 "no imaginary stairs"
+
+- Cherry-picked `8afa145e`, clean. Ladder GREEN: 10155/0, convergence 131/131, probe clean. CG-ARCH
+  catches the WB-Q1 archetype ("a narrow staircase climbs…" in a single-storey cottage) that CG-2b's
+  compass-only detector missed; DM prompt now carries the real room roster + door states as texture.
+  Worker's one out-of-lane touch (U483 equal-base fixture: "the pantry"→"the cellar" to restore the
+  equal-failing pair after CG-ARCH added real signal) reviewed and accepted — documented inline.
+- Remaining in flight: MR-2c (house-builder loader, Sonnet). Stage 2 = 2a ✅ 2b ✅ 2c ⏳ 2d queued.

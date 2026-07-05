@@ -208,7 +208,7 @@ done_when · rollback`.
   **MAP-REAL STAGE 1 (position truth) COMPLETE** — engine writes the doorstep, every reader consumes
   `pos`, the probe stands guard in `npm run check`.
 
-### MR-2b — the DM grounds architecture claims (no invented geography)  ·  Phase 1/2 (MAP-REAL stage 2)  ·  **CUT + DISPATCHED 2026-07-05-night (Opus worktree, THE serial narration slot; U507–U509)**
+### MR-2b — the DM grounds architecture claims (no invented geography)  ·  Phase 1/2 (MAP-REAL stage 2)  ·  **✅ LANDED v0.29.1 b088 (worker `8afa145e` → integrated; U507–U509 22/22; suite 10155/0; CG-ARCH structural-tier detector + roomPlan ground truth + hide-the-math DOORS prompt line; corpus lock on the wake cottage; flagged U483 equal-base fixture retune — legitimate, documented inline)**
 - Plan-facts bundle (rooms + doors + states + exits) into the DM prompt seam; CG family gains CG-ARCH
   (narrated-geometry-not-in-plan, structural tier — rides the CG-2b swap ladder); corpus lock on the
   wake cottage's real layout. Kills the DM-invents-geography root class.

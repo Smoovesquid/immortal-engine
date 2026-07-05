@@ -2750,3 +2750,12 @@ other agents. (none active)
 - LOADER-MERGE dispatched (Opus; U526–U532): one authored-plan loader from authoredStructure (v7
   tolerance, proven wiring, multi-room) + authoredPlans (door canon, mask, registry); LOAD's U518–U522
   files renumber into U526–U530; loser module deleted only with all green.
+
+## 2026-07-05 — Basecamp — MR-3 designed; MR-3a + TT-MINIS dispatched (3 lanes in flight, no file overlap)
+
+- MR-3 design landed (`docs/briefs/MR-3-FOG-PROCGEN.md`): pure-derivation wild, biome density, clear
+  road corridors, blocking features, unpainted-parchment fog edge; falsifiers + v1 non-goals pinned.
+- Dispatched: MR-3a (Opus — engine/world/wildFeatures.js + probe outdoor assertion; U533–U536) and
+  TT-MINIS (Sonnet — miniLibrary + corpse GLBs → defeated figures; U537–U538). In flight alongside
+  LOADER-MERGE (structures) — three lanes, disjoint files. Claimed numbers through U538; MR-3b/3c
+  reserve U539–U544.

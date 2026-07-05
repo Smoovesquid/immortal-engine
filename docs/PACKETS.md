@@ -139,7 +139,7 @@ done_when · rollback`.
   SL-5 (+ the SEEK-2 locket follow-up) is the next playloop dispatch — spec is the draft's §6 row verbatim
   with the settled taste calls baked in.
 
-### OCC-STORY-1 — every settlement NPC is where their story puts them  ·  Phase 1  ·  **CUT + DISPATCHED 2026-07-05-pm (engine worktree lane; brief `docs/briefs/OCC-STORY-1.md`; U491–U493)**
+### OCC-STORY-1 — every settlement NPC is where their story puts them  ·  Phase 1  ·  **⏸ WORKER STOPPED (by Tim, 12:12, zero commits — harness rule: no relaunch without his explicit word). Brief stands ready (`docs/briefs/OCC-STORY-1.md`, U491–U493 still claimed); ONE WORD relaunches it. Design + taste calls remain approved.**
 - **provenance:** Tim's live playtest (v0.28.32, wake scene): a mini beside his player token that the DM
   said wasn't there. Diagnosis (live-save probe, this window): the mini = Galen, OUTDOORS, painted inside
   the roofless floorplan ink; and the occupancy scatter had stuffed FIVE strangers into the player's own
@@ -181,6 +181,12 @@ done_when · rollback`.
   — TAC-2/NODE-DESYNC territory, feed to MR-1's brief as context.
 - **→ MR-1 is now UNBLOCKED** (SL-5 landed v0.28.33, the engine serial slot is free). Cut MR-1 on the
   `POSITION_AS_CANON.md` §7 template with this diagnosis as its evidence block; brief to Tim for OK.
+
+### MR-2 — FUNCTIONAL INK (stage 2 design, sliced a–d)  ·  Phase 1/2  ·  **DESIGNED 2026-07-05-eve (`docs/briefs/MR-2-FUNCTIONAL-INK.md`) — queue behind MR-1a/1b; engine slices to Tim for OK at dispatch**
+- 2a walls-block + door-state canon (WORLD_VERSION bump, full protocol) → 2b DM grounds architecture
+  (plan-facts bundle + CG architecture class) → 2c house-builder loader (export shape verified: wall
+  segments + openings {x,y,orient,len}) → 2d windows as sight apertures. MR-1b brief is READY-TO-FIRE
+  (`docs/briefs/MR-1b-marker-reads-pos.md`, U501–U502) — dispatches the moment MR-1a lands.
 
 ### MR-1a — egress writes the doorstep: exit lands you at the door you used  ·  Phase 1 (MAP-REAL stage 1, engine serial)  ·  **CUT + DISPATCHED 2026-07-05-eve (Opus worktree; brief `docs/briefs/MR-1a-doorstep-egress.md`; U498–U500 + flips U497's todo; Tim OK on record)**
 - Oracle targeting data: exit NULLS `pos` → `ensureWorld` backfill re-seeds via `placeNearNode` ±50-cell

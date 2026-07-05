@@ -2549,3 +2549,14 @@ other agents. (none active)
   in flight (playloop/state). MR-1b (TAC-4: marker consumes pos, ux/uy → tween) auto-follows landing.
 - Claimed test numbers now U491–U500 across in-flight lanes (allocator re-offers low numbers until
   workers merge — next free U501+).
+
+## 2026-07-05 — Basecamp (second window) — autonomous continuation: OCC worker found user-stopped; MR-1b/MR-2 banked
+
+- Tim granted autonomous continuation (goal = MAP-REAL). Probing the silent OCC-STORY-1 worker found
+  it **stopped by Tim at 12:12** (harness-confirmed, zero commits) — per the no-relaunch-without-ask
+  rule it is NOT redispatched; PACKETS row flipped to ⏸ with "one word relaunches it". U491–U493 stay
+  claimed. MR-1a confirmed alive (fresh output activity).
+- Banked while the hot lane runs: `MR-1b-marker-reads-pos.md` (ready-to-fire on MR-1a landing;
+  U501–U502) and `MR-2-FUNCTIONAL-INK.md` (stage-2 design: 2a door-state canon w/ WORLD_VERSION bump ·
+  2b DM architecture grounding · 2c house-builder loader — export shape verified from the live tool —
+  · 2d window LOS). Engine slices go to Tim for OK at their dispatch.

@@ -1,4 +1,4 @@
-// U521 — LOAD-2: determinism — same export → identical structure, and worldHash is
+// U529 — LOAD-2: determinism — same export → identical structure, and worldHash is
 // stable across a multi-room walk (docs/briefs/LOAD-2-multiroom-realnode.md §Tests).
 //
 // Authored content is FIXED data (like a pack): the loader is pure (no rng /
@@ -8,7 +8,7 @@
 // the SAME seed reach the SAME worldHash. This is the determinism-by-seed invariant
 // (U21 class) extended to the authored multi-room path.
 //
-// Siblings: U518 (all rooms load), U519 (door→adjacency), U520 (walk it), U522 (guardrails).
+// Siblings: U526 (all rooms load), U527 (door→adjacency), U528 (walk it), U530 (guardrails).
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -47,7 +47,7 @@ function walk(w0, structId) {
   return w;
 }
 
-test('U521: the loader is pure — same export in, byte-identical structure out, twice', () => {
+test('U529: the loader is pure — same export in, byte-identical structure out, twice', () => {
   const a = loadAuthoredStructure(FIXTURE, { nodeId: NODE });
   const b = loadAuthoredStructure(FIXTURE, { nodeId: NODE });
   assert.deepEqual(a, b);
@@ -57,7 +57,7 @@ test('U521: the loader is pure — same export in, byte-identical structure out,
   assert.deepEqual(back.authoredPlan, a.authoredPlan);
 });
 
-test('U521: the loader introduces no ordering nondeterminism (room authoring order does not matter)', () => {
+test('U529: the loader introduces no ordering nondeterminism (room authoring order does not matter)', () => {
   const rev = { ...FIXTURE, rooms: [...FIXTURE.rooms].reverse() };
   const a = loadAuthoredStructure(FIXTURE, { nodeId: NODE });
   const b = loadAuthoredStructure(rev, { nodeId: NODE });
@@ -66,14 +66,14 @@ test('U521: the loader introduces no ordering nondeterminism (room authoring ord
   assert.deepEqual(normalizeTopology(a.topology), normalizeTopology(b.topology));
 });
 
-test('U521: a world carrying the building hashes stably across an export/import round-trip', () => {
+test('U529: a world carrying the building hashes stably across an export/import round-trip', () => {
   const { w } = worldWith();
   const h1 = worldHash(w);
   const h2 = worldHash(ensureWorld(JSON.parse(JSON.stringify(w))));
   assert.equal(h1, h2, 'worldHash is stable under replay (the U21 invariant)');
 });
 
-test('U521: the SAME walk from the SAME seed reaches the SAME worldHash', () => {
+test('U529: the SAME walk from the SAME seed reaches the SAME worldHash', () => {
   const a = worldWith('load2det');
   const b = worldWith('load2det');
   const wa = walk(a.w, a.structId);

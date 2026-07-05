@@ -1,6 +1,26 @@
-// LOAD-1/LOAD-2 — the authored-structure loader: a hand-drawn building becomes a
-// walkable engine structure (docs/briefs/LOAD-1-smallest-loader.md +
-// docs/briefs/LOAD-2-multiroom-realnode.md).
+// LOAD-1/LOAD-2/MR-2c — the authored-structure loader: a hand-drawn building becomes
+// a walkable engine structure (docs/briefs/LOAD-1-smallest-loader.md +
+// docs/briefs/LOAD-2-multiroom-realnode.md + docs/briefs/MR-2-FUNCTIONAL-INK.md §MR-2c).
+//
+// ── LOADER-MERGE (this file is the SINGLE survivor) ─────────────────────────────────
+// Two conductors independently built a house-builder loader the same day: this module
+// (LOAD-1/LOAD-2 — the PROVEN-LIVE path, wired via applyGeneratedStructuresForNode,
+// walked at a real node LLM-off, tolerant of house-builder/v5+..v7) and the now-deleted
+// engine/structures/authoredPlans.js (MR-2c — which added the NODE/id REGISTRY
+// convention: a plain data file under packs/base/structures/authored/*.house.js carrying
+// a `structureId` field, imported by name, validated at module-evaluation time, so a plan
+// Tim authored FOR a procgen candidate id substitutes for that structure one id at a time).
+// LOADER-MERGE keeps THIS module's wiring point + format tolerance + depth (multi-room,
+// doors→adjacency, abutment fallback, orphan repair, authored roles, roomDetail furniture,
+// windows-are-never-doors) and ABSORBS authoredPlans' registry (bottom of this file):
+// ONE module, ONE materialization branch (loadAuthoredStructure), ONE registry. The MR-2c
+// door-canon records (a front-door DoorRecord with a seeded default state + interior door
+// states) and the walkable mask were NEVER separate loader logic — both loaders emit the
+// same floorPlan `doors[]` shape ({x,y,dir,a,b}, b:'' for the front door), and ensureWorld's
+// existing tail (backfillDoors → doors.js deriveDoors + structWalkableMask, all UNTOUCHED)
+// derives the canon records + mask from THAT. Routing the registry through this richer
+// loader therefore yields the identical canon (verified: front door 'shut', interior 'open',
+// one crossable crossing) while gaining roles/furniture/multi-room/repair for free.
 //
 // ENGINE LEADS. public/house-builder.html exports a `house-builder/v7` document
 // (rooms/walls/openings/tunnels/corridors/furniture/secrets — see its btnExport
@@ -76,6 +96,19 @@
 // creates no cycle with floorPlan.js (which imports THIS module for its override).
 import { interiorCompassLayout } from './topology.js';
 import { roomDetail } from './roomDetail.js';
+
+// ── The authored-plan REGISTRY (absorbed from the deleted authoredPlans.js) ─────────
+// A static-import registry of hand-drawn houses keyed by the procgen structure id each
+// one OVERRIDES. Static imports (not an fs/directory scan) because engine/state.js's
+// call graph loads in BOTH node and the BROWSER (raw ESM, no bundler) — an fs.readFileSync
+// in the pure engine path would 404 in the browser. Mirrors content/arcs/*.arc.js and
+// content/recipes/*.recipe.js (engine/story/registry.js's convention): each authored house
+// is a plain `export default {...}` data file carrying the one field WE add, `structureId`.
+// Adding a house is one import line + one array entry. Validated ONCE at module-evaluation
+// time (a broken fixture fails test/server boot loudly, never a lazily-discovered surprise).
+import wakeCottage from '../../packs/base/structures/authored/wake_cottage.house.js';
+
+const BUILTIN_AUTHORED_PLANS = [wakeCottage];
 
 // House-builder grid units → floorPlan layout units. Shares the MR-2c constant's
 // value (authoredPlans.js HB_UNIT_TO_LAYOUT = 1) so a room drawn in the tool lands
@@ -653,4 +686,88 @@ export function loadAuthoredStructure(json, { nodeId, structureId } = {}) {
   });
 
   return structure;
+}
+
+// ════════════════════════════════════════════════════════════════════════════════════
+// THE REGISTRY (absorbed from authoredPlans.js under LOADER-MERGE) — a plan Tim authored
+// FOR a specific procgen structure id substitutes for that structure. Every function here
+// derives from the ONE materialization branch above (loadAuthoredStructure), so the
+// registry path and the direct-load path can never diverge (U510's "MATCHES" assertion
+// holds by construction). Pure + deterministic reads of already-loaded data — no rng, no
+// I/O, no world mutation; malformed authored JSON throws at import time (see below).
+// ════════════════════════════════════════════════════════════════════════════════════
+
+function registryFail(structureId, msg) {
+  throw new Error(`authoredStructure(registry): malformed authored plan for '${structureId}': ${msg}`);
+}
+
+// Validate + index every builtin plan ONCE at module-evaluation time. Reuses the loader's
+// own validate() (house-builder/v5+ tolerance) via a trial load, and additionally requires
+// the `structureId` field the registry keys on (the one field WE add, not in the tool's
+// export). A broken fixture fails the very first import of this module — never a runtime
+// surprise. A structure id simply ABSENT from the registry is the normal (99.9%) case:
+// every un-authored structure resolves to null here and the caller falls back to procgen
+// with no warning noise.
+const REGISTRY = new Map(); // structureId -> raw house-builder export JSON
+for (const raw of BUILTIN_AUTHORED_PLANS) {
+  const structureId = String(raw?.structureId || '');
+  if (!structureId) registryFail('(unknown)', 'missing structureId (the field WE add — see the fixture header)');
+  if (REGISTRY.has(structureId)) registryFail(structureId, 'duplicate structureId across authored plans');
+  // Loud well-formedness gate — a trial load through the real loader (throws on any
+  // malformed room/opening) so the registry validates with the SAME rules the live path uses.
+  try { loadAuthoredStructure(raw, { structureId }); }
+  catch (err) { registryFail(structureId, err?.message || String(err)); }
+  REGISTRY.set(structureId, raw);
+}
+
+/** hasAuthoredPlan(structureId) -> bool. */
+export function hasAuthoredPlan(structureId) {
+  return REGISTRY.has(String(structureId || ''));
+}
+
+/** authoredRawFor(structureId) -> the raw house-builder export, or null. */
+export function authoredRawFor(structureId) {
+  return REGISTRY.get(String(structureId || '')) || null;
+}
+
+/** authoredStructureIds() -> string[] of every registered structure id. */
+export function authoredStructureIds() {
+  return [...REGISTRY.keys()];
+}
+
+/**
+ * makeAuthoredStructure(structureId, nodeId) -> a full structure object ready to merge
+ * into world.structures.byId, or null when structureId isn't registered. Delegates to
+ * loadAuthoredStructure (the ONE materialization branch) with the registered raw export,
+ * so a registered authored structure carries the SAME depth (authored roles, roomDetail
+ * furniture, doors→adjacency, orphan repair) a directly-loaded one does. Pure +
+ * deterministic (no rng, no I/O). Never throws for an absent id (returns null); a
+ * registered-but-malformed plan already failed at import time above.
+ */
+export function makeAuthoredStructure(structureId, nodeId) {
+  const raw = authoredRawFor(structureId);
+  if (!raw) return null;
+  return loadAuthoredStructure(raw, { nodeId, structureId: String(structureId) });
+}
+
+/**
+ * buildAuthoredTopology(raw, structId) -> the topology.js { kind:'rooms', rooms, edges }
+ * shape, extracted from loadAuthoredStructure's output so it AGREES with the materialized
+ * structure by construction (U510 asserts st.topology deep-equals this). Kept as a named
+ * export for the tests/report that call it directly; pure + deterministic.
+ */
+export function buildAuthoredTopology(raw, structId) {
+  const st = loadAuthoredStructure(raw, { structureId: String(structId) });
+  return st.topology;
+}
+
+/**
+ * buildAuthoredFloorPlan(raw, structId) -> floorPlan.js's OWN output shape (the drawn
+ * geometry + compass-agreeing doors + role furniture), extracted from the SAME
+ * loadAuthoredStructure output as buildAuthoredTopology so the two shapes always agree on
+ * what a room is called. Kept as a named export for the tests/report; pure + deterministic.
+ */
+export function buildAuthoredFloorPlan(raw, structId) {
+  const st = loadAuthoredStructure(raw, { structureId: String(structId) });
+  return st.authoredPlan;
 }

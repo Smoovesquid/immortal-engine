@@ -23,13 +23,16 @@ import assert from 'node:assert/strict';
 import { newWorld, ensureWorld } from '../engine/state.js';
 import { applyGeneratedStructuresForNode } from '../engine/structures/applyGeneratedStructuresForNode.js';
 import { normalizeTopology, adjacentRooms } from '../engine/structures/topology.js';
+// LOADER-MERGE relock: the authored-plan registry moved from authoredPlans.js into
+// authoredStructure.js (one loader, one registry). Same API surface, same behavior —
+// only the import path changed.
 import {
   hasAuthoredPlan,
   authoredRawFor,
   authoredStructureIds,
   buildAuthoredTopology,
   makeAuthoredStructure,
-} from '../engine/structures/authoredPlans.js';
+} from '../engine/structures/authoredStructure.js';
 
 const AUTHORED_STRUCT_ID = 'stgen:v27:n99_mr2c_wake_cottage:0';
 const AUTHORED_NODE_ID = 'n99_mr2c_wake_cottage';

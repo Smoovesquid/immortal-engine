@@ -1,4 +1,4 @@
-// U522 — LOAD-2: malformed/disconnected fails loudly or auto-repairs, and the DEFAULT
+// U530 — LOAD-2: malformed/disconnected fails loudly or auto-repairs, and the DEFAULT
 // game boot is byte-identical (docs/briefs/LOAD-2-multiroom-realnode.md §Tests).
 //
 // Two guardrails:
@@ -9,7 +9,7 @@
 //      'loaderDemo2' seed, so a normal boot (slice seed, tallow demo, any other seed)
 //      carries NO 'authored:' structure and hashes exactly as before this packet.
 //
-// Siblings: U518 (all rooms load), U519 (door→adjacency), U520 (walk it), U521 (determinism).
+// Siblings: U526 (all rooms load), U527 (door→adjacency), U528 (walk it), U529 (determinism).
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -22,30 +22,30 @@ import { reachableRooms } from '../engine/movement/interiorMovement.js';
 
 // ── 1. malformed fails loudly ────────────────────────────────────────────────────
 
-test('U522: an unsupported schema fails loudly', () => {
+test('U530: an unsupported schema fails loudly', () => {
   assert.throws(
     () => loadAuthoredStructure({ schema: 'house-builder/v4', rooms: [{ id: 'x', w: 1, h: 1 }] }, { nodeId: 'n' }),
     /unsupported schema/i);
 });
 
-test('U522: no rooms fails loudly', () => {
+test('U530: no rooms fails loudly', () => {
   assert.throws(() => loadAuthoredStructure({ schema: 'house-builder/v7', rooms: [] }, { nodeId: 'n' }), /no rooms/i);
 });
 
-test('U522: a room with a non-positive footprint fails loudly', () => {
+test('U530: a room with a non-positive footprint fails loudly', () => {
   assert.throws(
     () => loadAuthoredStructure({ schema: 'house-builder/v7', rooms: [{ id: 'x', w: 0, h: 5 }] }, { nodeId: 'n' }),
     /w>0 and h>0/i);
 });
 
-test('U522: a duplicate room id fails loudly', () => {
+test('U530: a duplicate room id fails loudly', () => {
   assert.throws(() => loadAuthoredStructure({
     schema: 'house-builder/v7',
     rooms: [{ id: 'dup', w: 3, h: 3 }, { id: 'dup', w: 3, h: 3 }],
   }, { nodeId: 'n' }), /duplicate room id/i);
 });
 
-test('U522: an opening with an unknown kind fails loudly', () => {
+test('U530: an opening with an unknown kind fails loudly', () => {
   assert.throws(() => loadAuthoredStructure({
     schema: 'house-builder/v7',
     rooms: [{ id: 'a', w: 3, h: 3 }],
@@ -53,7 +53,7 @@ test('U522: an opening with an unknown kind fails loudly', () => {
   }, { nodeId: 'n' }), /unknown kind/i);
 });
 
-test('U522: a bad structureId derivation fails loudly (no nodeId, no structureId)', () => {
+test('U530: a bad structureId derivation fails loudly (no nodeId, no structureId)', () => {
   assert.throws(() => loadAuthoredStructure({
     schema: 'house-builder/v7', rooms: [{ id: 'a', w: 3, h: 3 }],
   }, {}), /cannot derive a structureId/i);
@@ -61,7 +61,7 @@ test('U522: a bad structureId derivation fails loudly (no nodeId, no structureId
 
 // ── 1b. disconnected auto-repairs (never soft-locks) ─────────────────────────────
 
-test('U522: a fully-disconnected multi-room export is repaired to connected', () => {
+test('U530: a fully-disconnected multi-room export is repaired to connected', () => {
   // Three rooms, NO openings at all, none abutting — every room would be an island.
   const scattered = {
     schema: 'house-builder/v7', name: 'Scattered',
@@ -82,7 +82,7 @@ test('U522: a fully-disconnected multi-room export is repaired to connected', ()
 
 // ── 2. the DEFAULT boot is byte-identical ────────────────────────────────────────
 
-test('U522: a non-demo node gets NO authored building (default game untouched)', () => {
+test('U530: a non-demo node gets NO authored building (default game untouched)', () => {
   // A normal world at a normal node — applyGeneratedStructuresForNode must not inject
   // any 'authored:' structure (the LOAD-2 attach is seed-gated).
   let w = ensureWorld(newWorld({ seed: 'tallow', campaignId: 'c' }));
@@ -93,7 +93,7 @@ test('U522: a non-demo node gets NO authored building (default game untouched)',
   assert.equal(authored.length, 0, 'no authored building on a non-demo seed');
 });
 
-test('U522: applyGeneratedStructuresForNode is a no-op for the default seed at a bare node', () => {
+test('U530: applyGeneratedStructuresForNode is a no-op for the default seed at a bare node', () => {
   // At a node procgen skips (id not matching /^n\d+/) with a non-demo seed, the seam
   // returns the world unchanged — the exact byte-identical early-out.
   let w = ensureWorld(newWorld({ seed: 'tallow', campaignId: 'c' }));
@@ -105,7 +105,7 @@ test('U522: applyGeneratedStructuresForNode is a no-op for the default seed at a
 
 // ── 3. the node-keyed registry resolves a real place ─────────────────────────────
 
-test('U522: the node-keyed registry maps Crowfoot Camp → the authored house (brief §3)', () => {
+test('U530: the node-keyed registry maps Crowfoot Camp → the authored house (brief §3)', () => {
   // The registry keys by node predicate (name), so it lands on the real slice node
   // regardless of its seed-derived id. A non-registered node returns null.
   assert.ok(authoredHouseForNode({ name: 'Crowfoot Camp', tags: ['camp'] }), 'Crowfoot Camp has a registered house');
@@ -113,7 +113,7 @@ test('U522: the node-keyed registry maps Crowfoot Camp → the authored house (b
   assert.equal(authoredHouseForNode(null), null, 'a missing node is safe');
 });
 
-test('U522: the LOAD-2 demo seed attaches the multi-room building at its node', () => {
+test('U530: the LOAD-2 demo seed attaches the multi-room building at its node', () => {
   // Under the demo seed, a settlement node gets the authored three-room cottage.
   let w = ensureWorld(newWorld({ seed: 'loaderDemo2', campaignId: 'c' }));
   w = ensureWorld({ ...w, map: { ...w.map, nodes: [{ id: 'n3_demo', name: 'Trailside', nodeType: 'settlement', tags: [] }], currentNodeId: 'n3_demo' } });

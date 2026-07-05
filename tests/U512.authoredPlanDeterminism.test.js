@@ -34,7 +34,9 @@ import { assertWorldInvariants } from '../engine/invariants.js';
 import { isTacticalPosConsistent, roomOfStructCell } from '../engine/map/spatial/tacticalPos.js';
 import { worldHash } from '../engine/worldHash.js';
 import { SLICE_SEED } from '../engine/world/sliceRegion.js';
-import { authoredRawFor, buildAuthoredTopology, buildAuthoredFloorPlan } from '../engine/structures/authoredPlans.js';
+// LOADER-MERGE relock: the authored-plan registry moved from authoredPlans.js into
+// authoredStructure.js (one loader, one registry). Same API, same behavior — import path only.
+import { authoredRawFor, buildAuthoredTopology, buildAuthoredFloorPlan } from '../engine/structures/authoredStructure.js';
 import { enterStructureInterior, moveWithinInterior, exitStructureInterior } from '../engine/structures/interiors.js';
 
 const AUTHORED_STRUCT_ID = 'stgen:v27:n99_mr2c_wake_cottage:0';

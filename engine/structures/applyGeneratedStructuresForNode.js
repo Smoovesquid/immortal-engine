@@ -1,8 +1,10 @@
 import { ensureWorld } from '../state.js';
 import { generateStructuresForNode } from './generateStructures.js';
 import { ensureStructures } from './structuresState.js';
-import { hasAuthoredPlan, makeAuthoredStructure } from './authoredPlans.js';
-import { loadAuthoredStructure } from './authoredStructure.js';
+// LOADER-MERGE: authoredPlans.js was folded into authoredStructure.js (ONE loader, ONE
+// registry). The registry API (hasAuthoredPlan / makeAuthoredStructure) and the direct
+// loader (loadAuthoredStructure) now come from the same module.
+import { hasAuthoredPlan, makeAuthoredStructure, loadAuthoredStructure } from './authoredStructure.js';
 import loaderDemoHouse from '../../packs/base/structures/authored/loader_demo.house.js';
 import threeRoomDemoHouse from '../../packs/base/structures/authored/three_room_demo.house.js';
 

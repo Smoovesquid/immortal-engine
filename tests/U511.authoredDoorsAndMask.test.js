@@ -28,7 +28,9 @@ import {
   doorsOf, exteriorDoorOf, doorBetween, doorCells, structWalkableMask,
   crossable, DOOR_STATES,
 } from '../engine/structures/doors.js';
-import { authoredRawFor, buildAuthoredFloorPlan } from '../engine/structures/authoredPlans.js';
+// LOADER-MERGE relock: the authored-plan registry moved from authoredPlans.js into
+// authoredStructure.js (one loader, one registry). Same API, same behavior — import path only.
+import { authoredRawFor, buildAuthoredFloorPlan } from '../engine/structures/authoredStructure.js';
 import { roomRectCells } from '../engine/map/spatial/tacticalPos.js';
 
 const AUTHORED_STRUCT_ID = 'stgen:v27:n99_mr2c_wake_cottage:0';

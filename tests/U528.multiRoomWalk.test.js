@@ -1,4 +1,4 @@
-// U520 — LOAD-2: walk the whole building — enter, move room-to-room through the
+// U528 — LOAD-2: walk the whole building — enter, move room-to-room through the
 // authored doorways, each room narrates truthfully, no soft-lock
 // (docs/briefs/LOAD-2-multiroom-realnode.md §Tests).
 //
@@ -7,7 +7,7 @@
 // path the playloop calls. It proves the whole point of LOAD-2: the building Tim drew
 // is one you can walk into and move around, room to room, through its doors.
 //
-// Siblings: U518 (all rooms load), U519 (door→adjacency), U521 (determinism), U522 (guardrails).
+// Siblings: U526 (all rooms load), U527 (door→adjacency), U529 (determinism), U530 (guardrails).
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -40,7 +40,7 @@ function worldWithBuilding(seed = 'load2walk') {
 
 const short = (id) => String(id).split(':').slice(-1)[0];
 
-test('U520: enter drops the player into the entry room (the Hall)', () => {
+test('U528: enter drops the player into the entry room (the Hall)', () => {
   const { w: w0, structId } = worldWithBuilding();
   const w = enterStructureInterior(w0, structId);
   const rs = getRoomState(w);
@@ -50,7 +50,7 @@ test('U520: enter drops the player into the entry room (the Hall)', () => {
   assert.equal(rs.room.role, 'hearthroom', 'the entry is the hall (hearth room)');
 });
 
-test('U520: the doors are canon — one exterior + two interior room-to-room doors', () => {
+test('U528: the doors are canon — one exterior + two interior room-to-room doors', () => {
   const { w, structId } = worldWithBuilding();
   const st = w.structures.byId[structId];
   const doors = doorsOf(st);
@@ -58,7 +58,7 @@ test('U520: the doors are canon — one exterior + two interior room-to-room doo
   assert.equal(doors.filter(d => !d.exterior).length, 2, 'two interior room-to-room doors');
 });
 
-test('U520: from the entry the player walks through a doorway into EACH side room and back', () => {
+test('U528: from the entry the player walks through a doorway into EACH side room and back', () => {
   const { w: w0, structId } = worldWithBuilding();
   const wEntry = enterStructureInterior(w0, structId);
   const entryRoom = wEntry.scene.interior.roomId;
@@ -91,7 +91,7 @@ test('U520: from the entry the player walks through a doorway into EACH side roo
   }
 });
 
-test('U520: describeInteriorLayout reports the REAL graph (3 rooms, single storey) — no invented geography', () => {
+test('U528: describeInteriorLayout reports the REAL graph (3 rooms, single storey) — no invented geography', () => {
   const { w: w0, structId } = worldWithBuilding();
   const w = enterStructureInterior(w0, structId);
   const layout = describeInteriorLayout(w);
@@ -103,7 +103,7 @@ test('U520: describeInteriorLayout reports the REAL graph (3 rooms, single store
   assert.ok(layout.atEntry, 'at the entry');
 });
 
-test('U520: a room you can enter is a room you can leave — exit returns outdoors (no soft-lock)', () => {
+test('U528: a room you can enter is a room you can leave — exit returns outdoors (no soft-lock)', () => {
   const { w: w0, structId } = worldWithBuilding();
   // Walk in, deep into a side room, then exit — egress must succeed from anywhere.
   let w = enterStructureInterior(w0, structId);

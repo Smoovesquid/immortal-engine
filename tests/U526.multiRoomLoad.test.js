@@ -1,4 +1,4 @@
-// U518 — LOAD-2: the loader consumes ALL rooms of a multi-room house-builder export
+// U526 — LOAD-2: the loader consumes ALL rooms of a multi-room house-builder export
 // (docs/briefs/LOAD-2-multiroom-realnode.md).
 //
 // LOAD-1 (U513) loaded ONE room. LOAD-2 makes the WHOLE building walkable: every room
@@ -7,8 +7,8 @@
 // three-room fixture (hall + two side rooms) loads clean, every room is present with
 // the right role, and the fixture is the byte-for-byte twin of the engine demo module.
 //
-// Siblings: U519 (door→adjacency reciprocal-compass), U520 (walk it), U521 (determinism),
-// U522 (malformed/disconnected + default boot byte-identical). Pure engine-level.
+// Siblings: U527 (door→adjacency reciprocal-compass), U528 (walk it), U529 (determinism),
+// U530 (malformed/disconnected + default boot byte-identical). Pure engine-level.
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -33,7 +33,7 @@ const roleTagOf = (room) => (room.tags.find(t => t.startsWith('role:')) || '').s
 
 // ── the fixture is real tool output + the demo's twin ──────────────────────────
 
-test('U518: the fixture is a well-formed house-builder/v7 three-room export', () => {
+test('U526: the fixture is a well-formed house-builder/v7 three-room export', () => {
   assert.equal(FIXTURE.schema, 'house-builder/v7');
   assert.equal(FIXTURE.rooms.length, 3, 'LOAD-2 proves a WHOLE building — three rooms');
   for (const r of FIXTURE.rooms) assert.ok(Number(r.w) > 0 && Number(r.h) > 0, `${r.id} has a footprint`);
@@ -42,7 +42,7 @@ test('U518: the fixture is a well-formed house-builder/v7 three-room export', ()
   assert.equal(doors.length, 3, 'a front door + two interior doors');
 });
 
-test('U518: the engine demo module (three_room_demo.house.js) is the byte-for-byte twin of the fixture', () => {
+test('U526: the engine demo module (three_room_demo.house.js) is the byte-for-byte twin of the fixture', () => {
   // The .json drives loadAuthoredStructure (proving it consumes real tool output); the
   // .js module is what the engine demo imports (fs-free in the browser). They MUST be
   // the same house or the test validates a different building than the player walks.
@@ -51,7 +51,7 @@ test('U518: the engine demo module (three_room_demo.house.js) is the byte-for-by
 
 // ── the load: all rooms, each with its role ────────────────────────────────────
 
-test('U518: loadAuthoredStructure yields a valid multi-room structure', () => {
+test('U526: loadAuthoredStructure yields a valid multi-room structure', () => {
   const st = loadAuthoredStructure(FIXTURE, { nodeId: NODE });
   assert.equal(st.id, `authored:${NODE}`);
   assert.equal(st.kind, 'building');
@@ -61,7 +61,7 @@ test('U518: loadAuthoredStructure yields a valid multi-room structure', () => {
   assert.ok(st.tags.includes('authored') && st.tags.includes('loader'));
 });
 
-test('U518: the topology has ALL three rooms, each carrying its authored role', () => {
+test('U526: the topology has ALL three rooms, each carrying its authored role', () => {
   const st = loadAuthoredStructure(FIXTURE, { nodeId: NODE });
   const topo = normalizeTopology(st.topology);
   assert.equal(topo.rooms.length, 3, 'every room Tim drew is present (not just the first)');
@@ -79,7 +79,7 @@ test('U518: the topology has ALL three rooms, each carrying its authored role', 
   assert.ok(roles.has('scullery'), 'a side room carries role:scullery');
 });
 
-test('U518: each room narrates truthfully per its role (roomDetail resolves distinct rooms)', () => {
+test('U526: each room narrates truthfully per its role (roomDetail resolves distinct rooms)', () => {
   const st = loadAuthoredStructure(FIXTURE, { nodeId: NODE });
   const topo = normalizeTopology(st.topology);
   const names = topo.rooms.map(r => roomDetail(r, 'cottage').name);
@@ -94,7 +94,7 @@ test('U518: each room narrates truthfully per its role (roomDetail resolves dist
   assert.ok(roomDetail(bed, 'cottage').furniture.some(f => f.kind === 'bed'), 'the bedchamber has a bed');
 });
 
-test('U518: the authored plan is all three rooms at the drawn geometry, with furniture', () => {
+test('U526: the authored plan is all three rooms at the drawn geometry, with furniture', () => {
   const st = loadAuthoredStructure(FIXTURE, { nodeId: NODE });
   const plan = floorPlan(st); // authored override returns authoredPlan verbatim
   assert.equal(plan.rooms.length, 3);
@@ -108,7 +108,7 @@ test('U518: the authored plan is all three rooms at the drawn geometry, with fur
 
 // ── ensureStructures round-trip ────────────────────────────────────────────────
 
-test('U518: the multi-room structure survives an ensureStructures round-trip unchanged', () => {
+test('U526: the multi-room structure survives an ensureStructures round-trip unchanged', () => {
   const st = loadAuthoredStructure(FIXTURE, { nodeId: NODE });
   const es = ensureStructures({ byId: { [st.id]: st }, nextId: 1 });
   const back = es.byId[st.id];

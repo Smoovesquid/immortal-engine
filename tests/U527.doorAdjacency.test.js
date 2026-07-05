@@ -1,4 +1,4 @@
-// U519 — LOAD-2: doors become reciprocal-compass doorways (the crux)
+// U527 — LOAD-2: doors become reciprocal-compass doorways (the crux)
 // (docs/briefs/LOAD-2-multiroom-realnode.md §2).
 //
 // The house-builder tool records a door as `{kind:'door', x, y, room}` — a SINGLE
@@ -13,7 +13,7 @@
 //   • no room is orphaned; where the drawn doors are ambiguous the loader falls back
 //     to abutment, and any still-unreachable room is repaired to connected.
 //
-// Siblings: U518 (all rooms load), U520 (walk it), U521 (determinism), U522 (guardrails).
+// Siblings: U526 (all rooms load), U528 (walk it), U529 (determinism), U530 (guardrails).
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -34,7 +34,7 @@ const OPP = { north: 'south', south: 'north', east: 'west', west: 'east' };
 
 // ── doors → edges ──────────────────────────────────────────────────────────────
 
-test('U519: an interior door on a shared wall becomes a topology edge', () => {
+test('U527: an interior door on a shared wall becomes a topology edge', () => {
   const st = loadAuthoredStructure(FIXTURE, { nodeId: NODE });
   const topo = normalizeTopology(st.topology);
   // Two interior doors (hall↔west, hall↔east) → two edges. Both edges touch the entry.
@@ -50,7 +50,7 @@ test('U519: an interior door on a shared wall becomes a topology edge', () => {
 
 // ── reciprocal compass ───────────────────────────────────────────────────────────
 
-test('U519: the interior compass is reciprocal (A north→B ⇒ B south→A)', () => {
+test('U527: the interior compass is reciprocal (A north→B ⇒ B south→A)', () => {
   const st = loadAuthoredStructure(FIXTURE, { nodeId: NODE });
   const topo = normalizeTopology(st.topology);
   const exits = interiorCompassLayout(topo);
@@ -65,7 +65,7 @@ test('U519: the interior compass is reciprocal (A north→B ⇒ B south→A)', (
   }
 });
 
-test('U519: a direction with no doorway is a wall (no fold-onto-another-door)', () => {
+test('U527: a direction with no doorway is a wall (no fold-onto-another-door)', () => {
   const st = loadAuthoredStructure(FIXTURE, { nodeId: NODE });
   const topo = normalizeTopology(st.topology);
   // Each side room has exactly ONE doorway (back to the hall) — its other three
@@ -79,7 +79,7 @@ test('U519: a direction with no doorway is a wall (no fold-onto-another-door)', 
 
 // ── plan door direction agrees with the compass ─────────────────────────────────
 
-test('U519: each plan door direction matches the compass exit it represents', () => {
+test('U527: each plan door direction matches the compass exit it represents', () => {
   const st = loadAuthoredStructure(FIXTURE, { nodeId: NODE });
   const topo = normalizeTopology(st.topology);
   const plan = floorPlan(st);
@@ -94,7 +94,7 @@ test('U519: each plan door direction matches the compass exit it represents', ()
 
 // ── connectivity — no orphan ─────────────────────────────────────────────────────
 
-test('U519: every room is reachable from the entry (no orphan / soft-lock)', () => {
+test('U527: every room is reachable from the entry (no orphan / soft-lock)', () => {
   const st = loadAuthoredStructure(FIXTURE, { nodeId: NODE });
   const topo = normalizeTopology(st.topology);
   const entry = topo.rooms.find(r => r.tags.includes('entry')).id;
@@ -104,7 +104,7 @@ test('U519: every room is reachable from the entry (no orphan / soft-lock)', () 
   }
 });
 
-test('U519: an ambiguous export (abutting rooms, no interior door) falls back to abutment', () => {
+test('U527: an ambiguous export (abutting rooms, no interior door) falls back to abutment', () => {
   // Two rooms drawn ABUTTING with only a front door — no interior door between them.
   const abut = {
     kind: 'authored-structure', schema: 'house-builder/v7', name: 'Abut',
@@ -124,7 +124,7 @@ test('U519: an ambiguous export (abutting rooms, no interior door) falls back to
   assert.equal(dist.size, 2, 'both rooms reachable');
 });
 
-test('U519: a floating room (no door, no abutment) is REPAIRED to connected, never orphaned', () => {
+test('U527: a floating room (no door, no abutment) is REPAIRED to connected, never orphaned', () => {
   // Three rooms; the third floats far away with no door and no shared wall.
   const orphaned = {
     kind: 'authored-structure', schema: 'house-builder/v7', name: 'Orphan',

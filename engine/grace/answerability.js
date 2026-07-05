@@ -83,6 +83,17 @@ export function directQuestionIntent(text, world) {
   const t = String(text || '').toLowerCase().trim();
   if (!t) return null;
 
+  // ANS-2 (case 1) — "who is in charge here?" is a leadership INFO ask, but the
+  // word "charge" collides with ACTION_VERB_RE's attack-verb "charge" and would
+  // wrongly null (→ the turn rolls a force action instead of answering). A plain
+  // leadership shape (who + in charge/control/power) is a fact demand, so it
+  // pre-empts the action-verb bail. Secret-control phrasings are still classified
+  // (kind:'place') and DECLINE downstream at the reveal sink — never leaked.
+  const LEADERSHIP_INFO_RE = /\bwho\b[\s\S]{0,20}?\bin\s+(?:charge|control|power)\b/i;
+  if (LEADERSHIP_INFO_RE.test(t) && isQuestionShaped(t)) {
+    return { kind: 'place', addressee: null, parts: [t] };
+  }
+
   // Declared action verbs — even in question form, these are actions.
   if (ACTION_VERB_RE.test(t)) return null;
 

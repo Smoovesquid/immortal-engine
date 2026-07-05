@@ -77,6 +77,19 @@ export function villageBakerWorld() {
   ], 'h56');
 }
 
+// (ANS-2 C26) A settlement with a PUBLIC leadership role present (a representative,
+// as the tallow Wayfarers'-Outpost gate scenario has) plus an innkeeper — so a
+// "who runs this place?" ask can DELIVER the grounded leader (mirrors the gate),
+// distinct from village_baker/trade_town where control is DEFERRED and declines.
+// Also the multi-NPC roster the delegated-talk pick resolves against (case 2).
+export function outpostRepresentativeWorld() {
+  return worldWith([
+    { id: 'npc_rep', name: 'Elska Wardsen', role: 'representative', occupation: 'representative', descriptor: 'weathered representative', hostile: false, originTick: 0 },
+    { id: 'npc_keep', name: 'Dell', role: 'innkeeper', occupation: 'innkeeper', descriptor: 'broad innkeeper', hostile: false },
+    { id: 'npc_guard', name: 'Asher', role: 'guard', occupation: 'guard', descriptor: 'watchful guard', hostile: false }
+  ], 'h58');
+}
+
 // village_baker with a roll already on the ledger (conversation.lastRoll), so a
 // single playerMove can exercise the roll-result-QUERY path ("what did I roll?").
 // ensureWorld preserves a valid lastRoll object (state.js), so the preset survives.
@@ -422,5 +435,6 @@ export const FIXTURES = {
   death_sense_empty: deathSenseEmptyWorld,
   death_sense_with_corpse: deathSenseWithCorpseWorld,
   slice_travel_indoors: sliceTravelIndoorsWorld,
-  held_object_room: heldObjectRoomWorld
+  held_object_room: heldObjectRoomWorld,
+  outpost_representative: outpostRepresentativeWorld
 };

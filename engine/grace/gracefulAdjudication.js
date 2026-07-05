@@ -502,6 +502,33 @@ const NPC_OBSERVER_ROLE_WORDS = new Set(['guard', 'merchant', 'trader', 'elder']
 // (H-51, post-H-49 gate, Confused newbie: "Corwin, who is this person you
 // don't want to name?" self-answered as Corwin, the addressee.)
 const NPC_OBSERVER_LURK_RE = /\blurk(?:ing|er)?\b|\bwatching\s+(?:from|at)\s+(?:the\s+)?(?:edges?|shadows?|a\s+distance|afar)\b|\b(?:at|on|from)\s+the\s+edges?\b|\b(?:don'?t|doesn'?t|won'?t|wouldn'?t|refus(?:e|es|ed)\s+to)\s+(?:want\s+to\s+)?name\b|\bkeep(?:s|ing)?\s+going\s+quiet\b/i;
+// ANS-2 (case 4, object-state) — "where did the letter go?", "where's my staff?",
+// "where'd my worn blade get to?". A question about the LOCATION/whereabouts of a
+// carried or claimed OBJECT (the player believes they were holding it) — answered
+// from INVENTORY canon, never deflected to NPC presence (the gate bug: "where did
+// the letter go?" matched META_NPC_PRESENCE's "where did the <noun> go" and got
+// "Elske hasn't gone anywhere"). Checked BEFORE META_NPC_PRESENCE in the handler.
+//
+// TWO forms only, both TIGHT (the object is 1–2 words, stopped at the verb):
+//   (a) "where('s|did) the/my <obj> go/gone/get to/end up/went/disappear/vanish"
+//   (b) bare "where's my/the <obj>?" — a short possessive whereabouts ask.
+// A LOCATION verb (or the bare short form) is REQUIRED, so "where did this
+// Brokefang COME FROM?" (a provenance/origin question, C4-003) does NOT match —
+// "come/came from" is not a location verb, and the object capture can't swallow
+// it. The person-referent guard (META_OBJECT_LOC_PERSON_RE) additionally keeps
+// "where did the guard go?" / "where did she go?" on the NPC-presence path.
+const OBJ_LOC_VERB = '(?:go|gone|get\\s+to|got\\s+to|end\\s+up|ended\\s+up|went|disappear(?:ed)?|vanish(?:ed)?|run\\s+(?:off|to)|wander(?:ed)?\\s+(?:off|to))';
+const META_OBJECT_LOCATION = new RegExp(
+  // (a) with a location verb
+  '\\bwhere(?:\'?s|s|\\s+is|\\s+did|\\s+has|\\s+have|\'?d|\\s+would)\\b[^?]{0,20}?\\b(?:the|my|that|this)\\s+[a-z][\\w\'-]{2,}(?:\\s+[a-z][\\w\'-]{2,})?\\s+' + OBJ_LOC_VERB + '\\b'
+  // (b) bare short "where's my/the <obj>?" (no trailing verb clause)
+  + '|\\bwhere(?:\'?s|s|\\s+is)\\s+(?:the|my)\\s+[a-z][\\w\'-]{2,}(?:\\s+[a-z][\\w\'-]{2,})?\\s*[?.!]?\\s*$',
+  'i'
+);
+// Person referents that must stay on the NPC-presence path even when the object-
+// location shape matches — a named/roled human, a pronoun, or a generic person
+// head-noun. (Keeps "where did the guard go" / "where did she go" off inventory.)
+const META_OBJECT_LOC_PERSON_RE = /\b(?:they|them|him|her|she|he|someone|somebody|anyone|everyone|stranger|man|woman|person|people|folk|guard|guards|soldier|merchant|trader|smith|blacksmith|innkeeper|priest|healer|elder|scholar|artisan|villager|local|watcher|bandit|lurker|figure|fellow|child|kid)\b/i;
 // NPC-presence queries — "Is that stranger gone?", "Could I look for them around town?"
 // Absence/presence questions about a specific NPC, not a general location survey.
 // (H-16, Rung-1 gate 2026-06-18.)
@@ -639,6 +666,7 @@ export function isMetaQuestion(text) {
     || META_OBJECTIVE.test(t) || META_MECHANICS.test(t) || META_ADVICE.test(t) || META_SELF_KNOWLEDGE.test(t)
     || META_WEAPON_DAMAGE.test(t) || META_NAME.test(t)
     || META_MODIFIER_FORMULA.test(t) || META_SHEET_CONFIRM.test(t)
+    || (META_OBJECT_LOCATION.test(t) && !META_OBJECT_LOC_PERSON_RE.test(t))  // ANS-2 — object-state / inventory-location
     || META_NPC_OBSERVER.test(t) || META_NPC_PRESENCE.test(t) || META_NPC_ROSTER.test(t)  // H-34 R2a
     || META_NPC_PRESENCE_HERE.test(t)  // convo-honesty FIX 2 — "is anyone here?" answers free, no roll
     || META_EXPLICIT_CHECK_A.test(t) || META_EXPLICIT_CHECK_B.test(t)  // H-19
@@ -682,10 +710,33 @@ export function isNullAction(text) {
 // Question-shaped input that isn't a recognized meta-question. In combat this
 // gates the strike-default: a player asking ANYTHING gets an answer, not a
 // sword swing. Interrogative opener or a trailing question mark.
-const QUESTION_SHAPE = /^\s*(?:what|who|whose|where|when|why|how|which|can|could|should|would|will|do|does|did|am|is|are|was|were|help)\b|\?\s*$/i;
+// ANS-2 (case 4, letter-where): a leading INTERJECTION + comma may precede the
+// interrogative opener — "Wait, where did the letter go?" / "Hold on, who is
+// that?" — and the confused newbie's mid-thought correction shape ("Wait, ...?")
+// never ends in "?" at all (the trailing clause "I was just holding it." hides
+// it), so BOTH the `^`-anchored opener AND the `\?$` net missed it and the turn
+// fell through un-answered. Conservative broadening: the interjection group is a
+// closed list, and an INTERROGATIVE WORD must still follow the comma — so a
+// declarative action after the same interjection ("Wait, I pick it up") stays
+// NOT question-shaped and still ACTS (the U463 over-trigger guard). (INT-4-HELD
+// U459-05 flagged this baseline.)
+const QUESTION_INTERJECTION = /^\s*(?:wait(?:\s+a\s+(?:sec(?:ond)?|moment|minute))?|hold\s+on|hold\s+up|hang\s+on|hmm+|oh|ah|er+|um+|uh+|so|now|but|and|okay|ok|actually|hey|huh)\s*,\s*/i;
+const QUESTION_OPENER = /(?:what|who|whose|where|when|why|how|which|can|could|should|would|will|do|does|did|am|is|are|was|were|help)\b/i;
+const QUESTION_SHAPE = new RegExp(
+  '^\\s*' + QUESTION_OPENER.source + '|\\?\\s*$', 'i'
+);
 
 export function isQuestionShaped(text) {
-  return QUESTION_SHAPE.test(String(text || ''));
+  const s = String(text || '');
+  if (QUESTION_SHAPE.test(s)) return true;
+  // Leading interjection + comma, then an interrogative opener (never a bare
+  // action clause). Strip the interjection and re-test the opener anchor.
+  const m = s.match(QUESTION_INTERJECTION);
+  if (m) {
+    const rest = s.slice(m[0].length);
+    if (new RegExp('^\\s*' + QUESTION_OPENER.source, 'i').test(rest)) return true;
+  }
+  return false;
 }
 
 // Info-seeking: the player demands a specific fact — a name, a date/year, who
@@ -867,9 +918,39 @@ const INFO_SEEKING_NAME_ME_RE = /\bname\s+me\s+(?:one|another|a|an|the)\b/i;
 // an ungrounded one honestly declines — never invents a name, EK-1).
 const INFO_SEEKING_NAME_ONE_RE = /\bname\s+(?:me\s+)?(?:one|another|a|an|the|some)\s+(?:[a-z']+\s+){0,3}(?:person|someone|somebody|soul|man|woman|girl|boy|elder|elders|family|families|villager|local|resident|witness|survivor|name)\b/i;
 
+// ANS-2 (case 1) — "who runs / leads / is in charge of / represents this place?".
+// A fact-DEMAND about who holds authority here — routes to the deliver-or-decline
+// contract so lookupGroundedFact → commonKnowledgeAnswer can name the settlement's
+// representative/elder (grounded PUBLIC role), or honestly decline where none
+// exists. The SECRET-control phrasing ("who secretly controls / really runs /
+// pulls the strings") is deliberately caught too: it must reach the SAME info
+// path and DECLINE there (V12-13 reveal-sink law — commonKnowledgeAnswer's
+// leadership branch declines it), never fall to a place-blurb or a gen success.
+// Anchored on who + an authority verb/role; "who runs FASTER"/"who leads the way"
+// (a movement/race sense) are excluded by requiring a place/authority object or a
+// leadership role-noun right after.
+const INFO_SEEKING_LEADERSHIP_RE = /\bwho\b[\s\S]{0,30}?\b(?:runs?|run|leads?|lead|heads?|governs?|govern|controls?|represents?|represent|speaks?\s+for|in\s+charge(?:\s+of)?|in\s+(?:control|power))\b[\s\S]{0,20}?\b(?:this|the|here|it|outpost|inn|village|town|place|settlement|hamlet|camp|hold|keep|region|caravans?)\b|\bwho(?:'?s| is)\s+(?:the\s+)?(?:leader|boss|headman|chief(?:tain)?|elder|representative|reeve|warden|steward|mayor|matriarch|patriarch|one\s+in\s+charge)\b|\bwho\s+(?:secretly|really)\s+(?:runs?|controls?|leads?)\b|\bwho\s+pulls?\s+the\s+strings\b/i;
+
+// Exported (ANS-2 case 1) — is this a "who runs / leads / is in charge of this
+// place?" question? playloop's explore-intent handler uses it to reroute a
+// leadership ask to the grounded-leader delivery ONLY when a leader actually
+// exists (world-aware), so a leaderless place (village_baker, C9-007) still
+// diverges to a survey rather than force-declining as ungrounded history.
+export function isLeadershipQuestion(text) {
+  return INFO_SEEKING_LEADERSHIP_RE.test(String(text || '').toLowerCase());
+}
+
 export function isInfoSeekingText(text) {
   const t = String(text || '').toLowerCase();
   if (!t.trim()) return false;
+  // ANS-2 (case 1) — leadership is DELIBERATELY not force-classified as
+  // info-seeking here. isInfoSeekingText's contract is "if ungrounded, DECLINE";
+  // but a plain "who runs this place?" with no dedicated leader (village_baker,
+  // C9-007) must stay ANSWERABLE via the current proprietor, never fall to the
+  // ungrounded-history decline. Leadership routes instead through
+  // directQuestionIntent → answerOrDeclineQuestion → commonKnowledgeAnswer, which
+  // delivers a grounded leader when one exists and declines secret-control at the
+  // reveal sink. (INFO_SEEKING_LEADERSHIP_RE stays defined for that lookup layer.)
   if (INFO_SEEKING_EXCLUDE_RE.test(t)) return false;
   return INFO_SEEKING_RE.test(t) || INFO_SEEKING_OBSERVE_RE.test(t) || INFO_SEEKING_TOPIC_RE.test(t)
     || INFO_SEEKING_CONCEALMENT_RE.test(t) || INFO_SEEKING_EXISTENTIAL_RE.test(t)
@@ -1330,6 +1411,35 @@ function answerHealth(world) {
   }
 }
 
+// ANS-2 (case 4) — answer a "where did my/the <object> go?" question from
+// INVENTORY canon. The player believes they were holding a thing; a real DM
+// checks the sheet: if it's carried, say where; if canon has no such item (the
+// confused-newbie invented it), correct honestly — NEVER deflect to who's in the
+// room. Read-only; no roll. Returns a string, or null if no object referent
+// resolves (so the handler falls through to its other branches).
+// Determinism: pure function of world + text.
+const OBJ_LOC_STOPWORDS = new Set([
+  'the', 'my', 'that', 'this', 'go', 'gone', 'get', 'went', 'end', 'up',
+  'was', 'had', 'just', 'holding', 'here', 'there', 'it', 'thing', 'to',
+  'did', 'disappear', 'disappeared', 'vanish', 'vanished', 'where',
+]);
+function answerObjectLocation(world, lowerText) {
+  const carried = gatherCarriedItems(world);
+  // A carried item named in the text → it's on you.
+  const held = carried.find(it => itemNameInText(lowerText, String(it.name || '').toLowerCase()));
+  if (held) {
+    return `Your ${String(held.name)} is right where it's always been — on you, in your pack. Nothing's gone missing.`;
+  }
+  // Pull the object phrase after the determiner ("the letter", "my staff") to
+  // name what the player THINKS they had. Skip the where/go scaffolding words.
+  const m = lowerText.match(/\bwhere\b[\s\S]{0,25}?\b(?:the|my|that|this)\s+([a-z][\w'-]*(?:\s+[a-z][\w'-]*){0,2}?)(?=\s+(?:go|gone|get|went|end|disappear|vanish)|\?|\s+i\s+|$)/i);
+  let obj = m ? m[1].trim() : '';
+  obj = obj.split(/\s+/).filter(w => w && !OBJ_LOC_STOPWORDS.has(w)).join(' ').trim();
+  if (!obj) return null;
+  // No such item in canon — the honest correction (the newbie invented it).
+  return `You're not carrying any ${obj} — nothing like that has been in your hands. If you meant something else you're holding, name it and I'll place it.`;
+}
+
 // Player's class/archetype, one line, for folding into a compound name+class
 // ask — distinct from the full identity speech in the META_CHARACTER branch.
 // (H-36a R2)
@@ -1562,6 +1672,52 @@ function mentionsHpAsk(lowerText) {
   return /\b(?:current\s+)?hp\b|\bhit\s?points?\b/i.test(lowerText);
 }
 
+// ANS-2 (case 3, META-SHEET) — the player is asking for their own CHARACTER
+// STATE (HP / gear / class / stats / "what my sheet says"), even when a
+// look-around opener ("I sit up and look around — what gear do I have on me, and
+// my HP and class?") would otherwise let META_LOCATION shadow the whole compound
+// with a room survey. True only when a real sheet field is named, so a bare
+// "look around" never trips it. Composes the same field predicates the compound
+// folds already use — one source of truth for what counts as a sheet ask.
+function mentionsSheetAsk(lowerText) {
+  return mentionsHpAsk(lowerText) || mentionsGearAsk(lowerText)
+    || mentionsCharacterClass(lowerText)
+    || META_CHARACTER.test(lowerText) || META_HEALTH.test(lowerText)
+    || META_SHEET_CONFIRM.test(lowerText)
+    || /\b(?:character\s+sheet|my\s+sheet)\b/i.test(lowerText);
+}
+
+// Exported guard (ANS-2 case 3) — playloop's meta intercept excludes bare
+// look-around (META_LOCATION) so a survey routes through the explore path; but a
+// look-around bundled with a character-state ask must STILL reach handleMetaQuestion
+// (which now answers the sheet + folds the survey). This lets playloop make that
+// one exception without re-deriving the sheet-field vocabulary.
+export function isSheetStateAsk(text) {
+  return mentionsSheetAsk(String(text || '').toLowerCase());
+}
+
+// ANS-2 (case 3) — assemble the character-state answer for a sheet ask: HP, gear,
+// class, stats, whichever the text names. Order: class → HP → gear → stats, each
+// folded only when asked. Reuses the same answerers the META_NAME compound fold
+// uses, so a sheet ask reads identically whether or not a name/look-around opener
+// rode along. Returns a joined string (never empty — falls back to HP as the
+// baseline own-sheet fact a "what's on my sheet" ask always wants).
+function answerSheetCompound(world, lowerText) {
+  const parts = [];
+  const wantsStats = META_STATS_REQ.test(lowerText);
+  if (mentionsCharacterClass(lowerText) || META_CHARACTER.test(lowerText)) {
+    const cl = answerClassLine(world);
+    if (cl) parts.push(cl);
+  }
+  // HP as its own line only when stats aren't requested — answerFullStats already
+  // folds HP, so a "stats + HP" ask shouldn't state hit points twice.
+  if (!wantsStats && (mentionsHpAsk(lowerText) || META_HEALTH.test(lowerText))) parts.push(answerHealth(world));
+  if (mentionsGearAsk(lowerText)) parts.push(describeLoadout(world));
+  if (wantsStats) parts.push(answerFullStats(world));
+  if (!parts.length) parts.push(answerHealth(world));
+  return parts.join(' ');
+}
+
 // Broad LEVEL mention — folds a level answer into a compound name/class/HP
 // ask. Bare word match; safe because every caller already gates on a wider
 // compound-detection condition (a QUERY_CUE or a co-occurring sibling field),
@@ -1754,6 +1910,20 @@ export function handleMetaQuestion(text, world) {
     const total = d20 + mod;
     const pass = total >= dc;
     return `Rolling ${stat}: d20 ${d20} ${fmtMod(mod)} = ${total} vs DC ${dc} — ${pass ? 'success' : 'failure'}.`;
+  }
+
+  // ANS-2 (case 3) — a look-around opener bundled with a CHARACTER-STATE ask
+  // ("I sit up and look around — what gear do I have, and my HP and class?")
+  // must ANSWER THE SHEET, not let META_LOCATION shadow the whole compound with
+  // a room survey (the gate's META-SHEET dead-end). Checked BEFORE the survey
+  // branch: when a real sheet field is named, the sheet is the headline (the
+  // player asked for it explicitly) and a brief survey follows so the glance is
+  // still honored. A bare "look around" (no sheet field) never enters here.
+  if (mentionsSheetAsk(lowerText)
+      && (META_LOCATION.test(lowerText) || META_INTERIOR_LAYOUT.test(lowerText) || META_INTERIOR_LAYOUT_SEEK.test(lowerText))) {
+    const sheet = answerSheetCompound(world, lowerText);
+    const survey = buildLocationSurvey(world, { queryText: lowerText });
+    return survey ? `${sheet} ${survey}` : sheet;
   }
 
   // Location / survey — checked first (most specific phrasings).
@@ -2229,6 +2399,16 @@ export function handleMetaQuestion(text, world) {
       return `Can't put a face to them yet — whoever you mean, ${addressedNpc.name || 'they'} isn't saying.`;
     }
     return `No one's watching you — the place looks empty from here.`;
+  }
+
+  // ANS-2 (case 4) — object-location / inventory-state question, answered from
+  // canon. Checked BEFORE META_NPC_PRESENCE so "where did the letter go?" (which
+  // matches presence's "where did the <noun> go" shape) resolves against the
+  // sheet, not the roster. Person referents ("where did the guard go?") are held
+  // back by META_OBJECT_LOC_PERSON_RE so they still reach the presence branch.
+  if (META_OBJECT_LOCATION.test(lowerText) && !META_OBJECT_LOC_PERSON_RE.test(lowerText)) {
+    const objAns = answerObjectLocation(world, lowerText);
+    if (objAns) return objAns;
   }
 
   // NPC-presence query — "Is that stranger gone for good?" / "Could I look for them?"

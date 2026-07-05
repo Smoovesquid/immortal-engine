@@ -177,6 +177,26 @@ const ROLE_LINES = {
   guard: 'I watch the road so others don\'t have to'
 };
 
+// ANS-2 (case 1) — a PUBLIC leadership question ("who runs / leads / is in charge
+// of / represents this place?"). This is common knowledge a local plainly holds:
+// the settlement's representative / elder / headman is who speaks for it. Distinct
+// from SECRET-CONTROL ("who SECRETLY controls / REALLY runs / pulls the strings /
+// the boss / the cult") — that stays a DEFERRED slot (W-5) and must DECLINE
+// (Biblioteca V12-13: secrets enforced at the reveal sink, never leaked). The
+// exclude clause keeps the two apart so this only ever surfaces the open role.
+const LEADERSHIP_ASK_RE = /\bwho\b[\s\S]{0,30}?\b(?:runs?|run|leads?|lead|heads?|head|in\s+charge(?:\s+of)?|represents?|represent|speaks?\s+for|governs?|govern)\b|\bwho(?:'?s| is)\s+(?:the\s+)?(?:leader|boss|headman|chief(?:tain)?|elder|representative|reeve|warden|steward|mayor|matriarch|patriarch|one\s+in\s+charge)\b/i;
+const LEADERSHIP_SECRET_RE = /\b(?:secretly|really\s+(?:runs?|controls?)|controls?|controlling|pulls?\s+the\s+strings|behind\s+(?:it|this|everything|the\s+curtain)|the\s+cult|shadow|puppet|true\s+power|actually\s+in\s+(?:charge|control))\b/i;
+// The settlement roles that answer "who runs this place", most-authoritative first.
+const LEADERSHIP_ROLES = ['representative', 'elder', 'headman', 'chief', 'chieftain', 'reeve', 'warden', 'steward', 'mayor', 'matriarch', 'patriarch', 'innkeeper'];
+function findSettlementLeader(here) {
+  const npcs = Array.isArray(here?.settlement?.npcs) ? here.settlement.npcs : [];
+  for (const role of LEADERSHIP_ROLES) {
+    const hit = npcs.find(n => n && !n.hostile && String(n.role || '').toLowerCase() === role);
+    if (hit) return hit;
+  }
+  return null;
+}
+
 function bearingBetween(from, to) {
   const dx = (Number(to?.x) || 0) - (Number(from?.x) || 0);
   const dy = (Number(to?.y) || 0) - (Number(from?.y) || 0);
@@ -332,6 +352,40 @@ export function commonKnowledgeAnswer(world, npc, text) {
   }
   if (/\b(?:looking for work|need (?:any )?(?:help|a hand)|any work|hiring)\b/.test(t) && here?.settlement) {
     return { mode: 'services', body: 'Work follows need. Ask where the counters are, or whoever looks busiest — someone always wants a back that bends.' };
+  }
+
+  // ── leadership (ANS-2 case 1): who runs / represents this place ──
+  // A PUBLIC role fact any local holds. The speaker who IS the leader says so
+  // plainly; otherwise they name the known role-holder. §0-safe: name + public
+  // role only, never allegiance or motive. SECRET-control phrasings ("who really
+  // runs / secretly controls / pulls the strings") return null here → the caller's
+  // honest decline owns them (Biblioteca V12-13 reveal-sink law; never a blurb).
+  if (here && LEADERSHIP_ASK_RE.test(t)) {
+    if (LEADERSHIP_SECRET_RE.test(t)) return null;
+    const speakerRole = String(npc.role || '').toLowerCase();
+    const manner = voiceManner(npcVoice(npc));
+    if (LEADERSHIP_ROLES.includes(speakerRole) && speakerRole !== 'innkeeper') {
+      const self = {
+        guarded: `That'd be me. I speak for this place — such as it needs speaking for.`,
+        skittish: `Oh — that's me, I suppose. I'm the ${npc.role} here. I do what I can.`,
+        blunt: `Me. I'm the ${npc.role} here. Anything else?`,
+        open: `That'd be me! I'm the ${npc.role} here — the closest thing this place has to someone in charge.`,
+        even: `That would be me — I'm the ${npc.role} here, and I speak for it.`
+      };
+      return { mode: 'leadership', body: self[manner] || self.even };
+    }
+    const leader = findSettlementLeader(here);
+    if (leader && String(leader.id) !== String(npc.id)) {
+      const lr = String(leader.role || 'representative').toLowerCase();
+      return { mode: 'leadership', body: `That'd be ${leader.name} — the ${lr} here. If anyone speaks for this place, it's them.` };
+    }
+    if (leader && String(leader.id) === String(npc.id)) {
+      // Speaker is the leader but under a role not in the self-branch (innkeeper).
+      return { mode: 'leadership', body: `That'd be me — I keep this place running, for what it's worth.` };
+    }
+    // No leadership role at this settlement — control stays a DEFERRED slot (W-5,
+    // U221): fall through to the caller's honest decline, never invent an answer.
+    return null;
   }
 
   // ── place-knowledge (W-6): the resolver owns the fact; the NPC is a VOICE ──

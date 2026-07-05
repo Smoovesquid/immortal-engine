@@ -58,7 +58,7 @@ import { resolveCompanionTurn } from './combat/companionTurn.js';
 import { castSpell } from './spell/castSpell.js';
 import { classifyOffensiveCast, castConsequence } from './magic/castConsequence.js';
 import { evaluateEncounter, selectCreatures, spawnEncounter } from './combat/encounterSpawn.js';
-import { isMetaQuestion, handleMetaQuestion, isNullAction, isQuestionShaped, META_LOCATION, META_RECAP, isNpcObserverQuery, isInfoSeekingText, isConfrontationChallenge, buildLocationSurvey, windowView, knowsNpcName, describeNpc, INFO_SEEKING_EXCLUDE_RE, answerCapability, hedgedPerceptionRead } from './grace/gracefulAdjudication.js';
+import { isMetaQuestion, handleMetaQuestion, isNullAction, isQuestionShaped, META_LOCATION, META_RECAP, isNpcObserverQuery, isInfoSeekingText, isConfrontationChallenge, buildLocationSurvey, windowView, knowsNpcName, describeNpc, INFO_SEEKING_EXCLUDE_RE, answerCapability, hedgedPerceptionRead, isSheetStateAsk, isLeadershipQuestion } from './grace/gracefulAdjudication.js';
 import { directQuestionIntent } from './grace/answerability.js';
 import { occupantsOfRoom, outdoorOccupants } from './structures/roomOccupancy.js';
 import { getRoomState } from './structures/roomState.js';
@@ -597,6 +597,11 @@ export function applyEgressRepair(prevWorld, text, res, dqIntent) {
   // mode's resolver (DLG-1 / CMB-SINK-1 defaults hold; the gate proved it).
   if (prevWorld?.combat?.active || prevWorld?.scene?.dialogue) return res;
   if (res.world?.combat?.active) return res;
+  // ANS-2 (case 2): a turn that JUST OPENED a dialogue is a definitive resolution
+  // (the delegated-talk pick, or any "talk to X" that entered conversation) — the
+  // greeting is the answer, so the question-egress must not overwrite it with a
+  // presence survey. Scoped to the enter transition (dialogue now, none before).
+  if (res.world?.scene?.dialogue && !prevWorld?.scene?.dialogue) return res;
   // Owed an answer? Recall-biased — the classifier IS the loose test the 06-19
   // verdict wanted (question-shaped | imperative-info, only literal declared-
   // action excluded). Classified against the pre-turn world (the state the input
@@ -1233,7 +1238,12 @@ function playerMoveCore(world, packsById, text, dqIntent) {
       const role = String(npc?.role || '').toLowerCase().trim();
       return (nm && t.includes(nm)) || (role && t.includes(role));
     })());
-  if (!w.combat?.active && !w.scene?.dialogue && isMetaQuestion(text) && !declaredNpcViolence && !declaredSelfHarm && !npcAddressedRecap && !META_LOCATION.test(String(text || '').toLowerCase())) {
+  // ANS-2 (case 3): the bare-look-around exclusion is lifted when the same turn
+  // ALSO asks for character state (HP/gear/class/stats) — that compound must reach
+  // handleMetaQuestion (which answers the sheet + folds a survey), not fall through
+  // to the explore path where the sheet ask is dropped.
+  const bareLookAround = META_LOCATION.test(String(text || '').toLowerCase()) && !isSheetStateAsk(text);
+  if (!w.combat?.active && !w.scene?.dialogue && isMetaQuestion(text) && !declaredNpcViolence && !declaredSelfHarm && !npcAddressedRecap && !bareLookAround) {
     const metaAnswer = handleMetaQuestion(text, w);
     if (metaAnswer) {
       return { world: w, output: { narration: `Wizard: ${metaAnswer}`, mechanics: '' } };
@@ -2192,6 +2202,22 @@ function playerMoveCore(world, packsById, text, dqIntent) {
         const ans = answerOrDeclineQuestion(w, text, 'no-info', dqKind);
         if (ans) return { world: w, output: { narration: ans, mechanics: noInfoCheckResult().mechanicsLine } };
       }
+      // ANS-2 (case 1): a leadership ask ("who is in charge here?", "who's the
+      // leader here?") — where "here" makes isExploreIntent claim it as a survey
+      // — delivers the grounded PUBLIC leader when one EXISTS in canon. Delivered
+      // DIRECTLY from the grounded fact (not answerOrDeclineQuestion, whose
+      // presence pre-check would turn "…here?" into a roster survey). Guarded on a
+      // real grounded fact so a LEADERLESS place (village_baker, C9-007) is NOT
+      // rerouted — it falls through to the survey/diverge, never force-declining
+      // as ungrounded history. Secret-control never grounds (its CK branch returns
+      // null) → it also falls through, then declines downstream at the reveal sink.
+      if (isLeadershipQuestion(text)) {
+        const npc = socialTarget(w, text);
+        const ground = npc ? lookupGroundedFact(w, text, npc) : null;
+        if (ground?.body) {
+          return { world: w, output: { narration: `Wizard: ${ground.body}`, mechanics: noInfoCheckResult().mechanicsLine } };
+        }
+      }
     }
     // H-60: a fabricated person-signalled referent inside an observer question
     // ("what is keeping Brokefang so quiet over there?", "what is Brokefang
@@ -2603,6 +2629,24 @@ function playerMoveCore(world, packsById, text, dqIntent) {
   // and scene.dialogue coexisting). When fighting, a "talk to X" intent falls
   // through to the combat turn rather than crashing. See prose-playtest finding.
   if (talkRef) {
+    // ANS-2 (case 2) — the player DELEGATED the choice ("the nearest person",
+    // "whoever's closest", "give me a name and let me talk to them"). A real DM
+    // doesn't bounce a clarify at a delegated pick — they NAME who's nearest and
+    // open the conversation. Detected by a delegation cue in the full text
+    // (nearest/closest/whoever/you pick/give me a name…) paired with a vague or
+    // "nearest-person" talkRef; a NAMED ref ("talk to Corwin") never matches, and
+    // a bare "talk to someone" with NO delegation cue still clarifies (U219/UX2).
+    const DELEGATED_TALK_RE = /\b(?:nearest|closest|near(?:by|est)|whoever(?:'?s)?(?:\s+(?:closest|nearest|around|here|is\s+(?:closest|nearest|around|here)))?|whomever|anyone\s+(?:will\s+do|you\s+(?:pick|choose|like))|you\s+(?:pick|choose|decide)|give\s+me\s+a\s+name|first\s+(?:person|one)|any\s+of\s+them)\b/i;
+    const vagueTalkRef = /^(?:someone|anyone|somebody|anybody|people|folk|locals?|a local|villagers?|them|him|her|the\s+(?:nearest|closest|first)\s+(?:person|one|folk|villager|local)|(?:the\s+)?nearest|(?:the\s+)?closest|whoever(?:'?s|\s+is)?\s*(?:closest|nearest|around|here)?|whomever)$/i.test(talkRef.trim());
+    if (vagueTalkRef && DELEGATED_TALK_RE.test(String(text || ''))) {
+      const picked = pickDelegatedTalkNpc(w);
+      if (picked?.name) {
+        // Resolve to the concrete name and let the standard talk-open flow (below)
+        // run — same dialogue entry an explicit "talk to <name>" takes, incl. the
+        // same-structure auto-seek. This is the DELEGATED equivalent of naming them.
+        talkRef = String(picked.name);
+      }
+    }
     // "Talk to someone" with no name: a real DM doesn't roll dice at a vague
     // intention — they name who's actually here and ask who you mean.
     if (/^(?:someone|anyone|somebody|anybody|people|folk|locals?|a local|villagers?|them|him|her)$/i.test(talkRef.trim())) {
@@ -7735,7 +7779,12 @@ export function infoExtractionOutcome(world, text, outcome) {
   const V = (key, variants) => `Wizard: ${pickVariant(variants, world, key)}`;
 
   if (ground) {
-    if (outcome === 'success') {
+    // 'no-info' is the NO-ROLL sentinel (common-knowledge / directQuestionIntent
+    // pre-roll gate) — a fact the world simply HOLDS, delivered plainly, never
+    // dressed as a grudging/hedged extraction (the ANS-2 case-1 tone bug: a
+    // representative cheerfully naming herself was suffixed "given reluctantly").
+    // Only a genuine 'mixed' ROLL earns the hedge.
+    if (outcome === 'success' || outcome === 'no-info') {
       return V(`info:s:${ground.body}`, [
         ground.body,
         `The answer comes straight: ${ground.body}`,
@@ -9659,6 +9708,33 @@ function nodeRosterNpcs(world) {
   const nodeId = String(world?.map?.currentNodeId ?? '');
   const node = (world?.map?.nodes || []).find(n => n && String(n.id) === nodeId) || null;
   return Array.isArray(node?.settlement?.npcs) ? node.settlement.npcs : [];
+}
+
+// ANS-2 (case 2) — the player DELEGATED the choice of who to talk to ("the
+// nearest person", "whoever's closest", "give me a name and let me talk to
+// them"). Pick the most-salient reachable NON-hostile NPC deterministically:
+// (1) prefer someone actually in the player's immediate pool (this room / the
+// open beside them); (2) else fall back to the node roster. Within each tier,
+// leadership roles rank first (a representative/elder is the "someone to talk
+// to" a stranger is steered toward), then stable roster order — a pure function
+// of world state, so the pick replays identically. Hostiles never qualify (you
+// greet neighbours, not the bandit). Returns the NPC or null (empty settlement).
+const DELEGATED_TALK_LEADER_ROLES = ['representative', 'elder', 'headman', 'chief', 'chieftain', 'reeve', 'warden', 'steward', 'mayor', 'innkeeper'];
+function pickDelegatedTalkNpc(world) {
+  const rank = (n) => {
+    const role = String(n?.role || '').toLowerCase();
+    const idx = DELEGATED_TALK_LEADER_ROLES.indexOf(role);
+    return idx === -1 ? DELEGATED_TALK_LEADER_ROLES.length : idx;
+  };
+  const order = (pool) => pool
+    .filter(n => n && !n.hostile && String(n.name || '').trim())
+    .map((n, i) => ({ n, i }))
+    .sort((a, b) => (rank(a.n) - rank(b.n)) || (a.i - b.i))
+    .map(x => x.n);
+  const present = order(presentPeoplePool(world));
+  if (present.length) return present[0];
+  const roster = order(nodeRosterNpcs(world));
+  return roster.length ? roster[0] : null;
 }
 
 function sameNpc(a, b) {

@@ -36,6 +36,15 @@
  *   doors: [{ x, y, dir, a, b }],        // opening in the shared wall between two rooms
  *   corridors: []                        // ABOLISHED (FP-1) — always empty; rooms abut
  * }
+ *
+ * MR-2c (docs/briefs/MR-2-FUNCTIONAL-INK.md §MR-2c) — AUTHORED OVERRIDE. When a
+ * structure carries `authoredPlan` (a plain data field set at materialization time
+ * by applyGeneratedStructuresForNode.js / authoredPlans.js, from Tim's own
+ * house-builder drawing), that geometry is returned VERBATIM instead of computed
+ * from topology — what Tim drew is what everyone walks. This is a pure data check
+ * (no new import, no I/O): authoredPlan is already a plain field on the structure
+ * object by the time anything calls floorPlan(), so this branch is exactly as
+ * browser-safe as every other read in this function.
  */
 
 import { interiorCompassLayout } from './topology.js';
@@ -106,6 +115,12 @@ function placeOnGrid(rooms, exits, entryId) {
 }
 
 export function floorPlan(structure) {
+  // MR-2c — AUTHORED OVERRIDE (see the module header). Tim's own drawn geometry
+  // wins outright; the auto-tiler below never runs for this structure.
+  if (structure && typeof structure === 'object' && structure.authoredPlan
+    && typeof structure.authoredPlan === 'object') {
+    return structure.authoredPlan;
+  }
   const topo = structure?.topology && typeof structure.topology === 'object' ? structure.topology : null;
   const rooms = (Array.isArray(topo?.rooms) ? topo.rooms : []).filter(r => r && r.id != null);
   const structId = structIdOf(structure);

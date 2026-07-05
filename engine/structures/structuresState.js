@@ -95,6 +95,14 @@ function ensureStructure(v, fallbackId) {
   // ensureWorld (backfillDoors, state.js), once the map/floorPlan geometry the door
   // cells project onto is fully assembled. This mirrors TAC-1's tactical-pos backfill.
   const doors = ensureDoorsShape(x.doors);
+  // MR-2c — Tim's own drawn floorplan (authoredPlans.js), stored VERBATIM on the
+  // structure. floorPlan.js's override branch reads this instead of computing
+  // geometry from topology. Like buildingType/build/doors: kept only when it's a
+  // well-formed floorPlan-shaped object (has a rooms[] — the one field every
+  // consumer of floorPlan() actually reads), so a structure that carries none is
+  // byte-identical to its pre-MR-2c shape (no WORLD_VERSION bump: old saves and
+  // every un-authored structure never had this field).
+  const authoredPlan = ensureAuthoredPlanShape(x.authoredPlan);
 
   return {
     id,
@@ -106,8 +114,23 @@ function ensureStructure(v, fallbackId) {
     tags,
     ...(buildingType ? { buildingType } : {}),
     ...(build ? { build } : {}),
-    ...(doors ? { doors } : {})
+    ...(doors ? { doors } : {}),
+    ...(authoredPlan ? { authoredPlan } : {})
   };
+}
+
+// MR-2c — shape-only normalization for a stored authoredPlan. This is a TRUSTED,
+// engine-produced blob (authoredPlans.js's buildAuthoredFloorPlan, never hand-typed
+// by a player or an LLM), so normalization here is a light well-formedness check —
+// not a field-by-field re-validation — mirroring how `surfaces` is treated above.
+// Round-trips the object unchanged when it looks like a floorPlan (has rooms[]);
+// drops it (returns null) when the stored value has been corrupted into something
+// that isn't, so a malformed save degrades to procgen rather than throwing deep in
+// a renderer.
+function ensureAuthoredPlanShape(x) {
+  if (!x || typeof x !== 'object' || Array.isArray(x)) return null;
+  if (!Array.isArray(x.rooms) || !x.rooms.length) return null;
+  return x;
 }
 
 // MR-2a — shape-only door normalization (no world context). Keeps a well-formed

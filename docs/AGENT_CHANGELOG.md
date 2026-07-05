@@ -2495,3 +2495,19 @@ other agents. (none active)
 - Note: the second window's `a9d536da` (CARL-SHIP-1 doc row) rode along in the push (it was committed to
   the shared local branch, unpushed). Two-windows-on-one-branch still active; one-window-owns-the-branch
   flag stands.
+
+## 2026-07-05 — Basecamp (second window) — MAP-REAL arc cut from Tim's commission; two parallel lanes dispatched
+
+- Tim's live-session commission: "make this map function properly, not minimal fixes… walls, doors and
+  windows and all architecture drawn on the map to be functionally real" + trees-as-minis in the wild +
+  a standing minis ledger. Interviewed (4 taste calls): **fog-procgen wilderness** (his own counter-
+  proposal — deterministic in seed+position), **mix-by-role minis**, **ALWAYS-OPEN floorplans** (roofs
+  rejected), **full-crunch doors**. Contract: `docs/MAP_REAL.md` (six promises, stages, falsifiers).
+  Asset ledger: `docs/MINIS_WISHLIST.md` (committed 552a97e9; all lanes append).
+- Dispatched parallel-safe lanes: **MR-ORACLE** (harness position-truth probe, U496–U497; RED-by-design
+  vs today's 1 km go-outside teleport; optional mode until MR-1) and **TT-OCC** (renderer, U494–U495;
+  no mini inside foreign ink). **MR-1** (position store + egress-through-the-door) queued behind SL-5's
+  serial slot — brief to Tim at cut. **Test-number note:** next-test-number.sh re-offers U491–493 while
+  OCC-STORY-1's worker is unmerged — U491–497 are ALL claimed by in-flight lanes; next free is U498+.
+- Go-outside 1 km teleport (Tim's live repro, v0.28.32 wake cottage → "go outside") is MR-ORACLE's
+  first scripted repro + MR-1's headline done-when.

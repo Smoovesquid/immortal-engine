@@ -160,7 +160,20 @@ done_when · rollback`.
   haunts the chapel path *because the chapel thread is hot*; a hostile indoors is a burglary IN PROGRESS
   with consequences, not an accident. Still derived + deterministic. Scope on cut.
 
-### TT-OCC — minis never stand inside ink that isn't theirs  ·  Phase 1 (map fidelity)  ·  **QUEUED behind OCC-STORY-1 (verify against final positions, not current scatter)**
+### MAP-REAL — the drawn world IS the simulated world (Tim's commission)  ·  Phase 1/2 arc  ·  **CUT 2026-07-05-pm — contract `docs/MAP_REAL.md`; six promises + interview rulings (fog-procgen wild · mix-by-role minis · ALWAYS-OPEN plans · full-crunch doors)**
+- Symptoms retired by the arc: go-outside 1 km teleport · ghost-Galen · strangers-in-cottage ·
+  DM-invented geography. Stages: MR-ORACLE (dispatched) → MR-1 position truth (queued behind SL-5's
+  serial slot; brief to Tim at cut) → MR-2 functional ink (walls/doors/windows real; house-builder
+  loader) → MR-3 fog-procgen wild + story behaviors on the sheet. Tim's standing asset ledger:
+  `docs/MINIS_WISHLIST.md` (all lanes append).
+
+### MR-ORACLE — position-truth probe in the harness  ·  Phase 0/1  ·  **CUT + DISPATCHED 2026-07-05-pm (harness lane, parallel; U496–U497)**
+- After each scripted transition (wake/exit/enter/walk/journey): assert marker vs fiction anchor +
+  interior moves vs room topology. Designed to run RED on today's build (the 1 km bug becomes a failing
+  test BEFORE the fix — anti-whack-a-mole insurance). Ships as optional `playtest:position` mode; wires
+  into `npm run check` only when MR-1 lands.
+
+### TT-OCC — minis never stand inside ink that isn't theirs  ·  Phase 1 (map fidelity)  ·  **CUT + DISPATCHED 2026-07-05-pm (renderer lane, parallel; U494–U495) — PROMOTED: Tim's always-open-plans ruling makes placement rules the only defense**
 - Renderer-side: outdoor people-minis must not render inside building floorplan ink (TT-INK rooflessness
   makes an outdoor scatter point read as "in your bedroom" — the exact confusion Tim hit). Placement of
   the fix: `public/map` lane (drawModel/placeFromNode token scatter or render3d gating). Done = live

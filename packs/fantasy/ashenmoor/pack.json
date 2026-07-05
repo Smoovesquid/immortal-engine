@@ -6,14 +6,6 @@
     "grim": ["bleak", "rotting", "silent"],
     "blood": ["choking", "drowned", "forgotten"]
   },
-  "toneVectors": {
-    "dread": 0.7,
-    "wonder": 0.3,
-    "warmth": 0.1,
-    "decay": 0.8,
-    "isolation": 0.9,
-    "mystery": 0.75
-  },
   "starterLocations": [
     "the abbey gatehouse",
     "greyfen causeway",
@@ -120,32 +112,6 @@
     "rain falls sideways across the moor (14)",
     "silence presses on your ears like a hand (15)"
   ],
-  "regions": [
-    {
-      "id": "abbey-grounds",
-      "name": "Abbey Grounds",
-      "description": "The ruined abbey of Saint Aldwyn and its surrounding outbuildings.",
-      "adjacent": ["greyfen", "moorland-interior"]
-    },
-    {
-      "id": "greyfen",
-      "name": "Greyfen Village",
-      "description": "A peat-harvesting settlement along a raised causeway.",
-      "adjacent": ["abbey-grounds", "moorland-interior", "harrowgate"]
-    },
-    {
-      "id": "moorland-interior",
-      "name": "Moorland Interior",
-      "description": "The windswept rises and peat bogs of the deep moor, including the standing stones.",
-      "adjacent": ["abbey-grounds", "greyfen", "harrowgate"]
-    },
-    {
-      "id": "harrowgate",
-      "name": "Harrowgate Pass",
-      "description": "A fog-choked defile cutting through the eastern ridge.",
-      "adjacent": ["greyfen", "moorland-interior"]
-    }
-  ],
   "factions": [
     {
       "id": "ember-quill",
@@ -162,62 +128,6 @@
       "pressure": 50,
       "hostility": 25,
       "agenda": "Secure access to the northern peat bogs, find a trade route bypassing Harrowgate."
-    }
-  ],
-  "npcs": [
-    {
-      "id": "npc_maren",
-      "name": "Brother Maren",
-      "archetype": "silent herbalist torn between vow and truth",
-      "faction": "ember-quill",
-      "location": "abbey-grounds",
-      "personality": { "honesty": 0.7, "warmth": 0.6, "volatility": 0.3 },
-      "hook": "Communicates via wax tablet; may share fragments about the undercroft if trusted."
-    },
-    {
-      "id": "npc_thessa",
-      "name": "Warden Thessa",
-      "archetype": "gaunt warden who guards a terrible secret",
-      "faction": "ember-quill",
-      "location": "abbey-grounds",
-      "personality": { "honesty": 0.4, "warmth": 0.1, "volatility": 0.2 },
-      "hook": "Communicates only through terse written notes; will protect the undercroft at any cost."
-    },
-    {
-      "id": "npc_callum",
-      "name": "Reeve Callum",
-      "archetype": "pragmatic reeve desperate for a trade route",
-      "faction": "greyfen-cutters",
-      "location": "greyfen",
-      "personality": { "honesty": 0.8, "warmth": 0.5, "volatility": 0.4 },
-      "hook": "Hires travelers for scouting; wants the northern bogs and a route past Harrowgate."
-    },
-    {
-      "id": "npc_dysart",
-      "name": "Fen Dysart",
-      "archetype": "reckless young cutter who found buried tablets",
-      "faction": "greyfen-cutters",
-      "location": "moorland-interior",
-      "personality": { "honesty": 0.5, "warmth": 0.4, "volatility": 0.7 },
-      "hook": "Has hidden carved tablets found near the standing stones; wants to sell them and leave."
-    },
-    {
-      "id": "npc_sem",
-      "name": "Old Sem",
-      "archetype": "blind hermit who speaks to the fog",
-      "faction": null,
-      "location": "harrowgate",
-      "personality": { "honesty": 0.9, "warmth": 0.6, "volatility": 0.1 },
-      "hook": "Claims to have crossed the pass seventeen times; guides only on his strict conditions."
-    },
-    {
-      "id": "npc_vrenn",
-      "name": "Sister Vrenn",
-      "archetype": "anxious young monk drawn to forbidden knowledge",
-      "faction": "ember-quill",
-      "location": "abbey-grounds",
-      "personality": { "honesty": 0.6, "warmth": 0.5, "volatility": 0.8 },
-      "hook": "The youngest monk; has been caught trying to enter the undercroft and grows more agitated."
     }
   ],
   "threads": [
@@ -242,22 +152,5 @@
       "tension": 35,
       "factions": []
     }
-  ],
-  "seeds": [
-    { "id": "seed_undercroft_voice", "tag": "undercroft", "hint": "A voice answers from below when the fire burns low." },
-    { "id": "seed_tablet_spirals", "tag": "tablets", "hint": "The spirals on the buried tablets match the standing stones exactly." },
-    { "id": "seed_fog_boundary", "tag": "fog", "hint": "The fog is a boundary, not weather. Something presses from the other side." },
-    { "id": "seed_silence_origin", "tag": "history", "hint": "The Silence killed seven monks in a single night. The survivors chose muteness." },
-    { "id": "seed_fire_purpose", "tag": "ritual", "hint": "The perpetual peat fire feeds something beneath the chapter house." },
-    { "id": "seed_sem_crossings", "tag": "guide", "hint": "Old Sem has crossed Harrowgate seventeen times. He lost his eyes on the third." },
-    { "id": "seed_stone_lights", "tag": "stones", "hint": "The lights at the standing stones pulse in time with the fog's thickening." },
-    { "id": "seed_vrenn_dreams", "tag": "undercroft", "hint": "Sister Vrenn dreams of the undercroft nightly. Something is calling her." },
-    { "id": "seed_old_script", "tag": "language", "hint": "The Old Script above the undercroft door is a warning, not a name." },
-    { "id": "seed_causeway_sinking", "tag": "terrain", "hint": "The causeway is sinking. In five years Greyfen will be an island." },
-    { "id": "seed_monks_solstice", "tag": "ritual", "hint": "The solstice vigil at the stones reinforces something. Missing one weakens it." },
-    { "id": "seed_merchant_fate", "tag": "mystery", "hint": "The merchant Dysart told about the tablets entered Harrowgate and never emerged." },
-    { "id": "seed_bell_pattern", "tag": "communication", "hint": "The monks' bell patterns encode a language more complex than their hand signs." },
-    { "id": "seed_peat_bones", "tag": "discovery", "hint": "Ancient bones surface in the cut peat. They are not human." },
-    { "id": "seed_fog_voices", "tag": "fog", "hint": "The voices in the fog speak a language that sounds like the Old Script." }
   ]
 }

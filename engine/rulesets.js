@@ -14,8 +14,54 @@ export function normalizePack(raw) {
     starterLocations: arrayStrings(p.starterLocations),
     starterObjectives: arrayStrings(p.starterObjectives),
     starterGoals: normalizeStarterGoals(p.starterGoals),
-    skills: arrayStrings(p.skills)
+    skills: arrayStrings(p.skills),
+    // PACK-1: admit the two authored fields that already have live engine
+    // consumers (playloop.js seeds threads into w.instrument.threads and drops
+    // factions into w.factions; worldTick escalates thread tension over time).
+    // Normalize shape here so a malformed pack field can never crash the seam —
+    // downstream (introduceThread + ensureFactions) remain the caps/guards they
+    // already are; this is a defensive front door, not a second authority.
+    threads: normalizePackThreads(p.threads),
+    factions: normalizePackFactions(p.factions)
   };
+}
+
+// A pack thread only needs a `name` (the label introduceThread() carries into
+// w.instrument.threads); the rest is preserved for future narration surfacing.
+// Any non-object / nameless entry is dropped rather than crashing the boot.
+function normalizePackThreads(x) {
+  if (!Array.isArray(x)) return [];
+  return x
+    .filter(t => t && typeof t === 'object')
+    .map(t => ({
+      id: String(t.id ?? '').trim(),
+      name: String(t.name ?? '').trim(),
+      description: String(t.description ?? '').trim()
+    }))
+    .filter(t => t.name);
+}
+
+// A pack faction needs an `id` (ensureFactions() filters on it downstream);
+// other fields are clamped/coerced so a malformed pack can't inject garbage.
+function normalizePackFactions(x) {
+  if (!Array.isArray(x)) return [];
+  return x
+    .filter(f => f && typeof f === 'object')
+    .map(f => ({
+      id: String(f.id ?? '').trim(),
+      name: String(f.name ?? '').trim(),
+      description: String(f.description ?? '').trim(),
+      pressure: clampInt01to100(f.pressure),
+      hostility: clampInt01to100(f.hostility),
+      agenda: String(f.agenda ?? '').trim()
+    }))
+    .filter(f => f.id);
+}
+
+function clampInt01to100(v) {
+  const x = Number(v);
+  if (!Number.isFinite(x)) return 0;
+  return Math.max(0, Math.min(100, Math.round(x)));
 }
 
 function normalizeStarterGoals(x) {

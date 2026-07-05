@@ -110,54 +110,6 @@
     "a thin curl of smoke from a homestead chimney (14)",
     "the smell of tallow candles in a low-ceilinged hall (15)"
   ],
-  "regions": [
-    {
-      "id": "thornwall",
-      "name": "Thornwall",
-      "description": "A timber-palisade town of three hundred souls at the River Seil crossing.",
-      "nodes": [
-        { "id": "thornwall-square", "name": "Thornwall market square" },
-        { "id": "thornwall-garrison", "name": "Thornwall garrison tower" },
-        { "id": "thornwall-chapel", "name": "Chapel of the Quiet God" },
-        { "id": "thornwall-smithy", "name": "Thornwall smithy" }
-      ],
-      "adjacency": ["ashenford", "greywood-edge", "seils-crossing"],
-      "seedIds": ["seed-thornwall"]
-    },
-    {
-      "id": "seils-crossing",
-      "name": "Seil's Crossing",
-      "description": "An ancient stone bridge over the River Seil, older than the kingdom itself.",
-      "nodes": [
-        { "id": "seils-bridge", "name": "Seil's Crossing stone bridge" }
-      ],
-      "adjacency": ["thornwall"],
-      "seedIds": ["seed-bridge"]
-    },
-    {
-      "id": "ashenford",
-      "name": "Ashenford",
-      "description": "A cluster of homesteads around a communal well beneath the Ashfall Ridge.",
-      "nodes": [
-        { "id": "ashenford-longhall", "name": "Ashenford longhall" },
-        { "id": "ashenford-well", "name": "Ashenford communal well" },
-        { "id": "ashfall-mines", "name": "Sealed mine entrance" }
-      ],
-      "adjacency": ["thornwall"],
-      "seedIds": ["seed-ashenford"]
-    },
-    {
-      "id": "greywood-edge",
-      "name": "Greywood Edge",
-      "description": "The western boundary of settled land, where the old forest begins.",
-      "nodes": [
-        { "id": "broken-spire", "name": "The Broken Spire" },
-        { "id": "greywood-deep", "name": "Deep Greywood" }
-      ],
-      "adjacency": ["thornwall"],
-      "seedIds": ["seed-greywood"]
-    }
-  ],
   "factions": [
     {
       "id": "crown-watch",
@@ -172,59 +124,6 @@
       "description": "An informal alliance of frontier settlers who believe they must protect their own.",
       "disposition": "independent",
       "seedIds": ["seed-seil-compact"]
-    }
-  ],
-  "npcs": [
-    {
-      "id": "aldric-hale",
-      "name": "Captain Aldric Hale",
-      "role": "Crown Watch garrison commander",
-      "faction": "crown-watch",
-      "historicalFigure": "captain_rath",
-      "traits": ["methodical", "stubborn", "privately worried"],
-      "seedRef": "seed-hale"
-    },
-    {
-      "id": "renna-voss",
-      "name": "Renna Voss",
-      "role": "Provisioner and Compact leader",
-      "faction": "seil-compact",
-      "historicalFigure": "scarlet_compact_quartermaster",
-      "traits": ["sharp", "pragmatic", "deeply rooted"],
-      "seedRef": "seed-voss"
-    },
-    {
-      "id": "warden-maren",
-      "name": "Warden Maren",
-      "role": "Elder of Ashenford",
-      "faction": "seil-compact",
-      "historicalFigure": "covenant_elder",
-      "traits": ["guarded", "knowledgeable", "patient"],
-      "seedRef": "seed-maren"
-    },
-    {
-      "id": "corin-blackthorn",
-      "name": "Corin Blackthorn",
-      "role": "Lone ranger of the Greywood fringe",
-      "historicalFigure": "wild_hunter",
-      "traits": ["skittish", "competent", "exhausted"],
-      "seedRef": "seed-corin"
-    },
-    {
-      "id": "dalla-smith",
-      "name": "Dalla the Smith",
-      "role": "Thornwall blacksmith",
-      "historicalFigure": "forge_master",
-      "traits": ["cheerful", "strong", "quietly terrified"],
-      "seedRef": "seed-dalla"
-    },
-    {
-      "id": "old-gerren",
-      "name": "Old Gerren",
-      "role": "Chapel keeper of the Quiet God",
-      "historicalFigure": "father_len",
-      "traits": ["long-winded", "knowledgeable", "devout"],
-      "seedRef": "seed-gerren"
     }
   ],
   "threads": [
@@ -249,23 +148,5 @@
       "nodeId": "ashfall-mines",
       "seedRef": "seed-ridge-mines"
     }
-  ],
-  "seeds": [
-    { "id": "seed-thornwall", "kind": "place", "label": "Thornwall — frontier town at the river crossing", "tags": ["settlement", "trade", "garrison"] },
-    { "id": "seed-bridge", "kind": "place", "label": "Seil's Crossing — ancient stone bridge with strange customs", "tags": ["landmark", "old-world", "crossing"] },
-    { "id": "seed-ashenford", "kind": "place", "label": "Ashenford — insular mining hamlet on the ridge", "tags": ["settlement", "mining", "ridge"] },
-    { "id": "seed-greywood", "kind": "place", "label": "Greywood Edge — boundary of the old forest", "tags": ["wilderness", "forest", "uncanny"] },
-    { "id": "seed-crown-watch", "kind": "faction", "label": "Crown Watch — under-strength garrison keeping order", "tags": ["law", "military", "distant-crown"] },
-    { "id": "seed-seil-compact", "kind": "faction", "label": "Seil Compact — frontier self-reliance pact", "tags": ["independent", "settlers", "vigilante"] },
-    { "id": "seed-hale", "kind": "npc", "label": "Captain Hale — methodical soldier in a punishing post", "tags": ["authority", "garrison", "investigation"] },
-    { "id": "seed-voss", "kind": "npc", "label": "Renna Voss — provisioner and Compact voice", "tags": ["trade", "leadership", "frontier"] },
-    { "id": "seed-maren", "kind": "npc", "label": "Warden Maren — elder with sealed knowledge", "tags": ["elder", "secrets", "mining"] },
-    { "id": "seed-corin", "kind": "npc", "label": "Corin Blackthorn — lone ranger haunted by what he's seen", "tags": ["ranger", "greywood", "witness"] },
-    { "id": "seed-dalla", "kind": "npc", "label": "Dalla the Smith — forge-keeper with a missing apprentice", "tags": ["craft", "loss", "trusted"] },
-    { "id": "seed-gerren", "kind": "npc", "label": "Old Gerren — chapel keeper and reluctant historian", "tags": ["knowledge", "faith", "history"] },
-    { "id": "seed-greywood-silence", "kind": "event", "label": "The Greywood Silence — something drives life from the deep forest", "tags": ["mystery", "threat", "forest"] },
-    { "id": "seed-bridge-dispute", "kind": "event", "label": "The Bridge Dispute — toll rights ignite faction tension", "tags": ["conflict", "politics", "trade"] },
-    { "id": "seed-ridge-mines", "kind": "event", "label": "The Ridge Mines — old tunnels beneath Ashfall hold secrets", "tags": ["discovery", "underground", "history"] }
-  ],
-  "toneVectors": { "cooperative": 0.4, "grim": 0.6, "blood": 0.5 }
+  ]
 }

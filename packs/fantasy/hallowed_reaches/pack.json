@@ -6,14 +6,6 @@
     "grim": ["watched", "heavy", "ominous"],
     "blood": ["claimed", "devoured", "forsaken"]
   },
-  "toneVectors": {
-    "dread": 0.65,
-    "wonder": 0.7,
-    "warmth": 0.35,
-    "decay": 0.4,
-    "isolation": 0.5,
-    "mystery": 0.9
-  },
   "starterLocations": [
     "the road where the red-hour soldier was found",
     "the long-watch chapter house at the hill's crest",
@@ -131,32 +123,6 @@
     "a meal that does not diminish no matter how much is taken (14)",
     "silence that begins one step past the road's edge and stays there (15)"
   ],
-  "regions": [
-    {
-      "id": "red-garrison",
-      "name": "The Red Garrison",
-      "description": "A military post where the mood is wrong, the fire burns iron-close, and soldiers yield before you speak.",
-      "adjacent": ["long-watch", "counting-roads"]
-    },
-    {
-      "id": "long-watch",
-      "name": "The Long Watch Chapter",
-      "description": "The hill-crest chapter house of the Order of the Long Watch, where vigils are kept and broken.",
-      "adjacent": ["red-garrison", "counting-roads", "grey-roads"]
-    },
-    {
-      "id": "counting-roads",
-      "name": "The Counting Roads",
-      "description": "Merchant roads where wealth moves in ways that do not add up, and the crows collect bright things.",
-      "adjacent": ["red-garrison", "long-watch", "grey-roads"]
-    },
-    {
-      "id": "grey-roads",
-      "name": "The Grey Roads",
-      "description": "The passes and furrows where duties were abandoned and the unfinished waits in the cold.",
-      "adjacent": ["long-watch", "counting-roads"]
-    }
-  ],
   "factions": [
     {
       "id": "order-long-watch",
@@ -181,89 +147,6 @@
       "pressure": 45,
       "hostility": 20,
       "agenda": "Maintain the flow of trade. Find who has been drawing on the old accounts. Settle the debt that the founding merchant's heir does not know exists."
-    }
-  ],
-  "npcs": [
-    {
-      "id": "npc_harwick",
-      "name": "Sergeant Harwick",
-      "archetype": "veteran warrior who killed without anger and cannot understand why he cannot sleep",
-      "faction": "crimson-brotherhood",
-      "location": "red-garrison",
-      "personality": { "honesty": 0.8, "warmth": 0.3, "volatility": 0.6 },
-      "hook": "Killed a surrendered man three months ago. Did not enjoy it. Believed it was necessary. KHORRUN registered the deed with or without justification; Harwick has been Khorrun's since, and the Red Hour has been finding him at the garrison. He does not understand why the Brotherhood wants him; he has not said no."
-    },
-    {
-      "id": "npc_davin",
-      "name": "Novice Davin",
-      "archetype": "chapter novice who knows what broke his vigil but believes naming it will make it real",
-      "faction": "order-long-watch",
-      "location": "long-watch",
-      "personality": { "honesty": 0.55, "warmth": 0.6, "volatility": 0.7 },
-      "hook": "Left the vigil tower two hours before dawn. Claims he heard something and ran. What he heard was ACEDIEL's grey quiet — the numbness that feels like peace. He sat down in the road and stopped wanting to go back. This is not a crisis of faith; it is a visitation. He does not have a name for it."
-    },
-    {
-      "id": "npc_pellin",
-      "name": "Pellin Ousse",
-      "archetype": "merchant who has more money than he can account for and is afraid to spend it",
-      "faction": "hollow-guild",
-      "location": "counting-roads",
-      "personality": { "honesty": 0.7, "warmth": 0.5, "volatility": 0.2 },
-      "hook": "The guild's third-generation heir. The accounts do not balance in his favor — they balance in his favor MORE than they should. Coins arrive. Debts settle. He is afraid the luck will run out, not realizing the luck has a name and a cost that will not be presented until it cannot be refused."
-    },
-    {
-      "id": "npc_lord_verran",
-      "name": "Lord Verran",
-      "archetype": "lord whose certainty that he is the most important thing in any room has become structural",
-      "faction": null,
-      "location": "red-garrison",
-      "personality": { "honesty": 0.3, "warmth": 0.2, "volatility": 0.4 },
-      "hook": "VAUNTRETH's gaze has been on Verran for years. The mirrors in his hall all face inward. His name precedes him everywhere; he takes this as evidence of stature, not a sign. Has recently demanded the iron shrine be rededicated with his family's crest above the original inscription. The long-watch prior has refused once."
-    },
-    {
-      "id": "npc_cembra",
-      "name": "Cembra Vael",
-      "archetype": "craftsman who destroyed a rival's work and is now unable to do his own",
-      "faction": null,
-      "location": "counting-roads",
-      "personality": { "honesty": 0.65, "warmth": 0.4, "volatility": 0.5 },
-      "hook": "ISS has him. Burned a rival's workshop a season ago. The rival's best work was inside. Cembra has not finished a piece since. He does not draw the connection. He thinks he has lost inspiration; what he has lost is the ability to create something the Green Eye will not immediately want to consume."
-    },
-    {
-      "id": "npc_mira_ousse",
-      "name": "Mira Ousse",
-      "archetype": "heir of a hollow merchant who suspects the fortune but needs someone to tell her what she's inheriting",
-      "faction": "hollow-guild",
-      "location": "counting-roads",
-      "personality": { "honesty": 0.9, "warmth": 0.65, "volatility": 0.35 },
-      "hook": "Pellin's sister. Has read the founding accounts. Knows the first entry is wrong — a founding gift from an unnamed patron that does not correspond to any loan or partnership in the records. She has been calling it an accounting error. She would like someone to tell her it is not."
-    },
-    {
-      "id": "npc_augreth",
-      "name": "The Augur at the Hill",
-      "archetype": "augur who reads correctly but refuses to interpret — that is your labor, not hers",
-      "faction": "order-long-watch",
-      "location": "long-watch",
-      "personality": { "honesty": 1.0, "warmth": 0.4, "volatility": 0.0 },
-      "hook": "Has been reading signs on the hill outside town for thirty years. Will name the god whose signs she sees in a place, accurately, with no commentary. Has named HAGRETH on the counting roads, KHORRUN at the garrison, VAUNTRETH at the lord's hall, ISS at Cembra's forge. Has not said why this many gods are active in one region at the same time. Believes you already know."
-    },
-    {
-      "id": "npc_prior_essen",
-      "name": "Prior Essen",
-      "archetype": "long-watch prior who knows what is in the cellar and has decided it is not the player's business yet",
-      "faction": "order-long-watch",
-      "location": "long-watch",
-      "personality": { "honesty": 0.7, "warmth": 0.55, "volatility": 0.1 },
-      "hook": "The prior of the long-watch chapter. Has the cellar locked. Has a reason. Will tell the player what is down there when the player has demonstrated they can hold a difficult thing without breaking it. ERRAN has been with the prior for decades — a quiet fidelity to a laborious task. He is not hiding the cellar out of fear; he is gatekeeping out of craft."
-    },
-    {
-      "id": "npc_aldous_vane",
-      "name": "Aldous Vane",
-      "archetype": "village historian who approaches newcomers with an offer to see the region's most historically significant — and most dangerous — sites",
-      "faction": "crimson-brotherhood",
-      "location": "first-settlement",
-      "personality": { "honesty": 0.15, "warmth": 0.95, "volatility": 0.05 },
-      "hook": "Approaches newcomers in the first village with genuine enthusiasm and a pamphlet. His historical knowledge is real and his interest in the player is real. So is his reason for the tour. He has been mapping KHORRUN's consecration sites through guided historical tours for nine years — deaths at places made holy by prior violence are, in the theology he practices quietly, a form of annotation. He always has a reason to wait at the entrance: the old knee, the acoustics are better from here, he has seen this one many times already. He takes notes in a small leather book he keeps inside his coat. The early pages are pure history. The recent pages describe each death — manner, location, approximate time — in the same even tone. The Brotherhood uses his route pamphlets as their consecration schedule. He does not consider himself a murderer. He considers himself a historian who understands that history requires witnesses. The augur at the hill named KHORRUN in the first village before anyone told her about the Brotherhood. She checked the inn register first."
     }
   ],
   "threads": [
@@ -323,27 +206,5 @@
       "tension": 85,
       "factions": ["order-long-watch", "crimson-brotherhood", "hollow-guild"]
     }
-  ],
-  "seeds": [
-    { "id": "seed_harwick_sleep", "tag": "wrath", "hint": "Harwick has not slept more than two hours at a stretch since the killing. He describes the sound of iron in the dark." },
-    { "id": "seed_coins_cold", "tag": "greed", "hint": "The guild's coins are cold to the touch even in summer. Pellin has mentioned this to no one." },
-    { "id": "seed_shrine_inscription", "tag": "pride", "hint": "The iron shrine's original inscription reads: 'what was spent here was not wasted.' Lord Verran wants his family name beneath it." },
-    { "id": "seed_davin_road", "tag": "sloth", "hint": "Davin sat down in the road at the third hour and felt, for the first time in his life, that nothing he might do would matter. He sat there until dawn." },
-    { "id": "seed_cembra_fire", "tag": "envy", "hint": "The workshop burned in less than an hour. The rival's masterwork, a piece Cembra once said was better than anything he could do, was inside. It is not recoverable." },
-    { "id": "seed_founding_entry", "tag": "greed", "hint": "The guild's founding ledger entry reads: 'Gift from an unnamed patron, principal to be returned at the patron's request.' Three generations have passed. No request has been made yet." },
-    { "id": "seed_augur_count", "tag": "convergence", "hint": "The augur told the long-watch prior she has named four gods at once once before, forty years ago. She did not say what happened that year. She said it was not in the records." },
-    { "id": "seed_verran_mirrors", "tag": "pride", "hint": "Every mirror in Lord Verran's hall faces inward. He had them turned years ago. He does not remember why." },
-    { "id": "seed_brotherhood_arrival", "tag": "wrath", "hint": "The Crimson Brotherhood members are arriving alone, not in groups. Seven in the last month. They are not recruiting at the garrison; they are waiting for something." },
-    { "id": "seed_cellar_sound", "tag": "diligence", "hint": "The novices have heard something in the cellar on three separate nights. Prior Essen says it is the building settling. His expression when he says this does not match his words." },
-    { "id": "seed_grey_laborer", "tag": "diligence", "hint": "The laborer in the furrow fields has been at the same task for eight months. When asked what he is building, he says he does not know. He says the instructions were clear but the purpose was not written down." },
-    { "id": "seed_erran_tools", "tag": "diligence", "hint": "The grey-roads laborer's tools are old and should have broken by now. They have not. He has not thought to wonder about this." },
-    { "id": "seed_mira_entry", "tag": "greed", "hint": "Mira Ousse has written the founding entry out on a separate sheet and has been asking, quietly, whether anyone recognizes the patron's description. No one does." },
-    { "id": "seed_khorrun_taste", "tag": "wrath", "hint": "Three people at the garrison have independently described the air as tasting of iron at night. None of them know the others said this." },
-    { "id": "seed_four_gods", "tag": "convergence", "hint": "Four gods active in the same region is unusual. Seven would be the full half. The augur has not said how many more she would expect before she considers the region's soul in danger of settling permanently around its vices." },
-    { "id": "seed_vane_notebook", "tag": "chronicler", "hint": "Vane's notebook splits in character at page forty-three. The first half is meticulous history. The last dozen entries describe the manner, location, and approximate time of each death on his tours, in the same even handwriting." },
-    { "id": "seed_vane_never_inside", "tag": "chronicler", "hint": "Aldous Vane has given tours for forty years. He has never entered any dangerous site he recommends. He has a specific, reasonable explanation ready for every occasion this has come up." },
-    { "id": "seed_vane_route_maps", "tag": "chronicler", "hint": "The Crimson Brotherhood's consecration route maps match Vane's published tour pamphlets exactly, including three sites he only identified this season and has not yet toured." },
-    { "id": "seed_vane_annotation", "tag": "chronicler", "hint": "When asked what he means by 'history requires witnesses,' Vane smiles and says places do not remember themselves. He means something else. His expression does not change when he says it." },
-    { "id": "seed_vane_augur", "tag": "chronicler", "hint": "The augur named KHORRUN in the first village before anyone told her about the Brotherhood. She consulted the inn register first. She has not said Aldous Vane's name directly. She has not needed to." }
   ]
 }

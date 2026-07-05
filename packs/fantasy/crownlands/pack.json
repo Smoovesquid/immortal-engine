@@ -6,14 +6,6 @@
     "grim": ["treacherous", "hollow", "watched"],
     "blood": ["poisoned", "blackened", "overthrown"]
   },
-  "toneVectors": {
-    "dread": 0.5,
-    "wonder": 0.4,
-    "warmth": 0.3,
-    "decay": 0.55,
-    "isolation": 0.4,
-    "mystery": 0.8
-  },
   "starterLocations": [
     "the regency gatehouse",
     "the old court road",
@@ -120,32 +112,6 @@
     "a torch burning in an unoccupied tower room (14)",
     "every door in the east wing is slightly ajar (15)"
   ],
-  "regions": [
-    {
-      "id": "regency-seat",
-      "name": "The Regency Seat",
-      "description": "The court and garrison of the acting regent — cold, formal, watchful.",
-      "adjacent": ["old-estate", "merchant-quarter", "crossroads"]
-    },
-    {
-      "id": "old-estate",
-      "name": "The Divided Estate",
-      "description": "A great house split between rival heirs, its east wing locked, its staff diminished.",
-      "adjacent": ["regency-seat", "crossroads"]
-    },
-    {
-      "id": "merchant-quarter",
-      "name": "The Merchant Quarter",
-      "description": "Harbor docks and counting houses where the Merchant League moves letters and people.",
-      "adjacent": ["regency-seat", "crossroads"]
-    },
-    {
-      "id": "crossroads",
-      "name": "The Crossroads",
-      "description": "Where three roads meet and three old women are sometimes found. Not always the same ones.",
-      "adjacent": ["regency-seat", "old-estate", "merchant-quarter"]
-    }
-  ],
   "factions": [
     {
       "id": "the-regency",
@@ -170,80 +136,6 @@
       "pressure": 45,
       "hostility": 15,
       "agenda": "A stable ruler who will honor their old trade agreements. They are not particular about which one."
-    }
-  ],
-  "npcs": [
-    {
-      "id": "npc_aldric",
-      "name": "Aldric",
-      "archetype": "exiled lord living as a woodcutter who will not say his name",
-      "faction": null,
-      "location": "crossroads",
-      "personality": { "honesty": 0.7, "warmth": 0.5, "volatility": 0.2 },
-      "hook": "Has lived under a false name for four years. Knows the estate's east wing key is inside the garrison chapel. Will not act unless someone shows him the letter."
-    },
-    {
-      "id": "npc_breck",
-      "name": "Ensign Breck",
-      "archetype": "garrison lieutenant corroded by unearned suspicion",
-      "faction": "the-regency",
-      "location": "regency-seat",
-      "personality": { "honesty": 0.5, "warmth": 0.3, "volatility": 0.85 },
-      "hook": "Believes someone in the garrison is passing letters to the exiled lord. He is not wrong, but he suspects the wrong person."
-    },
-    {
-      "id": "npc_maret",
-      "name": "Maret",
-      "archetype": "courier traveling in disguise on a mission she cannot explain",
-      "faction": "merchant-league",
-      "location": "merchant-quarter",
-      "personality": { "honesty": 0.6, "warmth": 0.55, "volatility": 0.4 },
-      "hook": "Carries a letter she has not read and was told not to. Has been recognized once already. Needs a place to wait out the night."
-    },
-    {
-      "id": "npc_calder",
-      "name": "Calder",
-      "archetype": "young man paralyzed by grief for a father he barely knew",
-      "faction": null,
-      "location": "old-estate",
-      "personality": { "honesty": 0.75, "warmth": 0.4, "volatility": 0.6 },
-      "hook": "The eldest heir. His father died in the garrison infirmary three weeks ago. He arrived at the estate to find it already divided by his younger siblings."
-    },
-    {
-      "id": "npc_wynne",
-      "name": "Wynne",
-      "archetype": "apothecary who measures truth in what she does not say",
-      "faction": "wandering-faithful",
-      "location": "crossroads",
-      "personality": { "honesty": 0.5, "warmth": 0.65, "volatility": 0.15 },
-      "hook": "Prepared the draught that the garrison infirmary ordered the night of the old lord's death. Has said nothing. Will say nothing unless given a reason to believe silence is more dangerous."
-    },
-    {
-      "id": "npc_sevin",
-      "name": "Sevin",
-      "archetype": "surviving twin carrying the wrong name and the right guilt",
-      "faction": "merchant-league",
-      "location": "merchant-quarter",
-      "personality": { "honesty": 0.4, "warmth": 0.7, "volatility": 0.5 },
-      "hook": "Was declared drowned. Has been living as their twin's identity for seven months. The twin is alive too, somewhere in the harbor district."
-    },
-    {
-      "id": "npc_harevast",
-      "name": "Lord Harevast",
-      "archetype": "old lord who gave everything away and now has nothing to ask",
-      "faction": null,
-      "location": "old-estate",
-      "personality": { "honesty": 0.9, "warmth": 0.6, "volatility": 0.05 },
-      "hook": "Divided the estate among three children while still living, expecting gratitude. Has been given a small room near the kitchen. No longer receives visitors by default."
-    },
-    {
-      "id": "npc_the_three",
-      "name": "The Three at the Crossroads",
-      "archetype": "three crones at a crossroads who finish each other's sentences",
-      "faction": null,
-      "location": "crossroads",
-      "personality": { "honesty": 0.95, "warmth": 0.3, "volatility": 0.1 },
-      "hook": "Always found at the crossroads between midnight and dawn. Speak in thirds — one begins, another continues, the third ends. They know about the exiled lord, the letter, and the twin. They will not be asked twice."
     }
   ],
   "threads": [
@@ -282,22 +174,5 @@
       "tension": 25,
       "factions": []
     }
-  ],
-  "seeds": [
-    { "id": "seed_letter_unsigned", "tag": "correspondence", "hint": "The letter in the garrison fire was unsigned. The handwriting matches the regent's secretary." },
-    { "id": "seed_aldric_key", "tag": "exile", "hint": "Aldric knows where the east wing key is hidden. He left it there himself, the night he was removed." },
-    { "id": "seed_breck_planted", "tag": "jealousy", "hint": "The suspicion consuming Breck was put there deliberately. Someone wanted him distracted." },
-    { "id": "seed_maret_contents", "tag": "courier", "hint": "The letter Maret carries is a confession, not a message. The person who wrote it is now dead." },
-    { "id": "seed_calder_will", "tag": "inheritance", "hint": "A second will exists. The youngest heir knows where it is. They will not produce it voluntarily." },
-    { "id": "seed_wynne_silence", "tag": "apothecary", "hint": "Wynne prepared a sleeping draught, not a poison. But she does not know that what she prepared was altered before it was used." },
-    { "id": "seed_twin_names", "tag": "identity", "hint": "Sevin and their twin have been using each other's names since childhood. Not all of their debts are their own." },
-    { "id": "seed_harevast_regret", "tag": "inheritance", "hint": "Lord Harevast divided the estate to prevent war. He believed they would still include him. He was wrong about both things." },
-    { "id": "seed_three_accurate", "tag": "prophecy", "hint": "The Three at the Crossroads have spoken seven futures so far. All seven have come to pass. The eighth is still unspoken." },
-    { "id": "seed_regency_heir", "tag": "succession", "hint": "The Regency is not neutral on succession. One council member has a daughter. The paperwork is already drafted." },
-    { "id": "seed_league_bets", "tag": "politics", "hint": "The Merchant League backed Aldric's father. They have never publicly repudiated him. This is on purpose." },
-    { "id": "seed_faithful_records", "tag": "history", "hint": "The Wandering Faithful have records of every exile the Regency has issued. They keep two copies." },
-    { "id": "seed_east_wing_voice", "tag": "mystery", "hint": "Someone has been living in the east wing for at least three weeks. The food is going somewhere." },
-    { "id": "seed_chapel_grave", "tag": "garrison", "hint": "The garrison chapel has a grave that postdates the chapel's founding by thirty years. No name on the stone." },
-    { "id": "seed_crossroads_dawn", "tag": "prophecy", "hint": "The Three have been found at the crossroads for over a hundred years. No one who has asked their age has received the same answer twice." }
   ]
 }

@@ -113,18 +113,35 @@ test('U454-D: deterministic ×2 — same seed through the threaded (raw-pack) cr
   assert.equal(h1, h2, 'threaded pack boot must be deterministic under a fixed seed');
 });
 
-test('U454-E: default fantasy/tallow boot (real normalizePack idiom) is untouched by this fix — worldHash unchanged', () => {
+test('U454-E: default fantasy/tallow boot (real normalizePack idiom) — post-PACK-1, threads are admitted and seed deterministically', () => {
   const PACKS = loadNormalizedPacks();
-  // Confirm the reachability argument in code: normalizePack drops `threads`,
-  // so the crashing branch is provably not taken on this path.
-  assert.equal(PACKS.fantasy.threads, undefined, 'normalizePack must not carry a threads field through');
-  assert.equal(PACKS.crownlands.threads, undefined, 'normalizePack must not carry a threads field through');
+  // PACK-1 (2026-07-04) admitted `threads`/`factions` through normalizePack's
+  // whitelist, so the crashing branch this file guards IS now reachable via the
+  // production idiom — and the raw-pack safety proven in U454-A..D is what keeps
+  // it from throwing. normalizePack now carries a (possibly empty) threads array
+  // rather than dropping the field entirely.
+  assert.ok(Array.isArray(PACKS.fantasy.threads), 'PACK-1: normalizePack now carries a threads array (fantasy base = empty)');
+  assert.ok(Array.isArray(PACKS.crownlands.threads) && PACKS.crownlands.threads.length >= 2,
+    'PACK-1: normalizePack now carries crownlands story threads through intact');
 
   const w = newWorld({ seed: 'tallow', fate: 0.3, mode: 'escape', pack: { primaryId: 'fantasy', mixerId: null } });
   const result = beginAdventure(w, PACKS);
-  // Captured from HEAD (pre-fix, via the identical normalizePack idiom) on
-  // 2026-07-04 before editing engine/playloop.js line ~292:
-  const HASH_BEFORE_FIX = '1de2d18248adf6a30d6e5673f77ac7670960e88a0da74f047a56071a3c20ce0a';
-  assert.equal(worldHash(result.world), HASH_BEFORE_FIX,
-    'default fantasy/tallow boot worldHash must be byte-identical before/after the threadRng.float->nextFloat fix (this path never reaches pack.threads)');
+  // The fantasy default merges the four threaded sub-regions, so the tallow boot
+  // now seeds authored story threads into the instrument (fate 0.3 => 1 thread).
+  assert.ok((result.world.instrument?.threads || []).length >= 1,
+    'PACK-1: default tallow boot must now seed at least one pack thread into the instrument');
+
+  // RELOCKED for PACK-1: the default boot's worldHash shifts ONCE because
+  // w.instrument.threads now carries a seeded entry (worldHash includes
+  // w.instrument). This is deliberate content enrichment, not a determinism
+  // break — the boot remains byte-identical to itself under replay (asserted
+  // ×2 below). Captured 2026-07-04 after admitting threads through normalizePack.
+  const HASH_AFTER_PACK1 = '982c62b5069e81e7e369a3be9afc040f5bdc3112e1ad925d3d477dcec0f25dac';
+  assert.equal(worldHash(result.world), HASH_AFTER_PACK1,
+    'default fantasy/tallow boot worldHash pinned post-PACK-1 (threads now seeded)');
+
+  // Same seed => identical world (the enrichment is deterministic).
+  const w2 = newWorld({ seed: 'tallow', fate: 0.3, mode: 'escape', pack: { primaryId: 'fantasy', mixerId: null } });
+  assert.equal(worldHash(beginAdventure(w2, PACKS).world), HASH_AFTER_PACK1,
+    'default tallow boot must be deterministic ×2 after PACK-1');
 });

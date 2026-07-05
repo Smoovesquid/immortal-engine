@@ -18,6 +18,15 @@ import { exitsFrom, ensureMap } from '../../engine/map/mapState.js';
 import { makeRng, seedFromString } from '../../engine/rng.js';
 import { outdoorOccupants } from '../../engine/structures/roomOccupancy.js';
 import { syntheticPlanForBuilding } from '../../engine/structures/settlementFootprint.js';
+// MR-1b — the player token reads the engine's canonical tactical `pos` instead of
+// a fixed lane-entry seed. floorPlan is the REAL engine room graph for a
+// struct-frame pos (NOT the catalog `getPlan()` plan this module draws buildings
+// from — see the note above playerTokenPlaceUnit below); structCellToPlaceUnit is
+// worldSpace.js's frame transform, factored out of structCellToWu so this
+// place-unit-space renderer can consume the SAME pinned cell math oneMap.js's
+// wu-space renderer already uses (one sizing truth, two output spaces).
+import { floorPlan } from '../../engine/structures/floorPlan.js';
+import { structCellToPlaceUnit } from './worldSpace.js';
 
 const TIER_STEP = 5; // grid-distance per danger rung
 
@@ -198,6 +207,58 @@ function aabbHitsCorridor(a, roads, half) {
     }
   }
   return false;
+}
+
+// MR-1b — the player token's place-unit position, read from the engine's
+// canonical tactical `pos` (docs/POSITION_AS_CANON.md) instead of a fixed seed.
+//
+//   pos.frame === 'struct:<id>'  → project the cell into the SAME building this
+//     village drew, via the frame transform (worldSpace.js's structCellToPlaceUnit)
+//     — but grounded against the REAL engine plan (floorPlan(structure)), not the
+//     catalog `getPlan()` plan the building entry carries for drawing. This mirrors
+//     oneMap.js's resolveEntityWuFromWorld exactly (its plan is likewise re-derived
+//     from world.structures, never the caller's drawn-plan reference) — one
+//     projection contract, two output spaces (wu there, place-units here).
+//   pos.frame === 'region'       → outdoors at this node. This module's village
+//     layout is an independently-seeded micro-scatter (its own road spine, its own
+//     local origin) with NO shared coordinate lattice against the engine's region
+//     cells (unlike oneMap.js's wu space, which anchors everything to nodeToWu) —
+//     there is no canonical sub-node point to project a region cell onto here, so
+//     outdoors resolves to the fallback (documented, not a bug: "somewhere outside,
+//     near the village entrance" is the honest resolution this layout can offer).
+//   no pos / ungroundable pos    → the fallback (legacy lane-entry seed).
+//
+// Precedence vs. TT-OCC's no-foreign-ink rule (NPC_MARGIN_LU, above): the player
+// is exempt from that exclusion by design (see the comment at the token push
+// below) — but even so, a struct-frame projection can NEVER land in a room whose
+// ink isn't the engine's own claim: the pos invariant (engine/map/spatial/
+// tacticalPos.js's isTacticalPosConsistent) already guarantees
+// roomOfStructCell(pos) === scene.interior.roomId BEFORE this function ever runs,
+// and structCellToPlaceUnit performs a pure linear rescale of that SAME cell —
+// it does not re-derive room ownership, so it cannot disagree with the engine's
+// own room claim. The DOOR/doorstep cell (MR-1a's egress fix) is by construction
+// the room the engine says you're in, so it always wins; there is no live case
+// where this projection and the engine's room claim diverge.
+//
+// Pure: no mutation, no rng. Never throws — any lookup failure degrades to the
+// fallback, matching every other projector in this file/worldSpace.js.
+export function playerTokenPlaceUnit(world, buildings, fallback) {
+  const pos = world?.party?.[0]?.pos;
+  if (!pos || typeof pos !== 'object' || !Number.isInteger(pos.gx) || !Number.isInteger(pos.gy)) {
+    return fallback;
+  }
+  const m = /^struct:(.+)$/.exec(String(pos.frame || ''));
+  if (!m) return fallback; // region frame (or an unrecognized frame) — see note above
+  const structId = m[1];
+  const bld = (buildings || []).find(b => String(b?.structureKey || '') === structId);
+  if (!bld) return fallback; // the pos's building isn't drawn in this village (e.g. a far node)
+  const st = world?.structures?.byId?.[structId] || null;
+  if (!st) return fallback;
+  let plan; try { plan = floorPlan(st); } catch { return fallback; }
+  if (!plan || !plan.footprint) return fallback;
+  const u = structCellToPlaceUnit({ ox: bld.ox, oy: bld.oy }, plan, pos.gx, pos.gy);
+  if (!Number.isFinite(u?.ux) || !Number.isFinite(u?.uy)) return fallback;
+  return u;
 }
 
 // placeFromWorldNode — build a walkable place from the node's ACTUAL contents:
@@ -384,14 +445,15 @@ export function placeFromWorldNode(world, nodeId) {
     props: [{ type: 'well', ux: wellX, uy: wellY }]
   };
 
-  // The player enters from the lane's west end; neighbours stand scattered near
-  // the road through the village, not in a tidy row — but only the ones the engine
-  // says are actually outdoors right now (never the off-room roster).
+  // MR-1b — the player token reads engine position truth when it's available;
+  // the lane-entry seed (x0+1.5, roadY(...)) survives ONLY as the no-pos legacy
+  // fallback (a fresh/legacy world with no party[0].pos, or a pos this module
+  // can't ground — e.g. a structure not drawn in this village's buildings[]).
   // The player token is exempt from the TT-OCC exclusion below: the player may
   // legitimately be indoors (wake = your bed) — their token comes from position
-  // truth, not this seeded scatter, so it's never routed through the building
-  // check.
-  tokens.push({ type: 'player', ux: x0 + 1.5, uy: roadY(x0 + 1.5) });
+  // truth (or the fallback), never routed through the outdoor-scatter building check.
+  const fallbackPlayerUnit = { ux: x0 + 1.5, uy: roadY(x0 + 1.5) };
+  tokens.push({ type: 'player', ...playerTokenPlaceUnit(world, buildings, fallbackPlayerUnit) });
   const shown = outdoorNpcs.filter(n => n && !n.hostile).slice(0, 12).concat(outdoorNpcs.filter(n => n && n.hostile).slice(0, 2).map(n => ({ ...n, name: '?' })));
   shown.forEach((n, i) => {
     const ax0 = minX + ((i + 1) / (shown.length + 1)) * (maxX - minX) + (rng.nextFloat() - 0.5) * 2;

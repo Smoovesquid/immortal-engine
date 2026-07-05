@@ -234,27 +234,45 @@ export function interiorRoomToWu(node, frame, anchor, plan, roomId) {
 }
 
 /**
+ * structCellToPlaceUnit(anchor, plan, gx, gy) -> {ux, uy}
+ * MR-1b — a canonical STRUCT-frame tactical cell (gx,gy, in 5-ft cells) projected
+ * to the VILLAGE's place-unit space (the same units interiorRoomToPlaceUnit and a
+ * building's ox/oy anchor already use — one frame per building, footprint-centered).
+ * The cell is first expressed in the plan's own layout units (cell ÷
+ * cells-per-layout-unit), then recentred on the footprint midpoint and offset by the
+ * building's anchor — so a token built from this lands INSIDE the very room rect the
+ * plan drew, exactly like interiorRoomToPlaceUnit's room-granular sibling. Factored out
+ * of structCellToWu (below) so a place-unit-space renderer (public/map/placeFromNode.js,
+ * MR-1b) can consume the SAME cell math without going through wu at all. `anchor` may be
+ * null (degrades to the building sitting at its own footprint's own origin).
+ */
+export function structCellToPlaceUnit(anchor, plan, gx, gy) {
+  const a = anchor && typeof anchor === 'object' ? anchor : { ox: 0, oy: 0 };
+  const fw = Number(plan?.footprint?.w) || 1, fh = Number(plan?.footprint?.h) || 1;
+  // Cells → the plan's layout units (the same units room.cx/cy/w/h are in).
+  const lx = (Number(gx) || 0) / TAC_CELLS_PER_LAYOUT_UNIT;
+  const ly = (Number(gy) || 0) / TAC_CELLS_PER_LAYOUT_UNIT;
+  return {
+    ux: (Number(a.ox) || 0) + lx - fw / 2,
+    uy: (Number(a.oy) || 0) + ly - fh / 2
+  };
+}
+
+/**
  * structCellToWu(node, frame, anchor, plan, gx, gy) -> {wx, wy}
  * TAC-4 — a canonical STRUCT-frame tactical cell (gx,gy, in 5-ft cells) projected
  * to world units through the SAME footprint-centered chain interiorRoomToWu (and
- * drawModel.js's planPointToWu, which draws the walls/doors) use. The cell is first
- * expressed in the plan's own layout units (cell ÷ cells-per-layout-unit), then
- * recentred on the footprint midpoint and pushed through placeUnitToWu — so the
- * marker lands INSIDE the very room rect the plan drew (the pos invariant guarantees
+ * drawModel.js's planPointToWu, which draws the walls/doors) use. Pushes
+ * structCellToPlaceUnit's place-unit result through placeUnitToWu — so the marker
+ * lands INSIDE the very room rect the plan drew (the pos invariant guarantees
  * roomOf(cell) matches scene.interior; U450 proves the wu lands in that room's box).
  * One sizing truth: no independent cell→pixel mapping. `anchor`/`frame` may be
  * null (degrades to node-center, same as every projector here).
  */
 export function structCellToWu(node, frame, anchor, plan, gx, gy) {
-  const a = anchor && typeof anchor === 'object' ? anchor : { ox: 0, oy: 0 };
   const f = frame && typeof frame === 'object' ? frame : { cx: 0, cy: 0 };
-  const fw = Number(plan?.footprint?.w) || 1, fh = Number(plan?.footprint?.h) || 1;
-  // Cells → the plan's layout units (the same units room.cx/cy/w/h are in).
-  const lx = (Number(gx) || 0) / TAC_CELLS_PER_LAYOUT_UNIT;
-  const ly = (Number(gy) || 0) / TAC_CELLS_PER_LAYOUT_UNIT;
-  const ux = (Number(a.ox) || 0) + lx - fw / 2;
-  const uy = (Number(a.oy) || 0) + ly - fh / 2;
-  const p = placeUnitToWu(node, f, ux, uy);
+  const u = structCellToPlaceUnit(anchor, plan, gx, gy);
+  const p = placeUnitToWu(node, f, u.ux, u.uy);
   return { wx: p.x, wy: p.y };
 }
 

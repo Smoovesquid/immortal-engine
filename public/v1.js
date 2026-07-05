@@ -152,6 +152,11 @@ const ui = {
   // Continuous local-scale position: where your token stands on the one walkable
   // place (village + building interiors). Persists across re-renders; resets when
   // you move to a new node or interior state changes.
+  // MR-1b — DEMOTED to presentation-only bookkeeping for renderWalkPlace's own
+  // click-to-walk simulation (see that function's header comment). The live map's
+  // marker (oneMap.js) never reads this — it resolves from engine pos/room truth
+  // (docs/POSITION_AS_CANON.md §6). No game logic may treat ux/uy here as ground
+  // truth; it is not hashed and is not the canonical tactical `pos`.
   place: { nodeId: '', ux: null, uy: null, interiorKey: '' },
   // Cached place object + PlaceMap instance keyed by nodeId:interiorKey.
   // Reusing the same place reference keeps EXPLORED (fog memory) alive across renders.
@@ -523,6 +528,11 @@ function continueSlot1() {
 function persistAndRehash(world) {
   // R0 — carry walk position from ui.place into the world before saving,
   // so a playerMove doesn't clobber where the player physically stood.
+  // MR-1b — this writes the LEGACY `player.position.{nodeId,ux,uy}` field only
+  // (renderWalkPlace's own presentation cache, not hashed — see engine/state.js's
+  // "place now persists in party[0].position" note). It never touches the
+  // canonical tactical `pos` (engine/map/spatial/tacticalPos.js), which is
+  // engine-owned and hashed; nothing here is truth for the live map's marker.
   if (ui.place.ux != null && ui.place.nodeId && Array.isArray(world?.party) && world.party[0]) {
     const prev = world.party[0].position || {};
     if (String(prev.nodeId ?? '') === ui.place.nodeId || !prev.nodeId) {
@@ -2125,6 +2135,15 @@ function renderStatusPanels(world) {
 // interiors embedded) you move a token across. Click to walk; walls stop you,
 // doorways let you through, stepping through a door puts you inside — same scale,
 // no enter/leave seam. Position persists in ui.place across re-renders.
+//
+// MR-1b — ui.place is PRESENTATION-ONLY bookkeeping for this simulation's own
+// compact canvas (which is built here but never mounted — v1.js's live map is
+// oneMap.js/renderContinuousMap, whose marker reads engine pos truth, never
+// ui.place). Nothing outside this function's own click/compass handlers may
+// treat ui.place.ux/uy as ground truth; it does not feed worldHash (R0 persists
+// it to the legacy `player.position.ux/uy` field, a presentation-only walk-spot
+// cache distinct from the canonical tactical `pos` — see engine/map/spatial/
+// tacticalPos.js — that IS hashed).
 function homeStartPos(place) {
   for (const b of (place.buildings || [])) {
     if (!b.structureKey) continue; // your real home structure
@@ -2509,9 +2528,19 @@ function renderPlay() {
   // in-play map opens flat at the region band and TILTS into the diorama as you
   // zoom into a place (thresholds live-tunable via window.__tilt). Pure VIEW.
   //
-  // The local-walk simulation still runs underneath: renderWalkPlace maintains
-  // placeCtl + ui.place (which the continuous map's player marker reads), so
-  // we still CALL it — for its side-effects — and discard its compact canvas.
+  // MR-1b — ui.place is DEMOTED: it is presentation-only bookkeeping for
+  // renderWalkPlace's own internal click-to-walk simulation (placeCtl's
+  // walkToward/walkStep — the compass buttons + click-to-move on the discarded
+  // compact canvas below), NOT a truth source. The stale claim this comment used
+  // to make — "which the continuous map's player marker reads" — is no longer
+  // true: oneMap.js's marker resolves from playerFocusWu (engine pos/room truth,
+  // docs/POSITION_AS_CANON.md §6) and explicitly ignores opts.playerPos (see
+  // oneMap.js's "retires the legacy opts.playerPos/ui.place-only placement").
+  // ui.place is still passed through as `playerPos` below for back-compat (no
+  // live reader left to break by removing it), but no game logic may treat it as
+  // truth going forward — the engine-truthful projection is the one rail.
+  // We still CALL renderWalkPlace for its side-effects (placeCtl, so the compass
+  // buttons keep working) and discard its compact canvas.
   if (w) { try { renderWalkPlace(w); } catch {} }
   const INPLAY_MAP_ZOOM = MAP_3D_ENABLED
     ? 2.0    // opens flat at the region band; the tilt engages on zoom-in (window.__tilt.start, ≈BAND.plan).
@@ -2811,8 +2840,10 @@ function renderMap() {
     );
   }
 
-  // Out of combat: one continuous map; hand it the live walk position so the
-  // marker sits where you stand. Scroll to zoom drives 2D → tilt → 3D and back.
+  // Out of combat: one continuous map. Scroll to zoom drives 2D → tilt → 3D and
+  // back. The marker sits where the ENGINE says you stand (playerFocusWu, MR-1b)
+  // — ui.place is passed through as playerPos for back-compat only; it is not
+  // read for marker placement (see the in-play mount's MR-1b comment above).
   disposeCombatBoard();
   return el('div', { class: 'container stack' },
     el('div', { class: 'panel' },

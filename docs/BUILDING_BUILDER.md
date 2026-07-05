@@ -4,10 +4,18 @@
 data (`house-builder/v7`); the NPC builder + mini library feed it. This doc is the definitive gap list.*
 
 **DECISION (Tim, 2026-07-05): ENGINE LEADS.** The loader maps authored data down to what the engine
-supports; richer features degrade. **In progress:** LOAD-1 (Tier 0 #1, the smallest one-room loader)
-dispatched to an engine worker (`docs/briefs/LOAD-1-smallest-loader.md`). **Done same day (tool-side):**
-Tier 1 **#6 room roles** ✅ (the engine's ~30 roles, exported optional `room.role`) and **#7 full
-furniture set** ✅ (all 39 engine furniture types via a "More…" picker). Everything else below stands.
+supports; richer features degrade.
+
+**✅ Tier 0 #1 — THE LOADER LANDED (v0.29.4 b091).** A room drawn in the tool is now WALKABLE in the
+game (`engine/structures/authoredStructure.js` `loadAuthoredStructure`; one room mapped down —
+role/material/furniture/enterable; demo behind seed `loaderDemo`, default game byte-identical; accepts
+`house-builder/v5+`). Tier 0 #4 (validate) + #5 (walk-it test) came with it (U513–U517, live LLM-off
+receipt). **Also done same day (tool-side):** Tier 1 **#6 room roles** ✅ + **#7 full furniture set** ✅.
+
+**Next (queued):** **LOAD-2** — attach an ARBITRARY tool export at a REAL map node (not just the demo
+seed), + all rooms not just the first, + windows/doors as real openings. **LOAD-MR2C** — widen/unify the
+pre-existing `authoredPlans.js` (MR-2c) registry (validates v5 only) with the new loader path. Then the
+rest of Tier 1 (multi-floor/stairs — engine work; entrance; NPC/monster placement) and Tiers 2–3 stand.
 
 ## The one truth that shapes everything
 

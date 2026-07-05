@@ -1,4 +1,4 @@
-// U521 — MR-2d: the sightline DERIVATION's properties (visibleThroughWindows &
+// U524 — MR-2d: the sightline DERIVATION's properties (visibleThroughWindows &
 // occupiedWindowsFromOutside in engine/structures/roomOccupancy.js). Pure-function
 // unit tests over the real booted world plus tight fixtures — the LAWS a window-as-
 // aperture must obey, so a later change can't silently let sight pass through a wall.
@@ -36,7 +36,7 @@ const PACKS = loadPacks();
 const boot = () => beginAdventure(newWorld({ seed: 'tallow', fate: 0.3, mode: 'escape', pack: { primaryId: 'fantasy', mixerId: null } }), PACKS).world;
 const roomsOf = (w, sk) => (normalizeTopology(w.structures?.byId?.[sk]?.topology)?.rooms || []).map(r => String(r.id));
 
-test('U521 (law 1): a windowless room sees NO outdoor folk — sight never passes through a wall', () => {
+test('U524 (law 1): a windowless room sees NO outdoor folk — sight never passes through a wall', () => {
   const w = boot();
   const sk = w.scene.interior.structureKey;
   const windowless = roomsOf(w, sk).filter(rid => roomWindows(w, { structureKey: sk, roomId: rid }).count === 0);
@@ -49,7 +49,7 @@ test('U521 (law 1): a windowless room sees NO outdoor folk — sight never passe
   assert.equal(visibleThroughWindows(w, 'no-such-structure:0', 'r').length, 0);
 });
 
-test('U521 (law 2): a shuttered window sees NO outdoor folk', () => {
+test('U524 (law 2): a shuttered window sees NO outdoor folk', () => {
   const w = boot();
   const sk = w.scene.interior.structureKey;
   const shuttered = roomsOf(w, sk).filter(rid => {
@@ -63,7 +63,7 @@ test('U521 (law 2): a shuttered window sees NO outdoor folk', () => {
   }
 });
 
-test('U521 (law 3): the visible set respects the FACING ARC — a strict subset of outdoor folk, and off-arc folk are excluded', () => {
+test('U524 (law 3): the visible set respects the FACING ARC — a strict subset of outdoor folk, and off-arc folk are excluded', () => {
   const w = boot();
   const sk = w.scene.interior.structureKey;
   const allOutdoor = new Set(outdoorOccupants(w).filter(n => n && !n.hostile).map(n => String(n.name)));
@@ -85,7 +85,7 @@ test('U521 (law 3): the visible set respects the FACING ARC — a strict subset 
   assert.ok(sawExclusion, 'at least one windowed room must EXCLUDE an off-arc outdoor person (facing genuinely filters)');
 });
 
-test('U521 (law 3b): a hostile lurker is never a face at the window', () => {
+test('U524 (law 3b): a hostile lurker is never a face at the window', () => {
   const w = boot();
   const sk = w.scene.interior.structureKey;
   for (const rid of roomsOf(w, sk)) {
@@ -94,7 +94,7 @@ test('U521 (law 3b): a hostile lurker is never a face at the window', () => {
   }
 });
 
-test('U521 (law 4): visibleThroughWindows is deterministic across two boots', () => {
+test('U524 (law 4): visibleThroughWindows is deterministic across two boots', () => {
   const a = boot(), b = boot();
   const sk = a.scene.interior.structureKey;
   for (const rid of roomsOf(a, sk)) {
@@ -104,7 +104,7 @@ test('U521 (law 4): visibleThroughWindows is deterministic across two boots', ()
   }
 });
 
-test('U521: every window-visible occupant carries reason + side (narration fuel), and a side label maps off the outlook', () => {
+test('U524: every window-visible occupant carries reason + side (narration fuel), and a side label maps off the outlook', () => {
   const w = boot();
   const sk = w.scene.interior.structureKey;
   let checkedOne = false;
@@ -121,7 +121,7 @@ test('U521: every window-visible occupant carries reason + side (narration fuel)
 });
 
 // ── occupiedWindowsFromOutside (the mirror, outside→in) ──────────────────────
-test('U521: occupiedWindowsFromOutside is a boolean and deterministic', () => {
+test('U524: occupiedWindowsFromOutside is a boolean and deterministic', () => {
   const a = boot(), b = boot();
   const ra = occupiedWindowsFromOutside(a);
   const rb = occupiedWindowsFromOutside(b);
@@ -129,7 +129,7 @@ test('U521: occupiedWindowsFromOutside is a boolean and deterministic', () => {
   assert.equal(ra, rb, 'the outside-in window read must be deterministic');
 });
 
-test('U521: occupiedWindowsFromOutside excludes the player\'s own home and needs an occupied lit room', () => {
+test('U524: occupiedWindowsFromOutside excludes the player\'s own home and needs an occupied lit room', () => {
   // A fixture: a town with the player's home (empty of strangers) and a shop whose
   // entry room is occupied by a non-hostile NPC through an unshuttered window.
   const mkTopo = (p) => ({ kind: 'rooms', rooms: [{ id: `${p}:entry`, tags: ['entry'] }, { id: `${p}:back` }], edges: [{ a: `${p}:entry`, b: `${p}:back` }] });

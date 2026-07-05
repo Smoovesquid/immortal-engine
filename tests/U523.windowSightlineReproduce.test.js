@@ -1,4 +1,4 @@
-// U520 — MR-2d REPRODUCTION: windows are apertures — sight passes through the glass
+// U523 — MR-2d REPRODUCTION: windows are apertures — sight passes through the glass
 // they actually face, and the people seen through them come with their STORY REASON.
 // (docs/briefs/MR-2-FUNCTIONAL-INK.md §2d; docs/MAP_REAL.md promise 1 "Windows are
 // true apertures".)
@@ -62,7 +62,7 @@ function windowedEntryRoom(w) {
   return null;
 }
 
-test('U520: a window shows the outdoor person within its FACING ARC — with their story reason', () => {
+test('U523: a window shows the outdoor person within its FACING ARC — with their story reason', () => {
   const w = boot();
   const sk = w.scene.interior.structureKey;
   const rid = windowedEntryRoom(w);
@@ -81,7 +81,7 @@ test('U520: a window shows the outdoor person within its FACING ARC — with the
   }
 });
 
-test('U520: sight does NOT pass through a wall — an outdoor person OFF the window arc is not seen', () => {
+test('U523: sight does NOT pass through a wall — an outdoor person OFF the window arc is not seen', () => {
   // The reproduction heart: the old code dumped EVERY outdoor occupant through any
   // window. Here the room's windows face W+N; an outdoor person on the S/E side must
   // NOT appear. We assert the visible set is a STRICT SUBSET of all outdoor folk (the
@@ -102,7 +102,7 @@ test('U520: sight does NOT pass through a wall — an outdoor person OFF the win
   }
 });
 
-test('U520: the look-around survey renders the window view honestly — the in-arc name + reason, NOT the off-arc folk', () => {
+test('U523: the look-around survey renders the window view honestly — the in-arc name + reason, NOT the off-arc folk', () => {
   const w = boot();
   const sk = w.scene.interior.structureKey;
   const rid = windowedEntryRoom(w);

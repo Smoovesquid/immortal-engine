@@ -176,10 +176,10 @@ done_when · rollback`.
   MR-2c's door-canon/mask depth + LOAD-1's v7 format tolerance + its wiring point) BEFORE LOAD-2
   builds multi-room on the duplicate. LOAD-2's stated scope (multi-room, doors→adjacency) is largely
   ALREADY BUILT in authoredPlans.js — check first.
-- **Test-number collision to fix in the same pass:** LOAD-1's `tests/U513.authoredStructureLoad` +
-  `U514.authoredRoomEnterable` reuse DOOR-FORCE-1's landed numbers (different filenames, suite green,
-  bookkeeping broken) → rename to U518/U519 with doc refs. Numbers U515–U519 hereby reserved for that
-  rename + this merge's tests.
+- **Collision status update (2026-07-05-night):** LOAD-2 landed anyway (685 more lines in
+  authoredStructure.js) and took U518–U522 — U520–U522 double-allocated against MR-2d (Basecamp's
+  window tests renamed to U523–U525 to clear it; LOAD's files keep theirs pending this merge).
+  The merge burden GREW: reconcile before LOAD-3/AUTH-HOUSE-1. See CONDUCTOR-SPLIT row.
 - **provenance:** Tim's live playtest (v0.28.32, wake scene): a mini beside his player token that the DM
   said wasn't there. Diagnosis (live-save probe, this window): the mini = Galen, OUTDOORS, painted inside
   the roofless floorplan ink; and the occupancy scatter had stuffed FIVE strangers into the player's own
@@ -232,6 +232,23 @@ done_when · rollback`.
   the wake room, then ON THE DOORSTEP after typing "go outside" through the real input box.
   **MAP-REAL STAGE 1 (position truth) COMPLETE** — engine writes the doorstep, every reader consumes
   `pos`, the probe stands guard in `npm run check`.
+
+### MR-2d — windows are apertures (sight through glass, never walls)  ·  Phase 1/2 (MAP-REAL stage 2)  ·  **✅ LANDED v0.29.6 b093 (worker `5266665a` → integrated; tests renamed U523–U525 post-collision, 17/17; suite 10292/0 combined; grace edit accepted — buildLocationSurvey IS the look composition point, decision logic stayed in roomOccupancy)**
+- Windows face directions; sightlines are 90° sectors; shuttered blocks; windowless rooms see nothing;
+  hostiles never appear at the glass; outside-in = one texture line max ("a shape moves within");
+  window-seen ≠ present (dialogue gating unchanged); story reasons ride the view ("Elske Nightherd,
+  up to something"). **MAP-REAL STAGE 2 COMPLETE — walls block · doors canon · DM grounded · authored
+  plans load · windows see.**
+
+### CONDUCTOR-SPLIT — two live conductors need explicit territory (RULING NEEDED — Tim)  ·  meta  ·  **QUEUED 2026-07-05-night after 3 same-day collisions**
+- Evidence: the Carl race (am) · duplicate loaders (authoredPlans MR-2c vs authoredStructure LOAD-1/2,
+  ~900 combined lines, one job) · test numbers U513/514 + U518–U522 double-allocated (both suites
+  green — filenames differ — bookkeeping broken twice). Root cause: two conductors commit/allocate
+  blind against each other's unpushed state.
+- **Recommendation:** sibling window owns the AUTHORING pipeline end-to-end (house-builder, npc-builder,
+  minis library, LOADER-MERGE absorbing authoredPlans' door-canon/mask depth into one loader);
+  Basecamp owns MAP-REAL remainder (MR-3 fog-procgen, oracle, integrations) + releases. Test ranges:
+  Basecamp U523+, sibling U600+. One word from Tim adopts this (or names another split).
 
 ### MR-2b — the DM grounds architecture claims (no invented geography)  ·  Phase 1/2 (MAP-REAL stage 2)  ·  **✅ LANDED v0.29.1 b088 (worker `8afa145e` → integrated; U507–U509 22/22; suite 10155/0; CG-ARCH structural-tier detector + roomPlan ground truth + hide-the-math DOORS prompt line; corpus lock on the wake cottage; flagged U483 equal-base fixture retune — legitimate, documented inline)**
 - Plan-facts bundle (rooms + doors + states + exits) into the DM prompt seam; CG family gains CG-ARCH

@@ -2715,3 +2715,18 @@ other agents. (none active)
   duplicate loaders born the same day; sibling asked (via PACKETS row) to hold LOAD-2 until merged.
   LOAD-1 also reused test numbers U513/U514 (DOOR-FORCE-1's) — rename queued in the same row.
 - MR-2d (windows LOS; U520–U522) dispatching now — the LAST stage-2 packet.
+
+## 2026-07-05 — Basecamp (second window) — MR-2d integrated → v0.29.6 build 093 "windows see" · STAGE 2 COMPLETE · CONDUCTOR-SPLIT ruling requested
+
+- Cherry-picked `5266665a`; combined-tree check GREEN in background (10292/0, 131/131, probe clean —
+  ladder now exceeds the 10-min foreground ceiling; background runs are the new normal). Worker's
+  grace-edit justification ACCEPTED (buildLocationSurvey is the one look-composition point; ~12-line
+  block replaced; decision logic lives in roomOccupancy). Worker had stalled once mid-task
+  (idle monitor-wait) — resumed via SendMessage with a finish-in-foreground directive; delivered clean.
+- MR-2d's tests renamed U520–U522 → **U523–U525** (17/17 green post-rename) to clear the SECOND
+  same-day number collision: sibling's LOAD-2 landed U518–U522 unpushed while MR-2d was in flight.
+  Release b093 carries BOTH MR-2d and the sibling's LOAD-2 (landed unreleased on the shared branch).
+- **MAP-REAL stage 2 is COMPLETE** (2a doors/walls · 2b DM grounding · 2c loader · DOOR-FORCE-1 ·
+  2d windows). Remaining arc: MR-3 fog-procgen (design next), LOADER-MERGE (urgent, grew again),
+  OCC-STORY-2, AUTH-HOUSE-1. **CONDUCTOR-SPLIT row asks Tim for a territory ruling** after three
+  same-day two-conductor collisions; recommendation inside.

@@ -1,4 +1,4 @@
-// U522 — MR-2d: composition END-TO-END, LLM-off. The window view reaches the two
+// U525 — MR-2d: composition END-TO-END, LLM-off. The window view reaches the two
 // player-facing surfaces honestly — the deterministic look-around survey (inside-out and
 // outside-in) and the DM plan-facts bundle — and does NOT trip the coherence gate or the
 // dialogue rule. (docs/briefs/MR-2-FUNCTIONAL-INK.md §2d.) Hermetic — no network, no API.
@@ -47,7 +47,7 @@ function windowedRoomWithView(w) {
   return null;
 }
 
-test('U522 (inside-out): the look-around survey names the in-arc person with reason, through the window, and omits off-arc folk', () => {
+test('U525 (inside-out): the look-around survey names the in-arc person with reason, through the window, and omits off-arc folk', () => {
   const w = boot();
   const sk = w.scene.interior.structureKey;
   const rid = windowedRoomWithView(w);
@@ -65,7 +65,7 @@ test('U522 (inside-out): the look-around survey names the in-arc person with rea
   for (const nm of offArc) assert.ok(!survey.includes(nm), `off-arc ${nm} must NOT be seen through this window: ${survey}`);
 });
 
-test('U522 (outside-in): the outdoor survey adds ONE capped window texture line, never a roster', () => {
+test('U525 (outside-in): the outdoor survey adds ONE capped window texture line, never a roster', () => {
   // Step outside the cottage, then survey. If a lit occupied window reads, exactly one
   // texture line appears — and it names NOBODY (line of sight from the street).
   const w = boot();
@@ -82,7 +82,7 @@ test('U522 (outside-in): the outdoor survey adds ONE capped window texture line,
   }
 });
 
-test('U522 (planFacts): the DM prompt states the real window aperture + through-window folk, line-of-sight-not-presence, hide-the-math', () => {
+test('U525 (planFacts): the DM prompt states the real window aperture + through-window folk, line-of-sight-not-presence, hide-the-math', () => {
   const w = boot();
   const rid = windowedRoomWithView(w);
   assert.ok(rid, 'precondition');
@@ -103,7 +103,7 @@ test('U522 (planFacts): the DM prompt states the real window aperture + through-
   assert.doesNotMatch(windowLine, /\b2 windows\b|\bcount\b|\bfacings?\s*[:=]/i, windowLine);
 });
 
-test('U522 (dialogue gating unchanged): a person seen through the window is NOT in the room and cannot be addressed as present', () => {
+test('U525 (dialogue gating unchanged): a person seen through the window is NOT in the room and cannot be addressed as present', () => {
   const w = boot();
   const sk = w.scene.interior.structureKey;
   const rid = windowedRoomWithView(w);
@@ -117,7 +117,7 @@ test('U522 (dialogue gating unchanged): a person seen through the window is NOT 
   }
 });
 
-test('U522 (CG-ARCH): the coherence gate does NOT flag a legitimate window line', () => {
+test('U525 (CG-ARCH): the coherence gate does NOT flag a legitimate window line', () => {
   const w = boot();
   const sk = w.scene.interior.structureKey;
   const rid = windowedRoomWithView(w);
@@ -153,7 +153,7 @@ test('U522 (CG-ARCH): the coherence gate does NOT flag a legitimate window line'
     `no coherence detector may flag the composed window survey: ${dm}`);
 });
 
-test('U522: the window survey line is deterministic (byte-identical across two boots)', () => {
+test('U525: the window survey line is deterministic (byte-identical across two boots)', () => {
   const a = boot(), b = boot();
   const sk = a.scene.interior.structureKey;
   const rid = windowedRoomWithView(a);

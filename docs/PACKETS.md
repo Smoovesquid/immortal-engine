@@ -122,12 +122,18 @@ we are deepening known families, not discovering new ones. Clusters → owners (
   name+talk resolves not clarifies.
 - **Object-state question (1)** — "where did the letter go? I was just holding it" → deflected to NPC
   presence. Inventory/canon knows the letter; answer it.
-  **→ ANS-2 DISPATCHED 2026-07-04-pm10** (Opus worktree, U460–U463): the four question-family turns
-  in ONE packet — info-asks resolve THROUGH present knowledgeable NPCs (secret gates enforced at the
-  reveal sink per V12-13), nearest-person compound opens dialogue deterministically, sheet asks
-  answer from canon via the RL-1 meta floor, letter-where answers from inventory canon (+
-  question-shape broadening from INT-4-HELD's U459-05 diagnosis). llmAdapter fenced (INFO-HONESTY
-  fabricated-specific remains its own follow-up row).
+  **ANS-2 ✅ LANDED v0.28.25 b074** (`dbaac5e9` → `0fd3fc6f`): all four question-family turns dead —
+  leadership answers through the present representative (secret-control still declines at the reveal
+  sink, V12-13); delegated "nearest person + talk" opens dialogue deterministically (bare vague-talk
+  still clarifies, U219/UX2 kept); sheet compounds fold class/HP/gear into the meta answer (bare
+  look-around still surveys); `isQuestionShaped` handles "Wait, …" and `META_OBJECT_LOCATION`
+  answers from inventory canon (invented letter → honest correction; provenance/person shapes
+  guarded). Flagged hot-file hunk: ~54 ANS-2-commented lines in `npc/dialogue.js`
+  (commonKnowledgeAnswer leadership branch) — reviewed at integration. U460–U463 (27 subtests) +
+  **corpus C26 ×4 LOCKED**. Known cosmetic nit left deliberately: the leadership answer's hidden mech
+  tag still reads "no-record" (invisible to players; avoids corpus churn).
+  **WITH THIS, EVERY ROW FROM GATE 2026-07-04-3 IS CLOSED** (6 DEADEND + 1 CRUNCH + 1 HALLUCINATION
+  → CBT-AGENCY, INT-4-HELD, ANS-2 ×4, INFO-HONESTY — all landed same-day with corpus locks).
 - **INFO-HONESTY fabricated specific (1)** — pressed after a no-record info-check, DM invents "the
   single building visible… Elske is within it." PERC-1's sibling: no-record must never become a
   confident specific (extend the hedge/honesty floor to info-checks under pressure).
@@ -1141,8 +1147,23 @@ sheet (no per-node islands); the camera keeps the player centered (no edges, eve
   — the built-but-dark class, exactly PATH_TO_SELLABLE's "surface, don't build"); `regions`/`npcs`/
   `seeds`/`toneVectors` are genuinely dead (zero readers — honest deletion candidates). MEMO
   RECOMMENDS: admit `threads`+`factions`, audit the half-dark trio, delete the dead four. One known
-  cost: U454-E's pinned boot hash refreshes once (expected, scoped). **DECISION = TIM'S** (it changes
-  the default game). ∥ **CG-LIVE-2 DESIGN ✅ BRIEF LANDED** (`e3ab26b6` → `417446f3`,
+  cost: U454-E's pinned boot hash refreshes once (expected, scoped). **✅ TIM APPROVED 2026-07-04-pm11
+  ("I will take your recommendations") → PACK-1 ✅ LANDED v0.28.25 b074** (`ecc86514` → `15c4be9c`:
+  threads+factions admitted, malformed-safe; dead four deleted; boots seed authored arcs — tallow
+  "The Bridge Dispute", aldermere "The Drowned Twin", 1/2/3 by fate band; playtest:full 500 clean;
+  two relocks justified — U454-E hash `1de2d182`→`982c62b5`, D01 dead-field asserts dropped;
+  U466–U467. **FOLLOW-UP QUEUE: FACT-1** — factions admitted but INERT: `ensureWorld()` pre-fills
+  default civic/shadow BEFORE playloop's `!Array.isArray(w.factions)` seed guard, so pack factions
+  never reach world state; small playloop/state seam, worker analysis in its report; dispatch when
+  the playloop lane frees) **∥ PACK-2-AUDIT ✅ MEMO LANDED** (`3a2ef027` → `f7ed6586`,
+  `docs/briefs/PACK-TRIO-decision-memo.md`): ALL THREE recommended for admission as ONE S-sized
+  packet — 188 authored entries proven stripped live (90 locations/objectives + sensory details vs
+  fallbacks of 3 generic locations / 3 generic objectives / ONE hardcoded ambiance sentence repeated
+  forever); BONUS ROOT: `mergeSubRegion` is silently non-functional for these fields (both sides
+  empty pre-merge — the whitelist fix repairs the merge too); no-quest-log law CHECKED CLEAN
+  (objectives = spoken scene flavor, one at a time, never a checklist); no §0 risk in any entry.
+  **→ PACK-3 QUEUED under Tim's blanket approval — dispatches the moment PACK-1 lands (same
+  `normalizePack` function, serial by necessity); U471–U472.** ∥ **CG-LIVE-2 DESIGN ✅ BRIEF LANDED** (`e3ab26b6` → `417446f3`,
   `docs/briefs/CG-LIVE-2-regeneration-design.md`): RECOMMENDS Candidate A — promote the shadow's
   pure single-turn detectors into the `validateNarrationCandidate` slot (REJECT-AT-SINK → base
   fallback; zero new LLM calls; no new governing LLM = the Ref-pull ruling kept to the letter).
@@ -1151,7 +1172,10 @@ sheet (no per-node islands); the camera keeps the player centered (no edges, eve
   hatch (it's a narrower REF-GHOST); C (post-hoc note) rejected (ships the lie). Rollout
   dark→shadow-compare→live; eval = corpus lock on all 8 historical catches + gate A/B + shadow-ledger
   FP monitor. Size M; honest limit: stops the lie, doesn't author the better answer (that's AG-4's
-  layer — they compose). READY TO PACKETIZE on Tim's nod.
+  layer — they compose). **✅ TIM APPROVED 2026-07-04-pm11 → CG-2 DISPATCHED** (Opus worktree,
+  U468–U470: Candidate A built DARK per the brief's own rollout — `COHERENCE_VALIDATE` env flag
+  default OFF, shadow-compare mode logs would-be swaps; coherence-safe description-only floor +
+  `finalize()` choke point; all 8 historical catches corpus-locked as the regression floor).
 
 ### MAP-3DR — reconnect the 3D diorama on a persistent mount  ·  **Phase 4 (the face)  ·  = TABLETOP S4; cut the packet when S3 lands**
 - **why parked (2026-07-03, Tim's call):** the 3D layer was DISCONNECTED (`MAP_3D_ENABLED=false`,

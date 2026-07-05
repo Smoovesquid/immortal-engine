@@ -2039,6 +2039,21 @@ other agents. (none active)
   enumerated + covered. U464–U465 (11 tests).
 - Integration ladder GREEN: convergence 127/127, suite 9866/0, determinism green. v0.28.23 b073.
 
+## 2026-07-04 — Basecamp (PACK-1 + ANS-2 bundle → v0.28.25 build 074)
+
+- **PACK-1 landed** (`ecc86514` → `15c4be9c`, Tim-approved): threads+factions through the whitelist,
+  dead four deleted; default boots seed authored arcs (tallow "The Bridge Dispute", aldermere "The
+  Drowned Twin"); playtest:full 500 clean; relocks justified (U454-E hash refresh, D01). FACT-1
+  queued (factions admitted but inert — ensureWorld pre-fill beats playloop's seed guard).
+- **ANS-2 landed** (`dbaac5e9` → `0fd3fc6f`): the question family — leadership through present NPCs
+  (secrets still decline at the sink), delegated nearest-person opens dialogue, sheet compounds
+  answer from canon, object-location questions answer from inventory (invented letter → honest
+  correction). U460–U463 (27) + corpus C26 ×4 LOCKED. ~54-line flagged hunk in npc/dialogue.js
+  reviewed at integration. **GATE 2026-07-04-3 is now FULLY CLOSED** (all 8 failures → landed fixes
+  with corpus locks, same day).
+- Bundle ladder GREEN: convergence **131/131**, suite **9902/0**, determinism green (ANS-2's
+  fixtures held under thread-enriched worlds — no cross-lane relocks needed). v0.28.25 b074.
+
 2026-07-04 — Sonnet (worker worktree, PERC-1) — LOGIC DONE, WIRING PENDING (playloop.js fenced)
 - Packet/seam: `docs/PACKETS.md` PERC-1 — 2026-07-04 gate (Chaos-griefer, CRUNCH_INCONSISTENCY): "Wait — is
   the ceiling still on fire or not? I stand in the middle of the room and look up." rolled a NATURAL 1 vs DC

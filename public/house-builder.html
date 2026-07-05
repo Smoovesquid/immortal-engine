@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>House Builder — Immortal Engine (dev tool)</title>
+<style>
+  :root {
+    --paper: #f4f0e4;
+    --grid: #cdd7e0;
+    --grid-strong: #b7c3ce;
+    --ink: #3a3226;
+    --ink-soft: #6b5f4d;
+    --accent: #b8792f;
+    --panel: #efeadb;
+    --panel-line: #d8cfb8;
+    --sel: #d9a441;
+    --room-fill: rgba(58,50,38,0.035);
+    --wood: #9c6b3e;
+    --wood-dark: #6f4a28;
+    --cloth: #7d95ac;
+    --iron: #3d3f45;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; color: var(--ink); background: #2a2620; }
+  #app { display: grid; grid-template-columns: 210px 1fr; grid-template-rows: auto 1fr auto; height: 100vh; }
+  header { grid-column: 1 / 3; display: flex; align-items: center; gap: 12px; padding: 8px 14px; background: #221f19; color: #e9e2cf; border-bottom: 1px solid #000; }
+  header h1 { font-size: 14px; font-weight: 600; margin: 0; letter-spacing: .3px; }
+  header .spacer { flex: 1; }
+  header input[type=text] { background: #34302650; color: #f0e9d6; border: 1px solid #4a4433; border-radius: 6px; padding: 5px 9px; font-size: 13px; width: 180px; }
+  header button { background: #33302640; color: #efe7d3; border: 1px solid #4a4433; border-radius: 6px; padding: 6px 11px; font-size: 12px; cursor: pointer; }
+  header button:hover { background: #46402f; }
+  header button.primary { background: var(--accent); border-color: var(--accent); color: #21170a; font-weight: 600; }
+
+  aside { grid-row: 2 / 4; background: var(--panel); border-right: 1px solid var(--panel-line); padding: 12px; overflow-y: auto; }
+  aside .group { margin-bottom: 18px; }
+  aside .group h2 { font-size: 11px; text-transform: uppercase; letter-spacing: .8px; color: var(--ink-soft); margin: 0 0 8px; }
+  .tool { display: flex; align-items: center; gap: 10px; width: 100%; padding: 8px 10px; margin-bottom: 6px; background: #fbf8ef; border: 1px solid var(--panel-line); border-radius: 8px; cursor: pointer; text-align: left; font-size: 13px; color: var(--ink); }
+  .tool:hover { border-color: var(--accent); }
+  .tool.active { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); background: #fff; }
+  .tool .swatch { width: 26px; height: 26px; flex: none; }
+  .tool small { display: block; color: var(--ink-soft); font-size: 10px; }
+
+  main { grid-row: 2 / 3; position: relative; overflow: auto; background: #241f18; display: flex; align-items: center; justify-content: center; }
+  canvas { background: var(--paper); box-shadow: 0 6px 30px rgba(0,0,0,.5); }
+  footer { grid-column: 2 / 3; grid-row: 3 / 4; padding: 6px 14px; background: #221f19; color: #b6ad97; font-size: 11px; display: flex; gap: 16px; align-items: center; }
+  footer .hint { color: #8f866f; }
+  footer kbd { background: #3a3628; border: 1px solid #4a4433; border-bottom-width: 2px; border-radius: 4px; padding: 0 5px; font-size: 10px; color: #e5ddc8; }
+  #status { margin-left: auto; color: var(--sel); }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <h1>🏠 House Builder <span style="opacity:.5;font-weight:400">· Immortal Engine dev tool</span></h1>
+    <input id="houseName" type="text" value="new-house" title="house name (used as the export filename)"/>
+    <div class="spacer"></div>
+    <button id="btnClear">New</button>
+    <button id="btnImport">Import…</button>
+    <button id="btnExport" class="primary">Export JSON</button>
+    <input id="fileInput" type="file" accept="application/json" style="display:none"/>
+  </header>
+
+  <aside>
+    <div class="group">
+      <h2>Build</h2>
+      <button class="tool active" data-tool="select"><span class="swatch" id="sw-select"></span><span>Select / Move<small>click a piece, drag to move</small></span></button>
+      <button class="tool" data-tool="room"><span class="swatch" id="sw-room"></span><span>Room<small>drag to draw walls</small></span></button>
+    </div>
+    <div class="group">
+      <h2>Furniture</h2>
+      <button class="tool" data-tool="bed"><span class="swatch" id="sw-bed"></span><span>Bed<small>2 × 3</small></span></button>
+      <button class="tool" data-tool="barrel"><span class="swatch" id="sw-barrel"></span><span>Barrel<small>1 × 1</small></span></button>
+      <button class="tool" data-tool="cookpot"><span class="swatch" id="sw-cookpot"></span><span>Cooking pot<small>1 × 1</small></span></button>
+      <button class="tool" data-tool="dresser"><span class="swatch" id="sw-dresser"></span><span>Dresser<small>2 × 1</small></span></button>
+    </div>
+    <div class="group">
+      <h2>Selected</h2>
+      <div id="selInfo" style="font-size:12px;color:var(--ink-soft)">nothing selected</div>
+      <button class="tool" id="btnDelete" style="margin-top:8px;color:#9a3b2c;border-color:#e0c4bd"><span>Delete piece<small>or press Delete</small></span></button>
+    </div>
+  </aside>
+
+  <main><canvas id="cv" width="1008" height="700"></canvas></main>
+
+  <footer>
+    <span class="hint"><kbd>R</kbd> rotate</span>
+    <span class="hint"><kbd>Del</kbd> remove</span>
+    <span class="hint"><kbd>Esc</kbd> deselect</span>
+    <span class="hint">rooms snap to the grid · furniture snaps to cells</span>
+    <span id="status"></span>
+  </footer>
+</div>
+
+<script>
+(() => {
+  // ── model ──────────────────────────────────────────────────────────────
+  const CELL = 28;            // px per grid cell
+  const COLS = 36, ROWS = 25; // grid extent
+  const cv = document.getElementById('cv');
+  cv.width = COLS * CELL; cv.height = ROWS * CELL;
+  const ctx = cv.getContext('2d');
+
+  const FURN = {
+    bed:     { w: 2, h: 3, label: 'bed' },
+    barrel:  { w: 1, h: 1, label: 'barrel' },
+    cookpot: { w: 1, h: 1, label: 'cooking pot' },
+    dresser: { w: 2, h: 1, label: 'dresser' },
+  };
+
+  let scene = blankScene();
+  let tool = 'select';
+  let sel = null;                 // { kind:'room'|'furn', id }
+  let drag = null;                // interaction state
+  let uid = 1;
+  const nextId = (p) => `${p}${uid++}`;
+
+  function blankScene() { return { name: 'new-house', rooms: [], furniture: [] }; }
+
+  // ── palette wiring ─────────────────────────────────────────────────────
+  const tools = [...document.querySelectorAll('.tool[data-tool]')];
+  tools.forEach(b => b.addEventListener('click', () => setTool(b.dataset.tool)));
+  function setTool(t) {
+    tool = t;
+    tools.forEach(b => b.classList.toggle('active', b.dataset.tool === t));
+    cv.style.cursor = (t === 'select') ? 'default' : 'crosshair';
+  }
+
+  // ── coordinate helpers ─────────────────────────────────────────────────
+  function evtCell(e) {
+    const r = cv.getBoundingClientRect();
+    const px = (e.clientX - r.left) * (cv.width / r.width);
+    const py = (e.clientY - r.top) * (cv.height / r.height);
+    return { gx: Math.floor(px / CELL), gy: Math.floor(py / CELL), px, py };
+  }
+  const clampCol = (v) => Math.max(0, Math.min(COLS, v));
+  const clampRow = (v) => Math.max(0, Math.min(ROWS, v));
+
+  function furnAt(gx, gy) {
+    for (let i = scene.furniture.length - 1; i >= 0; i--) {
+      const f = scene.furniture[i];
+      if (gx >= f.x && gx < f.x + f.w && gy >= f.y && gy < f.y + f.h) return f;
+    }
+    return null;
+  }
+  function roomAt(gx, gy) {
+    for (let i = scene.rooms.length - 1; i >= 0; i--) {
+      const r = scene.rooms[i];
+      if (gx >= r.x && gx < r.x + r.w && gy >= r.y && gy < r.y + r.h) return r;
+    }
+    return null;
+  }
+
+  // ── mouse interaction ──────────────────────────────────────────────────
+  cv.addEventListener('mousedown', (e) => {
+    const c = evtCell(e);
+    if (tool === 'room') {
+      drag = { mode: 'draw-room', x0: clampCol(c.gx), y0: clampRow(c.gy), x1: clampCol(c.gx), y1: clampRow(c.gy) };
+    } else if (FURN[tool]) {
+      const def = FURN[tool];
+      const f = { id: nextId('f'), type: tool, x: clampCol(c.gx), y: clampRow(c.gy), w: def.w, h: def.h, rot: 0 };
+      f.x = Math.min(f.x, COLS - f.w); f.y = Math.min(f.y, ROWS - f.h);
+      scene.furniture.push(f);
+      select('furn', f.id);
+      drag = { mode: 'move-furn', id: f.id, offx: 0, offy: 0 };
+      setTool('select');
+    } else { // select
+      const f = furnAt(c.gx, c.gy);
+      if (f) { select('furn', f.id); drag = { mode: 'move-furn', id: f.id, offx: c.gx - f.x, offy: c.gy - f.y }; return; }
+      const r = roomAt(c.gx, c.gy);
+      if (r) { select('room', r.id); drag = { mode: 'move-room', id: r.id, offx: c.gx - r.x, offy: c.gy - r.y }; return; }
+      select(null);
+    }
+    draw();
+  });
+
+  window.addEventListener('mousemove', (e) => {
+    if (!drag) return;
+    const c = evtCell(e);
+    if (drag.mode === 'draw-room') { drag.x1 = clampCol(c.gx); drag.y1 = clampRow(c.gy); }
+    else if (drag.mode === 'move-furn') {
+      const f = scene.furniture.find(x => x.id === drag.id); if (!f) return;
+      f.x = Math.max(0, Math.min(COLS - f.w, c.gx - drag.offx));
+      f.y = Math.max(0, Math.min(ROWS - f.h, c.gy - drag.offy));
+    } else if (drag.mode === 'move-room') {
+      const r = scene.rooms.find(x => x.id === drag.id); if (!r) return;
+      r.x = Math.max(0, Math.min(COLS - r.w, c.gx - drag.offx));
+      r.y = Math.max(0, Math.min(ROWS - r.h, c.gy - drag.offy));
+    }
+    draw();
+  });
+
+  window.addEventListener('mouseup', () => {
+    if (drag && drag.mode === 'draw-room') {
+      const x = Math.min(drag.x0, drag.x1), y = Math.min(drag.y0, drag.y1);
+      const w = Math.abs(drag.x1 - drag.x0), h = Math.abs(drag.y1 - drag.y0);
+      if (w >= 2 && h >= 2) {
+        const r = { id: nextId('room'), name: `Room ${scene.rooms.length + 1}`, x, y, w, h };
+        scene.rooms.push(r); select('room', r.id); setTool('select');
+      }
+    }
+    drag = null; draw();
+  });
+
+  // ── selection ──────────────────────────────────────────────────────────
+  function select(kind, id) {
+    sel = kind ? { kind, id } : null;
+    const info = document.getElementById('selInfo');
+    if (!sel) { info.textContent = 'nothing selected'; draw(); return; }
+    if (sel.kind === 'furn') {
+      const f = scene.furniture.find(x => x.id === id);
+      info.innerHTML = `<b>${FURN[f.type].label}</b> · ${f.w}×${f.h} at (${f.x},${f.y})`;
+    } else {
+      const r = scene.rooms.find(x => x.id === id);
+      info.innerHTML = `<b>${r.name}</b> · ${r.w}×${r.h} at (${r.x},${r.y})`;
+    }
+    draw();
+  }
+  document.getElementById('btnDelete').addEventListener('click', deleteSel);
+  function deleteSel() {
+    if (!sel) return;
+    if (sel.kind === 'furn') scene.furniture = scene.furniture.filter(f => f.id !== sel.id);
+    else scene.rooms = scene.rooms.filter(r => r.id !== sel.id);
+    select(null);
+  }
+
+  window.addEventListener('keydown', (e) => {
+    if (e.target.tagName === 'INPUT') return;
+    if (e.key === 'Delete' || e.key === 'Backspace') { deleteSel(); e.preventDefault(); }
+    else if (e.key === 'Escape') { select(null); setTool('select'); }
+    else if (e.key === 'r' || e.key === 'R') {
+      if (sel && sel.kind === 'furn') {
+        const f = scene.furniture.find(x => x.id === sel.id);
+        const nw = f.h, nh = f.w; f.w = Math.min(nw, COLS - f.x); f.h = Math.min(nh, ROWS - f.y);
+        f.rot = (f.rot + 90) % 360; select('furn', f.id);
+      }
+    }
+  });
+
+  // ── rendering ──────────────────────────────────────────────────────────
+  function draw() {
+    ctx.clearRect(0, 0, cv.width, cv.height);
+    // graph paper
+    ctx.strokeStyle = getCss('--grid'); ctx.lineWidth = 1;
+    for (let x = 0; x <= COLS; x++) { line(x*CELL, 0, x*CELL, ROWS*CELL); }
+    for (let y = 0; y <= ROWS; y++) { line(0, y*CELL, COLS*CELL, y*CELL); }
+    ctx.strokeStyle = getCss('--grid-strong');
+    for (let x = 0; x <= COLS; x += 5) line(x*CELL, 0, x*CELL, ROWS*CELL);
+    for (let y = 0; y <= ROWS; y += 5) line(0, y*CELL, COLS*CELL, y*CELL);
+
+    // rooms (ink walls)
+    for (const r of scene.rooms) drawRoom(r);
+    if (drag && drag.mode === 'draw-room') {
+      const x = Math.min(drag.x0, drag.x1), y = Math.min(drag.y0, drag.y1);
+      ctx.strokeStyle = getCss('--accent'); ctx.lineWidth = 2; ctx.setLineDash([6,4]);
+      ctx.strokeRect(x*CELL, y*CELL, Math.abs(drag.x1-drag.x0)*CELL, Math.abs(drag.y1-drag.y0)*CELL);
+      ctx.setLineDash([]);
+    }
+    // furniture
+    for (const f of scene.furniture) drawFurn(f);
+
+    // selection halo
+    if (sel) {
+      const o = sel.kind === 'furn' ? scene.furniture.find(x=>x.id===sel.id) : scene.rooms.find(x=>x.id===sel.id);
+      if (o) { ctx.strokeStyle = getCss('--sel'); ctx.lineWidth = 2.5; ctx.setLineDash([4,3]);
+        ctx.strokeRect(o.x*CELL-2, o.y*CELL-2, o.w*CELL+4, o.h*CELL+4); ctx.setLineDash([]); }
+    }
+    document.getElementById('status').textContent =
+      `${scene.rooms.length} room${scene.rooms.length!==1?'s':''} · ${scene.furniture.length} piece${scene.furniture.length!==1?'s':''}`;
+  }
+
+  function drawRoom(r) {
+    const x = r.x*CELL, y = r.y*CELL, w = r.w*CELL, h = r.h*CELL;
+    ctx.fillStyle = getCss('--room-fill'); ctx.fillRect(x, y, w, h);
+    ctx.strokeStyle = getCss('--ink'); ctx.lineWidth = 3; ctx.strokeRect(x, y, w, h);
+    ctx.fillStyle = getCss('--ink-soft'); ctx.font = '600 12px ui-sans-serif, sans-serif';
+    ctx.textBaseline = 'top'; ctx.fillText(r.name, x + 6, y + 5);
+  }
+
+  function drawFurn(f) {
+    const x = f.x*CELL, y = f.y*CELL, w = f.w*CELL, h = f.h*CELL;
+    const pad = 3, ix = x+pad, iy = y+pad, iw = w-2*pad, ih = h-2*pad;
+    ctx.save();
+    if (f.type === 'bed') {
+      ctx.fillStyle = getCss('--cloth'); roundRect(ix, iy, iw, ih, 4); ctx.fill();
+      ctx.fillStyle = '#e8eef4'; // pillow at the top edge
+      const pillow = Math.min(ih*0.28, CELL*0.7); roundRect(ix+3, iy+3, iw-6, pillow, 3); ctx.fill();
+      ctx.strokeStyle = getCss('--wood-dark'); ctx.lineWidth = 1.5; roundRect(ix, iy, iw, ih, 4); ctx.stroke();
+    } else if (f.type === 'barrel') {
+      const cx = x+w/2, cy = y+h/2, rr = Math.min(iw, ih)/2;
+      ctx.fillStyle = getCss('--wood'); circle(cx, cy, rr); ctx.fill();
+      ctx.strokeStyle = getCss('--wood-dark'); ctx.lineWidth = 1.5; circle(cx, cy, rr); ctx.stroke();
+      circle(cx, cy, rr*0.6); ctx.stroke();
+    } else if (f.type === 'cookpot') {
+      const cx = x+w/2, cy = y+h/2, rr = Math.min(iw, ih)/2;
+      ctx.fillStyle = getCss('--iron'); circle(cx, cy, rr); ctx.fill();
+      ctx.strokeStyle = '#20222699'; ctx.lineWidth = 2; circle(cx, cy, rr*0.62); ctx.stroke();
+      // two handle nubs
+      ctx.fillStyle = getCss('--iron');
+      circle(cx-rr, cy, rr*0.16); ctx.fill(); circle(cx+rr, cy, rr*0.16); ctx.fill();
+    } else if (f.type === 'dresser') {
+      ctx.fillStyle = getCss('--wood'); roundRect(ix, iy, iw, ih, 3); ctx.fill();
+      ctx.strokeStyle = getCss('--wood-dark'); ctx.lineWidth = 1.5; roundRect(ix, iy, iw, ih, 3); ctx.stroke();
+      const rows = 2; // drawer lines
+      for (let i=1;i<rows;i++){ const yy = iy + ih*i/rows; line(ix+2, yy, ix+iw-2, yy); ctx.stroke(); }
+      for (let i=0;i<rows;i++){ const yy = iy + ih*(i+0.5)/rows; ctx.fillStyle=getCss('--wood-dark'); circle(ix+iw/2, yy, 1.6); ctx.fill(); }
+    }
+    ctx.restore();
+  }
+
+  // canvas prims
+  function line(x0,y0,x1,y1){ ctx.beginPath(); ctx.moveTo(x0,y0); ctx.lineTo(x1,y1); ctx.stroke(); }
+  function circle(cx,cy,r){ ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); }
+  function roundRect(x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
+  function getCss(v){ return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
+
+  // ── palette swatches (mini previews) ───────────────────────────────────
+  function swatch(id, kind) {
+    const el = document.getElementById(id); if (!el) return;
+    const c = document.createElement('canvas'); c.width = 26; c.height = 26; el.appendChild(c);
+    const g = c.getContext('2d');
+    const bg = kind === 'select' ? '#eee' : '#fbf8ef'; g.fillStyle = bg; g.fillRect(0,0,26,26);
+    g.strokeStyle = '#00000020'; for(let i=0;i<=26;i+=6.5){ g.beginPath(); g.moveTo(i,0); g.lineTo(i,26); g.moveTo(0,i); g.lineTo(26,i); g.stroke(); }
+    const draw2 = (fn) => fn(g);
+    if (kind === 'room') { g.strokeStyle = '#3a3226'; g.lineWidth = 2.5; g.strokeRect(3,3,20,20); }
+    else if (kind === 'select') { g.strokeStyle = '#b8792f'; g.lineWidth = 2; g.strokeRect(5,5,16,16); g.setLineDash([2,2]); }
+    else if (kind === 'bed') { g.fillStyle = '#7d95ac'; g.fillRect(5,3,16,20); g.fillStyle='#e8eef4'; g.fillRect(7,5,12,5); }
+    else if (kind === 'barrel') { g.fillStyle='#9c6b3e'; g.beginPath(); g.arc(13,13,9,0,7); g.fill(); g.strokeStyle='#6f4a28'; g.lineWidth=1.5; g.beginPath(); g.arc(13,13,5.5,0,7); g.stroke(); }
+    else if (kind === 'cookpot') { g.fillStyle='#3d3f45'; g.beginPath(); g.arc(13,13,9,0,7); g.fill(); g.strokeStyle='#20222699'; g.lineWidth=2; g.beginPath(); g.arc(13,13,5.5,0,7); g.stroke(); }
+    else if (kind === 'dresser') { g.fillStyle='#9c6b3e'; g.fillRect(3,7,20,12); g.strokeStyle='#6f4a28'; g.lineWidth=1.2; g.strokeRect(3,7,20,12); g.beginPath(); g.moveTo(3,13); g.lineTo(23,13); g.stroke(); }
+  }
+  ['select','room','bed','barrel','cookpot','dresser'].forEach(k => swatch('sw-'+k, k));
+
+  // ── export / import ────────────────────────────────────────────────────
+  // Export shape mirrors the engine's structure model closely enough to import:
+  //   a structure has ROOMS (drawn walls) and FURNITURE (placed pieces), each on
+  //   the grid. Coordinates are grid cells; the engine's floorPlan uses room-
+  //   relative unit coords, so `furniture[].room` + local offsets are provided
+  //   alongside absolute grid coords for whichever loader consumes this.
+  document.getElementById('btnExport').addEventListener('click', () => {
+    scene.name = (document.getElementById('houseName').value || 'house').trim();
+    const out = {
+      kind: 'authored-structure',
+      schema: 'house-builder/v1',
+      name: scene.name,
+      grid: { cols: COLS, rows: ROWS, cell: CELL },
+      rooms: scene.rooms.map(r => ({ id: r.id, name: r.name, x: r.x, y: r.y, w: r.w, h: r.h })),
+      furniture: scene.furniture.map(f => {
+        const room = enclosingRoom(f);
+        const rec = { type: f.type, x: f.x, y: f.y, w: f.w, h: f.h, rot: f.rot || 0 };
+        if (room) { rec.room = room.id; rec.ux = +((f.x - room.x + f.w/2) / room.w).toFixed(4); rec.uy = +((f.y - room.y + f.h/2) / room.h).toFixed(4); }
+        return rec;
+      })
+    };
+    const blob = new Blob([JSON.stringify(out, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+    a.download = `${scene.name || 'house'}.json`; a.click(); URL.revokeObjectURL(a.href);
+    flash('exported ' + a.download);
+  });
+
+  function enclosingRoom(f) {
+    const cx = f.x + f.w/2, cy = f.y + f.h/2;
+    return scene.rooms.find(r => cx >= r.x && cx <= r.x+r.w && cy >= r.y && cy <= r.y+r.h) || null;
+  }
+
+  document.getElementById('btnImport').addEventListener('click', () => document.getElementById('fileInput').click());
+  document.getElementById('fileInput').addEventListener('change', (e) => {
+    const file = e.target.files[0]; if (!file) return;
+    const rd = new FileReader();
+    rd.onload = () => {
+      try {
+        const d = JSON.parse(rd.result);
+        scene = blankScene();
+        scene.name = d.name || 'house';
+        document.getElementById('houseName').value = scene.name;
+        (d.rooms || []).forEach(r => scene.rooms.push({ id: r.id || nextId('room'), name: r.name || 'Room', x: r.x, y: r.y, w: r.w, h: r.h }));
+        (d.furniture || []).forEach(f => { const def = FURN[f.type] || { w: f.w||1, h: f.h||1 }; scene.furniture.push({ id: nextId('f'), type: f.type, x: f.x, y: f.y, w: f.w||def.w, h: f.h||def.h, rot: f.rot||0 }); });
+        // keep uid ahead of any imported ids
+        select(null); flash('imported ' + (file.name)); draw();
+      } catch (err) { flash('import failed: ' + err.message); }
+    };
+    rd.readAsText(file);
+    e.target.value = '';
+  });
+
+  document.getElementById('btnClear').addEventListener('click', () => {
+    if (scene.rooms.length + scene.furniture.length && !confirm('Clear the whole house?')) return;
+    scene = blankScene(); document.getElementById('houseName').value = 'new-house'; select(null); setTool('room'); draw();
+  });
+
+  let flashT = null;
+  function flash(msg) { const s = document.getElementById('status'); s.textContent = msg; clearTimeout(flashT); flashT = setTimeout(draw, 2200); }
+
+  // ── boot ───────────────────────────────────────────────────────────────
+  setTool('room');
+  draw();
+})();
+</script>
+</body>
+</html>

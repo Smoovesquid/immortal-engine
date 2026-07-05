@@ -2475,3 +2475,23 @@ other agents. (none active)
   stage 2) and **TT-OCC** (renderer: minis never inside foreign ink) behind it.
 - Also on record from the probe: `anthropic_key` exists in browser localStorage (purity rule 9 says
   server-only) — needs a look; not touched this window.
+
+## 2026-07-05 — Basecamp (SL-5 integration → v0.28.33 build 082)
+
+- Cherry-picked the SL-5 worker commit (`148c3076` → `fd58ca0a`) onto v2-polish; the only conflict was
+  the append-only changelog (kept both the second-window Carl-ruling section and the worker's SL-5
+  section). Ladder GREEN on the integrated tree: suite 10050/0 (+27), convergence 131/131, determinism
+  green. Released v0.28.33 b082 "Aldermere wants something".
+- **Live-verified LLM-off on the INTEGRATED build** (Node playerMove, slice seed 'aldermere'): cold-open
+  narration carries the worry; "what's troubling folk here?" → *"The Hollow says the chapel bell rang
+  Tuesday, and nobody's rung it in a year."*; "I'll look into it" → goal `learn:chapel bell` minted with
+  *"You set yourself to it… Carl marks your word."* (Carl is live in the Aldermere roster), zero
+  quest-log surface. 3 of 4 SL-5 beats confirmed live.
+- **The 4th beat (consequence-aging) is honestly DARK** — the SL-5 lane found a pre-existing engine bug
+  (`instrument.js` `normalizeThread` strips age/objective every `ensureWorld`) that stops ALL threads
+  from aging past 1 in the live loop, so `mutateObjective` never fires. NOT hand-patched (engine gate +
+  outside SL-5's lane); cut as **CONSEQ-1** in PACKETS with the worker's drafted, simulation-verified
+  one-line-per-field fix + the U490 flip. Dispatch or brief when the engine lane opens.
+- Note: the second window's `a9d536da` (CARL-SHIP-1 doc row) rode along in the push (it was committed to
+  the shared local branch, unpushed). Two-windows-on-one-branch still active; one-window-owns-the-branch
+  flag stands.

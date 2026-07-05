@@ -1219,9 +1219,13 @@ sheet (no per-node islands); the camera keeps the player centered (no edges, eve
   camera-only (map read-only). Receipts `docs/playtests/map3dr/` (flat → 39% morph → full diorama
   ×2 orbit angles; before/after typed turn). U475–U477 (12 subtests) + `tests/support/domStub.js`.
   Known nits: headless WebGL needs swiftshader-angle flags (fallback = map stays 2D, safe); tilt HUD
-  toggle resets after a typed turn (debug aid, off by default). **TILT-TUNE session = Tim's, now:**
-  defaults are the worker's eye — Tim retunes live, Basecamp bakes his numbers as defaults (tiny
-  follow-up commit). Combat fold-in = next rung (S4b).
+  toggle resets after a typed turn (debug aid, off by default). **TILT-TUNE ✅ SETTLED 2026-07-05
+  (Tim: "take your best guess" → Basecamp A/B'd 58° vs 66° on the live rendered preview):** 66°
+  drops dramatic but a foreground boulder occludes, the cutaway interior shallows, and the
+  settlement stops reading as a MAP; 58° keeps the diorama feel at full legibility — map-fidelity
+  law wins. Shipped defaults CONFIRMED (start=BAND.plan, smoothstep onset ≈2°/notch imperceptible;
+  cross=1.35×; full=Z_MAX; pitch 4°→58°). No code change; b078 stands. Tim's one-line override
+  anytime: `localStorage.setItem('ie.tilt','{"pitchDeg":66}')`. Combat fold-in = next rung (S4b).
 - **until then:** the 2D graph-paper plan is the one map at every zoom — engine-truthful (camera recenters
   on the engine's `currentNodeId` on node change — the map-fidelity fix in `oneMap.js cameraFor`), marker
   + clock verified live 2026-07-03 (Aldermere → Greenwood → Crowfoot walk, screenshots in session).

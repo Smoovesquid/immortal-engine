@@ -2380,3 +2380,81 @@ other agents. (none active)
   integration (its check-ladder run on the then-current tree was GREEN, 10014/0 · 131/131), and made
   docs-only appends since. The sibling conductor owns the branch; +1 to its one-window-owns-the-branch
   flag.
+
+## 2026-07-05 — Worker (Sonnet, playloop/composer serial worktree) — SL-5 landed: Aldermere's curated worry + cold-open (Candidate A+C)
+
+- **What it ships** (`docs/briefs/SL-5-aldermere-wants.md`, taste calls settled by Tim 2026-07-05):
+  the slice's town (Aldermere) carries exactly TWO authored, seed-stable civic worries — Greenwood
+  road ("the toll road's gone quiet…", the bandit camp folded in per the settled call) and the
+  Hollowed Chapel bell ("…rang Tuesday, and nobody's rung it in a year") — plus the cold-open
+  waking line voices the seed-chosen one unprompted, before the player asks anything.
+- **The seam (four pieces, all reused mechanisms, no fifth invented):**
+  1. `engine/world/sliceRegion.js` — new authored `ALDERMERE_WORRIES` (2 entries) +
+     `pickAldermereWorry(seed)` (mirrors `npcArc.npcWant`'s `pick()` stable-per-seed discipline —
+     seeded hash, not a re-roll) + `isAldermereTownNode(node)` (reuses `demoFigures.js`'s existing
+     `nameContains('aldermere')` idiom, not a new gate mechanism).
+  2. `engine/world/placeQuery.js` — `resolveConcern()` overridden ONLY when
+     `world.meta.seed === SLICE_SEED && isAldermereTownNode(node)`; every other pack/seed/node falls
+     through to the untouched generic role-pool, verified byte-identical against `tallow`.
+  3. `engine/playloop.js` — the chosen worry seeded as a living thread at boot (sibling to the
+     existing `pack.threads` block, ~playloop.js:299-312), so it ages through the EXISTING
+     `tickLivingThreads`/`mutateObjective` clock — no new tick function.
+  4. `engine/composer.js` — `pickWakingOpener` gets one slice-seed-gated branch: appends the seed-
+     chosen worry's authored `opener` clause to the SAME rng-picked generic bedroom line, so the
+     cold-open reads as one continuous scene-set, not a bolted-on second paragraph. Non-slice seeds
+     unchanged.
+- **A real bug found and fixed in-lane (not scope creep — it's what made the brief's own D-B1
+  round-trip actually round-trip):** the brief's live-verify phrase "I'll look into it" was being
+  swallowed by `tryExamineTarget`'s `INSPECT_VERB` regex (`look\s+into` matches BOTH "peer into a
+  box" and "investigate a matter") firing at playloop.js's pre-existing W-2 floor, ~1300 lines before
+  the D-B1 goal-birth check ever ran — so a declared commitment was misread as a literal container-
+  peek. Fixed with two new module-level consts in `playloop.js` (`DECLARE_COMMIT_RE`,
+  `BARE_PRONOUN_LEARN_RE`): (a) a general guard — a DECLARE-opener + bare-pronoun target ("I'll
+  look into it") now skips the examine floor for ANY seed, since a real DM never physically peers
+  at "it"; a concrete target ("I'll look into the chest") is untouched; (b) a slice-gated pronoun
+  substitution — before `proposeGoalFromDialogue` parses the text, a bare "it/that/this" after a
+  learn-verb is swapped for the seed-chosen worry's own `target` phrase, so the goal that mints
+  names the SAME thing the concern voiced instead of a phantom `learn:it`.
+- **A real pre-existing bug found, NOT fixed (outside this lane's allowed_files, flagged instead
+  of silently patched):** `engine/instrument.js`'s `normalizeThread()` — called by
+  `ensureInstrumentLayer`, called by `ensureWorld()` on EVERY invocation including `worldTick`'s own
+  opening call — returns only `{id, label, introducedAt, tension, status}`, silently dropping
+  `age`/`objective`/`trajectory`. `tickLivingThreads` sets those three correctly WITHIN one
+  `worldTick()` call, but the next `worldTick()`/`ensureWorld()` anywhere strips them before the
+  next tick can read a real age — so in the live per-turn loop, age can never exceed 1 and
+  `mutateObjective`'s `age>4 && age%3===0` branch can never fire. Verified pre-existing (not
+  introduced by SL-5) by `git stash`-reverting all SL-5 code and reproducing on a bare
+  `introduceThread(w,'x')` thread with zero slice content present. Affects EVERY thread in the
+  engine, including PACK-1's Bridge Dispute/Drowned Twin — the SL-5-DRAFT.md claim that objective-
+  mutation is "already tested, already firing" holds only within a single isolated `worldTick()`
+  call, not across the real multi-turn loop (the existing deathSpiral/UX4 tests never assert
+  age/objective survive a second independent tick, only tension/inevitability, which DO survive).
+  **Concrete fix (verified correct by simulation, not applied — `instrument.js` is outside this
+  packet's lane):** add to `normalizeThread`'s return object, mirroring how `tension`/`status`
+  already survive: `age: clampInt(t.age ?? 0, 0, 999), objective: String(t.objective ?? ''),
+  trajectory: String(t.trajectory ?? 'static')`. One line each, no `WORLD_VERSION` bump needed
+  (the field was already being written, just not preserved). `tests/U490` documents the CURRENT
+  (broken) behavior as an explicit named regression guard so this doesn't silently regress further
+  and flips to a real assertion the moment the fix lands.
+- **Tests (U488–U490, 27 tests, all new, all passing):** U488 the curated table is exactly 2
+  entries, no §0/cosmology leakage, town-only gate (verified against the Greenwood node too), SAME
+  seed → SAME worry across 5 repeated asks AND across independent fresh boots, non-slice `tallow`
+  byte-identical, both entries reachable across seeds. U489 the round-trip mints the SAME
+  `targetRef` the concern named (not `learn:it`), no quest-board narration artifact, a real named
+  object is unaffected by the pronoun guard, a musing/question still mints nothing (pre-existing
+  guards intact), the substitution is slice-seed-gated, determinism ×2. U490 the thread exists at
+  boot + tension climbs (the provable half of the clock) + the known age/objective gap documented
+  as above; the cold-open voices the worry, fires ONLY on the slice seed, deterministic ×2, and
+  `tallow`'s opener is verified unchanged down to its exact closing sentence.
+- **Verified:** full ladder GREEN — suite 10050/0 (+27), convergence 131/131, determinism U19/21/
+  22/27/30 green; `playtest:quick` 50/50 runs clean, 0 crashes. Live-verified LLM-off (no `.env` key
+  in this worktree) on own port 5279 (never `:5179`) via the REAL HTTP client path (`/api/auth/
+  register` → `/api/worlds` → `/api/move` × 2) — cold-open voices the chapel-bell worry, "what's
+  troubling folk here?" names it, "I'll look into it" mints `learn:chapel bell` with a one-line
+  in-fiction acknowledgment, zero quest-log surface anywhere in the response. Receipt:
+  `docs/playtests/sl5/live-verify-2026-07-05.md`.
+- **Residual risk:** the `instrument.js` age/objective gap above (flagged, fix drafted, not
+  applied — belongs to whoever next holds the `instrument.js`/`worldTick.js` lane); the pre-existing
+  article-stripping cosmetic quirk in `proposeGoal.js`'s `clean()` (goal labels read "find out
+  chapel bell" not "find out the chapel bell" — confirmed universal/pre-existing across the whole
+  engine, not something this packet introduced, and `proposeGoal.js` is outside this lane).

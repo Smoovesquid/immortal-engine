@@ -1,5 +1,6 @@
 import { makeRng, seedFromString } from './rng.js';
 import { fateBand } from './rulesets.js';
+import { SLICE_SEED, pickAldermereWorry } from './world/sliceRegion.js';
 
 export function computeWorldBias(world) {
   const w = world && typeof world === 'object' ? world : {};
@@ -263,7 +264,18 @@ function pickWakingOpener(world, resolution, rng) {
   if (sceneTime !== 'waking') return '';
   const interior = world?.scene?.interior;
   if (!interior || typeof interior !== 'object') return '';
-  return String(rng.pick(WAKING_OPENERS) || WAKING_OPENERS[0]);
+  const base = String(rng.pick(WAKING_OPENERS) || WAKING_OPENERS[0]);
+  // SL-5 (Candidate C) — on the slice seed ONLY, the cold-open voices the
+  // seed-chosen curated worry unprompted, before the player asks anything —
+  // the PRD's Phase-1 exit-test line ("author one cold-open beat … that voices
+  // the first worry out loud"). Every other seed/pack keeps the plain generic
+  // bedroom opener above, byte-identical. Same rng draw as the base line, so
+  // determinism (same seed → same opener) is untouched.
+  if (String(world?.meta?.seed || '') === SLICE_SEED) {
+    const worry = pickAldermereWorry(world.meta.seed);
+    return `${base} ${worry.opener}`;
+  }
+  return base;
 }
 
 function buildNarration({ band, tone, motifPhrase, clockShade, stakes, loc, obj, resolution, threadClause, npcPhrase, stressPhrase, approachPhrase, wakingOpener }) {

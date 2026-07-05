@@ -9,7 +9,7 @@ import { triggerEnding } from './ending.js';
 import { compose } from './composer.js';
 import { planNextScene } from './sceneDirector.js';
 import { generateInitialMap } from './map/generateMap.js';
-import { SLICE_SEED, buildSliceRegion } from './world/sliceRegion.js';
+import { SLICE_SEED, buildSliceRegion, pickAldermereWorry } from './world/sliceRegion.js';
 import { biomeForNode, biomeFlavor } from './world/biome.js';
 import { ecologyTravelLine } from './ecology/snapshot.js';
 import { ensureMap, pickTravelDestination, moveToNode, neighbors, bfsPath, cleanPlaceName, exitsFrom, directionFromText, stepCell, nodeAtCell, nodesWithinSight, cardinalToCell, seeNode, visitNode, SIGHT_RADIUS } from './map/mapState.js';
@@ -294,6 +294,22 @@ export function beginAdventure(world, packsById) {
       if (!existingLabels.has(pt.name)) {
         w = introduceThread(w, pt.name);
       }
+    }
+  }
+
+  // SL-5 — seed Aldermere's curated worry as a living thread, sibling to the
+  // pack-threads block above, so an unattended worry ages/mutates through the
+  // SAME tickLivingThreads clock PACK-1's Bridge Dispute/Drowned Twin already
+  // ride (no new tick function). Gated to the slice seed only — every other
+  // seed's instrument.threads is untouched. The thread's label doubles as the
+  // D-B1 learn-goal's own object text (worry.target), so the concern voiced,
+  // the thread that ages, and the goal a player commits to all name the same
+  // thing.
+  if (w.meta.seed === SLICE_SEED) {
+    const worry = pickAldermereWorry(w.meta.seed);
+    const existingLabels = new Set((w.instrument?.threads || []).map(t => t.label));
+    if (!existingLabels.has(worry.target)) {
+      w = introduceThread(w, worry.target);
     }
   }
 
@@ -974,6 +990,21 @@ function trySelfHarm(world, text, actorId) {
 // "fix" this by threading dqIntent into a recursive call: a real repro
 // (U378) shows an outer top-level dqIntent silently answering the WRONG
 // utterance when force-reused by a recursive sub-turn.
+// SL-5 — matches a `learn`-verb commit (proposeGoal.js's VERB_PATTERNS 'learn'
+// entry: find out/learn/discover/figure out/uncover/get to the bottom of/look
+// into) whose captured object is a BARE placeholder pronoun ("I'll look into
+// it", "I'll find out about it") rather than a real named thing. Two call
+// sites in playerMoveCore: (1) the examine-floor guard below, general — a
+// declared commitment to a vague object is never a literal container-peek,
+// for any seed; (2) the D-B1 pronoun-substitution, slice-seed-gated only, to
+// mint the SAME goal Aldermere's curated concern named instead of a phantom
+// "learn:it".
+const BARE_PRONOUN_LEARN_RE = /\b(find out|learn|discover|figure out|uncover|get to the bottom of|look into)\b(?:\s+about)?\s+(?:it|that|this)\b\.?\s*$/i;
+// Mirrors proposeGoal.js's own DECLARE_RE (not exported, so duplicated rather
+// than reaching into a forbidden-lane file) — the "I'll/I will/let me…"
+// commitment opener that distinguishes a stated intention from a bare verb.
+const DECLARE_COMMIT_RE = /\b(?:i(?:['’]?ll| will| shall| intend to| vow to| mean to)|i['’]?m going to|let me|count on me to)\b/i;
+
 function playerMoveCore(world, packsById, text, dqIntent) {
 
   // Gate III.2: after ending is locked, play surfaces must not mutate state.
@@ -2210,7 +2241,15 @@ function playerMoveCore(world, packsById, text, dqIntent) {
     // of the phantom "You pocket it" free-action floor (WB-Q4/T-Q2).
     const tookRevealed = tryTakeRevealedContainerItem(w, text);
     if (tookRevealed) return tookRevealed;
-    const examined = tryExamineTarget(w, text);
+    // SL-5 — a real DM never treats a DECLARED commitment ("I'll look into it",
+    // "I'll examine it") as a literal peek at a physical thing: INSPECT_VERB's
+    // "look into/at/over" overlaps the idiomatic "investigate a matter" sense,
+    // and with no concrete named object ("it"/"that"/"this") the examine floor
+    // was swallowing the turn before it ever reached the D-B1 quest-birth check
+    // below — a stated intention to LOOK INTO A MATTER, not a container. A real
+    // examine with a named target ("I'll look into the chest") is untouched.
+    const isVagueCommitExamine = DECLARE_COMMIT_RE.test(text) && BARE_PRONOUN_LEARN_RE.test(text);
+    const examined = isVagueCommitExamine ? null : tryExamineTarget(w, text);
     if (examined) {
       return { world: w, output: { narration: `Wizard: ${examined}`, mechanics: 'observe only — no roll, state unchanged' } };
     }
@@ -3681,7 +3720,17 @@ function playerMoveCore(world, packsById, text, dqIntent) {
     // "deal with <hostile>" vow (a bandit doesn't "mark your word").
     const addressed = socialTarget(w, text);
     const witness = (addressed && !addressed.hostile) ? addressed : (presentNonHostileNpcs(w)[0] || null);
-    const goalSpec = proposeGoalFromDialogue(w, text, witness);
+    // SL-5 — a bare pronoun commit ("I'll look into it") right after Aldermere's
+    // curated concern was voiced must mint the SAME worry the concern named, not
+    // a phantom "learn:it" goal (proposeGoalFromDialogue is a pure text-parse with
+    // no memory of the prior turn). Slice-seed-gated only: substitute the pronoun
+    // for the seed-chosen worry's own target phrase before parsing, so "it"
+    // resolves to "the quiet road" / "the chapel bell" exactly. Every other seed's
+    // text is untouched.
+    const dialogueText = (w.meta.seed === SLICE_SEED && BARE_PRONOUN_LEARN_RE.test(text))
+      ? text.replace(BARE_PRONOUN_LEARN_RE, `$1 ${pickAldermereWorry(w.meta.seed).target}`)
+      : text;
+    const goalSpec = proposeGoalFromDialogue(w, dialogueText, witness);
     if (goalSpec) {
       const made = createGoal(w, goalSpec);
       if (made.goal) {

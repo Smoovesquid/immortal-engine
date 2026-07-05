@@ -27,6 +27,7 @@
 
 import { substrateEventsFor } from '../substrate.js';
 import { npcWant } from '../npc/npcArc.js';
+import { SLICE_SEED, pickAldermereWorry, isAldermereTownNode } from './sliceRegion.js';
 
 // ── Type: founding ───────────────────────────────────────────────────────────
 // "How/why was this place founded/settled?" / "the history of this town" / "how old is
@@ -241,8 +242,9 @@ function resolveOverview(world) {
 // hostile lurker is never a concern-bearer. A node with no sociable roster honest-declines.
 // §0-safe: npcWant draws only from the mundane role/default want pools (a harvest that
 // holds, a quiet night, a caravan that arrives whole) — authored never to allude to the
-// cosmology. Curated, town-level concerns (the demo's missing-caravan plot) ride the D-A3
-// preset later by overriding this resolver's source.
+// cosmology. Curated, town-level concerns (SL-5, landed): the slice's own Aldermere town
+// node overrides this resolver's source with a seed-stable 2-entry authored table (see
+// resolveConcern below) — every other pack/seed/node stays on the generic pool untouched.
 const PLACE_CONCERN_QUERY_RE = new RegExp([
   // anything I can/could help with · how can I help · can I be of help/use
   /\b(?:any|some)thing\b[^.?!]{0,20}?\bi\b[^.?!]{0,8}?\b(?:can|could|might)\b[^.?!]{0,8}?\bhelp\b/,
@@ -268,8 +270,20 @@ function resolveConcern(world) {
   const nodeId = String(world?.map?.currentNodeId || '');
   if (!nodeId) return null;
   const node = (Array.isArray(world?.map?.nodes) ? world.map.nodes : []).find(n => n && n.id === nodeId);
-  const npcs = Array.isArray(node?.settlement?.npcs) ? node.settlement.npcs : [];
   const seed = String(world?.meta?.seed || '');
+  // SL-5 — Aldermere's curated civic worry. Gated to the SAME "is this the
+  // authored slice" signal sliceRegion.js/demoFigures.js already establish
+  // (seed === SLICE_SEED) AND the current node being Aldermere itself (the
+  // town) — every other slice node (forest/camp/chapel) and every other
+  // pack/seed falls through to the generic role-pool below, byte-identical.
+  if (seed === SLICE_SEED && isAldermereTownNode(node)) {
+    const npcs = Array.isArray(node?.settlement?.npcs) ? node.settlement.npcs : [];
+    const sociable = npcs.some(n => n && !n.hostile);
+    if (!sociable) return null; // no one to carry a concern → caller honest-declines
+    const worry = pickAldermereWorry(seed);
+    return { type: 'concern', body: worry.body, clarity: 'vivid' };
+  }
+  const npcs = Array.isArray(node?.settlement?.npcs) ? node.settlement.npcs : [];
   // present sociable NPCs only — never surface a hostile lurker as a concern-bearer
   const sociable = npcs.filter(n => n && !n.hostile)
     .slice()

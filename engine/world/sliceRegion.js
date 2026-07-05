@@ -64,6 +64,49 @@ function nodeId(seed, packId, i, name) {
   return `n${i}_${seedFromString(`${seed}|${packId}|${name}`)}`;
 }
 
+// ── SL-5 — Aldermere's curated civic worry ──────────────────────────────────
+// Two authored entries, one per authored danger (SETTLED, Tim 2026-07-05 — do
+// NOT add a third). Each `target` is what a player's OWN "I'll look into it" /
+// "I'll find out {target}" should resolve to — the same phrase becomes the
+// `learn:{target}` goal's targetRef, so the concern a player hears and the
+// goal they commit to are provably the same worry (see placeQuery.js's
+// resolveConcern override + playloop.js's D-B1 pronoun-substitution).
+// §0-safe: civic/mundane danger only (a quiet road, a ringing bell) — never
+// the Scar, never cosmology. The bandit camp (Crowfoot) is deliberately FOLDED
+// into the road worry, not a third entry (the road IS the SL-4 encounter node).
+export const ALDERMERE_WORRIES = [
+  {
+    id: 'greenwood-road',
+    body: "the toll road's gone quiet in a bad way — nobody's come up from the woods in two days",
+    target: 'the quiet road',
+    opener: "Down past the shutters somebody's arguing about the toll road again — a carter, loud, insisting nobody's come up from the Greenwood since Sunday. The innkeeper isn't answering him. She's just watching the door.",
+  },
+  {
+    id: 'chapel-bell',
+    body: "the Hollow says the chapel bell rang Tuesday, and nobody's rung it in a year",
+    target: 'the chapel bell',
+    opener: "Down past the shutters somebody's talking low about the chapel bell — it rang Tuesday, they say, and nobody's set foot up there to ring it in a year. Nobody's laughing about it.",
+  },
+];
+
+/**
+ * pickAldermereWorry(seed) -> one of ALDERMERE_WORRIES, chosen deterministically.
+ * Mirrors npcArc.npcWant's pick() discipline: a pure hash of the seed selects the
+ * index, so the SAME seed always yields the SAME worry (stable all session, not
+ * re-rolled per ask) while a different seed is free to land on the other entry.
+ */
+export function pickAldermereWorry(seed) {
+  const h = seedFromString(`${String(seed || '')}|aldermere-worry`);
+  return ALDERMERE_WORRIES[h % ALDERMERE_WORRIES.length];
+}
+
+// True only for Aldermere itself (the slice's town node) — matches the exact
+// name-substring idiom demoFigures.js's SELECTORS.aldermere already uses, so
+// this gate is not a new mechanism, just reused at a second call site.
+export function isAldermereTownNode(node) {
+  return String(node?.name || '').toLowerCase().includes('aldermere');
+}
+
 /**
  * buildSliceRegion({ seed, packId }) → map (generateInitialMap's return shape).
  * Pure + deterministic: same inputs → identical region, every time.

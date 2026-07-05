@@ -84,11 +84,14 @@ function coerceJson(json) {
  */
 function validate(raw) {
   const schema = String(raw.schema || '');
-  // Accept the tool's current export (v6) and the MR-2c-era export (v5) — the room
-  // subset this loader reads (id/name/role/shape/material/x/y/w/h) is identical
-  // across both, so there's no reason to reject a v5 hand-drawing.
-  if (schema !== 'house-builder/v6' && schema !== 'house-builder/v5') {
-    fail(`unsupported schema '${raw.schema}' (expected house-builder/v6 or house-builder/v5)`);
+  // Accept house-builder/v5 or NEWER. The room subset this loader reads
+  // (id/name/role/shape/material/x/y/w/h) is stable from v5 on, and by design this
+  // loader consumes a subset and DEGRADES the rest (engine-leads) — so a newer schema
+  // is always safe (v7 added the optional room.role this loader already reads). Older
+  // (v4 and below) predate this shape and are rejected.
+  const ver = schema.match(/^house-builder\/v(\d+)$/);
+  if (!ver || Number(ver[1]) < 5) {
+    fail(`unsupported schema '${raw.schema}' (expected house-builder/v5 or newer)`);
   }
   const rooms = Array.isArray(raw.rooms) ? raw.rooms : null;
   if (!rooms || !rooms.length) fail('no rooms (need at least one)');

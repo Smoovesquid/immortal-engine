@@ -464,16 +464,26 @@ export async function mountSlice3D(container, sceneData, opts = {}) {
     const ap = wPos(a), bp = wPos(b);
     scene.add(buildEdge(THREE, ap.x, ap.z, bp.x, bp.z, edge.kind, heightAt));
   }
+  // TT-INK — architecture is ink, never geometry (yet). buildSettlement (houses +
+  // palisade wall) and buildChapelRuin (the ruined chapel building) STOP
+  // MOUNTING here: their content is exactly the ONE-drawing-brain floor plan the
+  // world sheet (TT-WORLD, above) already draws as ink from drawnStructureModel —
+  // mounting the 3-D building meshes on top of that ink was the double-
+  // representation the brief calls out (a wall occluding the floor plan it's
+  // supposed to BE). "(Yet)" honored: buildSettlement/buildChapelRuin are NOT
+  // deleted from worldAssets.js — they simply aren't called from this loop.
+  // buildWilderness is UNCHANGED: it has no buildings (trees/tents/barrels
+  // only) — already the "everything standing is a mini" law TT-PROPS formalizes
+  // next, not the ink-vs-geometry distinction this stage draws.
   for (const node of nodes) {
+    if (node.nodeType === 'settlement' || node.nodeType === 'dungeon_entrance') continue;
     const base = wPos(node);
     const baseY = heightAt(base.x, base.z);
     const groundAt = (lx, lz) => heightAt(base.x + lx, base.z + lz) - baseY; // local terrain, relative to the place
     const rng = nodeRng(seed, node.id);
     const grp = new THREE.Group();
     grp.position.set(base.x, baseY, base.z);
-    if (node.nodeType === 'settlement') grp.add(buildSettlement(THREE, mats, rng, groundAt, node.discovered, peelables));
-    else if (node.nodeType === 'dungeon_entrance') grp.add(buildChapelRuin(THREE, mats, rng, groundAt));
-    else grp.add(buildWilderness(THREE, mats, rng, groundAt, node.discovered));
+    grp.add(buildWilderness(THREE, mats, rng, groundAt, node.discovered));
     scene.add(grp);
   }
 

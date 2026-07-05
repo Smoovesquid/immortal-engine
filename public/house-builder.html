@@ -90,6 +90,10 @@
         <div style="font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:var(--ink-soft);margin:6px 0 2px">Shape <span style="text-transform:none;letter-spacing:0">· drag a wall dot to bow it</span></div>
         <div class="seg" id="segShape"><button data-shape="rect">Box</button><button data-shape="round">Round</button></div>
       </div>
+      <div id="roleRow" style="display:none">
+        <div class="slbl">Room type <span style="text-transform:none;letter-spacing:0">· the engine narrates &amp; furnishes by role</span></div>
+        <select id="roomRole" class="sinp"></select>
+      </div>
       <div id="secretPanel" style="display:none">
         <div class="slbl">Vessel · where it's hidden</div>
         <input id="secretVessel" list="vesselPresets" class="sinp" placeholder="e.g. Loose floorboard"/>
@@ -123,6 +127,8 @@
   let spaceHeld=false;
   const FURN={ bed:{w:2,h:3,label:'bed'}, barrel:{w:1,h:1,label:'barrel'}, cookpot:{w:1,h:1,label:'cooking pot'}, dresser:{w:2,h:1,label:'dresser'} };
   const MAT={ timber:{col:'#8a5a2e',w:3,hatch:false}, stone:{col:'#4a4a52',w:4,hatch:true} };
+  // room roles the engine knows (engine/structures/roomDetail.js) — drives narration + furnishing
+  const ROLES=[['','— generic room —'],['quarters','Bedchamber / Quarters'],['kitchen','Kitchen'],['cellar','Cellar'],['pantry','Pantry'],['larder','Larder'],['scullery','Scullery'],['greathall','Great Hall'],['taproom','Taproom'],['mead','Mead Hall'],['dungeon','Dungeon'],['armory','Armory'],['barracks','Barracks'],['solar','Solar'],['storeroom','Storeroom'],['counting','Counting House'],['crypt','Crypt'],['chapel','Side Chapel'],['vestry','Vestry'],['nave','Nave'],['tower','Tower'],['privy','Privy']];
 
   let scene=blankScene(), tool='select', sel=null, drag=null, uid=1, tunnelStart=null;
   const nextId=p=>`${p}${uid++}`;
@@ -134,6 +140,7 @@
   const VESSELS=['Loose floorboard','Secret stone compartment','False-bottomed chest','Hollow statue','Concealed wall niche','Under the mattress','Behind a loose brick','Buried in the ash','Beneath a flagstone','Inside a hollow book','Under a rug','Hidden wall panel'];
   fetch('/map/items.json').then(r=>r.json()).then(j=>{ ITEMS=j; }).catch(()=>{ ITEMS=[]; });
   document.getElementById('vesselPresets').innerHTML=VESSELS.map(v=>`<option>${v}</option>`).join('');
+  document.getElementById('roomRole').innerHTML=ROLES.map(([v,n])=>`<option value="${v}">${n}</option>`).join('');
 
   const tools=[...document.querySelectorAll('.tool[data-tool]')];
   tools.forEach(b=>b.addEventListener('click',()=>setTool(b.dataset.tool)));
@@ -233,7 +240,7 @@
 
   window.addEventListener('mouseup',()=>{
     if(drag&&drag.mode==='draw-room'){ const x=Math.min(drag.x0,drag.x1),y=Math.min(drag.y0,drag.y1),w=Math.abs(drag.x1-drag.x0),h=Math.abs(drag.y1-drag.y0);
-      if(w>=2&&h>=2){ const r={id:nextId('room'),name:`Room ${scene.rooms.length+1}`,shape:'rect',material:'timber',x,y,w,h,curve:{top:0,right:0,bottom:0,left:0}}; scene.rooms.push(r); select('room',r.id); setTool('select'); } }
+      if(w>=2&&h>=2){ const r={id:nextId('room'),name:`Room ${scene.rooms.length+1}`,shape:'rect',material:'timber',role:'',x,y,w,h,curve:{top:0,right:0,bottom:0,left:0}}; scene.rooms.push(r); select('room',r.id); setTool('select'); } }
     else if(drag&&drag.mode==='draw-wall'){ const w={id:nextId('w'),x0:drag.x0,y0:drag.y0,x1:drag.x1,y1:drag.y1,material:'stone',bend:0}; if(Math.hypot(w.x1-w.x0,w.y1-w.y0)>=1){ scene.walls.push(w); select('wall',w.id); setTool('select'); } }
     drag=null; draw();
   });
@@ -244,8 +251,8 @@
   window.addEventListener('keyup',(e)=>{ if(e.code==='Space'){ spaceHeld=false; cv.style.cursor=tool==='select'?'default':'crosshair'; } });
 
   // ── selection + panel ──
-  const matRow=document.getElementById('matRow'), shapeRow=document.getElementById('shapeRow'), secretPanel=document.getElementById('secretPanel');
-  function select(kind,id){ sel=kind?{kind,id}:null; const info=document.getElementById('selInfo'); matRow.style.display='none'; shapeRow.style.display='none'; secretPanel.style.display='none';
+  const matRow=document.getElementById('matRow'), shapeRow=document.getElementById('shapeRow'), secretPanel=document.getElementById('secretPanel'), roleRow=document.getElementById('roleRow');
+  function select(kind,id){ sel=kind?{kind,id}:null; const info=document.getElementById('selInfo'); matRow.style.display='none'; shapeRow.style.display='none'; secretPanel.style.display='none'; roleRow.style.display='none';
     if(!sel){ info.textContent='nothing selected'; draw(); return; }
     if(sel.kind==='furn'){ const f=scene.furniture.find(x=>x.id===id); info.innerHTML=`<b>${FURN[f.type].label}</b> · ${f.w}×${f.h}`; }
     else if(sel.kind==='open'){ const o=scene.openings.find(x=>x.id===id); info.innerHTML=`<b>${o.kind}</b> · ${o.len||1} wide<br><span style="font-size:11px">drag along the wall to widen</span>`; }
@@ -253,7 +260,7 @@
     else if(sel.kind==='wall'){ const w=scene.walls.find(x=>x.id===id); info.innerHTML=`<b>wall segment</b> · ${w.material}<br><span style="font-size:11px">drag endpoints to reshape</span>`; matRow.style.display='block'; setSeg('#segMaterial','mat',w.material); }
     else if(sel.kind==='secret'){ const s=scene.secrets.find(x=>x.id===id); info.innerHTML=`<b>secret cache</b> · found when the room is searched`; secretPanel.style.display='block';
       document.getElementById('secretVessel').value=s.vessel||''; document.getElementById('secretDC').value=s.dc||12; document.getElementById('itemSearch').value=''; renderItemResults(''); renderStash(s); }
-    else { const r=roomById(id); const c=r.curve||{}; const bowed=(c.top||c.right||c.bottom||c.left)?' · bowed':''; info.innerHTML=`<b>${r.name}</b> · ${r.w}×${r.h} · ${r.material} · ${r.shape==='round'?'round':'box'}${bowed}`; matRow.style.display='block'; shapeRow.style.display='block'; setSeg('#segMaterial','mat',r.material); setSeg('#segShape','shape',r.shape); }
+    else { const r=roomById(id); const c=r.curve||{}; const bowed=(c.top||c.right||c.bottom||c.left)?' · bowed':''; const roleName=(ROLES.find(([v])=>v===(r.role||''))||[])[1]; info.innerHTML=`<b>${r.name}</b> · ${r.w}×${r.h} · ${r.material} · ${r.shape==='round'?'round':'box'}${bowed}${r.role?' · '+esc(roleName):''}`; matRow.style.display='block'; shapeRow.style.display='block'; roleRow.style.display='block'; setSeg('#segMaterial','mat',r.material); setSeg('#segShape','shape',r.shape); document.getElementById('roomRole').value=r.role||''; }
     draw();
   }
   function esc(v){ return String(v).replace(/[<>&]/g,m=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[m])); }
@@ -272,6 +279,7 @@
   function setSeg(s2,attr,val){ document.querySelectorAll(s2+' button').forEach(b=>b.classList.toggle('on',b.dataset[attr]===val)); }
   document.querySelectorAll('#segMaterial button').forEach(b=>b.addEventListener('click',()=>{ if(!sel) return; if(sel.kind==='room') roomById(sel.id).material=b.dataset.mat; else if(sel.kind==='wall') scene.walls.find(x=>x.id===sel.id).material=b.dataset.mat; select(sel.kind,sel.id); }));
   document.querySelectorAll('#segShape button').forEach(b=>b.addEventListener('click',()=>{ if(sel&&sel.kind==='room'){ roomById(sel.id).shape=b.dataset.shape; select('room',sel.id); } }));
+  document.getElementById('roomRole').addEventListener('change',e=>{ if(sel&&sel.kind==='room'){ roomById(sel.id).role=e.target.value; select('room',sel.id); } });
 
   document.getElementById('btnDelete').addEventListener('click',deleteSel);
   function deleteSel(){ if(!sel) return;
@@ -409,8 +417,8 @@
   // ── export / import ──
   document.getElementById('btnExport').addEventListener('click',()=>{ scene.name=(document.getElementById('houseName').value||'house').trim();
     const orientOf=a=>{ const m=((a%180)+180)%180; return (m<22.5||m>157.5)?'h':(m>67.5&&m<112.5)?'v':'angled'; };
-    const out={ kind:'authored-structure', schema:'house-builder/v6', name:scene.name, grid:{cols:COLS,rows:ROWS,cell:CELL},
-      rooms:scene.rooms.map(r=>{ const rec={id:r.id,name:r.name,shape:r.shape,material:r.material,x:r.x,y:r.y,w:r.w,h:r.h};
+    const out={ kind:'authored-structure', schema:'house-builder/v7', name:scene.name, grid:{cols:COLS,rows:ROWS,cell:CELL},
+      rooms:scene.rooms.map(r=>{ const rec={id:r.id,name:r.name,shape:r.shape,material:r.material,x:r.x,y:r.y,w:r.w,h:r.h}; if(r.role) rec.role=r.role;
         if(r.shape==='round'){ rec.cx=r.x+r.w/2; rec.cy=r.y+r.h/2; rec.r=+(Math.min(r.w,r.h)/2).toFixed(3); }
         const c=r.curve||{}; if(c.top||c.right||c.bottom||c.left) rec.curve={top:+(c.top||0).toFixed(3),right:+(c.right||0).toFixed(3),bottom:+(c.bottom||0).toFixed(3),left:+(c.left||0).toFixed(3)}; return rec; }),
       walls:scene.walls.map(w=>({x0:w.x0,y0:w.y0,x1:w.x1,y1:w.y1,material:w.material,bend:+((w.bend||0).toFixed(3))})),
@@ -425,7 +433,7 @@
   document.getElementById('btnImport').addEventListener('click',()=>document.getElementById('fileInput').click());
   document.getElementById('fileInput').addEventListener('change',(e)=>{ const file=e.target.files[0]; if(!file) return; const rd=new FileReader();
     rd.onload=()=>{ try{ const d=JSON.parse(rd.result); scene=blankScene(); scene.name=d.name||'house'; document.getElementById('houseName').value=scene.name;
-      (d.rooms||[]).forEach(r=>scene.rooms.push({id:r.id||nextId('room'),name:r.name||'Room',shape:r.shape||'rect',material:r.material||'timber',x:r.x,y:r.y,w:r.w,h:r.h,curve:r.curve||{top:0,right:0,bottom:0,left:0}}));
+      (d.rooms||[]).forEach(r=>scene.rooms.push({id:r.id||nextId('room'),name:r.name||'Room',shape:r.shape||'rect',material:r.material||'timber',role:r.role||'',x:r.x,y:r.y,w:r.w,h:r.h,curve:r.curve||{top:0,right:0,bottom:0,left:0}}));
       (d.walls||[]).forEach(w=>scene.walls.push({id:nextId('w'),x0:w.x0,y0:w.y0,x1:w.x1,y1:w.y1,material:w.material||'stone',bend:w.bend||0}));
       (d.openings||[]).forEach(o=>scene.openings.push({id:nextId('o'),kind:o.kind||'door',x:o.x,y:o.y,angle:(o.angle!=null?o.angle:(o.orient==='v'?90:0)),len:o.len||1,room:o.room||null}));
       (d.tunnels||[]).forEach(t=>scene.tunnels.push({id:nextId('t'),a:t.a,b:t.b,bend:t.bend||0}));

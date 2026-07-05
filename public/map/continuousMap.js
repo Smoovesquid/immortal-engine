@@ -133,6 +133,12 @@ export function disposeContinuousMap3d() {
   _lastTiltFrac = 0;
   _token++;
   try { delete window.__map3d; } catch {}
+  // TT-WORLD — drop the hidden 2-D sheet mount render3d.js holds for the tilt
+  // view's world-sheet texture. Lazy dynamic import (render3d.js is only ever
+  // loaded once 3D has actually been opted into; a no-op if it never was —
+  // the import resolves to nothing worth tearing down, module just isn't cached
+  // yet, and the .catch keeps this from ever throwing on a fast double-dispose).
+  import('./render3d.js').then(m => { try { m.disposeSheetMount(); } catch {} }).catch(() => {});
 }
 
 // A world-change signature for the 3D scene: the set of things that require the
@@ -254,11 +260,15 @@ export function renderContinuousMap(world, opts = {}) {
     mounting = true;
     (async () => {
       try {
-        const scene = sceneFromWorld(_persist ? _persist.world : world); // PURE read of engine positions.
+        const w = _persist ? _persist.world : world;
+        const scene = sceneFromWorld(w); // PURE read of engine positions.
         const { mountSlice3D } = await import('./render3d.js');
         if (token !== _token || !document.contains(layer3d)) { mounting = false; return; }
         // controls:false — the 2D map drives the camera; we add orbit ourselves.
-        const ctrl = await mountSlice3D(layer3d, scene, { controls: false });
+        // opts.world (TT-WORLD) — lets the tilt view mount the world sheet (the
+        // hidden 2-D drawing captured as ground-plane ink) and resolve the same
+        // playerFocusWu point the ink marker anchors to.
+        const ctrl = await mountSlice3D(layer3d, scene, { controls: false, world: w });
         if (token !== _token || !document.contains(layer3d)) { try { ctrl.dispose(); } catch {} mounting = false; return; }
         ctrl.canvas.style.pointerEvents = 'none'; // the overlay div gates orbit, not the canvas
         _live = { ctrl };
@@ -352,7 +362,7 @@ function maybeRefreshScene(world) {
       const scene = sceneFromWorld(world);
       const { mountSlice3D } = await import('./render3d.js');
       if (token !== _token || !document.contains(layer3d)) return;
-      const ctrl = await mountSlice3D(layer3d, scene, { controls: false });
+      const ctrl = await mountSlice3D(layer3d, scene, { controls: false, world });
       if (token !== _token || !document.contains(layer3d)) { try { ctrl.dispose(); } catch {} return; }
       ctrl.canvas.style.pointerEvents = 'none';
       // Swap in the new controller, THEN drop the old one (mountSlice3D clears the

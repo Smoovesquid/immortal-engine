@@ -16,6 +16,11 @@
 //   mountSlice3D(container, scene, opts?) -> Promise<{ dispose() }>
 //     container : a DOM element (already in the document); gets the canvas.
 //     scene     : a slice-overworld-scene/v1 object.
+//     opts.world: the RAW world object (TT-WORLD) — lets the tilt view's ground
+//                 mount a hidden 2-D sheet (renderOneMap) as its texture source
+//                 and resolve the SAME playerFocusWu point the ink marker uses.
+//                 Optional: falls back to the scene's node-bounds center when
+//                 absent (a bare-sceneData caller, e.g. a lab page).
 //     throws    : Error('webgl-unavailable') or an import error when 3D can't run.
 
 const TILE_WU = 40; // world units per node tile — keeps the 3D geography to scale.
@@ -29,9 +34,170 @@ import { buildArchetypeFigure, breatheMinis, phaseFromKey } from './figures3d.js
 // so a look designed there flows straight to the game on reload. THREE + the seeded
 // RNG are passed in; this stays a zero-cost static import (no three fetch of its own).
 import {
-  nodeRng, createWorldMaterials, buildTerrain, buildEdge,
+  nodeRng, createWorldMaterials, buildEdge,
   buildSettlement, buildWilderness, buildChapelRuin,
 } from './worldAssets.js';
+
+// TT-WORLD — the world sheet. The tilt view's ground is the 2-D sheet's OWN ink
+// (oneMap.js's live-drawn canvas), captured as a texture and painted onto ONE flat
+// plane — so 2-D and 3-D can never disagree (the brief's suggested seam) and the
+// "rest of the map" (terrain washes, water, roads, neighboring places) is visible
+// past the local slice, exactly like the outer zooms already are. The sheet is
+// FLAT (tabletop law) — no heightAt() relief; a hidden renderOneMap mount is the
+// texture source, re-rendered on world-signature change (same diff discipline
+// MAP-3DR already uses), on a real focus move, or when the tilt camera's zoom
+// changes enough that the old capture's ink density would read wrong.
+//
+// PERF FINDING (verified live, not taken on faith — two rounds of live capture,
+// see docs/AGENT_CHANGELOG.md's TT-WORLD entry): two bugs stacked here.
+//   1. A texture drawn at one FIXED wide zoom (e.g. "show the whole region")
+//      needs a patch only a few texture-px wide to cover what the tilt camera
+//      actually sees at its typical close-in distance (setCamera's curRad
+//      clamps to 30..4000 wu; deep zoom sits near the 30-wu floor) — hopelessly
+//      under-resolved, a blurry brown wash. FIX: the hidden mount draws at the
+//      SAME px-per-wu the live 2-D sheet is at (derived from setCamera's own
+//      pxPerTile, which carries the 2-D map's live cam.z) — ink density always
+//      matches what the tilt camera is actually looking at, exactly mirroring
+//      how oneMap.js redraws at its live z every frame.
+//   2. The plane's PHYSICAL SIZE must be sized from the 3-D CAMERA's own ground
+//      footprint at its current distance (curRad, FOV) — NOT from the 2-D map's
+//      unrelated canvas pixel dimensions (that produced a plane a fraction of a
+//      percent of curRad, a tiny mostly-empty patch adrift in the scene). FIX:
+//      planeSpanWuForRad below derives the span directly from the SAME
+//      rad/vFovTan the camera math already computes, with a fixed margin
+//      multiple so panning/orbiting never runs off the edge before the next
+//      zoom-drift redraw catches up.
+import { renderOneMap, playerFocusWu } from './oneMap.js';
+import { NODE_WU } from './worldSpace.js';
+
+const SHEET_PX = 1024;         // texture resolution (px) — the hidden mount's square canvas.
+const SHEET_SPAN_MARGIN = 4.5; // the plane spans this many multiples of the camera's own ground footprint.
+const SHEET_MIN_SPAN_WU = 40;  // never shrink the plane below this (tight building-plan close-ups).
+const SHEET_REZOOM_RATIO = 1.5; // re-render the texture once z has drifted this much (up or down)
+const SHEET_TARGET_REFRESH_FRAC = 0.28; // re-render once target has drifted this fraction of the plane span
+
+// A hidden, off-DOM renderOneMap mount used ONLY as a texture source. It never
+// receives pointer events (not attached to the visible tree) and its own camera
+// is driven directly via __oneMapFocus — never the live map's camera. One
+// instance is reused across re-renders (same discipline as continuousMap's own
+// persistent 2D mount) so a repeated capture is cheap.
+let _sheetMount = null; // { wrap, canvas }
+function ensureSheetMount(world) {
+  if (_sheetMount) return _sheetMount;
+  const wrap = renderOneMap(world, { height: SHEET_PX, initialZoom: 0.1 });
+  const canvas = wrap.querySelector ? wrap.querySelector('canvas') : null;
+  // The stub/real DOM both support a simple child walk; querySelector isn't on
+  // the test stub, so fall back to the first canvas child directly.
+  const cv = canvas || (wrap.children || []).find(c => c && c.tag === 'canvas') || null;
+  _sheetMount = { wrap, canvas: cv };
+  return _sheetMount;
+}
+export function disposeSheetMount() {
+  if (_sheetMount && _sheetMount.wrap && _sheetMount.wrap.__ro) { try { _sheetMount.wrap.__ro.disconnect(); } catch {} }
+  _sheetMount = null;
+}
+
+/**
+ * worldSheetTexture(THREE, world, focusWu, z) -> THREE.CanvasTexture | null
+ * Captures the 2-D sheet's OWN drawing, centered on focusWu ({wx,wy} world
+ * units — the same rail playerFocusWu/resolveEntityWuFromWorld already feed
+ * the ink marker with) and drawn at px-per-wu `z` (the SAME z the live 2-D map
+ * is at — see the file-header perf note), into a texture for the tilt-view
+ * ground plane. Pure read + a canvas draw call; never touches world state or
+ * engine positions. Returns null if the hidden mount can't be captured
+ * (headless/no-canvas test stub) — the caller falls back to a flat paper ground.
+ */
+function worldSheetTexture(THREE, world, focusWu, z) {
+  try {
+    const { wrap, canvas } = ensureSheetMount(world);
+    if (!canvas || typeof canvas.getContext !== 'function') return null;
+    if (wrap.__rebind) wrap.__rebind(world, {});
+    if (wrap.__oneMapFocus) wrap.__oneMapFocus(focusWu?.wx || 0, focusWu?.wy || 0, z);
+    if (typeof canvas.toDataURL !== 'function' && typeof createImageBitmap !== 'function') return null;
+    const tex = new THREE.CanvasTexture(canvas);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    tex.needsUpdate = true;
+    return tex;
+  } catch { return null; }
+}
+
+// buildWorldSheet(THREE, world, worldPos, z, rad) -> { mesh, heightAt, refresh(...) }
+// ONE flat plane (tabletop law — no relief), sized DIRECTLY from the 3-D
+// camera's own ground footprint at distance `rad` (SHEET_SPAN_MARGIN multiples
+// of it — margin for pan/orbit before the next zoom-drift redraw), centered
+// under `worldPos` ({x,z} — 3-D WORLD units, the SAME point the camera's own
+// `target` sits at; see the file-header centering note), textured with a live
+// 2-D sheet capture drawn at `z` (px-per-wu — the SAME density the live 2-D
+// sheet is at, see the file-header perf note). `refresh` re-centers/re-zooms
+// the hidden mount, re-stamps the texture, and resizes the plane — called on a
+// real content change, a camera-target move, or a large-enough zoom drift
+// (never every frame). heightAt always returns 0: the ground the rest of this
+// file's node-dressing loop drops things onto is flat, by design.
+//
+// CENTERING NOTE (the third bug this packet found, live-verified): the plane
+// must track the SAME point the 3-D camera's `target` sits at, not a second,
+// independently-resolved focus (the first cut here used playerFocusWu(world)
+// directly — normally consistent with target, but a genuinely separate call,
+// and a test-script drive that moved the camera's target without also moving
+// the independent focus reproduced exactly this class of bug: the plane sat
+// centered on the "right" point while the camera looked somewhere else
+// entirely, and NO material/texture change was visible because the plane was
+// simply outside the frustum). buildWorldSheet/refresh take worldPos in 3-D
+// units DIRECTLY — callers pass target.x/target.z (or the wu equivalent
+// converted once at the one call site, worldPosFromWu below) so there is
+// exactly one source of "where the camera looks," never two.
+//
+// spanWorldForRad: the plane's side length in 3-D WORLD units — a pure function
+// of the camera's own distance + FOV (vFovTan, computed once in mountSlice3D
+// from camera.fov), completely independent of the UNRELATED 2-D map's own
+// canvas pixel size (the second bug this packet found: sizing the plane off
+// viewport px produced a plane a tiny fraction of curRad — a mostly-empty
+// patch adrift in the scene at any normal tilt-camera distance).
+// Exported for U478 (hermetic, DOM/THREE-free — pure math): the sizing/bridge
+// contracts a live capture can't easily assert (three.js never actually loads
+// in the test environment; the dynamic import fails gracefully, same as any
+// no-WebGL browser). These two functions carry every load-bearing number this
+// packet's live debugging found broken, so they're the regression guard.
+export function spanWorldForRad(rad, vFovTan) {
+  const groundHalfHeight = Math.max(1e-6, Number(rad) || 30) * Math.max(1e-6, Number(vFovTan) || 0.4);
+  return Math.max(SHEET_MIN_SPAN_WU, groundHalfHeight * 2 * SHEET_SPAN_MARGIN);
+}
+// worldPosFromWu(wx, wy) -> {x, z} — the ONE wu -> 3-D bridge (÷NODE_WU × TILE_WU),
+// used only to feed the hidden 2-D mount's __oneMapFocus (which speaks wu); the
+// PLANE itself is always positioned from worldPos (3-D units) directly.
+export function worldPosFromWu(wx, wy) {
+  return { x: (Number(wx) || 0) / NODE_WU * TILE_WU, z: (Number(wy) || 0) / NODE_WU * TILE_WU };
+}
+function buildWorldSheet(THREE, world, worldPos, z, rad, vFovTan) {
+  let curZ = Math.max(1e-6, Number(z) || 0.1);
+  let spanWorld = spanWorldForRad(rad, vFovTan);
+  const geo = new THREE.PlaneGeometry(1, 1, 1, 1);
+  geo.rotateX(-Math.PI / 2);
+  const focusWu0 = { wx: (Number(worldPos?.x) || 0) * NODE_WU / TILE_WU, wy: (Number(worldPos?.z) || 0) * NODE_WU / TILE_WU };
+  const tex = worldSheetTexture(THREE, world, focusWu0, curZ);
+  const mat = tex
+    ? new THREE.MeshStandardMaterial({ map: tex, roughness: 0.97 })
+    : new THREE.MeshStandardMaterial({ color: 0xe7ecdd, roughness: 0.98 }); // paper fallback (headless/no-canvas)
+  const mesh = new THREE.Mesh(geo, mat);
+  mesh.receiveShadow = true;
+  mesh.scale.set(spanWorld, 1, spanWorld);
+  mesh.position.set(Number(worldPos?.x) || 0, 0, Number(worldPos?.z) || 0);
+  const heightAt = () => 0; // FLAT — the tabletop law; terrain reads as ink, not geometry.
+  function refresh(newWorldPos, newWorld, newZ, newRad, newVFovTan) {
+    if (Number.isFinite(newZ) && newZ > 0) curZ = newZ;
+    spanWorld = spanWorldForRad(newRad, newVFovTan);
+    const wx = Number(newWorldPos?.x) || 0, wz = Number(newWorldPos?.z) || 0;
+    const focusWu = { wx: wx * NODE_WU / TILE_WU, wy: wz * NODE_WU / TILE_WU };
+    const t2 = worldSheetTexture(THREE, newWorld || world, focusWu, curZ);
+    if (t2) {
+      if (mesh.material.map && mesh.material.map !== t2) { try { mesh.material.map.dispose(); } catch {} }
+      mesh.material.map = t2; mesh.material.needsUpdate = true;
+    }
+    mesh.scale.set(spanWorld, 1, spanWorld);
+    mesh.position.set(wx, 0, wz);
+  }
+  return { mesh, heightAt, refresh, currentZ: () => curZ };
+}
 
 // ---------- WebGL capability probe (so we can fall back BEFORE importing) ----------
 function webglAvailable() {
@@ -84,8 +250,20 @@ export async function mountSlice3D(container, sceneData, opts = {}) {
   container.appendChild(canvas);
 
   const scene = new THREE.Scene();
-  scene.fog = new THREE.Fog(0xe6d4ac, 200, 560); // warm haze (outpost.html atmosphere)
-  const camera = new THREE.PerspectiveCamera(45, w0 / h0, 0.5, 1200);
+  // TT-WORLD — the fog was tuned (200-560) for the OLD local-only heightfield,
+  // where nothing existed past ~560 units to fog out anyway. The world sheet now
+  // legitimately extends far past that (the whole point: "the rest of the map"
+  // stays visible past the local slice) — a tight fog here would fog the sheet
+  // itself into a flat wash at any normal tilt-view camera distance (curRad
+  // ranges 30..4000, setCamera below). Widened so the sheet reads clearly at
+  // every distance the tilt camera actually uses, with the horizon still easing
+  // into haze rather than a hard edge.
+  scene.fog = new THREE.Fog(0xe6d4ac, 900, 3600);
+  const camera = new THREE.PerspectiveCamera(45, w0 / h0, 0.5, 4200);
+  // Hoisted here (setCamera below reuses this SAME constant) because
+  // buildWorldSheet needs it at construction time, before setCamera exists —
+  // it only depends on camera.fov, fixed at construction.
+  const vFovTan = Math.tan((camera.fov * Math.PI / 180) / 2);
 
   // ---------- sky ----------
   function skyTex() {
@@ -127,15 +305,36 @@ export async function mountSlice3D(container, sceneData, opts = {}) {
   // HUD hook (assigned once its DOM exists, below); the render loop calls it.
   let updateHud = () => {};
 
-  // ---------- world materials + terrain (shared worldAssets builders) ----------
+  // ---------- world materials + the world sheet (TT-WORLD) ----------
   // One material bundle per scene — its `shared` set drives dimGroup's clone-before-
   // tint, and the peelable buildings clone it into transparent sets for the cutaway.
-  // The terrain is a vertex-coloured heightfield FLATTENED under the nodes/roads; it
-  // returns heightAt() so nodes, roads and the player all drop onto the same surface.
-  // All deterministic from the scene seed — pure view, never engine state.
+  // TT-WORLD: the ground is no longer a local heightfield — it's ONE flat plane
+  // textured with the 2-D sheet's own live drawing (buildWorldSheet, above),
+  // player-centered, carrying the world's cartography past the local slice's old
+  // bounds (terrain washes, water, roads, neighbouring places all read as INK).
+  // heightAt() always returns 0 (the tabletop law: terrain is ink, not relief) —
+  // nodes/roads/the player all still call it, so everything sits flush on the
+  // sheet with zero further plumbing. Pure view of engine state; never a write.
   const mats = createWorldMaterials(THREE);
-  const { mesh: terrain, heightAt } = buildTerrain(THREE, { nodes, edges, bounds, seed, tileWU: TILE_WU });
-  scene.add(terrain);
+  // The sheet's INITIAL center: the SAME engine-truthful focus point the 2-D
+  // ink marker uses (playerFocusWu, WS-2) when the real `world` is available
+  // (the live-play path always passes opts.world), converted to 3-D world
+  // units; falls back to the scene's node-tile bounds center for a bare
+  // sceneData caller (e.g. a lab page with no world object). This is only a
+  // SEED — setCamera's very next call (continuousMap.js always makes one
+  // immediately after mount, before first paint) re-centers the plane on
+  // `target` directly, which is the sheet's real, ongoing source of truth
+  // (see buildWorldSheet's centering note — never a second independent focus).
+  const boundsCenterWu = { wx: ((bounds.minX + bounds.maxX) / 2) * NODE_WU, wy: ((bounds.minY + bounds.maxY) / 2) * NODE_WU };
+  const focusWu0 = (opts.world && playerFocusWu(opts.world)) || boundsCenterWu;
+  const worldPos0 = worldPosFromWu(focusWu0.wx, focusWu0.wy);
+  const worldSheet = buildWorldSheet(THREE, opts.world || sceneData, worldPos0, 32 / NODE_WU, 200, vFovTan);
+  const { heightAt } = worldSheet;
+  scene.add(worldSheet.mesh);
+  // The last point the sheet was actually centered/re-textured on (3-D world
+  // units) — compared against `target` in setCamera to decide whether a real
+  // enough move happened to justify a re-render (never every frame).
+  let _sheetTarget = { x: worldPos0.x, z: worldPos0.z };
 
   // ROOF-PEEL CUTAWAY registry: each modular settlement building registers its
   // separable roof + walls here so the per-frame updateCutaway() can lift/fade the
@@ -328,6 +527,11 @@ export async function mountSlice3D(container, sceneData, opts = {}) {
   // mini is on the very square the marker occupied — no jump. Pure view: only the
   // token's transform (+ its breathe baseY) move; no engine state, no scene rebuild.
   // A no-op during combat (the board owns the player cell there).
+  //
+  // TT-WORLD: the world sheet does NOT refresh here. It tracks `target` — the
+  // SAME point setCamera authoritatively points the 3-D camera at — never a
+  // second independent focus (see buildWorldSheet's centering note: that was
+  // this packet's third live-found bug). setCamera owns the sheet refresh.
   function setPlayerFocus(tx, ty) {
     if (!playerToken || !playerMini) return;
     const wx = (Number(tx) || 0) * TILE_WU, wz = (Number(ty) || 0) * TILE_WU;
@@ -458,6 +662,13 @@ export async function mountSlice3D(container, sceneData, opts = {}) {
     try { renderer.forceContextLoss(); } catch {}
     if (canvas.parentNode === container) container.removeChild(canvas);
     if (hudEl && hudEl.parentNode) try { hudEl.parentNode.removeChild(hudEl); } catch {}
+    // TT-WORLD — the hidden 2-D sheet mount is DELIBERATELY module-level and
+    // survives an individual controller's dispose (maybeRefreshScene disposes
+    // the OLD controller right after mounting a NEW one on a content refresh —
+    // tearing the sheet mount down here would force a pointless rebuild on every
+    // node/room/combat change, defeating its whole "reused like MAP-3DR's 2-D
+    // map" point). The true exit (leaving the map surface) calls the exported
+    // disposeSheetMount() directly — see continuousMap.js's disposeContinuousMap3d.
   }
 
   // setView: drive the camera directly (headless verification + future MAP_PATH
@@ -475,19 +686,36 @@ export async function mountSlice3D(container, sceneData, opts = {}) {
   // makes one tile cover the same screen px in 3D — so the 3D scale stays locked
   // to the 2D map's scale through the crossover. `phi` is the tilt (≈0 top-down,
   // larger = oblique), `target` the look-at in node-tile units, `az` orientation
-  // (0 = north-up, matching the 2D plan).
-  const vFovTan = Math.tan((camera.fov * Math.PI / 180) / 2);
+  // (0 = north-up, matching the 2D plan). (vFovTan is hoisted above, by the
+  // camera's construction — buildWorldSheet needs it before this function exists.)
   function setCamera(o = {}) {
     if (o.target) target.set((Number(o.target.tx) || 0) * TILE_WU, 0, (Number(o.target.ty) || 0) * TILE_WU);
     if (o.az != null) baseAz = o.az;
     basePhi = clamp(o.phi != null ? o.phi : 0.06, 0.02, 1.35);
-    let rad;
+    let rad, zNew = null;
     if (o.pxPerTile != null && o.pxPerTile > 0) {
       const Hpx = Math.max(1, canvas.clientHeight || h0);
       rad = (TILE_WU * Hpx) / (2 * o.pxPerTile * vFovTan);
       zoomPx = o.pxPerTile; // continuous-zoom depth → drives the roof-peel cutaway
+      zNew = o.pxPerTile / NODE_WU; // TT-WORLD — pxPerTile === NODE_WU * the 2-D map's live cam.z
     } else { rad = o.rad != null ? o.rad : 200; }
     curRad = clamp(rad, 30, 4000);
+    // TT-WORLD — re-zoom the world-sheet texture to the SAME px-per-wu the live
+    // 2-D sheet draws at (the ink-density perf fix), re-size the plane from the
+    // camera's OWN just-clamped ground footprint (curRad, the sizing-bug fix —
+    // never off the unrelated 2-D canvas's pixel dimensions), and re-center on
+    // `target` (the centering-bug fix — the SAME point the camera itself looks
+    // at, never a second independent focus). Re-render only past a real zoom
+    // drift OR a real target move (both relative to the CURRENT plane span) so
+    // a smooth pan/zoom doesn't thrash a canvas-draw + GPU-upload every frame.
+    const targetDriftWorld = Math.hypot(target.x - _sheetTarget.x, target.z - _sheetTarget.z);
+    const zCur = worldSheet.currentZ();
+    const zoomDrifted = zNew != null && (zNew > zCur * SHEET_REZOOM_RATIO || zNew < zCur / SHEET_REZOOM_RATIO);
+    const targetDrifted = targetDriftWorld > worldSheet.mesh.scale.x * SHEET_TARGET_REFRESH_FRAC;
+    if (zoomDrifted || targetDrifted) {
+      _sheetTarget = { x: target.x, z: target.z };
+      worldSheet.refresh(_sheetTarget, opts.world, zNew != null ? zNew : zCur, curRad, vFovTan);
+    }
     positionCamera(); // base + the player's orbit offset
     renderFrame();
     return { phi: +basePhi.toFixed(3), rad: Math.round(curRad) };

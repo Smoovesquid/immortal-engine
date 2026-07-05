@@ -208,6 +208,16 @@ done_when · rollback`.
   **MAP-REAL STAGE 1 (position truth) COMPLETE** — engine writes the doorstep, every reader consumes
   `pos`, the probe stands guard in `npm run check`.
 
+### MR-2b — the DM grounds architecture claims (no invented geography)  ·  Phase 1/2 (MAP-REAL stage 2)  ·  **CUT + DISPATCHED 2026-07-05-night (Opus worktree, THE serial narration slot; U507–U509)**
+- Plan-facts bundle (rooms + doors + states + exits) into the DM prompt seam; CG family gains CG-ARCH
+  (narrated-geometry-not-in-plan, structural tier — rides the CG-2b swap ladder); corpus lock on the
+  wake cottage's real layout. Kills the DM-invents-geography root class.
+
+### MR-2c — house-builder loader: authored plans become the world's truth  ·  Phase 1/2 (MAP-REAL stage 2)  ·  **CUT + DISPATCHED 2026-07-05-night (Sonnet worktree, parallel; U510–U512)**
+- Loader for the tool's export (wall segments + openings {x,y,orient,len} + tunnels) → structure
+  topology + plan + mask + DOOR RECORDS (2a schema), keyed by structure id; authored OVERRIDES procgen;
+  fixture round-trip test; worldHash replay-stable; STRUCTURE_SCHEMA_VERSION target no-bump.
+
 ### MR-2a — walls block + doors become canon (the WORLD_VERSION packet)  ·  Phase 1/2 (MAP-REAL stage 2)  ·  **✅ LANDED v0.29.0 b087 (worker `c81b6d22` → integrated `d412a598`; WORLD_VERSION 30→31; U503–U506 28/28; suite 10133/0; playtest:quick+full 550 runs clean; old-save-warn demonstrated; GEOMETRY_BREACH armed)**
 - Doors = canon state {open|shut|barred|locked} + exterior front-door RECORD (MR-1a's derivation now
   the legacy fallback) · walkable mask · `door` op via applyDeltas · interior moves + egress enforce

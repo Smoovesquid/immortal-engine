@@ -2601,3 +2601,10 @@ other agents. (none active)
 - Worker's honest scope flag → DOOR-FORCE-1 queued (bare force-phrasing doesn't flip canon state yet).
 - MAP-REAL stage 2 status: 2a ✅ · next 2b (DM grounds architecture, serial) + 2c (house-builder
   loader, parallel) — cutting both now under the autonomy grant. Claimed test numbers → U507+ next.
+
+## 2026-07-05 — Basecamp (second window) — MR-2b + MR-2c dispatched; dev server restarted
+
+- Dev server found DOWN post-b087 (Tim's play session ended with it); restarted, build 087 verified
+  served. MR-2b (Opus, serial: llmAdapter/composer/guard/coherence seams; U507–U509) and MR-2c
+  (Sonnet, parallel: structures loader + authored-plan registry; U510–U512) dispatched per
+  MR-2-FUNCTIONAL-INK design under the autonomy grant. Claimed numbers now U491–U512 (next U513+).

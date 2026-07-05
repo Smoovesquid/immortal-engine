@@ -2580,3 +2580,14 @@ other agents. (none active)
   Claimed numbers now U491–U506 (next free U507+).
 - Dispatch authority: Tim's explicit "continue autonomously" grant (13:3x) + worktree-exemption
   ritual; both integrations still pass Basecamp's own check gate before landing.
+
+## 2026-07-05 — Basecamp (second window) — MR-1b integrated → v0.28.37 build 086 · MAP-REAL stage 1 COMPLETE
+
+- Cherry-picked `0e2a6775`. Ladder GREEN: suite 10105/0, convergence 131/131, probe rung clean.
+  Worker's premise correction carried honestly: live marker path (oneMap.js) was ALREADY pos-truthful;
+  the stale reader was placeFromNode's token list (probe + legacy never-displayed surface) — fixed
+  anyway; v1.js changes were comment-corrections only. Live-verified through the REAL typed gesture
+  (Tim's verify-real-input rule): wake room marker ✓, doorstep marker after "go outside" ✓.
+- Position truth is now closed end-to-end: MR-1a (write) + MR-1b (read) + MR-ORACLE (standing guard).
+  Remaining in flight: MR-2a (door canon, Opus). U381 flake re-confirmed pre-existing by this worker
+  on a clean baseline — stays the quiet-window item.

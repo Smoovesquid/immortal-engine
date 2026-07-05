@@ -200,8 +200,13 @@ done_when · rollback`.
 ### MR-2 — FUNCTIONAL INK (stage 2 design, sliced a–d)  ·  Phase 1/2  ·  **DESIGNED 2026-07-05-eve (`docs/briefs/MR-2-FUNCTIONAL-INK.md`) — queue behind MR-1a/1b; engine slices to Tim for OK at dispatch**
 - 2a walls-block + door-state canon (WORLD_VERSION bump, full protocol) → 2b DM grounds architecture
   (plan-facts bundle + CG architecture class) → 2c house-builder loader (export shape verified: wall
-  segments + openings {x,y,orient,len}) → 2d windows as sight apertures. MR-1b brief is READY-TO-FIRE
-  (`docs/briefs/MR-1b-marker-reads-pos.md`, U501–U502) — dispatches the moment MR-1a lands.
+  segments + openings {x,y,orient,len}) → 2d windows as sight apertures. **MR-1b ✅ LANDED v0.28.37 b086** (worker `0e2a6775` → integrated; U501 8/8 + U502 3/3; suite
+  10105/0). **Honest premise correction from the worker:** the LIVE screen (oneMap.js
+  `playerFocusWu`) already consumed engine `pos` — the stale reader was `placeFromNode.js`'s token
+  list (feeds the probe + a never-displayed legacy surface); fixed regardless. Live receipt: marker in
+  the wake room, then ON THE DOORSTEP after typing "go outside" through the real input box.
+  **MAP-REAL STAGE 1 (position truth) COMPLETE** — engine writes the doorstep, every reader consumes
+  `pos`, the probe stands guard in `npm run check`.
 
 ### MR-2a — walls block + doors become canon (the WORLD_VERSION packet)  ·  Phase 1/2 (MAP-REAL stage 2)  ·  **CUT + DISPATCHED 2026-07-05-eve (Opus worktree; design `docs/briefs/MR-2-FUNCTIONAL-INK.md` §2a; U503–U506; dispatched under Tim's autonomous-continuation grant — integration held to Basecamp's gate)**
 - Walkable mask from plans · exterior front-door record (MR-1a's flag) + door states {open|shut|barred|

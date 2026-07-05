@@ -16,7 +16,7 @@
   header { grid-column:1/3; display:flex; align-items:center; gap:12px; padding:8px 14px; background:#221f19; color:#e9e2cf; border-bottom:1px solid #000; }
   header h1 { font-size:14px; font-weight:600; margin:0; letter-spacing:.3px; }
   header .spacer { flex:1; }
-  header input[type=text] { background:#34302650; color:#f0e9d6; border:1px solid #4a4433; border-radius:6px; padding:5px 9px; font-size:13px; width:170px; }
+  header input[type=text] { background:#34302650; color:#f0e9d6; border:1px solid #4a4433; border-radius:6px; padding:5px 9px; font-size:13px; width:150px; }
   header button { background:#33302640; color:#efe7d3; border:1px solid #4a4433; border-radius:6px; padding:6px 11px; font-size:12px; cursor:pointer; }
   header button:hover { background:#46402f; }
   header button.primary { background:var(--accent); border-color:var(--accent); color:#21170a; font-weight:600; }
@@ -45,6 +45,7 @@
     <h1>🏠 House Builder <span style="opacity:.5;font-weight:400">· Immortal Engine dev tool</span></h1>
     <input id="houseName" type="text" value="new-house"/>
     <div class="spacer"></div>
+    <button id="btnFit">Fit view</button>
     <button id="btnClear">New</button>
     <button id="btnImport">Import…</button>
     <button id="btnExport" class="primary">Export JSON</button>
@@ -57,8 +58,8 @@
       <button class="tool active" data-tool="select"><span class="swatch" id="sw-select"></span><span>Select / Move<small>drag pieces · handles</small></span></button>
       <button class="tool" data-tool="room"><span class="swatch" id="sw-room"></span><span>Room<small>drag to draw walls</small></span></button>
       <button class="tool" data-tool="wall"><span class="swatch" id="sw-wall"></span><span>Wall<small>drag one segment</small></span></button>
-      <button class="tool" data-tool="door"><span class="swatch" id="sw-door"></span><span>Door<small>click a wall</small></span></button>
-      <button class="tool" data-tool="window"><span class="swatch" id="sw-window"></span><span>Window<small>click a wall</small></span></button>
+      <button class="tool" data-tool="door"><span class="swatch" id="sw-door"></span><span>Door<small>click any wall</small></span></button>
+      <button class="tool" data-tool="window"><span class="swatch" id="sw-window"></span><span>Window<small>click any wall</small></span></button>
       <button class="tool" data-tool="tunnel"><span class="swatch" id="sw-tunnel"></span><span>Tunnel<small>click two rooms</small></span></button>
     </div>
     <div class="group">
@@ -83,21 +84,23 @@
     </div>
   </aside>
 
-  <main><canvas id="cv" width="1008" height="700"></canvas></main>
+  <main><canvas id="cv"></canvas></main>
 
   <footer>
-    <span class="hint"><kbd>R</kbd> rotate furn</span>
+    <span class="hint">scroll = zoom · space-drag (or middle-drag) = pan</span>
+    <span class="hint"><kbd>R</kbd> rotate</span>
     <span class="hint"><kbd>Del</kbd> remove</span>
-    <span class="hint">drag a door along its wall to widen it · drag wall endpoints to reshape</span>
+    <span class="hint">drag a door along its wall to widen · drag wall endpoints to reshape</span>
     <span id="status"></span>
   </footer>
 </div>
 
 <script>
 (() => {
-  const CELL=28, COLS=36, ROWS=25;
-  const cv=document.getElementById('cv'); cv.width=COLS*CELL; cv.height=ROWS*CELL;
-  const ctx=cv.getContext('2d');
+  const CELL=28, COLS=120, ROWS=90;                 // large world — castle / mega-dungeon scale
+  const cv=document.getElementById('cv'); cv.width=1008; cv.height=700; const ctx=cv.getContext('2d');
+  const cam={ scale:1, ox:40, oy:40 };              // world→screen: sx = wx*scale + ox (fixed viewport, big world)
+  let spaceHeld=false;
   const FURN={ bed:{w:2,h:3,label:'bed'}, barrel:{w:1,h:1,label:'barrel'}, cookpot:{w:1,h:1,label:'cooking pot'}, dresser:{w:2,h:1,label:'dresser'} };
   const MAT={ timber:{col:'#8a5a2e',w:3,hatch:false}, stone:{col:'#4a4a52',w:4,hatch:true} };
 
@@ -110,7 +113,9 @@
   tools.forEach(b=>b.addEventListener('click',()=>setTool(b.dataset.tool)));
   function setTool(t){ tool=t; tunnelStart=null; tools.forEach(b=>b.classList.toggle('active',b.dataset.tool===t)); cv.style.cursor=t==='select'?'default':'crosshair'; draw(); }
 
-  function evtPx(e){ const r=cv.getBoundingClientRect(); return { px:(e.clientX-r.left)*(cv.width/r.width), py:(e.clientY-r.top)*(cv.height/r.height) }; }
+  // ── screen ⇄ world ──
+  function screenXY(e){ const r=cv.getBoundingClientRect(); return { sx:(e.clientX-r.left)*(cv.width/r.width), sy:(e.clientY-r.top)*(cv.height/r.height) }; }
+  function evtPx(e){ const {sx,sy}=screenXY(e); return { px:(sx-cam.ox)/cam.scale, py:(sy-cam.oy)/cam.scale, sx, sy }; }
   function evtCell(e){ const p=evtPx(e); return { gx:Math.floor(p.px/CELL), gy:Math.floor(p.py/CELL), px:p.px, py:p.py }; }
   const cCol=v=>Math.max(0,Math.min(COLS,v)), cRow=v=>Math.max(0,Math.min(ROWS,v));
   const snap=v=>Math.round(v/CELL);
@@ -128,36 +133,36 @@
     const ca=[(A.x+A.w/2)*CELL,(A.y+A.h/2)*CELL], cb=[(B.x+B.w/2)*CELL,(B.y+B.h/2)*CELL];
     return { a:edgePoint(A,cb[0],cb[1]), b:edgePoint(B,ca[0],ca[1]) }; }
 
-  // nearest wall (room edge OR freeform wall) to a point → {x,y (grid, center), orient, room|null}
-  function nearestWall(px,py){ let best=null;
-    for(const r of scene.rooms){ const x0=r.x*CELL,y0=r.y*CELL,x1=(r.x+r.w)*CELL,y1=(r.y+r.h)*CELL;
-      const edges=[{o:'h',y:y0,a:x0,b:x1},{o:'h',y:y1,a:x0,b:x1},{o:'v',x:x0,a:y0,b:y1},{o:'v',x:x1,a:y0,b:y1}];
-      for(const e of edges){ let d,ox,oy;
-        if(e.o==='h'){ const c=Math.max(e.a,Math.min(e.b,px)); d=Math.abs(py-e.y)+((px<e.a-2||px>e.b+2)?9999:0); ox=c; oy=e.y; }
-        else { const c=Math.max(e.a,Math.min(e.b,py)); d=Math.abs(px-e.x)+((py<e.a-2||py>e.b+2)?9999:0); ox=e.x; oy=c; }
-        if(!best||d<best.dist){ let gx,gy;
-          if(e.o==='h'){ gx=Math.min(r.x+r.w-0.5,Math.max(r.x+0.5,Math.floor(ox/CELL)+0.5)); gy=oy/CELL; } else { gy=Math.min(r.y+r.h-0.5,Math.max(r.y+0.5,Math.floor(oy/CELL)+0.5)); gx=ox/CELL; }
-          best={dist:d,orient:e.o,x:gx,y:gy,room:r.id}; } } }
-    for(const w of scene.walls){ const x0=w.x0*CELL,y0=w.y0*CELL,x1=w.x1*CELL,y1=w.y1*CELL,dx=x1-x0,dy=y1-y0,L2=dx*dx+dy*dy;
-      let t=L2?((px-x0)*dx+(py-y0)*dy)/L2:0; t=Math.max(0,Math.min(1,t)); const cx=x0+t*dx,cy=y0+t*dy,d=Math.hypot(px-cx,py-cy);
-      if(!best||d<best.dist){ best={dist:d,orient:Math.abs(dx)>=Math.abs(dy)?'h':'v',x:cx/CELL,y:cy/CELL,room:null}; } }
-    return (best&&best.dist<CELL*1.4)?best:null; }
+  // Sample EVERY wall surface (straight edges, bowed edges, round-room ellipses,
+  // freeform segments) into points carrying a tangent angle — so a door/window can
+  // land on a curve, oriented to it. Recomputed per placement click (not per frame).
+  function wallSamples(){ const S=[], step=8;
+    const seg=(x0,y0,x1,y1,room)=>{ const L=Math.hypot(x1-x0,y1-y0),n=Math.max(1,Math.round(L/step)),a=Math.atan2(y1-y0,x1-x0); for(let i=0;i<=n;i++){ const t=i/n; S.push({x:x0+(x1-x0)*t,y:y0+(y1-y0)*t,a,room}); } };
+    const quad=(x0,y0,cx,cy,x1,y1,room)=>{ const n=18; for(let i=0;i<=n;i++){ const t=i/n,mt=1-t; S.push({x:mt*mt*x0+2*mt*t*cx+t*t*x1, y:mt*mt*y0+2*mt*t*cy+t*t*y1, a:Math.atan2(2*mt*(cy-y0)+2*t*(y1-cy),2*mt*(cx-x0)+2*t*(x1-cx)), room}); } };
+    for(const r of scene.rooms){ const x0=r.x*CELL,y0=r.y*CELL,x1=(r.x+r.w)*CELL,y1=(r.y+r.h)*CELL,mx=(x0+x1)/2,my=(y0+y1)/2;
+      if(r.shape==='round'){ const cx=(r.x+r.w/2)*CELL,cy=(r.y+r.h/2)*CELL,rx=r.w*CELL/2,ry=r.h*CELL/2,n=Math.max(28,Math.round((rx+ry)/step)); for(let i=0;i<n;i++){ const ang=i/n*Math.PI*2; S.push({x:cx+rx*Math.cos(ang),y:cy+ry*Math.sin(ang),a:Math.atan2(ry*Math.cos(ang),-rx*Math.sin(ang)),room:r.id}); } }
+      else { const c=r.curve||{top:0,right:0,bottom:0,left:0};
+        c.top?quad(x0,y0,mx,y0-2*c.top*CELL,x1,y0,r.id):seg(x0,y0,x1,y0,r.id);
+        c.right?quad(x1,y0,x1+2*c.right*CELL,my,x1,y1,r.id):seg(x1,y0,x1,y1,r.id);
+        c.bottom?quad(x1,y1,mx,y1+2*c.bottom*CELL,x0,y1,r.id):seg(x1,y1,x0,y1,r.id);
+        c.left?quad(x0,y1,x0-2*c.left*CELL,my,x0,y0,r.id):seg(x0,y1,x0,y0,r.id); } }
+    for(const w of scene.walls) seg(w.x0*CELL,w.y0*CELL,w.x1*CELL,w.y1*CELL,null);
+    return S; }
+  function nearestWall(px,py){ const S=wallSamples(); let best=null; for(const s of S){ const d=Math.hypot(s.x-px,s.y-py); if(!best||d<best.d) best={d,s}; }
+    if(!best||best.d>CELL*1.4) return null; return { x:best.s.x/CELL, y:best.s.y/CELL, angle:best.s.a*180/Math.PI, room:best.s.room }; }
 
   // ── mouse ──
-  cv.addEventListener('mousedown',(e)=>{ const c=evtCell(e);
+  cv.addEventListener('mousedown',(e)=>{
+    if(e.button===1||spaceHeld){ drag={mode:'pan',cx:e.clientX,cy:e.clientY,ox:cam.ox,oy:cam.oy}; e.preventDefault(); return; }
+    const c=evtCell(e);
     if(tool==='room'){ drag={mode:'draw-room',x0:cCol(c.gx),y0:cRow(c.gy),x1:cCol(c.gx),y1:cRow(c.gy)}; }
     else if(tool==='wall'){ drag={mode:'draw-wall',x0:cCol(snap(c.px)),y0:cRow(snap(c.py)),x1:cCol(snap(c.px)),y1:cRow(snap(c.py))}; }
-    else if(tool==='door'||tool==='window'){ const w=nearestWall(c.px,c.py); if(w){ const o={id:nextId('o'),kind:tool,x:w.x,y:w.y,orient:w.orient,len:1,room:w.room}; scene.openings.push(o); select('open',o.id); } else flash('click nearer a wall'); }
-    else if(tool==='tunnel'){ const r=roomAt(c.gx,c.gy); if(!r){ flash('click a room'); }
-      else if(!tunnelStart){ tunnelStart=r.id; flash('now click the room to link'); }
-      else if(r.id!==tunnelStart){ scene.tunnels.push({id:nextId('t'),a:tunnelStart,b:r.id}); tunnelStart=null; flash('tunnel linked'); }
-      else { tunnelStart=null; } }
+    else if(tool==='door'||tool==='window'){ const w=nearestWall(c.px,c.py); if(w){ scene.openings.push({id:nextId('o'),kind:tool,x:w.x,y:w.y,angle:w.angle,len:1,room:w.room}); select('open',scene.openings[scene.openings.length-1].id); } else flash('click nearer a wall'); }
+    else if(tool==='tunnel'){ const r=roomAt(c.gx,c.gy); if(!r) flash('click a room'); else if(!tunnelStart){ tunnelStart=r.id; flash('now click the room to link'); } else if(r.id!==tunnelStart){ scene.tunnels.push({id:nextId('t'),a:tunnelStart,b:r.id}); tunnelStart=null; flash('tunnel linked'); } else tunnelStart=null; }
     else if(FURN[tool]){ const def=FURN[tool]; const f={id:nextId('f'),type:tool,x:cCol(c.gx),y:cRow(c.gy),w:def.w,h:def.h,rot:0}; f.x=Math.min(f.x,COLS-f.w); f.y=Math.min(f.y,ROWS-f.h); scene.furniture.push(f); select('furn',f.id); drag={mode:'move-furn',id:f.id,offx:0,offy:0}; setTool('select'); }
-    else { // select
-      // 1) handles of the currently-selected object take priority
-      if(sel&&sel.kind==='room'){ const r=roomById(sel.id); if(r&&r.shape!=='round'){ const H=wallHandles(r); for(const k in H){ const p=H[k]; if(Math.hypot(p[0]-c.px,p[1]-c.py)<9){ drag={mode:'curve-wall',id:r.id,edge:k}; return; } } } }
-      if(sel&&sel.kind==='wall'){ const w=scene.walls.find(x=>x.id===sel.id); if(w){ const es=[[w.x0*CELL,w.y0*CELL],[w.x1*CELL,w.y1*CELL]]; for(let i=0;i<2;i++){ if(Math.hypot(es[i][0]-c.px,es[i][1]-c.py)<9){ drag={mode:'wall-end',id:w.id,end:i}; return; } } } }
-      // 2) hit-test pieces
+    else {
+      if(sel&&sel.kind==='room'){ const r=roomById(sel.id); if(r&&r.shape!=='round'){ const H=wallHandles(r); for(const k in H){ const p=H[k]; if(Math.hypot(p[0]-c.px,p[1]-c.py)<9/cam.scale+4){ drag={mode:'curve-wall',id:r.id,edge:k}; return; } } } }
+      if(sel&&sel.kind==='wall'){ const w=scene.walls.find(x=>x.id===sel.id); if(w){ const es=[[w.x0*CELL,w.y0*CELL],[w.x1*CELL,w.y1*CELL]]; for(let i=0;i<2;i++){ if(Math.hypot(es[i][0]-c.px,es[i][1]-c.py)<9/cam.scale+4){ drag={mode:'wall-end',id:w.id,end:i}; return; } } } }
       const o=openingAt(c.px,c.py); if(o){ select('open',o.id); drag={mode:'resize-open',id:o.id}; return; }
       const w=wallAt(c.px,c.py); if(w){ select('wall',w.id); drag={mode:'move-wall',id:w.id,px0:c.px,py0:c.py}; return; }
       const f=furnAt(c.gx,c.gy); if(f){ select('furn',f.id); drag={mode:'move-furn',id:f.id,offx:c.gx-f.x,offy:c.gy-f.y}; return; }
@@ -168,16 +173,17 @@
     draw();
   });
 
-  window.addEventListener('mousemove',(e)=>{ if(!drag) return; const c=evtCell(e);
+  window.addEventListener('mousemove',(e)=>{ if(!drag) return;
+    if(drag.mode==='pan'){ const rr=cv.getBoundingClientRect(),k=cv.width/rr.width; cam.ox=drag.ox+(e.clientX-drag.cx)*k; cam.oy=drag.oy+(e.clientY-drag.cy)*k; draw(); return; }
+    const c=evtCell(e);
     if(drag.mode==='draw-room'){ drag.x1=cCol(c.gx); drag.y1=cRow(c.gy); }
     else if(drag.mode==='draw-wall'){ drag.x1=cCol(snap(c.px)); drag.y1=cRow(snap(c.py)); }
     else if(drag.mode==='move-furn'){ const f=scene.furniture.find(x=>x.id===drag.id); if(f){ f.x=Math.max(0,Math.min(COLS-f.w,c.gx-drag.offx)); f.y=Math.max(0,Math.min(ROWS-f.h,c.gy-drag.offy)); } }
     else if(drag.mode==='move-room'){ const r=roomById(drag.id); if(r){ const nx=Math.max(0,Math.min(COLS-r.w,c.gx-drag.offx)),ny=Math.max(0,Math.min(ROWS-r.h,c.gy-drag.offy)),dx=nx-r.x,dy=ny-r.y; r.x=nx; r.y=ny; scene.openings.filter(o=>o.room===r.id).forEach(o=>{o.x+=dx;o.y+=dy;}); } }
-    else if(drag.mode==='curve-wall'){ const r=roomById(drag.id); if(r){ if(!r.curve) r.curve={top:0,right:0,bottom:0,left:0}; const x0=r.x*CELL,y0=r.y*CELL,x1=(r.x+r.w)*CELL,y1=(r.y+r.h)*CELL,cl=v=>Math.max(-5,Math.min(5,v));
-      if(drag.edge==='top') r.curve.top=cl((y0-c.py)/CELL); else if(drag.edge==='bottom') r.curve.bottom=cl((c.py-y1)/CELL); else if(drag.edge==='left') r.curve.left=cl((x0-c.px)/CELL); else if(drag.edge==='right') r.curve.right=cl((c.px-x1)/CELL); select('room',r.id); } }
+    else if(drag.mode==='curve-wall'){ const r=roomById(drag.id); if(r){ if(!r.curve) r.curve={top:0,right:0,bottom:0,left:0}; const x0=r.x*CELL,y0=r.y*CELL,x1=(r.x+r.w)*CELL,y1=(r.y+r.h)*CELL,cl=v=>Math.max(-5,Math.min(5,v)); if(drag.edge==='top')r.curve.top=cl((y0-c.py)/CELL); else if(drag.edge==='bottom')r.curve.bottom=cl((c.py-y1)/CELL); else if(drag.edge==='left')r.curve.left=cl((x0-c.px)/CELL); else if(drag.edge==='right')r.curve.right=cl((c.px-x1)/CELL); select('room',r.id); } }
     else if(drag.mode==='wall-end'){ const w=scene.walls.find(x=>x.id===drag.id); if(w){ if(drag.end===0){ w.x0=cCol(snap(c.px)); w.y0=cRow(snap(c.py)); } else { w.x1=cCol(snap(c.px)); w.y1=cRow(snap(c.py)); } } }
     else if(drag.mode==='move-wall'){ const w=scene.walls.find(x=>x.id===drag.id); if(w){ const dx=snap(c.px-drag.px0),dy=snap(c.py-drag.py0); if(dx||dy){ w.x0=cCol(w.x0+dx); w.y0=cRow(w.y0+dy); w.x1=cCol(w.x1+dx); w.y1=cRow(w.y1+dy); drag.px0+=dx*CELL; drag.py0+=dy*CELL; } } }
-    else if(drag.mode==='resize-open'){ const o=scene.openings.find(x=>x.id===drag.id); if(o){ const H=(o.orient==='h'); const proj=H?c.px:c.py, cen=(H?o.x:o.y)*CELL; let len=Math.max(1,Math.round(2*Math.abs(proj-cen)/CELL)); const r=roomById(o.room); const max=r?(H?r.w:r.h):12; o.len=Math.max(1,Math.min(max,len)); } }
+    else if(drag.mode==='resize-open'){ const o=scene.openings.find(x=>x.id===drag.id); if(o){ const a=(o.angle||0)*Math.PI/180, proj=(c.px-o.x*CELL)*Math.cos(a)+(c.py-o.y*CELL)*Math.sin(a); o.len=Math.max(1,Math.min(20,Math.round(2*Math.abs(proj)/CELL))); } }
     draw();
   });
 
@@ -187,6 +193,11 @@
     else if(drag&&drag.mode==='draw-wall'){ const w={id:nextId('w'),x0:drag.x0,y0:drag.y0,x1:drag.x1,y1:drag.y1,material:'stone'}; if(Math.hypot(w.x1-w.x0,w.y1-w.y0)>=1){ scene.walls.push(w); select('wall',w.id); setTool('select'); } }
     drag=null; draw();
   });
+
+  cv.addEventListener('wheel',(e)=>{ e.preventDefault(); const {sx,sy}=screenXY(e); const wx=(sx-cam.ox)/cam.scale, wy=(sy-cam.oy)/cam.scale;
+    cam.scale=Math.max(0.12,Math.min(3.5,cam.scale*Math.exp(-e.deltaY*0.0015))); cam.ox=sx-wx*cam.scale; cam.oy=sy-wy*cam.scale; draw(); },{passive:false});
+  window.addEventListener('keydown',(e)=>{ if(e.code==='Space'&&e.target.tagName!=='INPUT'){ spaceHeld=true; cv.style.cursor='grab'; e.preventDefault(); } });
+  window.addEventListener('keyup',(e)=>{ if(e.code==='Space'){ spaceHeld=false; cv.style.cursor=tool==='select'?'default':'crosshair'; } });
 
   // ── selection + panel ──
   const matRow=document.getElementById('matRow'), shapeRow=document.getElementById('shapeRow');
@@ -199,7 +210,7 @@
     else { const r=roomById(id); const c=r.curve||{}; const bowed=(c.top||c.right||c.bottom||c.left)?' · bowed':''; info.innerHTML=`<b>${r.name}</b> · ${r.w}×${r.h} · ${r.material} · ${r.shape==='round'?'round':'box'}${bowed}`; matRow.style.display='block'; shapeRow.style.display='block'; setSeg('#segMaterial','mat',r.material); setSeg('#segShape','shape',r.shape); }
     draw();
   }
-  function setSeg(sel2,attr,val){ document.querySelectorAll(sel2+' button').forEach(b=>b.classList.toggle('on',b.dataset[attr]===val)); }
+  function setSeg(s2,attr,val){ document.querySelectorAll(s2+' button').forEach(b=>b.classList.toggle('on',b.dataset[attr]===val)); }
   document.querySelectorAll('#segMaterial button').forEach(b=>b.addEventListener('click',()=>{ if(!sel) return; if(sel.kind==='room') roomById(sel.id).material=b.dataset.mat; else if(sel.kind==='wall') scene.walls.find(x=>x.id===sel.id).material=b.dataset.mat; select(sel.kind,sel.id); }));
   document.querySelectorAll('#segShape button').forEach(b=>b.addEventListener('click',()=>{ if(sel&&sel.kind==='room'){ roomById(sel.id).shape=b.dataset.shape; select('room',sel.id); } }));
 
@@ -218,14 +229,15 @@
     else if((e.key==='r'||e.key==='R')&&sel&&sel.kind==='furn'){ const f=scene.furniture.find(x=>x.id===sel.id); const nw=f.h,nh=f.w; f.w=Math.min(nw,COLS-f.x); f.h=Math.min(nh,ROWS-f.y); f.rot=(f.rot+90)%360; select('furn',f.id); }
   });
 
-  // ── rendering ──
-  function draw(){ ctx.clearRect(0,0,cv.width,cv.height);
+  // ── rendering (all in WORLD px; camera transform applied once) ──
+  function draw(){ ctx.setTransform(1,0,0,1,0,0); ctx.clearRect(0,0,cv.width,cv.height); ctx.setTransform(cam.scale,0,0,cam.scale,cam.ox,cam.oy);
     ctx.strokeStyle=getCss('--grid'); ctx.lineWidth=1;
     for(let x=0;x<=COLS;x++) line(x*CELL,0,x*CELL,ROWS*CELL);
     for(let y=0;y<=ROWS;y++) line(0,y*CELL,COLS*CELL,y*CELL);
     ctx.strokeStyle=getCss('--grid-strong');
     for(let x=0;x<=COLS;x+=5) line(x*CELL,0,x*CELL,ROWS*CELL);
     for(let y=0;y<=ROWS;y+=5) line(0,y*CELL,COLS*CELL,y*CELL);
+    ctx.strokeStyle=getCss('--grid-strong'); ctx.lineWidth=1.6; ctx.strokeRect(0,0,COLS*CELL,ROWS*CELL);
 
     for(const r of scene.rooms) drawRoom(r);
     for(const t of scene.tunnels) drawTunnel(t);
@@ -235,19 +247,19 @@
     for(const o of scene.openings) drawOpening(o);
     for(const f of scene.furniture) drawFurn(f);
     if(tunnelStart){ const r=roomById(tunnelStart); if(r){ ctx.strokeStyle=getCss('--sel'); ctx.lineWidth=2.5; ctx.setLineDash([5,3]); ctx.strokeRect(r.x*CELL-3,r.y*CELL-3,r.w*CELL+6,r.h*CELL+6); ctx.setLineDash([]); } }
-
     drawSelection();
+
     const d=scene.openings.filter(o=>o.kind==='door').length, wn=scene.openings.filter(o=>o.kind==='window').length;
-    document.getElementById('status').textContent=`${scene.rooms.length} rooms · ${scene.walls.length} walls · ${d} doors · ${wn} windows · ${scene.tunnels.length} tunnels · ${scene.furniture.length} furniture`;
+    document.getElementById('status').textContent=`${scene.rooms.length} rooms · ${scene.walls.length} walls · ${d} doors · ${wn} windows · ${scene.tunnels.length} tunnels · ${Math.round(cam.scale*100)}%`;
   }
 
-  function drawSelection(){ if(!sel) return;
-    if(sel.kind==='room'){ const r=roomById(sel.id); if(!r) return; ctx.strokeStyle=getCss('--sel'); ctx.lineWidth=2.5; ctx.setLineDash([4,3]); ctx.strokeRect(r.x*CELL-2,r.y*CELL-2,r.w*CELL+4,r.h*CELL+4); ctx.setLineDash([]);
+  function drawSelection(){ if(!sel) return; const dash=()=>{ctx.setLineDash([4,3]);}, undash=()=>{ctx.setLineDash([]);};
+    if(sel.kind==='room'){ const r=roomById(sel.id); if(!r) return; ctx.strokeStyle=getCss('--sel'); ctx.lineWidth=2.5; dash(); ctx.strokeRect(r.x*CELL-2,r.y*CELL-2,r.w*CELL+4,r.h*CELL+4); undash();
       if(tool==='select'&&r.shape!=='round'){ const H=wallHandles(r); for(const k in H){ const p=H[k]; ctx.fillStyle=getCss('--accent'); ctx.strokeStyle='#fff'; ctx.lineWidth=1.5; circle(p[0],p[1],5); ctx.fill(); ctx.stroke(); } } }
-    else if(sel.kind==='furn'){ const f=scene.furniture.find(x=>x.id===sel.id); if(f){ ctx.strokeStyle=getCss('--sel'); ctx.lineWidth=2.5; ctx.setLineDash([4,3]); ctx.strokeRect(f.x*CELL-2,f.y*CELL-2,f.w*CELL+4,f.h*CELL+4); ctx.setLineDash([]); } }
-    else if(sel.kind==='open'){ const o=scene.openings.find(x=>x.id===sel.id); if(o){ const half=CELL*(o.len||1)/2; ctx.strokeStyle=getCss('--sel'); ctx.lineWidth=2.5; ctx.setLineDash([4,3]); if(o.orient==='h') ctx.strokeRect(o.x*CELL-half-3,o.y*CELL-8,half*2+6,16); else ctx.strokeRect(o.x*CELL-8,o.y*CELL-half-3,16,half*2+6); ctx.setLineDash([]); } }
-    else if(sel.kind==='wall'){ const w=scene.walls.find(x=>x.id===sel.id); if(w){ ctx.strokeStyle=getCss('--sel'); ctx.lineWidth=1.5; for(const p of [[w.x0,w.y0],[w.x1,w.y1]]){ ctx.fillStyle=getCss('--accent'); ctx.strokeStyle='#fff'; circle(p[0]*CELL,p[1]*CELL,5); ctx.fill(); ctx.stroke(); } } }
-    else if(sel.kind==='tunnel'){ const e=tunnelEnds(scene.tunnels.find(x=>x.id===sel.id)); if(e){ ctx.strokeStyle=getCss('--sel'); ctx.lineWidth=2.5; ctx.setLineDash([5,3]); line(e.a[0],e.a[1],e.b[0],e.b[1]); ctx.setLineDash([]); } }
+    else if(sel.kind==='furn'){ const f=scene.furniture.find(x=>x.id===sel.id); if(f){ ctx.strokeStyle=getCss('--sel'); ctx.lineWidth=2.5; dash(); ctx.strokeRect(f.x*CELL-2,f.y*CELL-2,f.w*CELL+4,f.h*CELL+4); undash(); } }
+    else if(sel.kind==='open'){ const o=scene.openings.find(x=>x.id===sel.id); if(o){ const half=CELL*(o.len||1)/2; ctx.save(); ctx.translate(o.x*CELL,o.y*CELL); ctx.rotate((o.angle||0)*Math.PI/180); ctx.strokeStyle=getCss('--sel'); ctx.lineWidth=2.5; dash(); ctx.strokeRect(-half-3,-9,half*2+6,18); undash(); ctx.restore(); } }
+    else if(sel.kind==='wall'){ const w=scene.walls.find(x=>x.id===sel.id); if(w){ ctx.lineWidth=1.5; for(const p of [[w.x0,w.y0],[w.x1,w.y1]]){ ctx.fillStyle=getCss('--accent'); ctx.strokeStyle='#fff'; circle(p[0]*CELL,p[1]*CELL,5); ctx.fill(); ctx.stroke(); } } }
+    else if(sel.kind==='tunnel'){ const e=tunnelEnds(scene.tunnels.find(x=>x.id===sel.id)); if(e){ ctx.strokeStyle=getCss('--sel'); ctx.lineWidth=2.5; dash(); line(e.a[0],e.a[1],e.b[0],e.b[1]); undash(); } }
   }
 
   function roomPath(r){ ctx.beginPath();
@@ -262,31 +274,27 @@
     if(m.hatch){ ctx.save(); roomPath(r); ctx.clip(); ctx.strokeStyle='rgba(74,80,100,0.28)'; ctx.lineWidth=1;
       const x0=r.x*CELL-CELL,y0=r.y*CELL-CELL,x1=(r.x+r.w)*CELL+CELL,y1=(r.y+r.h)*CELL+CELL;
       for(let d=x0-(y1-y0);d<x1;d+=7){ ctx.beginPath(); ctx.moveTo(d,y0); ctx.lineTo(d+(y1-y0),y1); ctx.stroke(); }
-      ctx.globalCompositeOperation='destination-out'; ctx.beginPath();
-      if(r.shape==='round') ctx.ellipse((r.x+r.w/2)*CELL,(r.y+r.h/2)*CELL,r.w*CELL/2-6,r.h*CELL/2-6,0,0,7); else ctx.rect(r.x*CELL+6,r.y*CELL+6,r.w*CELL-12,r.h*CELL-12);
-      ctx.fillStyle='#000'; ctx.fill(); ctx.restore(); }
+      ctx.globalCompositeOperation='destination-out'; ctx.beginPath(); if(r.shape==='round') ctx.ellipse((r.x+r.w/2)*CELL,(r.y+r.h/2)*CELL,r.w*CELL/2-6,r.h*CELL/2-6,0,0,7); else ctx.rect(r.x*CELL+6,r.y*CELL+6,r.w*CELL-12,r.h*CELL-12); ctx.fillStyle='#000'; ctx.fill(); ctx.restore(); }
     ctx.save(); roomPath(r); ctx.strokeStyle=m.col; ctx.lineWidth=m.w; ctx.lineJoin='round'; ctx.stroke();
     if(m.hatch){ ctx.lineWidth=1.2; ctx.beginPath(); if(r.shape==='round') ctx.ellipse((r.x+r.w/2)*CELL,(r.y+r.h/2)*CELL,r.w*CELL/2-4,r.h*CELL/2-4,0,0,7); else ctx.rect(r.x*CELL+4,r.y*CELL+4,r.w*CELL-8,r.h*CELL-8); ctx.stroke(); }
     ctx.restore();
     ctx.fillStyle=getCss('--ink-soft'); ctx.font='600 12px ui-sans-serif,sans-serif'; ctx.textBaseline='top'; ctx.fillText(r.name,r.x*CELL+7,r.y*CELL+6); }
 
   function drawWall(w){ const m=MAT[w.material]||MAT.stone, x0=w.x0*CELL,y0=w.y0*CELL,x1=w.x1*CELL,y1=w.y1*CELL;
-    ln(x0,y0,x1,y1,m.col,m.w);
-    if(m.hatch){ const dx=x1-x0,dy=y1-y0,L=Math.hypot(dx,dy)||1,nx=-dy/L*3,ny=dx/L*3; ln(x0+nx,y0+ny,x1+nx,y1+ny,m.col,1.1); } }
+    ln(x0,y0,x1,y1,m.col,m.w); if(m.hatch){ const dx=x1-x0,dy=y1-y0,L=Math.hypot(dx,dy)||1,nx=-dy/L*3,ny=dx/L*3; ln(x0+nx,y0+ny,x1+nx,y1+ny,m.col,1.1); } }
 
-  function drawTunnel(t){ const e=tunnelEnds(t); if(!e) return; const pa=e.a,pb=e.b, dx=pb[0]-pa[0],dy=pb[1]-pa[1],L=Math.hypot(dx,dy)||1,nx=-dy/L,ny=dx/L,W=CELL*1.3;
-    // floor carves through, then a faint tint, then two stone side walls
-    ln(pa[0],pa[1],pb[0],pb[1],getCss('--paper'),W);
-    ctx.save(); ctx.globalAlpha=0.5; ln(pa[0],pa[1],pb[0],pb[1],getCss('--room-fill'),W); ctx.restore();
-    ln(pa[0]+nx*W/2,pa[1]+ny*W/2,pb[0]+nx*W/2,pb[1]+ny*W/2,MAT.stone.col,2.4);
-    ln(pa[0]-nx*W/2,pa[1]-ny*W/2,pb[0]-nx*W/2,pb[1]-ny*W/2,MAT.stone.col,2.4); }
+  function drawTunnel(t){ const e=tunnelEnds(t); if(!e) return; const pa=e.a,pb=e.b,dx=pb[0]-pa[0],dy=pb[1]-pa[1],L=Math.hypot(dx,dy)||1,nx=-dy/L,ny=dx/L,W=CELL*1.3;
+    ln(pa[0],pa[1],pb[0],pb[1],getCss('--paper'),W); ctx.save(); ctx.globalAlpha=0.5; ln(pa[0],pa[1],pb[0],pb[1],getCss('--room-fill'),W); ctx.restore();
+    ln(pa[0]+nx*W/2,pa[1]+ny*W/2,pb[0]+nx*W/2,pb[1]+ny*W/2,MAT.stone.col,2.4); ln(pa[0]-nx*W/2,pa[1]-ny*W/2,pb[0]-nx*W/2,pb[1]-ny*W/2,MAT.stone.col,2.4); }
 
-  function drawOpening(o){ const x=o.x*CELL,y=o.y*CELL,H=(o.orient==='h'),half=CELL*(o.len||1)/2,INK=getCss('--ink'),INKSOFT=getCss('--ink-soft');
-    ctx.fillStyle=getCss('--paper'); const th=CELL*0.55; if(H) ctx.fillRect(x-half,y-th/2,half*2,th); else ctx.fillRect(x-th/2,y-half,th,half*2);
-    if(o.kind==='door'){ if(H){ ln(x-half,y-4,x-half,y+4,INK,2); ln(x+half,y-4,x+half,y+4,INK,2); ctx.strokeStyle=INKSOFT; ctx.lineWidth=1.3; ctx.beginPath(); ctx.arc(x-half,y,half*2*0.92,0,Math.PI*0.5); ctx.stroke(); }
-      else { ln(x-4,y-half,x+4,y-half,INK,2); ln(x-4,y+half,x+4,y+half,INK,2); ctx.strokeStyle=INKSOFT; ctx.lineWidth=1.3; ctx.beginPath(); ctx.arc(x,y-half,half*2*0.92,Math.PI*0.5,0,true); ctx.stroke(); } }
-    else { const wt=7; if(H){ ln(x-half,y-wt/2,x+half,y-wt/2,INK,1.8); ln(x-half,y+wt/2,x+half,y+wt/2,INK,1.8); ln(x-half,y-wt/2,x-half,y+wt/2,INK,1.6); ln(x+half,y-wt/2,x+half,y+wt/2,INK,1.6); ln(x,y-wt/2,x,y+wt/2,INKSOFT,1.2); }
-      else { ln(x-wt/2,y-half,x-wt/2,y+half,INK,1.8); ln(x+wt/2,y-half,x+wt/2,y+half,INK,1.8); ln(x-wt/2,y-half,x+wt/2,y-half,INK,1.6); ln(x-wt/2,y+half,x+wt/2,y+half,INK,1.6); ln(x-wt/2,y,x+wt/2,y,INKSOFT,1.2); } } }
+  // door/window drawn in a LOCAL frame rotated to the wall's tangent — so it sits
+  // correctly on straight, freeform, bowed, and round-room (curved) walls alike.
+  function drawOpening(o){ const INK=getCss('--ink'),INKSOFT=getCss('--ink-soft'),half=CELL*(o.len||1)/2;
+    ctx.save(); ctx.translate(o.x*CELL,o.y*CELL); ctx.rotate((o.angle||0)*Math.PI/180);
+    const th=CELL*0.55; ctx.fillStyle=getCss('--paper'); ctx.fillRect(-half,-th/2,half*2,th);
+    if(o.kind==='door'){ ln(-half,-4,-half,4,INK,2); ln(half,-4,half,4,INK,2); ctx.strokeStyle=INKSOFT; ctx.lineWidth=1.3; ctx.beginPath(); ctx.arc(-half,0,half*2*0.92,0,Math.PI*0.5); ctx.stroke(); }
+    else { const wt=7; ln(-half,-wt/2,half,-wt/2,INK,1.8); ln(-half,wt/2,half,wt/2,INK,1.8); ln(-half,-wt/2,-half,wt/2,INK,1.6); ln(half,-wt/2,half,wt/2,INK,1.6); ln(0,-wt/2,0,wt/2,INKSOFT,1.2); }
+    ctx.restore(); }
 
   function drawFurn(f){ const x=f.x*CELL,y=f.y*CELL,w=f.w*CELL,h=f.h*CELL,pad=3,ix=x+pad,iy=y+pad,iw=w-2*pad,ih=h-2*pad;
     if(f.type==='bed'){ ctx.fillStyle=getCss('--cloth'); roundRect(ix,iy,iw,ih,4); ctx.fill(); ctx.fillStyle='#e8eef4'; const p=Math.min(ih*0.28,CELL*0.7); roundRect(ix+3,iy+3,iw-6,p,3); ctx.fill(); ctx.strokeStyle=getCss('--wood-dark'); ctx.lineWidth=1.5; roundRect(ix,iy,iw,ih,4); ctx.stroke(); }
@@ -300,7 +308,6 @@
   function roundRect(x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
   function getCss(v){ return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
 
-  // swatches
   function swatch(id,kind){ const el=document.getElementById(id); if(!el) return; const c=document.createElement('canvas'); c.width=26; c.height=26; el.appendChild(c); const g=c.getContext('2d');
     g.fillStyle=kind==='select'?'#eee':'#fbf8ef'; g.fillRect(0,0,26,26); g.strokeStyle='#00000018'; for(let i=0;i<=26;i+=6.5){ g.beginPath(); g.moveTo(i,0); g.lineTo(i,26); g.moveTo(0,i); g.lineTo(26,i); g.stroke(); }
     if(kind==='room'){ g.strokeStyle='#8a5a2e'; g.lineWidth=2.5; g.strokeRect(3,3,20,20); }
@@ -315,18 +322,23 @@
     else if(kind==='dresser'){ g.fillStyle='#9c6b3e'; g.fillRect(3,7,20,12); g.strokeStyle='#6f4a28'; g.lineWidth=1.2; g.strokeRect(3,7,20,12); g.beginPath(); g.moveTo(3,13); g.lineTo(23,13); g.stroke(); } }
   ['select','room','wall','door','window','tunnel','bed','barrel','cookpot','dresser'].forEach(k=>swatch('sw-'+k,k));
 
+  // ── fit view ──
+  document.getElementById('btnFit').addEventListener('click',fitView);
+  function fitView(){ const pts=[]; scene.rooms.forEach(r=>{pts.push([r.x,r.y],[r.x+r.w,r.y+r.h]);}); scene.walls.forEach(w=>{pts.push([w.x0,w.y0],[w.x1,w.y1]);});
+    if(!pts.length){ cam.scale=1; cam.ox=40; cam.oy=40; draw(); return; }
+    let mnx=1e9,mny=1e9,mxx=-1e9,mxy=-1e9; pts.forEach(([x,y])=>{mnx=Math.min(mnx,x);mny=Math.min(mny,y);mxx=Math.max(mxx,x);mxy=Math.max(mxy,y);});
+    mnx-=2;mny-=2;mxx+=2;mxy+=2; const wpx=(mxx-mnx)*CELL,hpx=(mxy-mny)*CELL; cam.scale=Math.max(0.12,Math.min(3.5,Math.min(cv.width/wpx,cv.height/hpx)));
+    cam.ox=-mnx*CELL*cam.scale+(cv.width-wpx*cam.scale)/2; cam.oy=-mny*CELL*cam.scale+(cv.height-hpx*cam.scale)/2; draw(); }
+
   // ── export / import ──
-  // Engine-aligned: rooms {shape,material,x,y,w,h(+cx,cy,r · curve)}; walls = free
-  // segments; openings = doors/windows {x,y,orient,len}; tunnels exported BOTH as
-  // room links {a,b} AND as corridors {pts,w} (handDrawnInterior's corridor shape);
-  // furniture carries room-relative ux/uy.
   document.getElementById('btnExport').addEventListener('click',()=>{ scene.name=(document.getElementById('houseName').value||'house').trim();
-    const out={ kind:'authored-structure', schema:'house-builder/v3', name:scene.name, grid:{cols:COLS,rows:ROWS,cell:CELL},
+    const orientOf=a=>{ const m=((a%180)+180)%180; return (m<22.5||m>157.5)?'h':(m>67.5&&m<112.5)?'v':'angled'; };
+    const out={ kind:'authored-structure', schema:'house-builder/v4', name:scene.name, grid:{cols:COLS,rows:ROWS,cell:CELL},
       rooms:scene.rooms.map(r=>{ const rec={id:r.id,name:r.name,shape:r.shape,material:r.material,x:r.x,y:r.y,w:r.w,h:r.h};
         if(r.shape==='round'){ rec.cx=r.x+r.w/2; rec.cy=r.y+r.h/2; rec.r=+(Math.min(r.w,r.h)/2).toFixed(3); }
         const c=r.curve||{}; if(c.top||c.right||c.bottom||c.left) rec.curve={top:+(c.top||0).toFixed(3),right:+(c.right||0).toFixed(3),bottom:+(c.bottom||0).toFixed(3),left:+(c.left||0).toFixed(3)}; return rec; }),
       walls:scene.walls.map(w=>({x0:w.x0,y0:w.y0,x1:w.x1,y1:w.y1,material:w.material})),
-      openings:scene.openings.map(o=>({kind:o.kind,x:o.x,y:o.y,orient:o.orient,len:o.len||1,room:o.room||null})),
+      openings:scene.openings.map(o=>({kind:o.kind,x:o.x,y:o.y,angle:+((o.angle||0).toFixed(1)),orient:orientOf(o.angle||0),len:o.len||1,room:o.room||null})),
       tunnels:scene.tunnels.map(t=>({a:t.a,b:t.b})),
       corridors:scene.tunnels.map(t=>{ const A=roomById(t.a),B=roomById(t.b); if(!A||!B) return null; return {pts:[[+(A.x+A.w/2).toFixed(2),+(A.y+A.h/2).toFixed(2)],[+(B.x+B.w/2).toFixed(2),+(B.y+B.h/2).toFixed(2)]],w:1.3,material:'stone'}; }).filter(Boolean),
       furniture:scene.furniture.map(f=>{ const room=enclosingRoom(f); const rec={type:f.type,x:f.x,y:f.y,w:f.w,h:f.h,rot:f.rot||0}; if(room){ rec.room=room.id; rec.ux=+((f.x-room.x+f.w/2)/room.w).toFixed(4); rec.uy=+((f.y-room.y+f.h/2)/room.h).toFixed(4); } return rec; }) };
@@ -338,13 +350,13 @@
     rd.onload=()=>{ try{ const d=JSON.parse(rd.result); scene=blankScene(); scene.name=d.name||'house'; document.getElementById('houseName').value=scene.name;
       (d.rooms||[]).forEach(r=>scene.rooms.push({id:r.id||nextId('room'),name:r.name||'Room',shape:r.shape||'rect',material:r.material||'timber',x:r.x,y:r.y,w:r.w,h:r.h,curve:r.curve||{top:0,right:0,bottom:0,left:0}}));
       (d.walls||[]).forEach(w=>scene.walls.push({id:nextId('w'),x0:w.x0,y0:w.y0,x1:w.x1,y1:w.y1,material:w.material||'stone'}));
-      (d.openings||[]).forEach(o=>scene.openings.push({id:nextId('o'),kind:o.kind||'door',x:o.x,y:o.y,orient:o.orient||'h',len:o.len||1,room:o.room||null}));
+      (d.openings||[]).forEach(o=>scene.openings.push({id:nextId('o'),kind:o.kind||'door',x:o.x,y:o.y,angle:(o.angle!=null?o.angle:(o.orient==='v'?90:0)),len:o.len||1,room:o.room||null}));
       (d.tunnels||[]).forEach(t=>scene.tunnels.push({id:nextId('t'),a:t.a,b:t.b}));
       (d.furniture||[]).forEach(f=>{ const def=FURN[f.type]||{w:f.w||1,h:f.h||1}; scene.furniture.push({id:nextId('f'),type:f.type,x:f.x,y:f.y,w:f.w||def.w,h:f.h||def.h,rot:f.rot||0}); });
-      select(null); flash('imported '+file.name); draw();
+      select(null); flash('imported '+file.name); fitView();
     }catch(err){ flash('import failed: '+err.message); } }; rd.readAsText(file); e.target.value=''; });
 
-  document.getElementById('btnClear').addEventListener('click',()=>{ const n=scene.rooms.length+scene.walls.length+scene.openings.length+scene.tunnels.length+scene.furniture.length; if(n && !confirm('Clear the whole house?')) return; scene=blankScene(); document.getElementById('houseName').value='new-house'; select(null); setTool('room'); });
+  document.getElementById('btnClear').addEventListener('click',()=>{ const n=scene.rooms.length+scene.walls.length+scene.openings.length+scene.tunnels.length+scene.furniture.length; if(n && !confirm('Clear the whole house?')) return; scene=blankScene(); document.getElementById('houseName').value='new-house'; cam.scale=1; cam.ox=40; cam.oy=40; select(null); setTool('room'); });
 
   let flashT=null; function flash(msg){ const s=document.getElementById('status'); s.textContent=msg; clearTimeout(flashT); flashT=setTimeout(draw,2200); }
 

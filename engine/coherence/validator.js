@@ -39,9 +39,28 @@
 //                            but deliver the candidate UNCHANGED. Mirrors the
 //                            COHERENCE_SHADOW posture: measure before acting, so a
 //                            human eyeballs every would-be swap first.
-//   'on'                   → LIVE. A fail-severity pointer rejects the candidate;
-//                            the adapter falls back to base, re-checks the base,
-//                            and if the base ALSO fails → the coherence-safe floor.
+//   'on'                   → LIVE. A structural-tier fail-severity pointer rejects
+//                            the candidate; the adapter falls back to base ONLY IF
+//                            the swap gate below says the base is strictly better;
+//                            and if base ALSO fails worse-or-equal → coherence-safe floor.
+//
+// CG-2b — TWO ADDITIONS ON TOP OF THE ABOVE (docs/briefs/CG-2b-cure-beats-disease.md),
+// both provoked by the GATE 2026-07-05 locket evidence record (a TRUE CG-6 clock
+// miss whose "fix" was a WORSE ghost-voice dodge — proof the old rule trusted the
+// fallback blindly):
+//   1. SEVERITY TIERING (checks.js CLASS_TIERS/tierOf) — a 'cosmetic'-tier class
+//      (CG-6 temporal desync at minimum) NEVER blocks in any mode, regardless of
+//      FAIL severity. `coherenceRejects` still surfaces the pointer in `fails`
+//      (visibility preserved) but excludes it from `blockingFails`, which is what
+//      actually drives `blocks`.
+//   2. THE SWAP GATE (`fallbackIsBetter`, below) — even for a genuine
+//      structural-tier block, the fallback is no longer trusted unconditionally.
+//      Before delivering it, the SAME detector bank runs over the fallback text
+//      against the SAME canon bundle, and the swap happens ONLY if the fallback's
+//      blockingFails count is STRICTLY lower than the candidate's. A tie (equal
+//      counts, including both zero) does NOT swap — the candidate stands, and the
+//      caller logs `swapDenied: 'fallback-not-better'` alongside the fallback's
+//      own failure set for the record.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import fs from 'node:fs';
@@ -49,7 +68,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { buildCanonGroundTruth } from '../ref/rubric.js';
-import { SINGLE_TURN_DETECTORS, runDetectors, SEVERITY } from './checks.js';
+import { SINGLE_TURN_DETECTORS, runDetectors, SEVERITY, tierOf, TIER } from './checks.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, '..', '..');
@@ -66,14 +85,22 @@ export function coherenceValidateMode() {
 // ── the core gate: does this candidate contradict canon? ────────────────────
 /**
  * coherenceRejects({ world, candidate, outcome, _canonForTest }) ->
- *   { blocks: boolean, pointers: Array, fails: Array }
+ *   { blocks: boolean, pointers: Array, fails: Array, blockingFails: Array }
  *
  * Runs the SINGLE_TURN_DETECTORS bank over a one-turn record built the SAME way
- * the shadow observer builds it, against the SAME read-only canon bundle. Only
- * FAIL-severity pointers set `blocks` — WARN-severity classes (CG-1c omission,
+ * the shadow observer builds it, against the SAME read-only canon bundle.
+ * FAIL-severity pointers land in `fails`; WARN-severity classes (CG-1c omission,
  * CG-7 quantity, the escape-combat CG-4 case) are the soft classes a real DM
- * needn't be literal about, so they are surfaced in `pointers` but NEVER block
- * (blocking them would fight the DM Test).
+ * needn't be literal about, so they are surfaced in `pointers` but NEVER
+ * contribute to `fails`/blocking (blocking them would fight the DM Test).
+ *
+ * CG-2b tiering (docs/briefs/CG-2b-cure-beats-disease.md): `blocks` is driven
+ * by `blockingFails` — the subset of `fails` whose class tier (checks.js
+ * `tierOf`) is 'structural'. A 'cosmetic'-tier FAIL (CG-6 temporal desync at
+ * minimum) still lands in `fails` (so a caller can log/inspect it — the pointer
+ * is never hidden) but NEVER sets `blocks`. This is the house ruling: a true
+ * but atmospheric canon miss (the locket turn: DM said "midday", canon said
+ * "morning") must never trigger a fallback swap on its own.
  *
  * Pure single-turn: CG-2c (unnarrated relocation, cross-turn) is deliberately
  * NOT part of this validator — it needs a prev-canon side-channel, which the
@@ -89,7 +116,7 @@ export function coherenceValidateMode() {
 export function coherenceRejects({ world, candidate, outcome = {}, _canonForTest } = {}) {
   try {
     const dm = String(candidate ?? '').trim();
-    if (!dm) return { blocks: false, pointers: [], fails: [] };
+    if (!dm) return { blocks: false, pointers: [], fails: [], blockingFails: [] };
 
     let canon;
     if (_canonForTest !== undefined) {
@@ -111,10 +138,53 @@ export function coherenceRejects({ world, candidate, outcome = {}, _canonForTest
 
     const pointers = runDetectors([record], SINGLE_TURN_DETECTORS);
     const fails = pointers.filter(p => p && p.severity === SEVERITY.FAIL);
-    return { blocks: fails.length > 0, pointers, fails };
+    const blockingFails = fails.filter(p => tierOf(p.class) !== TIER.COSMETIC);
+    return { blocks: blockingFails.length > 0, pointers, fails, blockingFails };
   } catch {
     // A validator must never break a turn — degrade to "don't block".
-    return { blocks: false, pointers: [], fails: [] };
+    return { blocks: false, pointers: [], fails: [], blockingFails: [] };
+  }
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// CG-2b — the swap gate ("the cure must beat the disease")
+//
+// PROVENANCE: the GATE 2026-07-05 locket evidence record. The candidate flagged
+// CG-6 (cosmetic — never blocks after the tiering above, so this specific record
+// no longer even reaches the swap gate). But the record proved a SECOND, more
+// general defect the swap gate exists to close: the old rule swapped to the
+// fallback unconditionally whenever `blocks` was true, WITHOUT checking whether
+// the fallback itself was any good. On that turn the fallback was an Elske
+// "no record" dodge — the exact ghost-voice/non-answer pattern INFO-HONESTY
+// bans. A structural-tier hard-fail candidate could just as easily lose to an
+// even-worse fallback. This function is the fix: before any swap, the SAME
+// detector bank runs over the fallback against the SAME canon bundle, and the
+// swap happens ONLY if the fallback is STRICTLY better.
+//
+// "Strictly better" is defined CONSERVATIVELY (ties do NOT swap):
+//   fallback's blockingFails.length < candidate's blockingFails.length
+// Only blocking (structural-tier, FAIL-severity) counts are compared — a
+// cosmetic-tier pointer never blocks either side, so it can't move this needle.
+// A fallback with the SAME count (including both zero) is "equal", not
+// "better", so the candidate stands — precision over cleverness: a tie is not
+// proof the swap helps, and the candidate is what the player already has in
+// hand (no swap = no new risk introduced).
+//
+// Pure comparison over two already-computed verdicts; no I/O, no RNG, no world
+// read. Never throws by construction (plain number compare); wrapped anyway so
+// a malformed verdict shape degrades to "not better" (the conservative/safe
+// answer — when in doubt, don't swap).
+/**
+ * fallbackIsBetter(candidateVerdict, fallbackVerdict) -> boolean
+ * Both args are `coherenceRejects()`-shaped ({ blockingFails, ... }).
+ */
+export function fallbackIsBetter(candidateVerdict, fallbackVerdict) {
+  try {
+    const candidateCount = Array.isArray(candidateVerdict?.blockingFails) ? candidateVerdict.blockingFails.length : 0;
+    const fallbackCount = Array.isArray(fallbackVerdict?.blockingFails) ? fallbackVerdict.blockingFails.length : 0;
+    return fallbackCount < candidateCount;
+  } catch {
+    return false; // malformed input → conservative "not better" (don't swap)
   }
 }
 

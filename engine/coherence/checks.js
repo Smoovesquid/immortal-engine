@@ -771,3 +771,82 @@ export const CLASS_LABELS = {
   'CG-5': 'addressee desync', 'CG-7': 'ungrounded quantity', 'CG-6': 'temporal desync',
   'CG-0': '§0 forbidden-token scan',
 };
+
+// ═════════════════════════════════════════════════════════════════════════════
+// CG-2b — severity TIER map (docs/briefs/CG-2b-cure-beats-disease.md).
+//
+// SEVERITY (fail/warn, above) answers "did this comparator find a contradiction
+// at all?" TIER answers a different question: "if it did, and it's FAIL-severity,
+// does a real DM treat this as a table-breaking lie, or as an atmospheric slip
+// nobody would stop the game over?" A 'cosmetic' tier detection NEVER blocks a
+// turn in ANY validator mode — shadow-compare logs `wouldBlock:false,
+// tier:'cosmetic'` (keeping the pointer so the miss is still visible), and 'on'
+// mode delivers the candidate unchanged. This is orthogonal to WARN severity:
+// WARN classes (CG-1a/1c/CG-7) already never block via the SEVERITY filter in
+// coherenceRejects — they carry the 'structural' tier below purely for the
+// map's completeness/audit trail, not because the tier does any work for them.
+//
+// THE CASE FOR EACH CLASS (Tim's 2026-07-05 ruling only mandated CG-6; every
+// other row is this packet's own judgment call, made explicit so it's
+// reviewable rather than assumed):
+//   CG-0  structural — the cosmology-leak law (IMMORTAL_INVARIANTS #6 / Idea
+//         Garden §0) is the single most severe class in the bank; the fiction
+//         breaks at the fourth wall, not just a detail. Always blocks.
+//   CG-1b structural — a named NPC speaking/acting while the room's real
+//         roster is empty is a phantom character, not a word choice. Blocks.
+//   CG-2a structural — wrong room-type noun (kitchen vs pantry) is the
+//         `project_dm_invents_geography` bug class made measurable; a player
+//         orienting off this prose ends up soft-locked. Blocks.
+//   CG-2b structural — an invented exit/stair/door is the exact "phantom
+//         topology" failure that produces dead-end soft-locks. Blocks.
+//   CG-2c structural — an unnarrated teleport between rooms; the player's
+//         mental map silently diverges from the engine's. Blocks.
+//   CG-3a structural — narrating an irreversible physical change (the chest
+//         opened, the item destroyed) the mechanics never committed is a lie
+//         about world STATE, not atmosphere. Blocks.
+//   CG-4  structural — combat/health desync is life-and-death correctness;
+//         the design doc flags this as "where a regression would land if the
+//         polish layer ever loosens." Blocks (matches existing FAIL branches;
+//         the one WARN branch in detectCombatDesync is unaffected by tier).
+//   CG-5  structural — the wrong NPC voiced answering FOR someone else who
+//         isn't who the player addressed. Design doc: "a real table would
+//         erupt." Blocks.
+//   CG-6  cosmetic — narrated time-of-day word vs canon.clock.segment. The
+//         evidence record this packet is built from (the locket turn: DM said
+//         "midday light", canon said "morning") is the proof case: the
+//         contradiction is true but touches NO roster/topology/combat/plot
+//         state — a real DM narrating "midday" instead of "morning" would
+//         never stop the game. Tim's ruling: cosmetic AT MINIMUM. NEVER
+//         blocks, in any mode.
+//   CG-7  structural — WARN-severity already (never blocks); listed for
+//         completeness only.
+//
+// Unlisted classes default to 'structural' (current blocking behavior) — the
+// map only needs an entry when a class is DEMOTED below its severity's default.
+// ═════════════════════════════════════════════════════════════════════════════
+export const TIER = Object.freeze({
+  COSMETIC: 'cosmetic',
+  STRUCTURAL: 'structural',
+});
+
+export const CLASS_TIERS = Object.freeze({
+  'CG-0': TIER.STRUCTURAL,
+  'CG-1a': TIER.STRUCTURAL,
+  'CG-1b': TIER.STRUCTURAL,
+  'CG-1c': TIER.STRUCTURAL,
+  'CG-2a': TIER.STRUCTURAL,
+  'CG-2b': TIER.STRUCTURAL,
+  'CG-2c': TIER.STRUCTURAL,
+  'CG-3a': TIER.STRUCTURAL,
+  'CG-4': TIER.STRUCTURAL,
+  'CG-5': TIER.STRUCTURAL,
+  'CG-6': TIER.COSMETIC,
+  'CG-7': TIER.STRUCTURAL,
+});
+
+// tierOf(cls) -> 'cosmetic' | 'structural'. Unlisted/unknown classes default to
+// 'structural' (current blocking behavior is the safe default for anything the
+// map hasn't explicitly judged).
+export function tierOf(cls) {
+  return CLASS_TIERS[cls] ?? TIER.STRUCTURAL;
+}

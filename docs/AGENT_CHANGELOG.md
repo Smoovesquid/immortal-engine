@@ -2245,3 +2245,47 @@ other agents. (none active)
   next scheduled gate.
 - Lanes in flight: TT-WORLD/TT-INK/TT-PROPS (renderer, public/map/**) ∥ CG-2b (engine/coherence/*)
   — disjoint files; both append changelog sections worktree-side, Basecamp resolves at integration.
+
+## 2026-07-05 — Worker (Sonnet, CG-2b worktree) — **CG-2b LANDED: the cure must beat the disease (validator swap rule)**
+
+- **Severity tiering (`engine/coherence/checks.js`):** a declarative `CLASS_TIERS` map + `tierOf(cls)`
+  helper judges all 12 detector classes explicitly (documented per-class reasoning inline). Only
+  `CG-6` (temporal desync) is tiered `cosmetic`; every other class (including the WARN-severity
+  CG-1a/1c/CG-7, listed for completeness) stays `structural` — the map's silent default for anything
+  unlisted. `coherenceRejects` (`validator.js`) now splits `fails` (all FAIL-severity pointers, kept
+  visible for logging) from a new `blockingFails` (structural-tier fails only, drives `blocks`) — a
+  cosmetic-tier FAIL never blocks in any mode, but the pointer is never hidden.
+- **The swap gate (`fallbackIsBetter`, `engine/coherence/validator.js`):** conservative "strictly
+  better" = fallback's `blockingFails.length` STRICTLY LOWER than the candidate's; ties (including
+  both-zero) are NOT better — denied. Wired into `llmAdapter.js`'s `finalize()` seam as a two-rung
+  ladder (`runSwapLadder`): rung 1 = base, swap-gated against the candidate; rung 2 = the
+  coherence-safe floor (also swap-gated — it is clean-by-construction, so it will beat a genuinely-
+  blocking candidate essentially always, preserving the PRE-EXISTING "never ship an unmitigated
+  block" safety net U470 already locks, now expressed as an explicit pass rather than an
+  unconditional swap). If neither rung beats the candidate, the candidate stands.
+- **Log labels (rule 3):** shadow-compare records now carry `outcome.persona` (request-scoped;
+  falls back to `'live'` when absent — confirmed empirically that `world.meta.campaignId` is ALWAYS
+  the bare default `'campaign'` in every caller in this codebase, so it was never a real persona
+  label to begin with) and `outcome.turn` (falls back to the EXISTING `world.time.turn` field,
+  read-only — no world-state schema field invented). Records also gained `tier`, `fallbackFails`,
+  `swapDenied` fields for full auditability of the swap decision.
+- **Tests (U482–U484, all new, all green):** U482 (6 subtests) replays the brief's verbatim locket
+  evidence record against a REAL booted `tallow` world (fresh boot's `clock.segment` is naturally
+  `'morning'`, matching the record) — proves `wouldBlock:false, tier:'cosmetic'` in shadow-compare and
+  unchanged delivery in `'on'` mode. U483 (12 subtests) proves the swap gate both directions at the
+  `fallbackIsBetter` level AND end-to-end through `augmentNarration` (CG-2a place-noun-desync
+  fixtures — CG-1b ghost-voice fixtures collide with a PRE-EXISTING, separate Tier-1 elsewhere-NPC
+  rule in `validateNarrationCandidate` that would confound which layer did the rejecting, so CG-2a
+  cleanly isolates the CG-2b mechanism). U484 (14 subtests) proves labels thread correctly (incl.
+  `outcome.turn:0` never coerced to null) and never-throws, including the brief's exact wording — a
+  detector-bank read that throws specifically on the SECOND pass (mid fallback-recheck, not the
+  first) still delivers the candidate unchanged.
+- **Verification:** `npm run check` GREEN — convergence 100% (131/131), suite 9989/0 (baseline before
+  this packet: 9957/0 — exactly +32, the three new files, zero regressions). Determinism ladder
+  U19/21/22/27/30 green. One transient failure seen on an intermediate run (immediately reproduced
+  clean twice after) — not traced to this packet's code; flagged as residual risk in the report, not
+  silently waved off.
+- **Scope discipline:** touched only `engine/coherence/checks.js` (tier map only, as scoped),
+  `engine/coherence/validator.js`, `engine/llmAdapter.js` (the `finalize()` seam ONLY, per the
+  brief's explicit allowance), tests U482–U484. No world-state, RNG, `WORLD_VERSION`, `playloop.js`,
+  `dialogue.js`, or `grace/` touched. Live flip stays a Tim decision, unchanged by this packet.

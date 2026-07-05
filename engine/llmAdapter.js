@@ -8,7 +8,7 @@ import { renderAsciiMapBlock } from './ai/asciiMap.js';
 import { buildAiHashTrace } from './ai/aiHashTrace.js';
 import { reviewNarration } from './ref/index.js';
 import { observeCoherenceShadow } from './coherence/shadowObserver.js';
-import { coherenceValidateMode, coherenceRejects, coherenceSafeFloor, logShadowCompare } from './coherence/validator.js';
+import { coherenceValidateMode, coherenceRejects, coherenceSafeFloor, fallbackIsBetter, logShadowCompare } from './coherence/validator.js';
 import { anthropicSamplingFields } from './llmModelRules.js';
 
 const ANTHROPIC_API = 'https://api.anthropic.com/v1/messages';
@@ -1523,11 +1523,69 @@ export async function augmentNarration({
   // Modes (coherenceValidateMode()):
   //   off            → return `text` unchanged (byte-identical; the shadow observer
   //                    still runs on its own COHERENCE_SHADOW flag, as today).
-  //   shadow-compare → compute the would-block decision + the fallback text, LOG
-  //                    both, but return `text` UNCHANGED (decide-but-don't-act).
-  //   on             → a fail-severity coherence pointer REJECTS `text`; fall back
-  //                    to `base`; if base ALSO fails → the coherence-safe floor.
+  //   shadow-compare → compute the would-block decision + the fallback the swap
+  //                    gate would pick, LOG both, but return `text` UNCHANGED
+  //                    (decide-but-don't-act).
+  //   on             → a STRUCTURAL-tier fail-severity pointer REJECTS `text`,
+  //                    subject to the swap gate below (a cosmetic-tier pointer,
+  //                    e.g. CG-6, never rejects at all — coherenceRejects already
+  //                    excludes it from `blocks`).
   // NEVER throws (wrapped); NEVER a new LLM call; deterministic given the inputs.
+  //
+  // ── CG-2b: the swap gate ("the cure must beat the disease") ────────────────
+  // PROVENANCE: the GATE 2026-07-05 locket evidence record proved the OLD rule
+  // (candidate blocks → trust the fallback unconditionally) can swap in
+  // something WORSE than the sin it was replacing (a ghost-voiced "no record"
+  // dodge, over a candidate whose only flaw was a time-of-day word). Two rungs,
+  // each gated by fallbackIsBetter (validator.js) — strictly fewer blocking
+  // fails, ties denied:
+  //   rung 1 — base. If the base's blockingFails count is strictly lower than
+  //            the candidate's, swap to base.
+  //   rung 2 — the coherence-safe floor (built from base). Tried only if rung 1
+  //            was denied. The floor is clean-by-construction (it strips any
+  //            sentence that itself flags, and falls to a static inert line if
+  //            nothing survives) — so it will beat a genuinely-blocking
+  //            candidate essentially always, which is exactly the existing
+  //            "never ship an unmitigated block" safety net, now expressed as
+  //            an explicit swap-gate pass rather than an unconditional swap.
+  // If NEITHER rung beats the candidate (only possible in a degenerate/edge
+  // case, since the floor's blockingFails is 0 by construction and the
+  // candidate here always has ≥1), the candidate stands — ship the sin rather
+  // than a proven-no-better cure.
+  const runSwapLadder = (verdict) => {
+    // Rung 1: base.
+    const baseVerdict = coherenceRejects({ world, candidate: base, outcome });
+    if (fallbackIsBetter(verdict, baseVerdict)) {
+      return { swapped: true, rung: 'base', text: base, fallbackVerdict: baseVerdict };
+    }
+    // Rung 2: the coherence-safe floor, built from base, also swap-gated.
+    const floorText = coherenceSafeFloor(base, { world, outcome });
+    const floorVerdict = coherenceRejects({ world, candidate: floorText, outcome });
+    if (fallbackIsBetter(verdict, floorVerdict)) {
+      return { swapped: true, rung: 'floor', text: floorText, fallbackVerdict: floorVerdict };
+    }
+    // Neither rung strictly improves on the candidate — the candidate stands.
+    // Report the base's verdict as `fallbackFails` (the primary fallback the
+    // gate evaluated and denied) for the log/report.
+    return { swapped: false, rung: null, text: null, fallbackVerdict: baseVerdict };
+  };
+
+  // Real request-scoped labels for the shadow-compare log (CG-2b rule 3). Never
+  // sourced from world-state schema fields invented for this — `outcome.persona`/
+  // `outcome.turn` are request-scoped plumbing a caller MAY set; `world.time.turn`
+  // is an EXISTING world-state field (read-only) used as the best-effort turn
+  // proxy when the request doesn't carry one. Live play (server.js /api/narrate)
+  // carries no persona at all today, so it honestly labels `'live'`.
+  const logPersona = () => {
+    const p = outcome?.persona;
+    return (typeof p === 'string' && p.trim()) ? p.trim() : 'live';
+  };
+  const logTurn = () => {
+    if (typeof outcome?.turn === 'number' && Number.isFinite(outcome.turn)) return outcome.turn;
+    const t = world?.time?.turn;
+    return (typeof t === 'number' && Number.isFinite(t)) ? t : null;
+  };
+
   const finalize = (text) => {
     const delivered = String(text ?? '').trim();
     try {
@@ -1537,48 +1595,51 @@ export async function augmentNarration({
       const verdict = coherenceRejects({ world, candidate: delivered, outcome });
 
       if (mode === 'shadow-compare') {
-        // Decide-but-don't-act: compute what the fallback WOULD be, log it, ship
-        // the original text untouched. This is the human-eyeball stage.
+        // Decide-but-don't-act: compute what the swap gate WOULD pick, log it,
+        // ship the original text untouched. This is the human-eyeball stage.
         if (verdict.blocks) {
-          const baseVerdict = coherenceRejects({ world, candidate: base, outcome });
-          const fallbackKind = baseVerdict.blocks ? 'floor' : 'base';
-          const fallbackText = baseVerdict.blocks
-            ? coherenceSafeFloor(base, { world, outcome })
-            : base;
+          const decision = runSwapLadder(verdict);
           logShadowCompare({
             seed: String(world?.meta?.seed ?? ''),
-            persona: String(world?.meta?.campaignId ?? ''),
+            persona: logPersona(),
+            turn: logTurn(),
             input: String(outcome?.input ?? ''),
             dm: delivered,
             wouldBlock: true,
-            fallbackKind,
-            fallbackText,
+            tier: 'structural',
+            fallbackKind: decision.swapped ? decision.rung : null,
+            fallbackText: decision.swapped ? decision.text : null,
+            fallbackFails: decision.fallbackVerdict.blockingFails,
+            swapDenied: decision.swapped ? null : 'fallback-not-better',
             pointers: verdict.fails,
           });
         } else {
+          // Not a structural block. Distinguish "clean" from "cosmetic-only"
+          // for the log (CG-2b rule 1): a cosmetic-tier pointer (CG-6 at
+          // minimum) still surfaces in `fails` even though it never blocks.
+          const cosmeticOnly = verdict.fails.length > 0; // fails minus blockingFails, all cosmetic by construction here
           logShadowCompare({
             seed: String(world?.meta?.seed ?? ''),
-            persona: String(world?.meta?.campaignId ?? ''),
+            persona: logPersona(),
+            turn: logTurn(),
             input: String(outcome?.input ?? ''),
             dm: delivered,
             wouldBlock: false,
+            tier: cosmeticOnly ? 'cosmetic' : null,
             fallbackKind: null,
             fallbackText: null,
-            pointers: [],
+            fallbackFails: null,
+            swapDenied: null,
+            pointers: verdict.fails,
           });
         }
         return delivered; // shadow-compare NEVER alters the delivered narration
       }
 
-      // mode === 'on' — live rejection.
+      // mode === 'on' — live rejection, subject to the swap gate.
       if (!verdict.blocks) return delivered;
-      // The candidate contradicts canon: fall back to the grounded base. But the
-      // base is NOT guaranteed coherent (CG-LIVE-1b) — re-check it, and if the
-      // base ALSO flags, degrade to the coherence-safe floor (§2). Never ship a
-      // flagged base silently.
-      const baseVerdict = coherenceRejects({ world, candidate: base, outcome });
-      if (!baseVerdict.blocks) return base;
-      return coherenceSafeFloor(base, { world, outcome });
+      const decision = runSwapLadder(verdict);
+      return decision.swapped ? decision.text : delivered;
     } catch {
       // The choke point must never break a turn — degrade to the delivered text
       // (or base if delivered somehow went empty). Invariant 3.

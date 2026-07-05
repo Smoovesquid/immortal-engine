@@ -23,6 +23,7 @@
 // so a wild node never reaches it — the Goat waits on a wilderness-encounter hook.
 
 import { DEMO_SEED } from './demoRegion.js';
+import { SLICE_SEED } from './sliceRegion.js';
 
 // Node selectors. A selector is `(node) => boolean` evaluated against a map node.
 //   seat        — the kingdom seat (tag 'city'/'seat'). Steward-king's home.
@@ -50,6 +51,7 @@ const SELECTORS = {
   trade: nameContains('saltmarket'),          // n14 "Saltmarket Town"
   faith: nameContains('pilgrim'),             // n21 "Pilgrim's Rest Village"
   outlier: nameContains('crossway village (2)'), // n34 "Crossway Village (2)"
+  aldermere: nameContains('aldermere'),       // slice seed opening town
 };
 
 // The six authored figures. ORDER and KEYS are stable (the follow-on relies on them).
@@ -117,6 +119,15 @@ export const DEMO_FIGURES = [
         + 'break the fiction. Selector stays null until that hook exists.',
     nodeSelector: null /* DEFERRED: needs a non-settlement (wilderness) injection hook */,
   },
+  {
+    key: 'carl',
+    name: 'Carl',
+    role: 'failed sculptor; avian theorist',
+    voiceCorpusId: 'carl_manifesto',
+    personality: { trustOfOutsiders: 0.2, selfPreservation: 0.7, honesty: 0.9 },
+    note: 'Aldermere (slice seed opening town). Obsessive pseudo-scholar. RAG corpus: 8k-word avian-supremacy manifesto.',
+    nodeSelector: SELECTORS.aldermere,
+  },
 ];
 
 // Build the full NPC object for an authored figure. Deterministic — stable id,
@@ -161,18 +172,19 @@ function buildFigureNpc(figure) {
  * injectDemoFigures({ world, node, npcs }) -> npcs (possibly with a figure prepended)
  *
  * Returns the settlement's NPC list with any authored figure whose live
- * `nodeSelector` matches this node PREPENDED. Strictly gated to the demo seed
- * (`world.meta.seed === DEMO_SEED`) — every other seed is returned untouched.
+ * `nodeSelector` matches this node PREPENDED. Gated to authored seeds
+ * (`world.meta.seed === DEMO_SEED` or `SLICE_SEED`) — every other seed is returned untouched.
  * Deterministic and idempotent: a figure id is stable, and we never add the same
  * figure twice (id-dedup against the incoming list).
  *
- * Only figures with a non-null `nodeSelector` are ever considered, so the five
- * unplaced figures are inert until a follow-on packet gives them a selector.
+ * Only figures with a non-null `nodeSelector` are ever considered, so unplaced
+ * figures are inert until a selector is assigned.
  */
 export function injectDemoFigures({ world, node, npcs }) {
   const list = Array.isArray(npcs) ? npcs : [];
-  // Gate: only the locked demo seed gets the overlay. Anything else is byte-identical.
-  if (!world || world.meta?.seed !== DEMO_SEED) return list;
+  // Gate: only authored seeds (demo or slice) get the overlay. Anything else is byte-identical.
+  const isAuthoredSeed = world?.meta?.seed === DEMO_SEED || world?.meta?.seed === SLICE_SEED;
+  if (!world || !isAuthoredSeed) return list;
   if (!node) return list;
 
   const existingIds = new Set(list.map(n => n && n.id).filter(Boolean));

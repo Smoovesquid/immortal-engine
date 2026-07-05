@@ -1,0 +1,606 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Immortal Engine Map Style Shotgun</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #11110f;
+      --ink: #f4efe2;
+      --muted: #b8ad96;
+      --line: rgba(244, 239, 226, .18);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: radial-gradient(circle at 22% 0%, #27221a 0, #11110f 38%, #090908 100%);
+      color: var(--ink);
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    main {
+      width: min(1240px, calc(100vw - 36px));
+      margin: 0 auto;
+      padding: 34px 0 58px;
+    }
+    h1 {
+      margin: 0 0 10px;
+      font-size: clamp(32px, 4.4vw, 64px);
+      line-height: .94;
+      letter-spacing: 0;
+      max-width: 980px;
+    }
+    .brief {
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(280px, .9fr);
+      gap: 22px;
+      align-items: start;
+      margin-bottom: 28px;
+    }
+    .dna, .ranked {
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.045);
+      padding: 16px 18px;
+      box-shadow: 0 24px 90px rgba(0,0,0,.28);
+    }
+    .dna p, .ranked p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.45;
+    }
+    .ranked strong, .dna strong { color: var(--ink); font-weight: 760; }
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 22px;
+    }
+    article {
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.04);
+      overflow: hidden;
+      box-shadow: 0 20px 70px rgba(0,0,0,.3);
+    }
+    canvas {
+      display: block;
+      width: 100%;
+      aspect-ratio: 14 / 9;
+      background: #111;
+      image-rendering: auto;
+    }
+    .meta {
+      min-height: 146px;
+      padding: 14px 16px 16px;
+      border-top: 1px solid var(--line);
+    }
+    h2 {
+      margin: 0 0 8px;
+      font-size: 20px;
+      letter-spacing: 0;
+    }
+    dl {
+      display: grid;
+      grid-template-columns: 84px 1fr;
+      gap: 5px 10px;
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.32;
+    }
+    dt {
+      color: rgba(244,239,226,.72);
+      text-transform: uppercase;
+      font-size: 11px;
+      letter-spacing: .08em;
+    }
+    dd { margin: 0; }
+    .fight {
+      margin-top: 26px;
+      border-left: 5px solid #e8dfbf;
+      padding: 14px 18px;
+      background: rgba(232,223,191,.08);
+      color: var(--muted);
+      line-height: 1.45;
+    }
+    .fight strong { color: var(--ink); }
+    @media (max-width: 900px) {
+      .brief, .gallery { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+<main>
+  <h1>Map Style Shotgun: Earth x Ultima, No Safe Middle</h1>
+  <section class="brief">
+    <div class="dna">
+      <p><strong>Reference DNA to steal:</strong> dungeon-edge stipple, chunky wall shadows, aged paper abrasion, and numbered-plan authority.</p>
+      <p>Overworld DNA: toy-like terrain icons, packed forests, ridge silhouettes, decorative borders, and labels that behave like artifacts instead of UI.</p>
+      <p>Metabolized target: witnessed geography that can be truthful like Earth, procedural like a tile engine, and emotionally weird enough to leave fingerprints.</p>
+    </div>
+    <div class="ranked">
+      <p><strong>Safest to wildest:</strong> 01 Orbital Survey, 02 EGA Pilgrim, 03 Copperplate Coast, 04 Wax Relief, 05 Blueprint Hex, 06 Riso Misprint, 07 Cloth Sampler, 08 Night-Vision Globe, 09 ASCII Bathymetry, 10 Reliquary Shards.</p>
+      <p><strong>I would fight for:</strong> 06 Riso Misprint for sellable strangeness; 10 Reliquary Shards because witnessed-only fog finally looks like a law of the world.</p>
+    </div>
+  </section>
+  <section class="gallery" id="gallery"></section>
+  <div class="fight">
+    <strong>Renderer footnote:</strong> every panel below is procedural canvas, same region, same semantic layers. None requires hand-placed painting. The hard part is not drawing; it is keeping zoom, fog, labels, and witness-memory coherent at runtime.
+  </div>
+</main>
+
+<script>
+const W = 560;
+const H = 360;
+const town = { x: 258, y: 218, name: "Merewick" };
+const road = [[42, 320], [116, 276], [205, 248], [258, 218], [326, 190], [454, 124], [526, 82]];
+const forest = [[124,132],[146,112],[173,118],[199,139],[204,173],[184,197],[146,198],[113,177]];
+const ridge = [[286,118],[316,74],[352,118],[384,62],[432,132],[472,92],[518,150]];
+const fogPoly = [[378,0],[560,0],[560,190],[508,166],[468,126],[421,96],[390,54]];
+const coast = [[0,360],[0,250],[46,236],[74,218],[98,205],[128,214],[159,199],[184,170],[219,158],[247,178],[236,220],[206,252],[174,286],[124,321],[70,360]];
+
+const styles = [
+  {
+    id: "orbital",
+    title: "01. Orbital Witness Survey",
+    extreme: "Extreme: Google Earth refuses omniscience; satellite truth with player-memory holes.",
+    risk: "Too modern; committee says it stops feeling like fantasy.",
+    verdict: "zoom plausible / fog plausible / seed plausible",
+    palette: ["#0a1720","#123f5c","#1a614f","#6c7e45","#a98454","#d3c5a4","#f7f4e8"],
+    projection: "low oblique aerospace tilt",
+    technique: "relief-render with atmospheric haze",
+    draw: drawOrbital
+  },
+  {
+    id: "ega",
+    title: "02. EGA Pilgrim Tiles",
+    extreme: "Extreme: Ultima wins; terrain is executable memory, not scenery.",
+    risk: "Too blunt; committee says it looks unfinished.",
+    verdict: "zoom plausible / fog plausible / seed easy",
+    palette: ["#000000","#0055ff","#00aa00","#55ff55","#aa5500","#ffaa00","#aaaaaa","#ffffff"],
+    projection: "orthographic square-tile plan",
+    technique: "hard-indexed pixel tiles",
+    draw: drawEga
+  },
+  {
+    id: "copper",
+    title: "03. Copperplate Sounding Coast",
+    extreme: "Extreme: a navigator’s legal document invaded by tiny CRPG icons.",
+    risk: "Can become antique wallpaper if labels overperform.",
+    verdict: "zoom plausible / fog plausible / seed fussy",
+    palette: ["#f1dfb9","#734b35","#1d4955","#61845f","#b18b48","#1a1712"],
+    projection: "skewed portolan coast-plane",
+    technique: "ink hatch plus nautical soundings",
+    draw: drawCopper
+  },
+  {
+    id: "wax",
+    title: "04. Wax-Tablet Relief",
+    extreme: "Extreme: terrain is a physical object under a torch, almost not a map.",
+    risk: "Too tactile; committee says players cannot parse roads fast.",
+    verdict: "zoom plausible / fog hard / seed plausible",
+    palette: ["#2b1b12","#59331f","#a46e3e","#d7a765","#f3d190","#283521"],
+    projection: "raking-light bas-relief slab",
+    technique: "gouache impasto and carved shadow",
+    draw: drawWax
+  },
+  {
+    id: "blueprint",
+    title: "05. Surveyor’s Hex Blueprint",
+    extreme: "Extreme: Google Earth stripped to classified engineering evidence.",
+    risk: "Too dry; committee says it lacks wonder.",
+    verdict: "zoom easy / fog plausible / seed easy",
+    palette: ["#06131d","#0b4a68","#4bb4c9","#d8fbff","#f2c84b","#ff6b4a"],
+    projection: "axonometric cadastral grid",
+    technique: "blueprint vectors and contour ticks",
+    draw: drawBlueprint
+  },
+  {
+    id: "riso",
+    title: "06. Riso Misprint Overworld",
+    extreme: "Extreme: Ultima printed by a broken commune press after seeing aerial photos.",
+    risk: "Registration errors look like bugs to cautious people.",
+    verdict: "zoom plausible / fog beautiful / seed plausible",
+    palette: ["#fff0c7","#ff3b30","#0067ff","#00a05a","#24120b","#f7b500"],
+    projection: "offset oblique poster plane",
+    technique: "risograph overprint and halftone",
+    draw: drawRiso
+  },
+  {
+    id: "cloth",
+    title: "07. Witness Cloth Sampler",
+    extreme: "Extreme: the player embroiders reality; every discovered fact is stitched.",
+    risk: "Uncomfortable: cozy medium fights deadly exploration tone.",
+    verdict: "zoom hard / fog plausible / seed plausible",
+    palette: ["#ede2c4","#8a1e2d","#123e2f","#e0a62f","#1c2940","#f7f3df"],
+    projection: "warped loom orthographic",
+    technique: "embroidery stitches and thread knots",
+    draw: drawCloth
+  },
+  {
+    id: "globe",
+    title: "08. Night-Vision Fisheye Globe",
+    extreme: "Extreme: Earth pole turns hostile; the map is a surveillance lens.",
+    risk: "Uncomfortable: oppressive, alien, almost anti-cozy.",
+    verdict: "zoom nightmare / fog perfect / seed plausible",
+    palette: ["#00110c","#003322","#00ff7b","#b8ff00","#ffe900","#071a40"],
+    projection: "fisheye-globe witness lens",
+    technique: "phosphor scanlines and false-color elevation",
+    draw: drawGlobe
+  },
+  {
+    id: "ascii",
+    title: "09. ASCII Bathymetric Prophecy",
+    extreme: "Extreme: Ultima collapses into terminal output, Earth into contour data.",
+    risk: "Uncomfortable: some players will call it hostile UI.",
+    verdict: "zoom hard / fog easy / seed easy",
+    palette: ["#050505","#22ff88","#00b7ff","#ffd166","#ff5c8a","#d8ffd8"],
+    projection: "cylindrical terminal raster",
+    technique: "ASCII glyph density field",
+    draw: drawAscii
+  },
+  {
+    id: "shards",
+    title: "10. Reliquary Memory Shards",
+    extreme: "Extreme: no god-view exists; the map is broken stained glass testimony.",
+    risk: "Uncomfortable: intentionally discontinuous, hard to trust at first glance.",
+    verdict: "zoom nightmare / fog sacred / seed plausible",
+    palette: ["#130816","#4d164d","#006c67","#ffcf70","#f05a28","#f6f1dc"],
+    projection: "fractured witness-shard mosaic",
+    technique: "stained glass, solder, and missing panes",
+    draw: drawShards
+  }
+];
+
+function mk(tag, attrs = {}, text = "") {
+  const el = document.createElement(tag);
+  Object.entries(attrs).forEach(([k, v]) => el.setAttribute(k, v));
+  if (text) el.textContent = text;
+  return el;
+}
+
+function setupCanvas(article, style) {
+  const canvas = mk("canvas", { width: W, height: H });
+  const ctx = canvas.getContext("2d");
+  style.draw(ctx, style);
+  article.appendChild(canvas);
+}
+
+function build() {
+  const gallery = document.querySelector("#gallery");
+  styles.forEach((style) => {
+    const article = mk("article");
+    setupCanvas(article, style);
+    const meta = mk("div", { class: "meta" });
+    meta.appendChild(mk("h2", {}, style.title));
+    const dl = mk("dl");
+    [["Extreme", style.extreme], ["Risk", style.risk], ["Verdict", style.verdict], ["Method", `${style.technique}; ${style.projection}.`]].forEach(([a,b]) => {
+      dl.appendChild(mk("dt", {}, a));
+      dl.appendChild(mk("dd", {}, b));
+    });
+    meta.appendChild(dl);
+    article.appendChild(meta);
+    gallery.appendChild(article);
+  });
+}
+
+function noise(x, y, seed = 1) {
+  const n = Math.sin(x * 127.1 + y * 311.7 + seed * 74.7) * 43758.5453;
+  return n - Math.floor(n);
+}
+function lerp(a, b, t) { return a + (b - a) * t; }
+function path(ctx, pts, close = false) {
+  ctx.beginPath();
+  pts.forEach(([x,y], i) => i ? ctx.lineTo(x,y) : ctx.moveTo(x,y));
+  if (close) ctx.closePath();
+}
+function curvePath(ctx, pts) {
+  ctx.beginPath();
+  ctx.moveTo(pts[0][0], pts[0][1]);
+  for (let i = 1; i < pts.length - 1; i++) {
+    const [x,y] = pts[i];
+    const [nx,ny] = pts[i+1];
+    ctx.quadraticCurveTo(x, y, (x+nx)/2, (y+ny)/2);
+  }
+  ctx.lineTo(pts[pts.length - 1][0], pts[pts.length - 1][1]);
+}
+function transformPoints(pts, fn) { return pts.map(([x,y]) => fn(x,y)); }
+function drawRoad(ctx, xf, color, width, dash) {
+  const pts = transformPoints(road, xf);
+  ctx.save();
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+  ctx.strokeStyle = color;
+  ctx.lineWidth = width;
+  if (dash) ctx.setLineDash(dash);
+  curvePath(ctx, pts);
+  ctx.stroke();
+  ctx.restore();
+}
+function drawTownIcon(ctx, xf, fill, stroke, label, font = "16px serif") {
+  const [x,y] = xf(town.x, town.y);
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.fillStyle = fill;
+  ctx.strokeStyle = stroke;
+  ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.rect(-14, -10, 28, 20); ctx.fill(); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(-17,-10); ctx.lineTo(0,-24); ctx.lineTo(17,-10); ctx.closePath(); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = stroke;
+  ctx.fillRect(-3, 2, 6, 8);
+  ctx.restore();
+  labelText(ctx, label, x + 20, y - 16, stroke, font);
+}
+function labelText(ctx, text, x, y, color, font, bg) {
+  ctx.save();
+  ctx.font = font;
+  ctx.textBaseline = "middle";
+  if (bg) {
+    const w = ctx.measureText(text).width;
+    ctx.fillStyle = bg;
+    ctx.fillRect(x - 5, y - 11, w + 10, 22);
+  }
+  ctx.fillStyle = color;
+  ctx.fillText(text, x, y);
+  ctx.restore();
+}
+function drawForestIcons(ctx, xf, fill, stroke, mode = "pine") {
+  for (let i = 0; i < 70; i++) {
+    const x = lerp(108, 205, noise(i, 2, 4));
+    const y = lerp(111, 199, noise(i, 9, 7));
+    if (noise(x, y, 3) < .2) continue;
+    const [px, py] = xf(x, y);
+    ctx.save();
+    ctx.translate(px, py);
+    const s = 4 + noise(i, y, 2) * 6;
+    ctx.fillStyle = fill;
+    ctx.strokeStyle = stroke;
+    ctx.lineWidth = 1;
+    if (mode === "round") {
+      ctx.beginPath(); ctx.arc(0, 0, s, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    } else {
+      ctx.beginPath(); ctx.moveTo(0, -s); ctx.lineTo(-s*.75, s*.65); ctx.lineTo(s*.75, s*.65); ctx.closePath(); ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0, -s*.35); ctx.lineTo(-s*.6, s); ctx.lineTo(s*.6, s); ctx.closePath(); ctx.fill(); ctx.stroke();
+    }
+    ctx.restore();
+  }
+}
+function drawRidgeIcons(ctx, xf, fill, stroke, count = 18) {
+  for (let i = 0; i < count; i++) {
+    const t = i / (count - 1);
+    const x = lerp(286, 506, t);
+    const y = 120 - Math.sin(t * Math.PI * 5) * (32 + 16 * noise(i,3,2)) + noise(i,5,7) * 18;
+    const [px, py] = xf(x, y);
+    const s = 18 + noise(i, y, 1) * 18;
+    ctx.save();
+    ctx.translate(px, py);
+    ctx.fillStyle = fill;
+    ctx.strokeStyle = stroke;
+    ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(-s, s*.62); ctx.lineTo(0, -s); ctx.lineTo(s, s*.62); ctx.closePath(); ctx.fill(); ctx.stroke();
+    ctx.strokeStyle = "rgba(255,255,255,.35)";
+    ctx.beginPath(); ctx.moveTo(0, -s); ctx.lineTo(-s*.18, s*.25); ctx.stroke();
+    ctx.restore();
+  }
+}
+function drawFog(ctx, xf, color, mode = "soft") {
+  const pts = transformPoints(fogPoly, xf);
+  ctx.save();
+  path(ctx, pts, true);
+  if (mode === "blank") {
+    ctx.fillStyle = color;
+    ctx.fill();
+  } else if (mode === "scan") {
+    ctx.fillStyle = color;
+    ctx.fill();
+    ctx.clip();
+    ctx.strokeStyle = "rgba(255,255,255,.18)";
+    for (let y = 0; y < H; y += 8) { ctx.beginPath(); ctx.moveTo(360, y); ctx.lineTo(W, y + 40); ctx.stroke(); }
+  } else {
+    const g = ctx.createLinearGradient(380, 20, 560, 180);
+    g.addColorStop(0, color);
+    g.addColorStop(1, "rgba(255,255,255,.05)");
+    ctx.fillStyle = g;
+    ctx.fill();
+  }
+  ctx.restore();
+}
+function paperNoise(ctx, color = "rgba(0,0,0,.08)", step = 3) {
+  ctx.save();
+  ctx.fillStyle = color;
+  for (let y = 0; y < H; y += step) {
+    for (let x = 0; x < W; x += step) {
+      const a = noise(x, y, 9);
+      if (a > .7) ctx.fillRect(x, y, 1, 1);
+    }
+  }
+  ctx.restore();
+}
+
+function drawOrbital(ctx) {
+  const xf = (x,y) => [x + y * .18 - 16, y * .72 + 44];
+  const sky = ctx.createLinearGradient(0,0,0,H);
+  sky.addColorStop(0, "#d9e4d6"); sky.addColorStop(.34, "#8ba278"); sky.addColorStop(1, "#1d3540");
+  ctx.fillStyle = sky; ctx.fillRect(0,0,W,H);
+  for (let y = 0; y < H; y += 2) for (let x = 0; x < W; x += 2) {
+    const n = noise(x,y,1);
+    ctx.fillStyle = `rgba(255,255,255,${n*.035})`; ctx.fillRect(x,y,2,2);
+  }
+  let pts = transformPoints(coast, xf); path(ctx, pts, true);
+  const ocean = ctx.createLinearGradient(0,H,260,130);
+  ocean.addColorStop(0, "#071829"); ocean.addColorStop(.55, "#145b76"); ocean.addColorStop(1, "#49a1a0");
+  ctx.fillStyle = ocean; ctx.fill();
+  ctx.strokeStyle = "rgba(245,244,220,.7)"; ctx.lineWidth = 2; ctx.stroke();
+  drawForestIcons(ctx, xf, "rgba(22,76,45,.82)", "rgba(10,38,27,.55)", "round");
+  drawRidgeIcons(ctx, xf, "#8f835f", "#33291e", 22);
+  drawRoad(ctx, xf, "rgba(235,222,173,.85)", 3);
+  drawTownIcon(ctx, xf, "#b8824e", "#f7f2d9", "Merewick", "15px Arial");
+  labelText(ctx, "MEREWICK OBS.", ...xf(290, 206), "#f7f4e8", "10px Arial", "rgba(4,18,24,.62)");
+  ctx.strokeStyle = "rgba(247,244,232,.65)"; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(...xf(286,205)); ctx.lineTo(...xf(276,214)); ctx.stroke();
+  drawFog(ctx, xf, "rgba(235,240,230,.78)");
+  ctx.fillStyle = "rgba(255,255,255,.08)"; ctx.fillRect(0,0,W,70);
+}
+
+function drawEga(ctx) {
+  const xf = (x,y) => [Math.round(x/14)*14, Math.round(y/14)*14];
+  ctx.fillStyle = "#55ff55"; ctx.fillRect(0,0,W,H);
+  for (let y = 0; y < H; y += 14) for (let x = 0; x < W; x += 14) {
+    const n = noise(x,y,2);
+    ctx.fillStyle = n > .78 ? "#00aa00" : n < .08 ? "#ffaa00" : "#55ff55";
+    ctx.fillRect(x,y,14,14);
+    ctx.strokeStyle = "#003300"; ctx.strokeRect(x+.5,y+.5,13,13);
+  }
+  path(ctx, transformPoints(coast, xf), true); ctx.fillStyle = "#0055ff"; ctx.fill(); ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 2; ctx.stroke();
+  for (let i=0;i<52;i++) { const x=112+(i%8)*14, y=112+Math.floor(i/8)*14; ctx.fillStyle = i%3 ? "#00aa00" : "#000000"; ctx.fillRect(x,y,12,12); ctx.fillStyle="#55ff55"; ctx.fillRect(x+3,y+2,6,6); }
+  for (let i=0;i<18;i++) { const x=294+i*12, y=114-Math.sin(i*.9)*42; ctx.fillStyle="#aa5500"; ctx.beginPath(); ctx.moveTo(x,y-14); ctx.lineTo(x-10,y+10); ctx.lineTo(x+10,y+10); ctx.closePath(); ctx.fill(); ctx.strokeStyle="#ffffff"; ctx.stroke(); }
+  drawRoad(ctx, xf, "#ffaa00", 5);
+  drawTownIcon(ctx, xf, "#aaaaaa", "#000000", "MEREWICK", "13px monospace");
+  drawFog(ctx, xf, "#ffcc88", "blank");
+  ctx.fillStyle = "#000"; ctx.font = "10px monospace"; ctx.fillText("? ? ? ? ?", 430, 56);
+}
+
+function drawCopper(ctx) {
+  const xf = (x,y) => [x*.96 + Math.sin(y/52)*18 + 10, y*.89 + 22];
+  ctx.fillStyle = "#f1dfb9"; ctx.fillRect(0,0,W,H);
+  for (let y=8;y<H;y+=12) { ctx.strokeStyle="rgba(70,43,28,.13)"; ctx.beginPath(); ctx.moveTo(0,y); ctx.bezierCurveTo(160,y+8,330,y-8,W,y+4); ctx.stroke(); }
+  path(ctx, transformPoints(coast, xf), true); ctx.fillStyle = "#9fc4bf"; ctx.fill(); ctx.strokeStyle="#1a1712"; ctx.lineWidth=1.7; ctx.stroke();
+  for (let i=0;i<90;i++) labelText(ctx, String(Math.floor(2+noise(i,4,2)*18)), 18+noise(i,1,2)*210, 218+noise(i,7,3)*128, "#1d4955", "8px Georgia");
+  drawForestIcons(ctx, xf, "#61845f", "#25412c", "round");
+  drawRidgeIcons(ctx, xf, "#b18b48", "#734b35", 20);
+  drawRoad(ctx, xf, "#734b35", 2, [8,5]);
+  drawTownIcon(ctx, xf, "#f1dfb9", "#1a1712", "Merewick", "italic 17px Georgia");
+  drawFog(ctx, xf, "rgba(70,43,28,.24)", "scan");
+  paperNoise(ctx, "rgba(67,40,21,.16)", 2);
+}
+
+function drawWax(ctx) {
+  const xf = (x,y) => [x*.94 + y*.1 + 2, y*.82 + 36];
+  const g = ctx.createRadialGradient(260, 130, 30, 260, 130, 460);
+  g.addColorStop(0, "#f3d190"); g.addColorStop(.55, "#a46e3e"); g.addColorStop(1, "#2b1b12");
+  ctx.fillStyle = g; ctx.fillRect(0,0,W,H);
+  for (let i=0;i<1700;i++) { const x=noise(i,2,8)*W, y=noise(i,4,8)*H; ctx.fillStyle=`rgba(255,230,170,${noise(i,7,8)*.045})`; ctx.fillRect(x,y,2,2); }
+  path(ctx, transformPoints(coast, xf), true); ctx.fillStyle="#172d33"; ctx.fill(); ctx.shadowColor="#f3d190"; ctx.shadowBlur=16; ctx.strokeStyle="#f3d190"; ctx.lineWidth=3; ctx.stroke(); ctx.shadowBlur=0;
+  drawForestIcons(ctx, xf, "#283521", "#11190d", "round");
+  drawRidgeIcons(ctx, xf, "#d7a765", "#32180b", 26);
+  drawRoad(ctx, xf, "#f3d190", 7); drawRoad(ctx, xf, "#59331f", 2);
+  drawTownIcon(ctx, xf, "#d7a765", "#2b1b12", "Merewick", "bold 15px Georgia");
+  drawFog(ctx, xf, "rgba(43,27,18,.72)");
+}
+
+function drawBlueprint(ctx) {
+  const xf = (x,y) => [x + y*.42 - 70, y*.56 + 66];
+  ctx.fillStyle="#06131d"; ctx.fillRect(0,0,W,H);
+  ctx.strokeStyle="rgba(75,180,201,.22)"; ctx.lineWidth=1;
+  for (let x=-W;x<W*2;x+=24) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x+160,H); ctx.stroke(); }
+  for (let y=0;y<H;y+=24) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
+  path(ctx, transformPoints(coast, xf), true); ctx.fillStyle="rgba(11,74,104,.88)"; ctx.fill(); ctx.strokeStyle="#d8fbff"; ctx.lineWidth=1.5; ctx.stroke();
+  drawForestIcons(ctx, xf, "transparent", "#4bb4c9", "round");
+  drawRidgeIcons(ctx, xf, "rgba(242,200,75,.22)", "#f2c84b", 18);
+  drawRoad(ctx, xf, "#ff6b4a", 2, [7,5]);
+  drawTownIcon(ctx, xf, "#06131d", "#d8fbff", "MEREWICK NODE", "11px monospace");
+  labelText(ctx, "UNSURVEYED", ...xf(420,60), "#ff6b4a", "12px monospace");
+  drawFog(ctx, xf, "rgba(6,19,29,.9)", "scan");
+}
+
+function drawRiso(ctx) {
+  const xf = (x,y) => [x*.98 + y*.13 - 12, y*.86 + 28];
+  ctx.fillStyle="#fff0c7"; ctx.fillRect(0,0,W,H);
+  const layers = [
+    {dx:-4,dy:3,c:"#0067ff"}, {dx:5,dy:-2,c:"#ff3b30"}, {dx:0,dy:0,c:"#00a05a"}
+  ];
+  layers.forEach((l, idx) => {
+    ctx.save(); ctx.globalAlpha = idx === 2 ? .72 : .58; ctx.translate(l.dx,l.dy);
+    path(ctx, transformPoints(coast, xf), true); ctx.fillStyle = idx === 0 ? "#0067ff" : "#fff0c7"; if(idx!==2) ctx.fill(); ctx.strokeStyle=l.c; ctx.lineWidth=idx===0?0:3; ctx.stroke();
+    drawForestIcons(ctx, xf, l.c, "#24120b", idx===2?"pine":"round");
+    drawRidgeIcons(ctx, xf, idx===1?"#ff3b30":"#f7b500", "#24120b", 16);
+    ctx.restore();
+  });
+  drawRoad(ctx, xf, "#24120b", 3, [4,4]);
+  drawTownIcon(ctx, xf, "#fff0c7", "#24120b", "Merewick", "bold 17px Georgia");
+  drawFog(ctx, xf, "rgba(255,59,48,.22)");
+  for (let y=0;y<H;y+=4) { ctx.strokeStyle="rgba(36,18,11,.08)"; ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
+}
+
+function drawCloth(ctx) {
+  const xf = (x,y) => [x + Math.sin(y/21)*5, y + Math.sin(x/31)*4];
+  ctx.fillStyle="#ede2c4"; ctx.fillRect(0,0,W,H);
+  ctx.strokeStyle="rgba(28,41,64,.16)";
+  for(let x=0;x<W;x+=8){ ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x+Math.sin(x)*5,H); ctx.stroke(); }
+  for(let y=0;y<H;y+=8){ ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y+Math.sin(y)*5); ctx.stroke(); }
+  path(ctx, transformPoints(coast, xf), true); ctx.fillStyle="#1c2940"; ctx.fill(); ctx.strokeStyle="#e0a62f"; ctx.lineWidth=5; ctx.setLineDash([3,4]); ctx.stroke(); ctx.setLineDash([]);
+  drawForestIcons(ctx, xf, "#123e2f", "#f7f3df", "pine");
+  drawRidgeIcons(ctx, xf, "#e0a62f", "#8a1e2d", 15);
+  drawRoad(ctx, xf, "#8a1e2d", 4, [2,7]);
+  drawTownIcon(ctx, xf, "#f7f3df", "#8a1e2d", "Merewick", "16px Georgia");
+  drawFog(ctx, xf, "rgba(237,226,196,.88)", "blank");
+  labelText(ctx, "unstitched", ...xf(424,65), "#8a1e2d", "italic 14px Georgia");
+}
+
+function drawGlobe(ctx) {
+  const xf = (x,y) => {
+    const cx = 280, cy = 178;
+    const nx = (x - cx) / 280, ny = (y - cy) / 180;
+    const r = Math.sqrt(nx*nx + ny*ny);
+    const k = 1 - r * .22;
+    return [cx + (x-cx)*k, cy + (y-cy)*k + Math.sin(nx*4)*9];
+  };
+  ctx.fillStyle="#00110c"; ctx.fillRect(0,0,W,H);
+  const rg = ctx.createRadialGradient(280,178,20,280,178,245);
+  rg.addColorStop(0,"#003322"); rg.addColorStop(.7,"#00110c"); rg.addColorStop(1,"#071a40");
+  ctx.fillStyle=rg; ctx.beginPath(); ctx.ellipse(280,178,250,162,0,0,Math.PI*2); ctx.fill();
+  ctx.clip();
+  for(let y=0;y<H;y+=6){ ctx.strokeStyle="rgba(0,255,123,.18)"; ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
+  path(ctx, transformPoints(coast, xf), true); ctx.fillStyle="rgba(0,183,255,.28)"; ctx.fill(); ctx.strokeStyle="#00ff7b"; ctx.lineWidth=2; ctx.stroke();
+  drawForestIcons(ctx, xf, "#00ff7b", "#00110c", "round");
+  drawRidgeIcons(ctx, xf, "#b8ff00", "#ffe900", 18);
+  drawRoad(ctx, xf, "#ffe900", 2);
+  drawTownIcon(ctx, xf, "#00110c", "#ffe900", "MEREWICK", "12px monospace");
+  drawFog(ctx, xf, "rgba(0,17,12,.88)", "scan");
+}
+
+function drawAscii(ctx) {
+  const xf = (x,y) => [x + Math.sin(y/47)*22, y];
+  ctx.fillStyle="#050505"; ctx.fillRect(0,0,W,H);
+  ctx.font="12px monospace"; ctx.textBaseline="top";
+  for(let y=0;y<H;y+=12){
+    for(let x=0;x<W;x+=8){
+      const inWater = x < 230 && y > 180 + Math.sin(x/30)*30;
+      const f = x>382 && y<180 ? " " : inWater ? "~" : noise(x,y,5)>.7 ? "." : ",";
+      ctx.fillStyle = inWater ? "#00b7ff" : "#22ff88";
+      ctx.fillText(f, x, y);
+    }
+  }
+  drawRoad(ctx, xf, "#ffd166", 2, [2,6]);
+  drawForestIcons(ctx, xf, "transparent", "#22ff88", "pine");
+  drawRidgeIcons(ctx, xf, "transparent", "#ff5c8a", 14);
+  drawTownIcon(ctx, xf, "#050505", "#d8ffd8", "@MEREWICK", "12px monospace");
+  ctx.fillStyle="#ffd166"; ctx.font="18px monospace"; ctx.fillText("????????????", 408, 45);
+}
+
+function drawShards(ctx) {
+  const xf = (x,y) => [x + (noise(Math.floor(x/70), Math.floor(y/70), 6)-.5)*18, y + (noise(Math.floor(x/80), Math.floor(y/80), 7)-.5)*18];
+  ctx.fillStyle="#130816"; ctx.fillRect(0,0,W,H);
+  for(let y=-40;y<H+80;y+=62){
+    for(let x=-50;x<W+80;x+=76){
+      const pts = [[x,y],[x+66+noise(x,y,1)*20,y+8],[x+54,y+58+noise(x,y,2)*18],[x-12,y+48]];
+      path(ctx, pts, true);
+      const n=noise(x,y,3);
+      ctx.fillStyle = n<.22 ? "#4d164d" : n<.44 ? "#006c67" : n<.66 ? "#ffcf70" : "#f6f1dc";
+      ctx.globalAlpha=.76; ctx.fill(); ctx.globalAlpha=1;
+      ctx.strokeStyle="#130816"; ctx.lineWidth=5; ctx.stroke();
+    }
+  }
+  path(ctx, transformPoints(coast, xf), true); ctx.fillStyle="rgba(0,108,103,.8)"; ctx.fill(); ctx.strokeStyle="#f6f1dc"; ctx.lineWidth=2; ctx.stroke();
+  drawForestIcons(ctx, xf, "#006c67", "#f6f1dc", "round");
+  drawRidgeIcons(ctx, xf, "#ffcf70", "#4d164d", 17);
+  drawRoad(ctx, xf, "#f05a28", 4);
+  drawTownIcon(ctx, xf, "#f6f1dc", "#130816", "Merewick", "bold 16px Georgia");
+  drawFog(ctx, xf, "rgba(19,8,22,.95)", "blank");
+  labelText(ctx, "NO WITNESS", ...xf(416,72), "#f6f1dc", "13px serif");
+}
+
+build();
+</script>
+</body>
+</html>

@@ -1,0 +1,323 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Map Style Edges — Google Earth × Ultima</title>
+<style>
+  :root{
+    --ink:#1d2330; --soft:#6b7484; --rule:#d8dce4; --accent:#b5532f; --accent2:#2a4a78;
+    --serif:"Iowan Old Style",Palatino,Georgia,serif; --mono:"SF Mono",Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:#11131a;color:#e9ebf0;font-family:var(--serif);padding:30px 26px 60px}
+  header{max-width:1180px;margin:0 auto 22px}
+  .kick{font-family:var(--mono);font-size:11px;letter-spacing:.28em;text-transform:uppercase;color:#d98a5b}
+  h1{font-size:30px;margin:8px 0 6px;letter-spacing:-.3px}
+  h1 em{color:#d98a5b;font-style:italic}
+  .dna{font-size:13.5px;line-height:1.5;color:#b9bfcb;max-width:920px}
+  .dna b{color:#fff;font-weight:600}
+  .grid{max-width:1180px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+  @media(max-width:900px){.grid{grid-template-columns:repeat(2,1fr)}}
+  figure{margin:0;background:#181b24;border:1px solid #262b38;border-radius:8px;overflow:hidden}
+  canvas{display:block;width:100%;height:auto;background:#000}
+  figcaption{padding:9px 12px 12px}
+  .rank{font-family:var(--mono);font-size:10px;color:#7f8696;letter-spacing:.05em}
+  .ttl{font-size:15px;font-weight:600;margin:1px 0 3px}
+  .ttl .b{color:#d98a5b}
+  .ext{font-size:12px;color:#cfd4de;line-height:1.35}
+  .risk{font-size:11.5px;color:#8b93a3;font-style:italic;margin-top:4px}
+  .verd{font-family:var(--mono);font-size:10px;letter-spacing:.04em;margin-top:6px;padding-top:6px;border-top:1px solid #262b38;color:#6f7embed}
+  .verd{color:#6f7888}
+  .verd .ok{color:#5bbf8a} .verd .no{color:#d96b5b} .verd .mid{color:#d9b15b}
+  footer{max-width:1180px;margin:26px auto 0;font-size:13px;color:#b9bfcb;line-height:1.55;border-top:1px solid #262b38;padding-top:16px}
+  footer b{color:#fff} footer .fight{color:#d98a5b;font-weight:600}
+</style>
+</head>
+<body>
+<header>
+  <div class="kick">Cartography · Style Reconnaissance · Edges, not the mean</div>
+  <h1>Google&nbsp;Earth <em>×</em> Ultima — 10 directions on one region</h1>
+  <p class="dna"><b>Stolen DNA:</b> confident black ink + honest grid (Dyson) · lit islands in a black void (battlemap) · warm sandstone &amp; roof-red landmarks, aged-green parchment, saturated biome blocks · painted oblique relief mountains + isometric ridge-frames over top-down plans · calligraphic italics, banner cartouches, compass roses. <b>Pushed past:</b> the refs cluster on warm parchment-fantasy (the mean) — so two directions honor that craft and eight defect to alien mediums (embroidery, cyanotype, riso, ASCII, gold-leaf lacquer, false-color magma, fisheye globe).</p>
+</header>
+<div class="grid" id="grid"></div>
+<footer id="foot"></footer>
+
+<script>
+const W=560,H=360;
+
+/* ---------- deterministic helpers ---------- */
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function h2(ix,iy){let h=(ix*374761393+iy*668265263)>>>0;h=Math.imul(h^(h>>>13),1274126177)>>>0;return (h>>>0)/4294967296;}
+function sstep(t){return t*t*(3-2*t);}
+function vnoise(x,y){const ix=Math.floor(x),iy=Math.floor(y),fx=x-ix,fy=y-iy;const a=h2(ix,iy),b=h2(ix+1,iy),c=h2(ix,iy+1),d=h2(ix+1,iy+1);const u=sstep(fx),v=sstep(fy);return a*(1-u)*(1-v)+b*u*(1-v)+c*(1-u)*v+d*u*v;}
+function fbm(x,y){let s=0,amp=.5,f=1;for(let i=0;i<4;i++){s+=amp*vnoise(x*f,y*f);f*=2;amp*=.5;}return s;}
+function norm(v){const m=Math.hypot(v[0],v[1],v[2])||1;return [v[0]/m,v[1]/m,v[2]/m];}
+
+/* ---------- the ONE scene (normalized, y down) ---------- */
+const SHORE=[[0,.56],[.13,.64],[.24,.77],[.35,.9],[.45,1]];
+const HILLS=[[.47,.34,.12],[.55,.30,.15],[.63,.33,.11],[.71,.29,.14],[.79,.32,.10]];
+const TOWN=[.55,.66], TOWNNAME="Hollowmere";
+const ROAD=[[.40,1],[.47,.84],[.55,.66],[.63,.5],[.71,.37]];
+const A=[.58,0],B=[1,.52];
+function cross(x,y){return (B[0]-A[0])*(y-A[1])-(B[1]-A[1])*(x-A[0]);}
+const FOGSIGN=Math.sign(cross(.95,.06));
+function isFog(x,y){return Math.sign(cross(x,y))===FOGSIGN;}
+function shoreY(x){const S=SHORE;if(x<=S[0][0])return S[0][1];for(let i=1;i<S.length;i++){if(x<=S[i][0]){const t=(x-S[i-1][0])/(S[i][0]-S[i-1][0]);return S[i-1][1]+(S[i][1]-S[i-1][1])*t;}}return 99;}
+function isWater(x,y){return x<=.46&&y>shoreY(x);}
+function ridgeTopY(x){let top=1;for(const[hx,by,h]of HILLS){const d=Math.abs(x-hx);if(d<.085){const y=by-h*(1-d/.085);if(y<top)top=y;}}return top;}
+function isHill(x,y){if(x<.42||x>.87)return false;const t=ridgeTopY(x);return y>=t&&y<=.40;}
+function isForest(x,y){return Math.hypot(x-.28,y-.42)<.14&&!isWater(x,y)&&!isFog(x,y);}
+function isTown(x,y){return Math.hypot(x-.55,y-.66)<.045;}
+function region(x,y){if(isFog(x,y))return'fog';if(isWater(x,y))return'water';if(isTown(x,y))return'town';if(isHill(x,y))return'hill';if(isForest(x,y))return'forest';return'plain';}
+function hgt(x,y){if(isFog(x,y))return -1;let h=.25+fbm(x*3,y*3)*.12;for(const[hx,by,hh]of HILLS){h+=hh*1.7*Math.exp(-(((x-hx)*(x-hx))*70+((y-by)*(y-by))*40));}if(isWater(x,y))h=-.22;if(isTown(x,y))h+=.05;return h;}
+
+const TR=mulberry32(1337),TREES=[];for(let i=0;i<60&&TREES.length<24;i++){const a=TR()*6.283,r=Math.sqrt(TR())*.135;const x=.28+Math.cos(a)*r,y=.42+Math.sin(a)*r*.85;if(!isWater(x,y)&&!isFog(x,y)&&!isHill(x,y))TREES.push([x,y]);}
+const TB=mulberry32(99),BLD=[];for(let i=0;i<7;i++){const a=TB()*6.283,r=TB()*.038;BLD.push([.55+Math.cos(a)*r,.66+Math.sin(a)*r*.85]);}
+const P=(nx,ny)=>[nx*W,ny*H];
+
+/* generic road */
+function roadPath(ctx){ctx.beginPath();ROAD.forEach((p,i)=>{const[x,y]=P(p[0],p[1]);i?ctx.lineTo(x,y):ctx.moveTo(x,y);});}
+function waterPath(ctx){ctx.beginPath();ctx.moveTo(0,H);for(let x=0;x<=.46;x+=.02){const[px,py]=P(x,shoreY(x));ctx.lineTo(px,py);}ctx.lineTo(P(.46,1)[0],H);ctx.closePath();}
+function fogPath(ctx){const[ax,ay]=P(A[0],A[1]),[bx,by]=P(B[0],B[1]);ctx.beginPath();ctx.moveTo(ax,ay);ctx.lineTo(bx,by);ctx.lineTo(W,0);ctx.closePath();}
+
+/* ============================================================ STYLES */
+const STYLES=[];
+
+/* 1 — Gouache Storybook (the safe-but-pretty anchor) */
+STYLES.push({title:["Gouache ","Storybook"],pole:"~60% Ultima",ext:"Hand-painted children's-atlas gouache; soft humps, cute roofs.",risk:"The closest to the mean — charming but could read 'safe'.",verd:["ok","ok","mid"],draw(ctx){
+  const g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,"#eadfae");g.addColorStop(1,"#d9caa0");ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+  // plains noise wash
+  for(let i=0;i<2200;i++){const x=Math.random()*W,y=Math.random()*H,nx=x/W,ny=y/H;if(region(nx,ny)==='plain'){ctx.fillStyle=`rgba(150,165,90,${.05+Math.random()*.06})`;ctx.fillRect(x,y,3,3);}}
+  // water
+  waterPath(ctx);const wg=ctx.createLinearGradient(0,H*.5,0,H);wg.addColorStop(0,"#5fa6b0");wg.addColorStop(1,"#3d7e8c");ctx.fillStyle=wg;ctx.fill();
+  ctx.lineWidth=3;ctx.strokeStyle="#cfe3df";ctx.stroke();
+  // hills painted humps
+  for(const[hx,by,h]of HILLS){const[cx,cy]=P(hx,by);const r=h*W;const rg=ctx.createRadialGradient(cx-r*.3,cy-r*.5,r*.2,cx,cy,r*1.3);rg.addColorStop(0,"#b9a06a");rg.addColorStop(1,"#7d6c47");ctx.fillStyle=rg;ctx.beginPath();ctx.moveTo(cx-r,cy+r*.2);ctx.quadraticCurveTo(cx,cy-r*1.4,cx+r,cy+r*.2);ctx.closePath();ctx.fill();ctx.strokeStyle="#fff7e0";ctx.lineWidth=1.4;ctx.beginPath();ctx.moveTo(cx-r*.5,cy-r*.3);ctx.quadraticCurveTo(cx,cy-r*1.0,cx+r*.2,cy-r*.5);ctx.stroke();}
+  // forest blobs
+  for(const[x,y]of TREES){const[px,py]=P(x,y);ctx.fillStyle="#3e6b34";ctx.beginPath();ctx.arc(px,py+3,7,0,7);ctx.fill();ctx.fillStyle="#5b8e44";ctx.beginPath();ctx.arc(px-1,py,6,0,7);ctx.fill();ctx.fillStyle="#7fb15e";ctx.beginPath();ctx.arc(px-2,py-2,3,0,7);ctx.fill();}
+  // road
+  roadPath(ctx);ctx.strokeStyle="#c8a06a";ctx.lineWidth=6;ctx.lineCap="round";ctx.stroke();ctx.strokeStyle="#e7d4ad";ctx.lineWidth=2;ctx.setLineDash([6,7]);ctx.stroke();ctx.setLineDash([]);
+  // town
+  for(const[x,y]of BLD){const[px,py]=P(x,y);ctx.fillStyle="#caa06a";ctx.fillRect(px-5,py-3,10,7);ctx.fillStyle="#b5532f";ctx.beginPath();ctx.moveTo(px-6,py-3);ctx.lineTo(px,py-9);ctx.lineTo(px+6,py-3);ctx.closePath();ctx.fill();}
+  // fog mist
+  fogPath(ctx);const fg=ctx.createLinearGradient(W*.55,0,W,H*.5);fg.addColorStop(0,"rgba(245,240,220,0)");fg.addColorStop(1,"rgba(245,240,220,.92)");ctx.fillStyle=fg;ctx.fill();
+  label(ctx,P(.55,.78),TOWNNAME,"#5b4326",'italic 15px '+gSerif,true);
+}});
+
+/* 2 — Painted Cartouche Atlas (honors the Vidia ref, pushed crisper) */
+STYLES.push({title:["Banner ","Cartouche Atlas"],pole:"~45% each",ext:"Aged continental atlas: relief mountains, ocean hatch, banner title.",risk:"Most reference-faithful; risk = it's the genre's comfort zone.",verd:["ok","ok","ok"],draw(ctx){
+  ctx.fillStyle="#cdbf94";ctx.fillRect(0,0,W,H);
+  for(let i=0;i<5000;i++){const x=Math.random()*W,y=Math.random()*H;ctx.fillStyle=`rgba(${Math.random()<.5?'120,100,60':'160,150,110'},${Math.random()*.05})`;ctx.fillRect(x,y,2,2);}
+  // land tint
+  for(let i=0;i<2600;i++){const x=Math.random()*W,y=Math.random()*H,nx=x/W,ny=y/H,r=region(nx,ny);if(r==='plain'||r==='forest'){ctx.fillStyle=r==='forest'?"rgba(70,100,50,.10)":"rgba(120,140,70,.06)";ctx.fillRect(x,y,4,4);}}
+  // ocean hatch
+  ctx.save();waterPath(ctx);ctx.clip();ctx.fillStyle="#9fb3b0";ctx.fillRect(0,0,W,H);ctx.strokeStyle="rgba(60,90,95,.5)";ctx.lineWidth=1;for(let y=H*.5;y<H;y+=7){ctx.beginPath();for(let x=0;x<W;x+=6){ctx.lineTo(x,y+Math.sin((x+y)*.05)*2);}ctx.stroke();}ctx.restore();
+  ctx.lineWidth=2.2;ctx.strokeStyle="#3a4a44";waterPath(ctx);ctx.stroke();
+  // relief mountains
+  for(const[hx,by,h]of HILLS){const[cx,cy]=P(hx,by);const r=h*W;ctx.fillStyle="#7a6a48";ctx.beginPath();ctx.moveTo(cx-r,cy+r*.3);ctx.lineTo(cx,cy-r*1.2);ctx.lineTo(cx+r,cy+r*.3);ctx.closePath();ctx.fill();ctx.fillStyle="#5a4d32";ctx.beginPath();ctx.moveTo(cx,cy-r*1.2);ctx.lineTo(cx+r,cy+r*.3);ctx.lineTo(cx+r*.2,cy+r*.3);ctx.closePath();ctx.fill();ctx.strokeStyle="rgba(40,35,20,.6)";ctx.lineWidth=.8;for(let k=0;k<5;k++){ctx.beginPath();ctx.moveTo(cx+r*.1,cy-r*1.0+k*r*.25);ctx.lineTo(cx+r*.9,cy+r*.25);ctx.stroke();}}
+  // forest stipple-trees
+  for(const[x,y]of TREES){const[px,py]=P(x,y);ctx.fillStyle="#3c5a30";ctx.beginPath();ctx.moveTo(px,py-7);ctx.lineTo(px+4,py+3);ctx.lineTo(px-4,py+3);ctx.closePath();ctx.fill();}
+  roadPath(ctx);ctx.setLineDash([5,5]);ctx.strokeStyle="#6b4a2a";ctx.lineWidth=1.6;ctx.stroke();ctx.setLineDash([]);
+  for(const[x,y]of BLD){const[px,py]=P(x,y);ctx.fillStyle="#6b1f12";ctx.fillRect(px-3,py-3,6,6);}
+  fogPath(ctx);ctx.fillStyle="rgba(205,191,148,.93)";ctx.fill();
+  // banner
+  const bx=P(.62,.12)[0],bw=150,bh=26,byb=24;ctx.fillStyle="#e7dab0";ctx.strokeStyle="#7a6230";ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(bx-8,byb);ctx.lineTo(bx+bw+8,byb);ctx.lineTo(bx+bw,byb+bh);ctx.lineTo(bx,byb+bh);ctx.closePath();ctx.fill();ctx.stroke();label(ctx,[bx+bw/2,byb+17],"TERRA INCOGNITA","#6b4a2a",'italic 12px '+gSerif,true);
+  label(ctx,P(.53,.8),TOWNNAME,"#3a2a18",'italic 14px '+gSerif,true);
+  label(ctx,P(.18,.86),"the Drowned Coast","#3a4a44",'italic 12px '+gSerif,true);
+}});
+
+/* 3 — EGA Tilewright (hard Ultima) */
+STYLES.push({title:["EGA ","Tilewright"],pole:"100% Ultima",ext:"16-color dithered tile grid, chunky icon sprites, pixel labels.",risk:"Pure nostalgia — could feel like a museum piece, not new.",verd:["ok","ok","ok"],draw(ctx){
+  ctx.imageSmoothingEnabled=false;const T=14,cols=Math.ceil(W/T),rows=Math.ceil(H/T);
+  const PAL={water:["#0000aa","#5555ff"],plain:["#00aa00","#55ff55"],forest:["#005500","#00aa00"],hill:["#aa5500","#ffaa00"],town:["#aaaaaa","#ff5555"],fog:["#000000","#000000"]};
+  for(let cy=0;cy<rows;cy++)for(let cx=0;cx<cols;cx++){const nx=(cx+.5)*T/W,ny=(cy+.5)*T/H,r=region(nx,ny);const pal=PAL[r];ctx.fillStyle=pal[0];ctx.fillRect(cx*T,cy*T,T,T);ctx.fillStyle=pal[1];for(let i=0;i<T;i+=2)for(let j=0;j<T;j+=2){if(((cx*T+i)+(cy*T+j))%4===0)ctx.fillRect(cx*T+i,cy*T+j,2,2);}}
+  // sprites: trees
+  for(const[x,y]of TREES){const[px,py]=P(x,y);ctx.fillStyle="#005500";ctx.fillRect(px-3,py-1,6,5);ctx.fillStyle="#00aa00";ctx.fillRect(px-5,py-5,10,5);ctx.fillStyle="#003300";ctx.fillRect(px-1,py+4,2,3);}
+  // mountains
+  for(const[hx,by,h]of HILLS){const[cx,cy]=P(hx,by);const r=h*W;ctx.fillStyle="#aa5500";ctx.beginPath();ctx.moveTo(cx-r,cy+r*.3);ctx.lineTo(cx,cy-r);ctx.lineTo(cx+r,cy+r*.3);ctx.closePath();ctx.fill();ctx.fillStyle="#ffffff";ctx.beginPath();ctx.moveTo(cx,cy-r);ctx.lineTo(cx+r*.25,cy-r*.55);ctx.lineTo(cx-r*.25,cy-r*.55);ctx.closePath();ctx.fill();}
+  // town houses
+  for(const[x,y]of BLD){const[px,py]=P(x,y);ctx.fillStyle="#aaaaaa";ctx.fillRect(px-5,py-2,10,7);ctx.fillStyle="#ff5555";ctx.fillRect(px-6,py-5,12,4);}
+  roadPath(ctx);ctx.strokeStyle="#aa5500";ctx.lineWidth=6;ctx.stroke();ctx.strokeStyle="#ffaa00";ctx.lineWidth=2;ctx.stroke();
+  // pixel label
+  ctx.fillStyle="#000";ctx.fillRect(P(.46,.74)[0]-2,P(.46,.74)[1]-9,80,12);ctx.fillStyle="#ffff55";ctx.font='10px '+gMono;ctx.fillText(TOWNNAME.toUpperCase(),P(.46,.74)[0],P(.46,.74)[1]);
+}});
+
+/* 4 — Magma Relief (Google Earth false-color, raking light) */
+STYLES.push({title:["Magma ","Relief Render"],pole:"~80% Earth",ext:"Satellite hillshade in volcanic false-color; obsidian sea, ember ridges.",risk:"Gorgeous but reads 'hostile' — wrong mood for a cozy region.",verd:["ok","ok","mid"],draw(ctx){
+  const img=ctx.createImageData(W,H),d=img.data,light=norm([-.55,-.5,.7]);
+  for(let py=0;py<H;py++)for(let px=0;px<W;px++){const x=px/W,y=py/H,e=1.6/W;
+    const hC=hgt(x,y);let R,G,Bb;
+    if(isFog(x,y)){const t=(x-.58);R=18+t*30;G=14+t*20;Bb=16+t*16;}
+    else if(isWater(x,y)){R=12;G=12;Bb=20+fbm(x*20,y*20)*14;}
+    else{const hX=hgt(x+e,y),hY=hgt(x,y+e);const n=norm([(hC-hX)*8,(hC-hY)*8,.05]);let sh=Math.max(0,n[0]*light[0]+n[1]*light[1]+n[2]*light[2]);sh=sh*sh;const el=Math.max(0,Math.min(1,hC*1.1));
+      // ramp basalt->ash->ember
+      R=20+el*40+sh*200; G=14+el*20+sh*70; Bb=16+el*22+sh*30;
+      if(el>.55){const e2=(el-.55)/.45;R=Math.min(255,R+e2*120);G=Math.min(200,G+e2*30);}
+      if(isTown(x,y)){R=255;G=180;Bb=90;}
+    }
+    const i=(py*W+px)*4;d[i]=R;d[i+1]=G;d[i+2]=Bb;d[i+3]=255;}
+  ctx.putImageData(img,0,0);
+  // atmospheric haze
+  const hz=ctx.createLinearGradient(0,0,W,H*.5);hz.addColorStop(0,"rgba(60,30,20,0)");hz.addColorStop(1,"rgba(90,40,25,.5)");ctx.fillStyle=hz;fogPath(ctx);ctx.fill();
+  roadPath(ctx);ctx.strokeStyle="rgba(255,210,150,.7)";ctx.lineWidth=1.5;ctx.stroke();
+  label(ctx,P(.52,.8),TOWNNAME,"#ffd9a0",'12px '+gMono,true,"rgba(0,0,0,.6)");
+}});
+
+/* 5 — Cyanotype Survey (blueprint) */
+STYLES.push({title:["Bathymetric ","Cyanotype"],pole:"~70% Earth",ext:"Survey blueprint: contour lines, depth soundings, drafting callouts.",risk:"Cold/technical — beautiful, but is it a *world* or a document?",verd:["ok","mid","ok"],draw(ctx){
+  ctx.fillStyle="#0c2a4d";ctx.fillRect(0,0,W,H);
+  for(let i=0;i<1400;i++){ctx.fillStyle=`rgba(180,220,255,${Math.random()*.04})`;ctx.fillRect(Math.random()*W,Math.random()*H,1,1);}
+  // grid
+  ctx.strokeStyle="rgba(150,200,255,.12)";ctx.lineWidth=1;for(let x=0;x<W;x+=28){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}for(let y=0;y<H;y+=28){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+  // elevation contours around hills
+  ctx.strokeStyle="rgba(140,210,255,.8)";ctx.lineWidth=1;
+  for(const[hx,by,h]of HILLS){const[cx,cy]=P(hx,by);for(let k=1;k<=4;k++){const r=h*W*(k/4);ctx.beginPath();for(let a=0;a<6.3;a+=.25){const rr=r*(1+.12*Math.sin(a*3));ctx.lineTo(cx+Math.cos(a)*rr,cy+Math.sin(a)*rr*.7);}ctx.closePath();ctx.stroke();}}
+  // forest dotted region
+  ctx.strokeStyle="rgba(120,255,210,.7)";ctx.setLineDash([2,3]);ctx.beginPath();ctx.arc(P(.28,.42)[0],P(.28,.42)[1],.13*W,0,7);ctx.stroke();ctx.setLineDash([]);
+  for(const[x,y]of TREES){const[px,py]=P(x,y);ctx.strokeStyle="rgba(120,255,210,.6)";ctx.beginPath();ctx.moveTo(px,py+3);ctx.lineTo(px,py-3);ctx.moveTo(px-2,py-1);ctx.lineTo(px+2,py-1);ctx.stroke();}
+  // depth soundings in water
+  ctx.fillStyle="rgba(160,210,255,.7)";ctx.font='8px '+gMono;ctx.textAlign="center";
+  for(let i=0;i<26;i++){const x=Math.random()*.44,y=.55+Math.random()*.45;if(isWater(x,y)){const[px,py]=P(x,y);ctx.fillText((Math.round((y-.5)*40)).toString(),px,py);}}
+  ctx.textAlign="left";
+  // coastline bold + depth contour
+  ctx.strokeStyle="#bfe4ff";ctx.lineWidth=2;waterPath(ctx);ctx.stroke();
+  ctx.strokeStyle="rgba(140,210,255,.4)";ctx.lineWidth=1;for(let o=1;o<=3;o++){ctx.beginPath();for(let x=0;x<=.46;x+=.02){const[px,py]=P(x,shoreY(x)+o*.05);ctx.lineTo(px,py);}ctx.stroke();}
+  // road survey line
+  roadPath(ctx);ctx.setLineDash([8,4]);ctx.strokeStyle="#bfe4ff";ctx.lineWidth=1.2;ctx.stroke();ctx.setLineDash([]);ROAD.forEach(p=>{const[px,py]=P(p[0],p[1]);ctx.strokeRect(px-2,py-2,4,4);});
+  // town surveyed
+  const[tx,ty]=P(TOWN[0],TOWN[1]);ctx.strokeStyle="#fff";ctx.lineWidth=1.4;ctx.strokeRect(tx-9,ty-9,18,18);ctx.beginPath();ctx.moveTo(tx-13,ty);ctx.lineTo(tx+13,ty);ctx.moveTo(tx,ty-13);ctx.lineTo(tx,ty+13);ctx.stroke();
+  label(ctx,[tx+16,ty-6],"STN. HOLLOWMERE","#cfe9ff",'9px '+gMono,false);
+  // unsurveyed
+  fogPath(ctx);ctx.fillStyle="rgba(8,28,52,.86)";ctx.fill();label(ctx,P(.78,.2),"— UNSURVEYED —","rgba(150,200,255,.6)",'10px '+gMono,true);
+}});
+
+/* 6 — Risograph Field Survey (2-color misregistered) */
+STYLES.push({title:["Risograph ","2-Color"],pole:"~50% each",ext:"Fluoro-pink + teal halftone, misregistered, flat poster shapes.",risk:"Looks like a gig poster — gorgeous, maybe too 'graphic design'.",verd:["mid","ok","mid"],draw(ctx){
+  ctx.fillStyle="#f3efe4";ctx.fillRect(0,0,W,H);
+  function halftone(maskFn,color,dx,dy,step){ctx.fillStyle=color;for(let y=0;y<H;y+=step)for(let x=0;x<W;x+=step){const nx=(x+dx)/W,ny=(y+dy)/H;if(nx<0||nx>1||ny<0||ny>1)continue;const c=maskFn(nx,ny);if(c>0){const r=step*.6*c;ctx.beginPath();ctx.arc(x+step/2,y+step/2,r,0,7);ctx.fill();}}}
+  const teal="rgba(40,178,166,.85)",pink="rgba(255,79,139,.85)";
+  // teal layer: water + hills, offset
+  halftone((x,y)=>isWater(x,y)?1:(isHill(x,y)?.85:0),teal,2,1,5);
+  // pink layer: forest + town + road corridor, offset opposite
+  halftone((x,y)=>{if(isFog(x,y))return 0;if(isForest(x,y))return 1;if(isTown(x,y))return 1;return 0;},pink,-2,2,5);
+  // road as thick pink line
+  roadPath(ctx);ctx.strokeStyle=pink;ctx.lineWidth=4;ctx.lineCap="round";ctx.stroke();
+  // coastline teal line
+  waterPath(ctx);ctx.strokeStyle=teal;ctx.lineWidth=2.5;ctx.stroke();
+  // grain
+  for(let i=0;i<2600;i++){ctx.fillStyle=`rgba(60,60,60,${Math.random()*.05})`;ctx.fillRect(Math.random()*W,Math.random()*H,1,1);}
+  fogPath(ctx);ctx.fillStyle="rgba(243,239,228,.9)";ctx.fill();ctx.strokeStyle=teal;ctx.lineWidth=1;ctx.setLineDash([3,3]);for(let i=0;i<8;i++){ctx.beginPath();ctx.moveTo(W*.55+i*16,0);ctx.lineTo(W,H*.5-i*8);ctx.stroke();}ctx.setLineDash([]);
+  label(ctx,P(.5,.8),TOWNNAME.toUpperCase(),"#1d2330",'700 14px '+gSans,true);
+}});
+
+/* 7 — Orbital Embroidery (cross-stitch on linen) */
+STYLES.push({title:["Orbital ","Embroidery"],pole:"~55% Earth",ext:"Satellite biomes rendered as cross-stitch; unstitched linen = unknown.",risk:"Craft-novelty — could feel gimmicky past the first glance.",verd:["mid","mid","no"],draw(ctx){
+  ctx.fillStyle="#e7decb";ctx.fillRect(0,0,W,H);
+  // weave
+  ctx.strokeStyle="rgba(180,168,140,.4)";ctx.lineWidth=1;for(let x=0;x<W;x+=4){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}for(let y=0;y<H;y+=4){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+  const THR={water:"#3d6f86",plain:"#8fa45a",forest:"#3f6b34",hill:"#9c7b4a",town:"#b23b2a"};
+  const S=8;ctx.lineWidth=1.6;ctx.lineCap="round";
+  for(let y=0;y<H;y+=S)for(let x=0;x<W;x+=S){const nx=(x+S/2)/W,ny=(y+S/2)/H,r=region(nx,ny);if(r==='fog')continue;const col=THR[r];ctx.strokeStyle=col;ctx.beginPath();ctx.moveTo(x+1,y+1);ctx.lineTo(x+S-1,y+S-1);ctx.moveTo(x+S-1,y+1);ctx.lineTo(x+1,y+S-1);ctx.stroke();}
+  // town french knots
+  for(const[x,y]of BLD){const[px,py]=P(x,y);ctx.fillStyle="#d9a441";ctx.beginPath();ctx.arc(px,py,2.4,0,7);ctx.fill();}
+  // road running stitch
+  roadPath(ctx);ctx.strokeStyle="#7a5a32";ctx.lineWidth=2;ctx.setLineDash([5,4]);ctx.stroke();ctx.setLineDash([]);
+  label(ctx,P(.52,.8),TOWNNAME,"#5a3a22",'italic 13px '+gSerif,true);
+}});
+
+/* 8 — ASCII Terminal Cartography */
+STYLES.push({title:["ASCII ","Terminal"],pole:"100% Ultima (past it)",ext:"Phosphor roguelike: the whole map is monospace glyphs; void = unknown.",risk:"Alienating to non-roguelike players; legibility at zoom.",verd:["no","ok","ok"],draw(ctx){
+  ctx.fillStyle="#03100a";ctx.fillRect(0,0,W,H);
+  const C=12,cols=Math.floor(W/C),rows=Math.floor(H/C);ctx.font='12px '+gMono;ctx.textBaseline="middle";ctx.textAlign="center";
+  const GL={water:["~","#1f6f8c"],plain:[".","#2f6b3a"],forest:["&","#39c46b"],hill:["^","#caa23a"],town:["#","#e7e7c0"],fog:[" ","#000"]};
+  const rng=mulberry32(7);
+  for(let cy=0;cy<rows;cy++)for(let cx=0;cx<cols;cx++){const nx=(cx+.5)*C/W,ny=(cy+.5)*C/H,r=region(nx,ny);let[ch,col]=GL[r];if(r==='plain'&&rng()<.3)ch=",";if(r==='forest'&&rng()<.4)ch="♣";if(r==='hill')ch=rng()<.5?"▲":"^";ctx.fillStyle=col;if(ch.trim())ctx.fillText(ch,cx*C+C/2,cy*C+C/2);}
+  // road glyphs
+  ctx.fillStyle="#caa23a";for(let i=0;i<ROAD.length-1;i++){const a=ROAD[i],b=ROAD[i+1];for(let t=0;t<=1;t+=.05){const x=a[0]+(b[0]-a[0])*t,y=a[1]+(b[1]-a[1])*t;if(isFog(x,y))continue;const[px,py]=P(x,y);ctx.fillText("=",Math.round(px/C)*C+C/2,Math.round(py/C)*C+C/2);}}
+  ctx.textAlign="left";ctx.fillStyle="#e7e7c0";ctx.fillText("["+TOWNNAME+"]",P(.5,.78)[0],P(.5,.78)[1]);
+  // scanlines + glow vignette
+  ctx.fillStyle="rgba(0,0,0,.18)";for(let y=0;y<H;y+=3)ctx.fillRect(0,y,W,1);
+  const vg=ctx.createRadialGradient(W/2,H/2,H*.3,W/2,H/2,H*.8);vg.addColorStop(0,"rgba(0,0,0,0)");vg.addColorStop(1,"rgba(0,0,0,.55)");ctx.fillStyle=vg;ctx.fillRect(0,0,W,H);
+  ctx.textBaseline="alphabetic";ctx.textAlign="left";
+}});
+
+/* 9 — Fisheye Globe Marble (Earth, literal) */
+STYLES.push({title:["Fisheye ","Globe Marble"],pole:"120% Earth",ext:"The region bulged onto a planet; atmosphere rim; curves into the dark.",risk:"A local region as a globe is conceptually weird / disorienting.",verd:["no","no","mid"],draw(ctx){
+  ctx.fillStyle="#05060d";ctx.fillRect(0,0,W,H);
+  const cx=W/2,cy=H/2,Rad=Math.min(W,H)*.46;const img=ctx.createImageData(W,H),d=img.data;const light=norm([-.5,-.55,.7]);
+  const BIO={water:[40,90,130],plain:[120,150,80],forest:[60,100,45],hill:[140,120,80],town:[180,80,50],fog:[120,120,140]};
+  for(let py=0;py<H;py++)for(let px=0;px<W;px++){const dx=(px-cx)/Rad,dy=(py-cy)/Rad,d2=dx*dx+dy*dy;const i=(py*W+px)*4;
+    if(d2>1){d[i+3]=0;continue;}
+    const nz=Math.sqrt(1-d2);const nx=dx,ny=dy;
+    // map sphere surface to region uv (orthographic-ish)
+    const u=.5+Math.asin(Math.max(-1,Math.min(1,dx)))/Math.PI*.9;const v=.5+Math.asin(Math.max(-1,Math.min(1,dy)))/Math.PI*.9;
+    let r=region(u,v);let c=BIO[r].slice();
+    const lam=Math.max(0,nx*light[0]+ny*light[1]+nz*light[2]);const sh=.25+lam*.95;
+    const limb=Math.pow(nz,.5);
+    c[0]*=sh*limb;c[1]*=sh*limb;c[2]*=sh*limb;
+    // atmosphere rim
+    const rim=Math.pow(1-nz,2.5);c[0]+=rim*60;c[1]+=rim*120;c[2]+=rim*200;
+    // gold haze where fog
+    if(r==='fog'){c[0]=c[0]*.4+150;c[1]=c[1]*.4+120;c[2]=c[2]*.4+60;}
+    d[i]=Math.min(255,c[0]);d[i+1]=Math.min(255,c[1]);d[i+2]=Math.min(255,c[2]);d[i+3]=255;}
+  ctx.putImageData(img,0,0);
+  // outer atmosphere glow
+  const ga=ctx.createRadialGradient(cx,cy,Rad*.9,cx,cy,Rad*1.18);ga.addColorStop(0,"rgba(90,150,255,.5)");ga.addColorStop(1,"rgba(90,150,255,0)");ctx.fillStyle=ga;ctx.beginPath();ctx.arc(cx,cy,Rad*1.18,0,7);ctx.fill();
+  label(ctx,[cx,cy+Rad*.45],TOWNNAME,"#fff",'italic 13px '+gSerif,true,"rgba(0,0,0,.5)");
+}});
+
+/* 10 — Gold-Leaf Lacquer Screen (byōbu; fog = gilt cloud) */
+STYLES.push({title:["Gold-Leaf ","Lacquer Screen"],pole:"~50% each, alien palette",ext:"Byōbu lacquer: mineral pigment, ink mountains, gilt clouds hide the unknown.",risk:"Strong cultural signature — must fit the world's fiction, not just look cool.",verd:["ok","ok","ok"],draw(ctx){
+  ctx.fillStyle="#15181f";ctx.fillRect(0,0,W,H);
+  for(let i=0;i<1800;i++){ctx.fillStyle=`rgba(60,70,90,${Math.random()*.06})`;ctx.fillRect(Math.random()*W,Math.random()*H,2,2);}
+  // water azurite
+  waterPath(ctx);const ag=ctx.createLinearGradient(0,H*.5,0,H);ag.addColorStop(0,"#2e6f9e");ag.addColorStop(1,"#173f63");ctx.fillStyle=ag;ctx.fill();
+  ctx.strokeStyle="rgba(220,235,255,.5)";ctx.lineWidth=1;for(let y=H*.55;y<H;y+=10){ctx.beginPath();for(let x=0;x<W;x+=8)ctx.lineTo(x,y+Math.sin(x*.06+y)*2.5);ctx.stroke();}
+  // plains malachite wash
+  for(let i=0;i<2400;i++){const x=Math.random()*W,y=Math.random()*H,nx=x/W,ny=y/H;const r=region(nx,ny);if(r==='plain'){ctx.fillStyle="rgba(60,120,80,.10)";ctx.fillRect(x,y,4,4);}}
+  // ink-wash mountains
+  for(const[hx,by,h]of HILLS){const[ccx,ccy]=P(hx,by);const rr=h*W;const mg=ctx.createLinearGradient(0,ccy-rr,0,ccy+rr*.3);mg.addColorStop(0,"#3a4250");mg.addColorStop(1,"#10141b");ctx.fillStyle=mg;ctx.beginPath();ctx.moveTo(ccx-rr,ccy+rr*.3);ctx.quadraticCurveTo(ccx-rr*.3,ccy-rr*1.1,ccx,ccy-rr*1.15);ctx.quadraticCurveTo(ccx+rr*.4,ccy-rr*1.0,ccx+rr,ccy+rr*.3);ctx.closePath();ctx.fill();ctx.strokeStyle="rgba(200,220,235,.35)";ctx.lineWidth=.8;ctx.beginPath();ctx.moveTo(ccx,ccy-rr*1.1);ctx.lineTo(ccx-rr*.2,ccy+rr*.2);ctx.stroke();}
+  // malachite forest
+  for(const[x,y]of TREES){const[px,py]=P(x,y);ctx.fillStyle="#2f7d52";ctx.beginPath();ctx.arc(px,py,5,0,7);ctx.fill();ctx.fillStyle="#52a878";ctx.beginPath();ctx.arc(px-1,py-1,2.5,0,7);ctx.fill();}
+  // gold road
+  roadPath(ctx);ctx.strokeStyle="#d9b24a";ctx.lineWidth=2;ctx.stroke();
+  // vermilion town
+  for(const[x,y]of BLD){const[px,py]=P(x,y);ctx.fillStyle="#1c1c22";ctx.fillRect(px-5,py-2,10,6);ctx.fillStyle="#c0341f";ctx.beginPath();ctx.moveTo(px-6,py-2);ctx.lineTo(px,py-7);ctx.lineTo(px+6,py-2);ctx.closePath();ctx.fill();}
+  // gilt cloud over fog
+  fogPath(ctx);ctx.save();fogPath(ctx);ctx.clip();const gg=ctx.createLinearGradient(W*.55,0,W,H*.5);gg.addColorStop(0,"#caa23a");gg.addColorStop(.5,"#f0d27a");gg.addColorStop(1,"#b8862e");ctx.fillStyle=gg;ctx.fillRect(0,0,W,H);for(let i=0;i<1500;i++){ctx.fillStyle=`rgba(255,245,200,${Math.random()*.25})`;ctx.fillRect(W*.55+Math.random()*W*.45,Math.random()*H*.5,2,2);}
+  // cloud scallops along fog edge
+  ctx.fillStyle="#e7c860";const[ax,ay]=P(A[0],A[1]),[bx,bdy]=P(B[0],B[1]);for(let t=0;t<=1;t+=.06){const x=ax+(bx-ax)*t,y=ay+(bdy-ay)*t;ctx.beginPath();ctx.arc(x,y,8,0,7);ctx.fill();}ctx.restore();
+  // red seal label
+  const[tx,ty]=P(.5,.8);ctx.fillStyle="#b3261a";ctx.fillRect(tx-10,ty-10,20,20);ctx.fillStyle="#f0e3c0";ctx.font='12px '+gSerif;ctx.textAlign="center";ctx.fillText("邑",tx,ty+4);ctx.textAlign="left";label(ctx,[tx+16,ty+4],TOWNNAME,"#e7d9b0",'italic 12px '+gSerif,false);
+}});
+
+/* ---------- text helper ---------- */
+const gSerif='"Iowan Old Style",Palatino,Georgia,serif';
+const gMono='"SF Mono",Menlo,monospace';
+const gSans='"Avenir Next","Helvetica Neue",sans-serif';
+function label(ctx,pt,text,color,font,center,halo){ctx.font=font;ctx.fillStyle=color;ctx.textAlign=center?"center":"left";if(halo){ctx.lineWidth=3;ctx.strokeStyle=halo;ctx.strokeText(text,pt[0],pt[1]);}ctx.fillText(text,pt[0],pt[1]);ctx.textAlign="left";}
+
+/* ---------- build gallery ---------- */
+const grid=document.getElementById("grid");
+STYLES.forEach((s,idx)=>{
+  const fig=document.createElement("figure");
+  const cv=document.createElement("canvas");cv.width=W;cv.height=H;
+  const ctx=cv.getContext("2d");
+  try{s.draw(ctx);}catch(e){ctx.fillStyle="#300";ctx.fillRect(0,0,W,H);ctx.fillStyle="#f88";ctx.font="12px monospace";ctx.fillText("err: "+e.message,12,20);}
+  fig.appendChild(cv);
+  const cap=document.createElement("figcaption");
+  const v=s.verd;
+  cap.innerHTML=`<div class="rank">${String(idx+1).padStart(2,'0')} · ${s.pole}</div>`+
+    `<div class="ttl"><span class="b">${s.title[0]}</span>${s.title[1]}</div>`+
+    `<div class="ext">${s.ext}</div>`+
+    `<div class="risk">⚑ ${s.risk}</div>`+
+    `<div class="verd">zoom <span class="${v[0]}">●</span>  fog <span class="${v[1]}">●</span>  seed <span class="${v[2]}">●</span></div>`;
+  fig.appendChild(cap);grid.appendChild(fig);
+});
+document.getElementById("foot").innerHTML=
+ `<b>Read of the field —</b> safest→wildest: Gouache Storybook · Cartouche Atlas · Gold-Leaf Lacquer · EGA Tilewright · Cyanotype · Risograph · Magma Relief · Orbital Embroidery · ASCII Terminal · Fisheye Globe. `+
+ `The two I'd <span class="fight">fight for</span>: <b>Gold-Leaf Lacquer Screen</b> — its gilt clouds ARE your witnessed-only fog mechanic made beautiful (the unknown is literally gilded over), and the palette is nothing like the parchment mean. And <b>Magma Relief Render</b> — it proves the Google-Earth pole can be procedural, seeded, and continuously zoomable while looking like nothing in the genre; reskin the false-color ramp per-region (verdant, frostbound, ashen) and one engine draws every biome.`;
+</script>
+</body>
+</html>

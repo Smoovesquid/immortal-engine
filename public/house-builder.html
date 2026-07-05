@@ -94,6 +94,14 @@
       <div id="roleRow" style="display:none">
         <div class="slbl">Room type <span style="text-transform:none;letter-spacing:0">· the engine narrates &amp; furnishes by role</span></div>
         <select id="roomRole" class="sinp"></select>
+        <div class="slbl">Lighting</div>
+        <div class="seg" id="segLight"><button data-light="lit">Lit</button><button data-light="dark">Dark</button></div>
+      </div>
+      <div id="openPanel" style="display:none">
+        <div class="slbl">Lock</div>
+        <div class="seg" id="segLock"><button data-lock="open">Unlocked</button><button data-lock="locked">Locked</button></div>
+        <input id="openKey" class="sinp" placeholder="key to open (optional) — e.g. brass key" style="margin-top:5px"/>
+        <label id="entranceLbl" style="display:flex;align-items:center;gap:7px;font-size:12px;margin-top:9px;cursor:pointer"><input type="checkbox" id="openEntrance"/> Building entrance (from the map)</label>
       </div>
       <div id="furnPanel" style="display:none">
         <div class="slbl">Furniture type</div>
@@ -210,7 +218,7 @@
     const c=evtCell(e);
     if(tool==='room'){ drag={mode:'draw-room',x0:cCol(c.gx),y0:cRow(c.gy),x1:cCol(c.gx),y1:cRow(c.gy)}; }
     else if(tool==='wall'){ drag={mode:'draw-wall',x0:cCol(snap(c.px)),y0:cRow(snap(c.py)),x1:cCol(snap(c.px)),y1:cRow(snap(c.py))}; }
-    else if(tool==='door'||tool==='window'){ const w=nearestWall(c.px,c.py); if(w){ scene.openings.push({id:nextId('o'),kind:tool,x:w.x,y:w.y,angle:w.angle,len:1,room:w.room}); select('open',scene.openings[scene.openings.length-1].id); } else flash('click nearer a wall'); }
+    else if(tool==='door'||tool==='window'){ const w=nearestWall(c.px,c.py); if(w){ scene.openings.push({id:nextId('o'),kind:tool,x:w.x,y:w.y,angle:w.angle,len:1,room:w.room,locked:false,key:'',entrance:false}); select('open',scene.openings[scene.openings.length-1].id); } else flash('click nearer a wall'); }
     else if(tool==='tunnel'){ const r=roomAt(c.gx,c.gy); if(!r) flash('click a room'); else if(!tunnelStart){ tunnelStart=r.id; flash('now click the room to link'); } else if(r.id!==tunnelStart){ scene.tunnels.push({id:nextId('t'),a:tunnelStart,b:r.id,bend:0}); tunnelStart=null; flash('tunnel linked · drag its dot to bend'); } else tunnelStart=null; }
     else if(tool==='secret'){ const s={id:nextId('s'),x:cCol(c.gx)+0.5,y:cRow(c.gy)+0.5,vessel:'Loose floorboard',dc:12,items:[]}; scene.secrets.push(s); select('secret',s.id); setTool('select'); }
     else if(tool==='furniture'){ const f={id:nextId('f'),type:'table',x:Math.min(cCol(c.gx),COLS-1),y:Math.min(cRow(c.gy),ROWS-1),w:1,h:1,rot:0}; scene.furniture.push(f); select('furn',f.id); drag={mode:'move-furn',id:f.id,offx:0,offy:0}; setTool('select'); }
@@ -249,7 +257,7 @@
 
   window.addEventListener('mouseup',()=>{
     if(drag&&drag.mode==='draw-room'){ const x=Math.min(drag.x0,drag.x1),y=Math.min(drag.y0,drag.y1),w=Math.abs(drag.x1-drag.x0),h=Math.abs(drag.y1-drag.y0);
-      if(w>=2&&h>=2){ const r={id:nextId('room'),name:`Room ${scene.rooms.length+1}`,shape:'rect',material:'timber',role:'',x,y,w,h,curve:{top:0,right:0,bottom:0,left:0}}; scene.rooms.push(r); select('room',r.id); setTool('select'); } }
+      if(w>=2&&h>=2){ const r={id:nextId('room'),name:`Room ${scene.rooms.length+1}`,shape:'rect',material:'timber',role:'',dark:false,x,y,w,h,curve:{top:0,right:0,bottom:0,left:0}}; scene.rooms.push(r); select('room',r.id); setTool('select'); } }
     else if(drag&&drag.mode==='draw-wall'){ const w={id:nextId('w'),x0:drag.x0,y0:drag.y0,x1:drag.x1,y1:drag.y1,material:'stone',bend:0}; if(Math.hypot(w.x1-w.x0,w.y1-w.y0)>=1){ scene.walls.push(w); select('wall',w.id); setTool('select'); } }
     drag=null; draw();
   });
@@ -260,16 +268,16 @@
   window.addEventListener('keyup',(e)=>{ if(e.code==='Space'){ spaceHeld=false; cv.style.cursor=tool==='select'?'default':'crosshair'; } });
 
   // ── selection + panel ──
-  const matRow=document.getElementById('matRow'), shapeRow=document.getElementById('shapeRow'), secretPanel=document.getElementById('secretPanel'), roleRow=document.getElementById('roleRow'), furnPanel=document.getElementById('furnPanel');
-  function select(kind,id){ sel=kind?{kind,id}:null; const info=document.getElementById('selInfo'); matRow.style.display='none'; shapeRow.style.display='none'; secretPanel.style.display='none'; roleRow.style.display='none'; furnPanel.style.display='none';
+  const matRow=document.getElementById('matRow'), shapeRow=document.getElementById('shapeRow'), secretPanel=document.getElementById('secretPanel'), roleRow=document.getElementById('roleRow'), furnPanel=document.getElementById('furnPanel'), openPanel=document.getElementById('openPanel');
+  function select(kind,id){ sel=kind?{kind,id}:null; const info=document.getElementById('selInfo'); matRow.style.display='none'; shapeRow.style.display='none'; secretPanel.style.display='none'; roleRow.style.display='none'; furnPanel.style.display='none'; openPanel.style.display='none';
     if(!sel){ info.textContent='nothing selected'; draw(); return; }
     if(sel.kind==='furn'){ const f=scene.furniture.find(x=>x.id===id); info.innerHTML=`<b>${esc(furnName(f.type))}</b> · ${f.w}×${f.h}`; furnPanel.style.display='block'; document.getElementById('furnSearch').value=''; renderFurnResults(''); }
-    else if(sel.kind==='open'){ const o=scene.openings.find(x=>x.id===id); info.innerHTML=`<b>${o.kind}</b> · ${o.len||1} wide<br><span style="font-size:11px">drag along the wall to widen</span>`; }
+    else if(sel.kind==='open'){ const o=scene.openings.find(x=>x.id===id); info.innerHTML=`<b>${o.kind}</b> · ${o.len||1} wide${o.locked?' · 🔒':''}${o.entrance?' · entrance':''}<br><span style="font-size:11px">drag along the wall to widen</span>`; openPanel.style.display='block'; setSeg('#segLock','lock',o.locked?'locked':'open'); document.getElementById('openKey').value=o.key||''; document.getElementById('openKey').style.display=o.locked?'block':'none'; document.getElementById('openEntrance').checked=!!o.entrance; document.getElementById('entranceLbl').style.display=(o.kind==='door')?'flex':'none'; }
     else if(sel.kind==='tunnel'){ info.innerHTML=`<b>tunnel</b> · links two rooms`; }
     else if(sel.kind==='wall'){ const w=scene.walls.find(x=>x.id===id); info.innerHTML=`<b>wall segment</b> · ${w.material}<br><span style="font-size:11px">drag endpoints to reshape</span>`; matRow.style.display='block'; setSeg('#segMaterial','mat',w.material); }
     else if(sel.kind==='secret'){ const s=scene.secrets.find(x=>x.id===id); info.innerHTML=`<b>secret cache</b> · found when the room is searched`; secretPanel.style.display='block';
       document.getElementById('secretVessel').value=s.vessel||''; document.getElementById('secretDC').value=s.dc||12; document.getElementById('itemSearch').value=''; renderItemResults(''); renderStash(s); }
-    else { const r=roomById(id); const c=r.curve||{}; const bowed=(c.top||c.right||c.bottom||c.left)?' · bowed':''; const roleName=(ROLES.find(([v])=>v===(r.role||''))||[])[1]; info.innerHTML=`<b>${r.name}</b> · ${r.w}×${r.h} · ${r.material} · ${r.shape==='round'?'round':'box'}${bowed}${r.role?' · '+esc(roleName):''}`; matRow.style.display='block'; shapeRow.style.display='block'; roleRow.style.display='block'; setSeg('#segMaterial','mat',r.material); setSeg('#segShape','shape',r.shape); document.getElementById('roomRole').value=r.role||''; }
+    else { const r=roomById(id); const c=r.curve||{}; const bowed=(c.top||c.right||c.bottom||c.left)?' · bowed':''; const roleName=(ROLES.find(([v])=>v===(r.role||''))||[])[1]; info.innerHTML=`<b>${r.name}</b> · ${r.w}×${r.h} · ${r.material} · ${r.shape==='round'?'round':'box'}${bowed}${r.role?' · '+esc(roleName):''}`; matRow.style.display='block'; shapeRow.style.display='block'; roleRow.style.display='block'; setSeg('#segMaterial','mat',r.material); setSeg('#segShape','shape',r.shape); setSeg('#segLight','light',r.dark?'dark':'lit'); document.getElementById('roomRole').value=r.role||''; }
     draw();
   }
   function esc(v){ return String(v).replace(/[<>&]/g,m=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[m])); }
@@ -295,6 +303,11 @@
   document.querySelectorAll('#segMaterial button').forEach(b=>b.addEventListener('click',()=>{ if(!sel) return; if(sel.kind==='room') roomById(sel.id).material=b.dataset.mat; else if(sel.kind==='wall') scene.walls.find(x=>x.id===sel.id).material=b.dataset.mat; select(sel.kind,sel.id); }));
   document.querySelectorAll('#segShape button').forEach(b=>b.addEventListener('click',()=>{ if(sel&&sel.kind==='room'){ roomById(sel.id).shape=b.dataset.shape; select('room',sel.id); } }));
   document.getElementById('roomRole').addEventListener('change',e=>{ if(sel&&sel.kind==='room'){ roomById(sel.id).role=e.target.value; select('room',sel.id); } });
+  document.querySelectorAll('#segLight button').forEach(b=>b.addEventListener('click',()=>{ if(sel&&sel.kind==='room'){ roomById(sel.id).dark=(b.dataset.light==='dark'); select('room',sel.id); } }));
+  const curOpen=()=>sel&&sel.kind==='open'?scene.openings.find(x=>x.id===sel.id):null;
+  document.querySelectorAll('#segLock button').forEach(b=>b.addEventListener('click',()=>{ const o=curOpen(); if(o){ o.locked=(b.dataset.lock==='locked'); select('open',o.id); } }));
+  document.getElementById('openKey').addEventListener('input',e=>{ const o=curOpen(); if(o) o.key=e.target.value; });
+  document.getElementById('openEntrance').addEventListener('change',e=>{ const o=curOpen(); if(o){ o.entrance=e.target.checked; draw(); } });
 
   document.getElementById('btnDelete').addEventListener('click',deleteSel);
   function deleteSel(){ if(!sel) return;
@@ -356,6 +369,7 @@
 
   function drawRoom(r){ const m=MAT[r.material]||MAT.timber;
     ctx.save(); roomPath(r); ctx.fillStyle=getCss('--room-fill'); ctx.fill(); ctx.restore();
+    if(r.dark){ ctx.save(); roomPath(r); ctx.fillStyle='rgba(22,26,40,0.30)'; ctx.fill(); ctx.restore(); }
     if(m.hatch){ ctx.save(); roomPath(r); ctx.clip(); ctx.strokeStyle='rgba(74,80,100,0.28)'; ctx.lineWidth=1;
       const x0=r.x*CELL-CELL,y0=r.y*CELL-CELL,x1=(r.x+r.w)*CELL+CELL,y1=(r.y+r.h)*CELL+CELL;
       for(let d=x0-(y1-y0);d<x1;d+=7){ ctx.beginPath(); ctx.moveTo(d,y0); ctx.lineTo(d+(y1-y0),y1); ctx.stroke(); }
@@ -384,7 +398,9 @@
     const th=CELL*0.55; ctx.fillStyle=getCss('--paper'); ctx.fillRect(-half,-th/2,half*2,th);
     if(o.kind==='door'){ ln(-half,-4,-half,4,INK,2); ln(half,-4,half,4,INK,2); ctx.strokeStyle=INKSOFT; ctx.lineWidth=1.3; ctx.beginPath(); ctx.arc(-half,0,half*2*0.92,0,Math.PI*0.5); ctx.stroke(); }
     else { const wt=7; ln(-half,-wt/2,half,-wt/2,INK,1.8); ln(-half,wt/2,half,wt/2,INK,1.8); ln(-half,-wt/2,-half,wt/2,INK,1.6); ln(half,-wt/2,half,wt/2,INK,1.6); ln(0,-wt/2,0,wt/2,INKSOFT,1.2); }
-    ctx.restore(); }
+    ctx.restore();
+    if(o.locked){ const x=o.x*CELL,y=o.y*CELL; ctx.fillStyle='#a3782c'; ctx.strokeStyle='#fff'; ctx.lineWidth=1; ctx.fillRect(x-3,y-1,6,5); ctx.strokeRect(x-3,y-1,6,5); ctx.beginPath(); ctx.arc(x,y-1,2.4,Math.PI,0); ctx.stroke(); }
+    if(o.entrance){ const x=o.x*CELL,y=o.y*CELL; ctx.fillStyle=getCss('--accent'); ctx.beginPath(); ctx.moveTo(x-5,y-12); ctx.lineTo(x+5,y-12); ctx.lineTo(x,y-5); ctx.closePath(); ctx.fill(); } }
 
   function drawSecret(s){ const x=s.x*CELL,y=s.y*CELL,r=CELL*0.42;
     ctx.save(); ctx.strokeStyle='#7a5aa8'; ctx.fillStyle='rgba(122,90,168,0.12)'; ctx.lineWidth=1.6; ctx.setLineDash([3,3]);
@@ -434,12 +450,12 @@
   // ── export / import ──
   document.getElementById('btnExport').addEventListener('click',()=>{ scene.name=(document.getElementById('houseName').value||'house').trim();
     const orientOf=a=>{ const m=((a%180)+180)%180; return (m<22.5||m>157.5)?'h':(m>67.5&&m<112.5)?'v':'angled'; };
-    const out={ kind:'authored-structure', schema:'house-builder/v7', name:scene.name, grid:{cols:COLS,rows:ROWS,cell:CELL},
-      rooms:scene.rooms.map(r=>{ const rec={id:r.id,name:r.name,shape:r.shape,material:r.material,x:r.x,y:r.y,w:r.w,h:r.h}; if(r.role) rec.role=r.role;
+    const out={ kind:'authored-structure', schema:'house-builder/v8', name:scene.name, grid:{cols:COLS,rows:ROWS,cell:CELL},
+      rooms:scene.rooms.map(r=>{ const rec={id:r.id,name:r.name,shape:r.shape,material:r.material,x:r.x,y:r.y,w:r.w,h:r.h}; if(r.role) rec.role=r.role; if(r.dark) rec.dark=true;
         if(r.shape==='round'){ rec.cx=r.x+r.w/2; rec.cy=r.y+r.h/2; rec.r=+(Math.min(r.w,r.h)/2).toFixed(3); }
         const c=r.curve||{}; if(c.top||c.right||c.bottom||c.left) rec.curve={top:+(c.top||0).toFixed(3),right:+(c.right||0).toFixed(3),bottom:+(c.bottom||0).toFixed(3),left:+(c.left||0).toFixed(3)}; return rec; }),
       walls:scene.walls.map(w=>({x0:w.x0,y0:w.y0,x1:w.x1,y1:w.y1,material:w.material,bend:+((w.bend||0).toFixed(3))})),
-      openings:scene.openings.map(o=>({kind:o.kind,x:o.x,y:o.y,angle:+((o.angle||0).toFixed(1)),orient:orientOf(o.angle||0),len:o.len||1,room:o.room||null})),
+      openings:scene.openings.map(o=>({kind:o.kind,x:o.x,y:o.y,angle:+((o.angle||0).toFixed(1)),orient:orientOf(o.angle||0),len:o.len||1,room:o.room||null,locked:!!o.locked,key:o.key||'',entrance:!!o.entrance})),
       tunnels:scene.tunnels.map(t=>({a:t.a,b:t.b,bend:+((t.bend||0).toFixed(3))})),
       corridors:scene.tunnels.map(t=>{ const b=tunnelBez(t); if(!b) return null; const pts=quadPts(b.pa,b.ctrl,b.pb,t.bend?8:1).map(p=>[+(p[0]/CELL).toFixed(2),+(p[1]/CELL).toFixed(2)]); return {pts,w:1.3,material:'stone'}; }).filter(Boolean),
       furniture:scene.furniture.map(f=>{ const room=enclosingRoom(f); const rec={type:f.type,x:f.x,y:f.y,w:f.w,h:f.h,rot:f.rot||0}; if(room){ rec.room=room.id; rec.ux=+((f.x-room.x+f.w/2)/room.w).toFixed(4); rec.uy=+((f.y-room.y+f.h/2)/room.h).toFixed(4); } return rec; }),
@@ -450,9 +466,9 @@
   document.getElementById('btnImport').addEventListener('click',()=>document.getElementById('fileInput').click());
   document.getElementById('fileInput').addEventListener('change',(e)=>{ const file=e.target.files[0]; if(!file) return; const rd=new FileReader();
     rd.onload=()=>{ try{ const d=JSON.parse(rd.result); scene=blankScene(); scene.name=d.name||'house'; document.getElementById('houseName').value=scene.name;
-      (d.rooms||[]).forEach(r=>scene.rooms.push({id:r.id||nextId('room'),name:r.name||'Room',shape:r.shape||'rect',material:r.material||'timber',role:r.role||'',x:r.x,y:r.y,w:r.w,h:r.h,curve:r.curve||{top:0,right:0,bottom:0,left:0}}));
+      (d.rooms||[]).forEach(r=>scene.rooms.push({id:r.id||nextId('room'),name:r.name||'Room',shape:r.shape||'rect',material:r.material||'timber',role:r.role||'',dark:!!r.dark,x:r.x,y:r.y,w:r.w,h:r.h,curve:r.curve||{top:0,right:0,bottom:0,left:0}}));
       (d.walls||[]).forEach(w=>scene.walls.push({id:nextId('w'),x0:w.x0,y0:w.y0,x1:w.x1,y1:w.y1,material:w.material||'stone',bend:w.bend||0}));
-      (d.openings||[]).forEach(o=>scene.openings.push({id:nextId('o'),kind:o.kind||'door',x:o.x,y:o.y,angle:(o.angle!=null?o.angle:(o.orient==='v'?90:0)),len:o.len||1,room:o.room||null}));
+      (d.openings||[]).forEach(o=>scene.openings.push({id:nextId('o'),kind:o.kind||'door',x:o.x,y:o.y,angle:(o.angle!=null?o.angle:(o.orient==='v'?90:0)),len:o.len||1,room:o.room||null,locked:!!o.locked,key:o.key||'',entrance:!!o.entrance}));
       (d.tunnels||[]).forEach(t=>scene.tunnels.push({id:nextId('t'),a:t.a,b:t.b,bend:t.bend||0}));
       (d.furniture||[]).forEach(f=>{ const def=FURN[f.type]||{w:f.w||1,h:f.h||1}; scene.furniture.push({id:nextId('f'),type:f.type,x:f.x,y:f.y,w:f.w||def.w,h:f.h||def.h,rot:f.rot||0}); });
       (d.secrets||[]).forEach(s=>scene.secrets.push({id:nextId('s'),x:s.x,y:s.y,vessel:s.vessel||'Loose floorboard',dc:s.dc||12,items:(s.items||[]).map(it=>({defRef:it.defRef,qty:it.qty||1}))}));

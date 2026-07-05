@@ -114,7 +114,7 @@ done_when · rollback`.
   honest-search `baf1b51` precedent), never the info-record decline. Playloop info-seek seam; cut when the
   serial slot next opens.
 
-### SL-5 — "Aldermere wants something" (Phase 1's named next)  ·  **DRAFT READY 2026-07-05 (`docs/briefs/SL-5-DRAFT.md`, landed from the drafting lane) — awaiting Tim's three taste calls, then build**
+### SL-5 — "Aldermere wants something" (Phase 1's named next)  ·  **CUT + DISPATCHED 2026-07-05 (Sonnet worktree lane, playloop serial slot; brief `docs/briefs/SL-5-aldermere-wants.md`, U488–U490). Taste calls baked in; spec = draft §6.**
 - **The Armory finding (why this packet shrank):** the want loop is ALREADY LIVE end-to-end — ask-a-concern
   (`resolveConcern`, U220) → "I'll help" mints a silent goal (G06, no quest banner) → goalContract tracks
   (cap 12, predicate completion, never a list) → worldTick ages threads/factions into consequence. The

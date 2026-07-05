@@ -2499,19 +2499,22 @@ function renderPlay() {
   });
 
   // ── The map — ONE MAP, always present ─────────────────────────────────
-  // 2026-07-03: the 3D diorama is DISCONNECTED (MAP_3D_ENABLED=false in
-  // continuousMap.js) — on every typed turn the full-DOM rebuild remounted it,
-  // flashing an illegibly-deep 2D plan and then popping an unrelated-looking
-  // 3D scene over it. Until the morph gets a persistent mount, the in-play
-  // map is the 2D graph-paper plan, centered on the player's engine node at a
-  // readable zoom. Pure VIEW — it never writes world state.
+  // MAP-3DR (2026-07-05): the 3D diorama is RECONNECTED (MAP_3D_ENABLED=true in
+  // continuousMap.js). The morph now rides a PERSISTENT mount: renderContinuousMap
+  // holds its map subtree (2D canvas + 3D WebGL layer) at module level and returns
+  // the SAME node across v1's per-turn re-render, so appending it here just
+  // re-parents it — the canvas + WebGL context are never torn down and re-mounted
+  // (that teardown was the "two unrelated views flash" the 2026-07-03 park was
+  // about). The 3D scene is diffed from world changes, not rebuilt per turn. The
+  // in-play map opens flat at the region band and TILTS into the diorama as you
+  // zoom into a place (thresholds live-tunable via window.__tilt). Pure VIEW.
   //
   // The local-walk simulation still runs underneath: renderWalkPlace maintains
   // placeCtl + ui.place (which the continuous map's player marker reads), so
   // we still CALL it — for its side-effects — and discard its compact canvas.
   if (w) { try { renderWalkPlace(w); } catch {} }
   const INPLAY_MAP_ZOOM = MAP_3D_ENABLED
-    ? 2.0    // 3D band (Z_3D_CROSS 0.5 → Z_3D_TILT 2.5): a well-tilted diorama.
+    ? 2.0    // opens flat at the region band; the tilt engages on zoom-in (window.__tilt.start, ≈BAND.plan).
     : 0.12;  // the 2D plan's readable band — current node centered, neighbors in frame (OUTDOORS only).
   let mapEl = null;
   if (w) {

@@ -302,6 +302,7 @@ export async function mountSlice3D(container, sceneData, opts = {}) {
   const px = (Number(player.x) || 0) * TILE_WU + 3, pz = (Number(player.y) || 0) * TILE_WU + 3;
   const py = heightAt(px, pz);
   const sliceMinis = [];
+  let playerToken = null, playerMini = null; // set in the non-combat branch (setPlayerFocus).
   if (sceneData?.combat) {
     // Combat is this overworld scene zoomed in: the tactical board sits ON the ground at
     // the player's node, scaled so a cell ≈ 5 ft (1.5 u ≈ half a node tile), the player's
@@ -316,7 +317,23 @@ export async function mountSlice3D(container, sceneData, opts = {}) {
     const token = buildArchetypeFigure(THREE, 'player', {});
     token.position.set(px, py + 0.06, pz);
     scene.add(token);
-    sliceMinis.push({ group: token, baseY: py + 0.06, baseScale: 1, rate: 1.4, phase: 0, bob: 0.05, defeated: false });
+    playerToken = token;
+    playerMini = { group: token, baseY: py + 0.06, baseScale: 1, rate: 1.4, phase: 0, bob: 0.05, defeated: false };
+    sliceMinis.push(playerMini);
+  }
+
+  // MAP-3DR — setPlayerFocus(tx, ty): stand the player mini on an exact node-TILE
+  // point (tx,ty), the SAME resolveEntityWuFromWorld point the 2D ink marker uses
+  // (continuousMap divides wu by NODE_WU to get tiles). So at the 2D→3D morph the
+  // mini is on the very square the marker occupied — no jump. Pure view: only the
+  // token's transform (+ its breathe baseY) move; no engine state, no scene rebuild.
+  // A no-op during combat (the board owns the player cell there).
+  function setPlayerFocus(tx, ty) {
+    if (!playerToken || !playerMini) return;
+    const wx = (Number(tx) || 0) * TILE_WU, wz = (Number(ty) || 0) * TILE_WU;
+    const wy = heightAt(wx, wz);
+    playerToken.position.set(wx, wy + 0.06, wz);
+    playerMini.baseY = wy + 0.06; // the breathe loop bobs around this
   }
 
   // ---------- clean HUD (corner title = the place you're in, + zoom band) ----------
@@ -476,7 +493,7 @@ export async function mountSlice3D(container, sceneData, opts = {}) {
     return { phi: +basePhi.toFixed(3), rad: Math.round(curRad) };
   }
 
-  return { dispose, renderFrame, setView, setCamera, orbitBy, setOrbiting, pause, resume, canvas };
+  return { dispose, renderFrame, setView, setCamera, setPlayerFocus, orbitBy, setOrbiting, pause, resume, canvas };
 }
 
 // ───────────────────────────────────────────────────────────────────────────

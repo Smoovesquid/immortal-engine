@@ -845,14 +845,21 @@ function strokeSmooth(ctx, pts) {
 }
 
 export function renderOneMap(world, opts = {}) {
-  const map = world?.map || {};
-  const nodes = Array.isArray(map.nodes) ? map.nodes : [];
-  const playerFocus = playerFocusWu(world);
+  // MAP-3DR — the world-derived bindings are `let` (not `const`) so the SAME
+  // canvas + wrapper can be RE-POINTED at a new world on v1's per-turn re-render
+  // (wrap.__rebind, below) instead of being torn down and rebuilt. The camera
+  // itself already survives (the CAMS singleton, keyed by campaign); this keeps
+  // the DOM node + its 2D context identity stable too — the precondition for the
+  // persistent 3D overlay stacked on it (continuousMap.js) to stop re-mounting and
+  // flashing every turn. All pure reads of engine state; nothing here is hashed.
+  let map = world?.map || {};
+  let nodes = Array.isArray(map.nodes) ? map.nodes : [];
+  let playerFocus = playerFocusWu(world);
   const cam = cameraFor(world, opts.initialZoom, playerFocus);
-  const seed = String(world?.meta?.seed || 'seed');
-  const { geo, stamps } = geoFor(world);
-  const { known, rumor } = discoveryTiers(map);
-  const hereId = String(map.currentNodeId || '');
+  let seed = String(world?.meta?.seed || 'seed');
+  let { geo, stamps } = geoFor(world);
+  let { known, rumor } = discoveryTiers(map);
+  let hereId = String(map.currentNodeId || '');
 
   // Height: by default a fixed pixel canvas (the standalone Map screen). When the
   // caller passes a CSS height (opts.heightCss, e.g. '100%'), the canvas FILLS its
@@ -1544,5 +1551,37 @@ export function renderOneMap(world, opts = {}) {
   // that need to nudge the CURRENT view (e.g. TT-DRAW's screenshot lab) rather
   // than jump to an absolute point. Never used by production draw logic.
   wrap.__oneMapCamera = () => ({ cx: cam.cx, cy: cam.cy, z: cam.z });
+
+  // MAP-3DR — re-point this SAME map at a new world/opts without a rebuild. v1's
+  // per-turn render() wipes and re-appends the play DOM; continuousMap.js holds
+  // this wrapper across those renders and calls __rebind(newWorld, newOpts) so the
+  // 2D canvas (and the 3D overlay stacked on it) keep their identity and WebGL
+  // context — the fix for the "map flashes two unrelated views every sentence" bug.
+  // Refresh every per-mount, world-derived binding, then redraw at the (persistent,
+  // campaign-keyed) camera. `onCamera` is refreshed too so the live camera keeps
+  // streaming to whatever 3D driver the current render bound. Pure view; no writes.
+  wrap.__rebind = (newWorld, newOpts) => {
+    world = newWorld || world;
+    if (newOpts && typeof newOpts === 'object') {
+      // Keep onCamera/playerPos/initialZoom fresh; ignore height/heightCss (the
+      // canvas identity + fill-mode were fixed at first mount and must not change).
+      if ('onCamera' in newOpts) opts.onCamera = newOpts.onCamera;
+      if ('playerPos' in newOpts) opts.playerPos = newOpts.playerPos;
+      if ('initialZoom' in newOpts) opts.initialZoom = newOpts.initialZoom;
+    }
+    map = world?.map || {};
+    nodes = Array.isArray(map.nodes) ? map.nodes : [];
+    playerFocus = playerFocusWu(world);
+    // cameraFor re-centres the SAME campaign-keyed cam object on the new focus
+    // (node change / room move / inside↔outside), exactly as a fresh mount would.
+    cameraFor(world, opts.initialZoom, playerFocus);
+    seed = String(world?.meta?.seed || 'seed');
+    ({ geo, stamps } = geoFor(world));
+    ({ known, rumor } = discoveryTiers(map));
+    hereId = String(map.currentNodeId || '');
+    try { roadNet = roadNetwork(world); } catch { roadNet = { segments: [], byNode: new Map() }; }
+    placeCache.clear();
+    draw();
+  };
   return wrap;
 }

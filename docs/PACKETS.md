@@ -233,7 +233,7 @@ done_when · rollback`.
   **MAP-REAL STAGE 1 (position truth) COMPLETE** — engine writes the doorstep, every reader consumes
   `pos`, the probe stands guard in `npm run check`.
 
-### MR-3 — THE FOG-PROCGEN WILD (stage 3, designed + slicing)  ·  Phase 1/2  ·  **DESIGNED 2026-07-05-night (`docs/briefs/MR-3-FOG-PROCGEN.md`) — 3a DISPATCHED (engine derivation, U533–U536) · 3b queued behind 3a+TT-MINIS · 3c queued behind 3a**
+### MR-3 — THE FOG-PROCGEN WILD (stage 3, designed + slicing)  ·  Phase 1/2  ·  **3a ✅ LANDED v0.29.9 b096 (worker `62b0adaf` → integrated; U533–U536 24/24 + U496 class-string; suite 10347/0; ~9% forest blocking density; FEATURE_BLOCK tripwire armed; deadfall=non-blocking flagged reversible) — 3b + 3c DISPATCHED 2026-07-06 (renderer U539–U541 · look-seam U542–U544)**
 - The law: wild features = pure f(worldSeed, cell); fog hides a world that was always there; unpainted
   parchment, never darkness; roads stay clear; blocking trees stop walks honestly; settlements own
   their ink. Falsifiers + non-goals in the brief.

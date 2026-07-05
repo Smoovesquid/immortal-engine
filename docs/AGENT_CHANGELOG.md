@@ -2775,3 +2775,11 @@ other agents. (none active)
   walkthrough receipt identical pre/post. AUTH-HOUSE-1 is now UNBLOCKED (needs only Tim's drawing +
   location pick). Two doc-comment mentions of the old module left in floorPlan.js/structuresState.js
   (harmless provenance; docs-sweep candidates).
+
+## 2026-07-06 — Basecamp — MR-3a integrated → v0.29.9 build 096 "the woods are real" · MR-3b/3c dispatched
+
+- Cherry-picked `62b0adaf`; check GREEN (10347/0, 131/131, probe clean w/ FEATURE_BLOCK armed).
+  The wild is derivable: pure f(seed, cell), biome density (~9% forest blocking), corridors clear,
+  settlement exclusion, trees stop walks honestly. Deadfall non-blocking (worker's reversible call).
+- Dispatching the arc's final two lanes: MR-3b (renderer — wild minis + unpainted-parchment fog edge;
+  U539–U541) and MR-3c (look seam — the DM narrates real features; U542–U544). Disjoint files.

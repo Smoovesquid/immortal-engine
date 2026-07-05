@@ -1162,8 +1162,17 @@ sheet (no per-node islands); the camera keeps the player centered (no edges, eve
   forever); BONUS ROOT: `mergeSubRegion` is silently non-functional for these fields (both sides
   empty pre-merge — the whitelist fix repairs the merge too); no-quest-log law CHECKED CLEAN
   (objectives = spoken scene flavor, one at a time, never a checklist); no §0 risk in any entry.
-  **→ PACK-3 QUEUED under Tim's blanket approval — dispatches the moment PACK-1 lands (same
-  `normalizePack` function, serial by necessity); U471–U472.** ∥ **CG-LIVE-2 DESIGN ✅ BRIEF LANDED** (`e3ab26b6` → `417446f3`,
+  **PACK-3 ✅ LANDED v0.28.27 b076** (`2cc77841`): trio admitted (three `arrayStrings` lines,
+  malformed→[] never throws); **mergeSubRegion HEALED** (0→95 locations / 0→90 objectives / 0→90
+  motifs for base+westmarch — the merge code was correct, fed empty input); before/after receipt:
+  "break a local curse" → "carry word of the exiled lord's survival to a trusted ear". NO-QUEST-LOG
+  LAW asserted (U472: single `scene.objective` string, no plural surface, tracker panel stays
+  deleted); memo-missed consumer surfaced (settlementTicker founding threads now seed from authored
+  objectives — playtest:full clean). Relocks justified: U454-E `982c62b5`→`ca6c4b5d` (objective in
+  begin-event timeline), U467-E keys, U104-D (motif-enriched composer phrasing — outcomes still
+  12/40 vs 20/40 distinguishable, detector was coupled to old prose). Convergence ZERO relocks
+  (fixtures insulated). U471–U472; playtest:full 500 clean. **→ FACT-1 now dispatches (playloop
+  lane free).** ∥ **CG-LIVE-2 DESIGN ✅ BRIEF LANDED** (`e3ab26b6` → `417446f3`,
   `docs/briefs/CG-LIVE-2-regeneration-design.md`): RECOMMENDS Candidate A — promote the shadow's
   pure single-turn detectors into the `validateNarrationCandidate` slot (REJECT-AT-SINK → base
   fallback; zero new LLM calls; no new governing LLM = the Ref-pull ruling kept to the letter).

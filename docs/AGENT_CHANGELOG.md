@@ -2064,6 +2064,15 @@ other agents. (none active)
   (22 subtests). Next: Tim flips shadow-compare on a live session and reviews the swap log.
 - Integration ladder GREEN: convergence 131/131, suite 9924/0, determinism green. v0.28.26 b075.
 
+## 2026-07-04 — Basecamp (PACK-3 integration → v0.28.27 build 076)
+
+- Landed PACK-3 (`2cc77841`, Tim-approved trio): locations/objectives/sensoryMotifs admitted;
+  mergeSubRegion healed (0→95/90/90 for base+westmarch); scene flavor now draws from 188 authored
+  entries; settlementTicker founding-thread consumer surfaced (memo-missed, clean under
+  playtest:full 500); no-quest-log law asserted (U472). Relocks justified: U454-E hash, U467-E keys,
+  U104-D composer-phrasing coupling. Convergence zero relocks. U471–U472.
+- Integration ladder GREEN: convergence 131/131, suite 9934/0, determinism green. v0.28.27 b076.
+
 2026-07-04 — Sonnet (worker worktree, PERC-1) — LOGIC DONE, WIRING PENDING (playloop.js fenced)
 - Packet/seam: `docs/PACKETS.md` PERC-1 — 2026-07-04 gate (Chaos-griefer, CRUNCH_INCONSISTENCY): "Wait — is
   the ceiling still on fire or not? I stand in the middle of the room and look up." rolled a NATURAL 1 vs DC

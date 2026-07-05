@@ -23,6 +23,15 @@
 
 import { seedFromString, makeRng } from '../../rng.js';
 import { floorPlan } from '../../structures/floorPlan.js';
+// MR-3a — the wild-feature derivation is the SINGLE source of the outdoor
+// walkable-mask truth: a blocking wild feature (a tree, a boulder) makes its region
+// cell unwalkable, exactly like a wall indoors. tacticalPos calls THROUGH to it (no
+// second copy of the geometry). This forms an import cycle with wildFeatures.js
+// (which reads the pinned unit constants + region projection from HERE) — SAFE
+// because every binding is used only inside runtime functions, never at module
+// evaluation, so neither module observes the other half-initialised. (See the module
+// header of engine/world/wildFeatures.js.)
+import { isRegionCellBlocked } from '../../world/wildFeatures.js';
 
 // ── Pinned constants (TAC-1) ────────────────────────────────────────────────
 // Mirror of the "Pinned constants (TAC-1)" block in docs/POSITION_AS_CANON.md.
@@ -554,7 +563,14 @@ export function resolveTacticalWalk(world, { actorId = 'party', dir, cells } = {
     const curNodeId = String(map.currentNodeId ?? '');
     const nodes = Array.isArray(map.nodes) ? map.nodes : [];
     const anyPositioned = nodes.some(n => n && Number.isInteger(n.x) && Number.isInteger(n.y));
+    // A target cell is walkable iff it stays in the current node's neighbourhood AND
+    // no BLOCKING wild feature (a tree, a boulder) stands on it — MR-3a joins the
+    // outdoor mask exactly like a wall. walkWhile stops at the last free cell, so the
+    // body halts HONESTLY one cell short of the tree ("the pine's in your way — you're
+    // two strides short"), never ON it (U536). The derivation is pure & deterministic,
+    // so this adds no randomness and keeps the walk replay-stable.
     const inBounds = (nx, ny) => {
+      if (isRegionCellBlocked(world, nx, ny)) return false; // a tree/boulder blocks
       if (!curNodeId || !anyPositioned) return true; // nothing to project against
       return nearestNodeToRegionCell(map, nx, ny) === curNodeId;
     };
@@ -584,6 +600,21 @@ export function resolveTacticalWalk(world, { actorId = 'party', dir, cells } = {
     clampedToBudget,
     frame: pos.frame
   };
+}
+
+/**
+ * regionWalkCellFree(world, gx, gy) -> boolean
+ *
+ * Whether a region cell is FREE for a body to rest on for tactical resolution — the
+ * outdoor analogue of "inside a room rect" indoors. False when a BLOCKING wild
+ * feature (a tree, a boulder) stands there (MR-3a). This is the exported form of the
+ * walk's mask predicate: the probe's outdoor assertion and U536 use it to check that
+ * a committed region `pos` never lands ON a blocking cell. Read-through to the
+ * derivation (no second copy of the geometry); pure & deterministic; never throws.
+ */
+export function regionWalkCellFree(world, gx, gy) {
+  if (!Number.isInteger(gx) || !Number.isInteger(gy)) return false;
+  return !isRegionCellBlocked(world, gx, gy);
 }
 
 // ── Deterministic seeded placement ──────────────────────────────────────────

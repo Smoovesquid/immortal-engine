@@ -52,7 +52,7 @@ import { beginAdventure, playerMove } from '../engine/playloop.js';
 import { SLICE_SEED } from '../engine/world/sliceRegion.js';
 import {
   nodeGridToRegionCell, nearestNodeToRegionCell, roomOfStructCell,
-  pathCrossesWallWithoutDoor,
+  pathCrossesWallWithoutDoor, regionWalkCellFree,
   NODE_CELLS, PLACE_WU, CELL_FT
 } from '../engine/map/spatial/tacticalPos.js';
 import { floorPlan } from '../engine/structures/floorPlan.js';
@@ -76,6 +76,7 @@ export const FINDING_CLASSES = {
   POSITION_DESYNC:  'Engine position disagrees with the fiction anchor after a transition',
   TOPOLOGY_BREACH:  'An interior move landed in a room not adjacent-by-door to its origin',
   GEOMETRY_BREACH:  'A committed struct move crossed a wall without passing through a door (MR-2a)',
+  FEATURE_BLOCK:    'A committed outdoor pos landed ON a blocking wild feature — a body inside a tree (MR-3a)',
 };
 
 // ── Thresholds (documented inline; all in engine-native units) ───────────────
@@ -243,6 +244,28 @@ export function assertRegionAtNode(world, expectNodeId = null, ctx = 'region') {
   const proj = String(nearestNodeToRegionCell(world?.map, pos.gx, pos.gy) || '');
   if (want && proj && want !== proj) {
     findings.push({ class: 'POSITION_DESYNC', detail: `region: cell (${pos.gx},${pos.gy}) projects to node ${proj}, expected ${want}`, context: ctx });
+  }
+  return findings;
+}
+
+/**
+ * OUTDOOR FEATURE anchor (MR-3a): a committed outdoor `pos` must never land ON a
+ * blocking wild feature (a tree, a boulder) — the body is never inside a tree.
+ * regionWalkCellFree is the derivation's own mask predicate, so this asserts the same
+ * truth the tactical walk honours: after any transition that leaves the player
+ * outdoors (a walk, a journey arrival), the cell they rest on is FREE. A non-region
+ * pos is skipped (indoors is a different mask). Pure; no throw, no mutation.
+ */
+export function assertRegionPosNotBlocked(world, ctx = 'region') {
+  const findings = [];
+  const pos = playerPos(world);
+  if (!pos || pos.frame !== 'region') return findings; // indoors / absent — not this check
+  if (!regionWalkCellFree(world, pos.gx, pos.gy)) {
+    findings.push({
+      class: 'FEATURE_BLOCK',
+      detail: `outdoor pos (${pos.gx},${pos.gy}) sits ON a blocking wild feature — a body inside a tree/boulder`,
+      context: ctx,
+    });
   }
   return findings;
 }
@@ -442,6 +465,9 @@ export function runSequence({ seed = SLICE_SEED } = {}) {
     }
     // If still outdoors, the region cell must project to the current node.
     push(assertRegionAtNode(world, postNode, 'walk'), 'walk');
+    // MR-3a — and the cell the walk stopped on must be FREE of any blocking wild
+    // feature (a walk stops HONESTLY at a tree, never on it).
+    push(assertRegionPosNotBlocked(world, 'walk'), 'walk');
     // If the walk happened to be an interior move, verify adjacency.
     const postInterior = world?.scene?.interior?.roomId || null;
     if (preInterior && postInterior && String(preInterior) !== String(postInterior)) {
@@ -490,6 +516,10 @@ export function runSequence({ seed = SLICE_SEED } = {}) {
     snap.journeyMovedNode = String(preNode) !== String(postNode);
     // Whatever node we ended at, if outdoors the body must sit within THAT node's frame.
     push(assertRegionAtNode(world, postNode, 'journey'), 'journey');
+    // MR-3a — a journey ARRIVAL materializes a bubble; the drop cell must be FREE
+    // (never inside a tree). This is the corridor-clearance falsifier end-to-end: the
+    // arrival lands on the road, which the derivation keeps clear.
+    push(assertRegionPosNotBlocked(world, 'journey'), 'journey');
     steps.push(snap);
   }
 

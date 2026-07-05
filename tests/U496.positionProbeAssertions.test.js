@@ -75,8 +75,8 @@ function posInRoom(structure, roomId) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-test('U496: the finding classes are the MR-ORACLE classes (incl. MR-2a GEOMETRY_BREACH)', () => {
-  assert.deepEqual(Object.keys(FINDING_CLASSES).sort(), ['GEOMETRY_BREACH', 'POSITION_DESYNC', 'TOPOLOGY_BREACH']);
+test('U496: the finding classes are the MR-ORACLE classes (incl. MR-2a GEOMETRY_BREACH + MR-3a FEATURE_BLOCK)', () => {
+  assert.deepEqual(Object.keys(FINDING_CLASSES).sort(), ['FEATURE_BLOCK', 'GEOMETRY_BREACH', 'POSITION_DESYNC', 'TOPOLOGY_BREACH']);
   assert.ok(EXIT_TELEPORT_CELLS > DOORSTEP_MARGIN_CELLS, 'teleport threshold is looser than the doorstep margin');
 });
 

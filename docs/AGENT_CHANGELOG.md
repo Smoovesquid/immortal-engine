@@ -2628,3 +2628,12 @@ other agents. (none active)
   composes over roomOccupancy.js — the file OCC-STORY-1 rewrites if Tim relaunches it; dependency
   order says occupancy first). Next dispatches: DOOR-FORCE-1 (serial) + TT-MINIS (renderer, corpse
   GLBs → defeated figures). U513–U516 claimed.
+
+## 2026-07-05 — Basecamp (second window) — DOOR-FORCE-1 dispatched; TT-MINIS ceded to the sibling lane
+
+- Corpse GLBs turned out already committed by the sibling (`7110362e` — miniLibrary.js + decimate
+  script): the miniatures-library wiring is ITS lane; Basecamp stays off. New untracked
+  `public/npc-builder.html` also sibling/Tim authoring work — hands off.
+- DOOR-FORCE-1 (Opus, serial; U513–U514): unify bare force-phrasings through the canon `door` op
+  (MR-2a's honest flag). escapeCombat.js read-only — if unification truly needs it, worker stops and
+  reports (two-combat-engines rule + taste).

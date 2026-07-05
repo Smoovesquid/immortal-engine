@@ -232,7 +232,9 @@ done_when · rollback`.
   the legacy fallback) · walkable mask · `door` op via applyDeltas · interior moves + egress enforce
   states honestly (DM Test — no soft-locks, U506 property-tested) · forced entry mints a ledger fact.
 
-### DOOR-FORCE-1 — bare "force the door" flips canon door state  ·  Phase 2 follow-up  ·  **QUEUED (worker's honest scope flag, 2026-07-05)**
+### TT-MINIS — miniatures library wiring (corpse GLBs → the board)  ·  **SIBLING WINDOW'S LANE (2026-07-05 `7110362e` miniLibrary.js + decimate script) — no Basecamp dispatch; stay off `public/map/miniLibrary.js`/figures/render until it lands or hands off**
+
+### DOOR-FORCE-1 — bare "force the door" flips canon door state  ·  Phase 2 follow-up  ·  **CUT + DISPATCHED 2026-07-05-night (Opus worktree, serial engine slot; U513–U514)**
 - A bare/unnamed "force the door" still routes to the pre-existing generic physics-force resolver
   (predates door canon): it rolls + narrates but does NOT flip the new door state. Named-room moves and
   egress DO enforce canon. Unify every force-phrasing through the `door` op — touches the combat-resolve

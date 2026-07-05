@@ -87,6 +87,33 @@ done_when · rollback`.
   that slowness is intended; it's what fast travel is priced against.
 - **rollback:** revert the commit (journeys return to premium-free). Contract: `docs/POSITION_AS_CANON.md` §3.
 
+### SEEK-PERSON — "go find someone who can tell me X" resolves in the fiction (the person-goal bridge)  ·  Phase 0  ·  **CUT + DISPATCHED 2026-07-05 (Opus playloop worktree — the serial slot is free, map lane is renderer-only)**
+- **provenance:** GATE 2026-07-05's one high-sev fail (Lore-hound): from the wake interior, _"I get up and
+  go find someone in the settlement who can tell me who founded this outpost."_ → **"That way is blocked
+  from here."** Seam pinned at boot: the interior-movement blocked bank (`engine/playloop.js:2045`) sits
+  directly ABOVE the INT-4-TRAVEL bridge that already exits-and-journeys for "go to <place>" voiced
+  indoors — but a person-goal ("find someone…") names no place, so the bridge never fires and the intent
+  falls into the blocked bank. Sibling evidence in-scope: the CG-2b locket record proved the base path
+  routes a sensory probe ("is there a portrait inside?") into an NPC "no record" dodge — if that's the
+  same info-sink seam, fix it here; if not, report it. Brief: `docs/briefs/SEEK-PERSON-egress.md`.
+- **objective:** (1) seek-a-person intent voiced indoors bridges like INT-4-TRAVEL — step out, then resolve
+  the seek on the outdoor world in fiction (deliver a findable person from canon occupancy, or an honest
+  in-fiction miss — never a navigation refusal, never "no record"); (2) the locket-class sensory-probe
+  misroute IF same seam; (3) report-only re-scope of what remains of AG-4 a/b/c post-INFO-HONESTY.
+- **allowed_files:** `engine/playloop.js` (movement/info-seek seams only), tests U485–U487, corpus relocks
+  (documented). **forbidden:** `dialogue.js`/`grace/`, `WORLD_VERSION`, rng, inventing canon facts (C9).
+- **invariants:** determinism U19/21/22/27/30; convergence 100%; LLM-off repro FIRST (bug protocol).
+- **done_when:** the exact gate utterance, LLM-off on a fresh tallow boot, exits the interior and resolves
+  the seek in fiction; blocked bank still fires for true dead-ends (wall-holds cases keep their tests);
+  `npm run check` green.  ·  **rollback:** revert the lane's commit.
+
+### SL-5 — "Aldermere wants something" (Phase 1's named next)  ·  **DRAFTING 2026-07-05 (Sonnet lane, docs-only — packetize before starting, per the queue note)**
+- A drafting worker is producing `docs/briefs/SL-5-DRAFT.md`: 2–3 candidate shapes grounded in SHIPPED
+  systems (the FACT-1 factions, the PACK-1 arcs — tallow "Bridge Dispute" / slice "Drowned Twin", the
+  goals/goalContract bridge), each with discovery-in-conversation, engine tracking, and **no-quest-log
+  compliance (HARD LAW — goals stay obscure and player-held; nothing renders a list)**. Output = draft +
+  recommended pick + proposed packet row, for Tim's taste pass. No code.
+
 ### GATE 2026-07-05 — morning fresh measure (v0.28.29 · **3/48** · `opus-gate-2026-07-05.md`)
 **The honest read:** 14/48 → 8/48 → **3/48 (6%) on the same Ref-off config** — the best score the gate has
 ever recorded. All eight of 07-04-3's fixes HELD (CBT-AGENCY, INT-4-HELD, ANS-2, INFO-HONESTY all silent),

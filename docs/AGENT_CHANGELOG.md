@@ -2667,3 +2667,27 @@ other agents. (none active)
   flag — playerMove-entry verification done; prose⇔canon agreement asserted in U513).
 - In flight: OCC-STORY-1 (relaunched). Held: MR-2d behind it. Sibling lanes: miniatures library,
   npc-builder.
+
+## 2026-07-05 — Basecamp (LOAD-1 integration → v0.29.4 build 091 — first playable authored building)
+
+- **The milestone: a room drawn in the house-builder is now walkable in the game.** Integrated the
+  LOAD-1 worker (`28c7c0b0`) + a schema-widen fix (`0a56e48a`). New `engine/structures/authoredStructure.js`
+  `loadAuthoredStructure(json,{nodeId})` reads a house-builder export and hands the engine a real interior
+  (ENGINE LEADS: one room — first — mapped down; role via `room.role` else `quarters`; timber/stone→shell;
+  furniture + material via the existing cottage read stack; enterable via the engine's own front-door
+  derivation). Wired ONE demo behind seed `loaderDemo` (default game byte-identical); `applyGeneratedStructuresForNode`
+  `maybeInjectLoaderDemo` + a one-line additive `roomDetail.js` role-override + a demo house pack file.
+- **Schema fix (mine, at integration):** the tool bumped to v7 (roles) in parallel with LOAD-1, which
+  targeted v5/v6. Loader is now version-aware — accepts `house-builder/v5`-or-newer (subset stable, degrades
+  the rest), still rejects v4 (U517's 'wrong schema' case). Full ladder GREEN 10228/0, convergence 131/131,
+  determinism green.
+- **Live-verified LLM-off on the integrated mainline** (seed `loaderDemo`): boot → inside the authored room,
+  material timber, furniture (tool rack / straw pallet / wooden chair / stone basin); "look around" truthful
+  with NO invented staircase/upper floor; go outside → back in. Receipt: `docs/playtests/loader/`.
+- **What degraded (engine-leads, noted):** extra rooms (only the first loads), bowed/freeform walls,
+  tunnels, secrets, windows, sized/angled doors, multi-floor — the tool authors them; the loader sets them
+  aside for now. **Follow-ups (queued):** LOAD-2 (attach an arbitrary tool export at a real node, not just
+  the demo) + widen/unify the MR-2c `authoredPlans.js` registry (still validates v5 only — a separate
+  pre-existing authored-plan path). Worker's U381-class flake note: my mainline ladder was clean 10228/0.
+- Version from the true current head (second window had shipped v0.29.3 b090 "the lock remembers"): now
+  **v0.29.4 b091 "a room you drew"**.

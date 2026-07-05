@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>NPC Builder — Immortal Engine (dev tool)</title>
+<style>
+  :root{ --bg:#221f19; --panel:#efeadb; --panel-line:#d8cfb8; --ink:#2c2a2f; --ink-soft:#6b5f4d; --accent:#b8792f;
+    --card:#1c2230; --card-line:#39435c; --gold:#d9a441; --card-ink:#e9e2cf; --card-soft:#95a0b8; }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; height:100%; font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif; color:var(--ink); background:#2a2620; }
+  #app{ display:grid; grid-template-columns:1fr 400px; grid-template-rows:auto 1fr; height:100vh; }
+  header{ grid-column:1/3; display:flex; align-items:center; gap:12px; padding:8px 14px; background:var(--bg); color:var(--card-ink); border-bottom:1px solid #000; }
+  header h1{ font-size:14px; font-weight:600; margin:0; }
+  header .spacer{ flex:1; }
+  header input[type=text]{ background:#34302650; color:#f0e9d6; border:1px solid #4a4433; border-radius:6px; padding:6px 9px; font-size:14px; width:200px; }
+  header button{ background:#33302640; color:#efe7d3; border:1px solid #4a4433; border-radius:6px; padding:6px 11px; font-size:12px; cursor:pointer; }
+  header button:hover{ background:#46402f; }
+  header button.primary{ background:var(--accent); border-color:var(--accent); color:#21170a; font-weight:600; }
+
+  .form{ grid-row:2; overflow-y:auto; padding:18px 22px; background:var(--panel); }
+  .form h2{ font-size:11px; text-transform:uppercase; letter-spacing:.9px; color:var(--ink-soft); margin:18px 0 8px; border-bottom:1px solid var(--panel-line); padding-bottom:4px; }
+  .form h2:first-child{ margin-top:0; }
+  .row{ display:flex; gap:14px; flex-wrap:wrap; }
+  .field{ margin-bottom:12px; flex:1; min-width:150px; }
+  .field label{ display:block; font-size:12px; color:var(--ink-soft); margin-bottom:4px; }
+  .field select, .field input[type=number]{ width:100%; padding:8px 10px; font-size:14px; border:1px solid var(--panel-line); border-radius:7px; background:#fbf8ef; color:var(--ink); }
+  .stats{ display:grid; grid-template-columns:repeat(5,1fr); gap:10px; }
+  .stat{ background:#fbf8ef; border:1px solid var(--panel-line); border-radius:9px; padding:8px; text-align:center; }
+  .stat .k{ font-size:10px; letter-spacing:.6px; color:var(--ink-soft); }
+  .stat input{ width:100%; text-align:center; font-size:20px; font-weight:600; border:none; background:transparent; color:var(--ink); -moz-appearance:textfield; }
+  .stat input::-webkit-outer-spin-button,.stat input::-webkit-inner-spin-button{ -webkit-appearance:none; }
+  .stat .mod{ font-size:12px; color:var(--accent); font-weight:600; }
+  .kit{ display:grid; grid-template-columns:1fr 1fr; gap:4px 14px; }
+  .kit label{ display:flex; align-items:center; gap:7px; font-size:13px; color:var(--ink); cursor:pointer; padding:2px 0; }
+  textarea{ width:100%; min-height:180px; padding:10px 12px; font-size:13px; line-height:1.5; border:1px solid var(--panel-line); border-radius:8px; background:#fbf8ef; color:var(--ink); resize:vertical; font-family:ui-monospace,monospace; }
+
+  .side{ grid-row:2; overflow-y:auto; padding:18px; background:#241f18; }
+  .card{ background:var(--card); border:1px solid var(--card-line); border-radius:12px; padding:16px 18px; color:var(--card-ink); }
+  .card .cname{ font-size:19px; font-weight:600; }
+  .card .lv{ display:inline-block; font-size:11px; background:#2a3348; color:var(--gold); border:1px solid var(--card-line); border-radius:20px; padding:2px 10px; margin-left:8px; vertical-align:middle; }
+  .card .sub{ color:var(--card-soft); font-size:13px; margin:3px 0 14px; }
+  .cstats{ display:grid; grid-template-columns:repeat(5,1fr); gap:6px; margin-bottom:14px; }
+  .cstat{ text-align:center; background:#151a26; border-radius:8px; padding:7px 2px; }
+  .cstat .k{ font-size:9px; letter-spacing:.5px; color:var(--card-soft); }
+  .cstat .v{ font-size:18px; font-weight:600; }
+  .cstat .m{ font-size:11px; color:var(--gold); }
+  .crow{ display:flex; justify-content:space-between; border-top:1px solid var(--card-line); padding:8px 0; font-size:13px; }
+  .crow .l{ color:var(--card-soft); }
+  .ckit{ margin-top:6px; font-size:12px; color:var(--card-ink); }
+  .ckit .chip{ display:inline-block; background:#2a3348; border-radius:6px; padding:2px 8px; margin:2px 3px 0 0; font-size:11px; }
+  .note{ font-size:11px; color:var(--card-soft); margin-top:10px; }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <h1>🧙 NPC Builder <span style="opacity:.5;font-weight:400">· Immortal Engine dev tool</span></h1>
+    <input id="name" type="text" value="New NPC" placeholder="name"/>
+    <button id="roll">Roll 2d6+2</button>
+    <div class="spacer"></div>
+    <button id="btnNew">New</button>
+    <button id="btnImport">Import…</button>
+    <button id="btnExport" class="primary">Export JSON</button>
+    <input id="fileInput" type="file" accept="application/json" style="display:none"/>
+  </header>
+
+  <div class="form">
+    <h2>Identity</h2>
+    <div class="row">
+      <div class="field"><label>Race</label><select id="race"></select></div>
+      <div class="field"><label>Class</label><select id="cls"></select></div>
+    </div>
+    <div class="row">
+      <div class="field"><label>Style (archetype)</label><select id="style"></select></div>
+      <div class="field"><label>Level</label><input id="level" type="number" min="1" max="20" value="1"/></div>
+    </div>
+
+    <h2>Stats <span style="text-transform:none;letter-spacing:0;color:var(--ink-soft)">· MIGHT / AGILITY / WITS / GRIT / CHARM (game's 5-stat system)</span></h2>
+    <div class="stats" id="statGrid"></div>
+
+    <h2>Kit</h2>
+    <div class="kit" id="kit"></div>
+
+    <h2>Backstory / RAG <span style="text-transform:none;letter-spacing:0;color:var(--ink-soft)">· what the NPC knows &amp; carries in conversation — paragraphs become RAG chunks</span></h2>
+    <textarea id="backstory" placeholder="Write the NPC's backstory, knowledge, secrets, voice… Each paragraph becomes a retrievable chunk in their RAG persona (server/rag/corpus)."></textarea>
+  </div>
+
+  <div class="side">
+    <div class="card" id="card"></div>
+    <div class="note" id="note"></div>
+  </div>
+</div>
+
+<script>
+(() => {
+  // ── the game's actual intake (engine/chargen) ──
+  const RACES = ['Human','Dwarf','Elf','Halfling','Dragonborn','Gnome','Half-Elf','Half-Orc','Tiefling'];
+  const CLASSES = ['Fighter','Barbarian','Bard','Cleric','Druid','Monk','Paladin','Ranger','Rogue','Sorcerer','Warlock','Wizard'];
+  const STYLES = ['Sellsword','Gravedigger','Hedge-Witch','Runebroken Scholar','Oathless Knight','Wanderer','Outrider','Hedge-Priest','Cutpurse','Knight-Errant'];
+  const STAT_KEYS = ['MIGHT','AGILITY','WITS','GRIT','CHARM'];
+  const KIT = ['Rusty longsword','Hatchet','Sling','Dagger','Spear','Old crossbow','Wooden staff','Mace','Kitchen cleaver','Pitchfork','Padded coat','Leather jerkin','Rust-flaked mail','Buckler','Travel helm','Cloak of many patches','Rope (50ft)','Lockpicks','Chalk','Lantern','Hammer + nails','Prayer beads','Herb pouch','Field notebook'];
+  const HITDIE = { Barbarian:12, Fighter:10, Paladin:10, Ranger:10, Bard:8, Cleric:8, Druid:8, Monk:8, Rogue:8, Warlock:8, Sorcerer:6, Wizard:6 };
+  const ARMOR = { 'Rust-flaked mail':{ac:14,dex:0}, 'Leather jerkin':{ac:11,dex:2}, 'Padded coat':{ac:11,dex:2} };
+
+  const npc = { name:'New NPC', race:'Human', cls:'Fighter', style:'Sellsword', level:1,
+    stats:{ MIGHT:10, AGILITY:10, WITS:10, GRIT:10, CHARM:10 }, kit:new Set(), backstory:'' };
+
+  const statMod = n => Math.floor((Number(n||10)-10)/2);
+  const signed = m => (m>=0?'+':'')+m;
+  const slug = s => String(s||'npc').toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'').slice(0,40) || 'npc';
+
+  // ── build the form ──
+  const fill = (id,list) => { const s=document.getElementById(id); s.innerHTML=list.map(o=>`<option>${o}</option>`).join(''); };
+  fill('race',RACES); fill('cls',CLASSES); fill('style',STYLES);
+  document.getElementById('statGrid').innerHTML = STAT_KEYS.map(k=>
+    `<div class="stat"><div class="k">${k}</div><input type="number" min="3" max="20" id="s_${k}" value="10"/><div class="mod" id="m_${k}">+0</div></div>`).join('');
+  document.getElementById('kit').innerHTML = KIT.map(g=>
+    `<label><input type="checkbox" value="${g}"/> ${g}</label>`).join('');
+
+  // ── wire inputs ──
+  const $ = id => document.getElementById(id);
+  $('name').addEventListener('input',e=>{ npc.name=e.target.value; render(); });
+  $('race').addEventListener('change',e=>{ npc.race=e.target.value; render(); });
+  $('cls').addEventListener('change',e=>{ npc.cls=e.target.value; render(); });
+  $('style').addEventListener('change',e=>{ npc.style=e.target.value; render(); });
+  $('level').addEventListener('input',e=>{ npc.level=Math.max(1,Math.min(20,Number(e.target.value)||1)); render(); });
+  $('backstory').addEventListener('input',e=>{ npc.backstory=e.target.value; render(); });
+  STAT_KEYS.forEach(k=>$('s_'+k).addEventListener('input',e=>{ npc.stats[k]=Math.max(3,Math.min(20,Number(e.target.value)||10)); render(); }));
+  document.querySelectorAll('#kit input').forEach(cb=>cb.addEventListener('change',()=>{ cb.checked?npc.kit.add(cb.value):npc.kit.delete(cb.value); render(); }));
+
+  $('roll').addEventListener('click',()=>{ const d6=()=>1+Math.floor(Math.random()*6);
+    STAT_KEYS.forEach(k=>{ npc.stats[k]=d6()+d6()+2; $('s_'+k).value=npc.stats[k]; }); render(); });
+
+  // ── derived (preview hints — the engine recomputes authoritatively on import) ──
+  function derived(){ const gm=statMod(npc.stats.GRIT), am=statMod(npc.stats.AGILITY), die=HITDIE[npc.cls]||8;
+    const hp=Math.max(1, die+gm + (npc.level-1)*(Math.floor(die/2)+1+gm));
+    let ac=10+am; for(const g of npc.kit){ const a=ARMOR[g]; if(a) ac=a.ac+Math.min(am,a.dex); } if(npc.kit.has('Buckler')) ac+=1;
+    return { hp, ac }; }
+
+  // ── render the card ──
+  function render(){ const d=derived();
+    $('card').innerHTML =
+      `<div><span class="cname">${esc(npc.name||'—')}</span><span class="lv">LV ${npc.level}</span></div>
+       <div class="sub">${esc(npc.race)} · ${esc(npc.style)} · ${esc(npc.cls)}</div>
+       <div class="cstats">${STAT_KEYS.map(k=>`<div class="cstat"><div class="k">${k}</div><div class="v">${npc.stats[k]}</div><div class="m">${signed(statMod(npc.stats[k]))}</div></div>`).join('')}</div>
+       <div class="crow"><span class="l">HP (est.)</span><span>${d.hp}</span></div>
+       <div class="crow"><span class="l">AC (est.)</span><span>${d.ac}</span></div>
+       <div class="crow" style="display:block"><span class="l">Kit</span><div class="ckit">${npc.kit.size?[...npc.kit].map(g=>`<span class="chip">${esc(g)}</span>`).join(''):'<span class="l" style="font-size:12px">— nothing equipped —</span>'}</div></div>`;
+    STAT_KEYS.forEach(k=>$('m_'+k).textContent=signed(statMod(npc.stats[k])));
+    const chunks=backstoryChunks();
+    $('note').textContent = `Exports a playable NPC (engine/chargen shape) + a ${chunks.length}-chunk RAG persona (server/rag/corpus). HP/AC are estimates; the engine recomputes on load.`;
+  }
+  function esc(s){ return String(s).replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c])); }
+
+  // ── backstory → RAG chunks (corpus shape: {id,source,text,keywords}) ──
+  const STOP = new Set('the a an and or but of to in on at for with as is are was were be by from that this it its his her their they he she you your i we our not no so if then than into over under out up down about'.split(' '));
+  function keywords(text){ const seen=new Set(),out=[]; for(const w of String(text).toLowerCase().match(/[a-z']{3,}/g)||[]){ if(STOP.has(w)||seen.has(w))continue; seen.add(w); out.push(w); if(out.length>=10)break; } return out; }
+  function backstoryChunks(){ const id=slug(npc.name); const paras=npc.backstory.split(/\n\s*\n/).map(s=>s.trim()).filter(Boolean);
+    return paras.map((p,i)=>({ id:`${id}_${i+1}`, source:`${npc.name} — ${i===0?'backstory':'more'}`, text:p, keywords:keywords(p) })); }
+
+  // ── export / import ──
+  $('btnExport').addEventListener('click',()=>{ const id=slug(npc.name); const d=derived();
+    const out={ kind:'authored-npc', schema:'npc-builder/v1',
+      npc:{ id, name:npc.name, race:npc.race, style:npc.style, archetype:npc.style, class:npc.cls, level:npc.level,
+        stats:{...npc.stats}, mods:Object.fromEntries(STAT_KEYS.map(k=>[k,statMod(npc.stats[k])])), hpEstimate:d.hp, acEstimate:d.ac, kit:[...npc.kit] },
+      rag:{ id, name:npc.name, role:`${npc.style} · ${npc.cls} · level ${npc.level} · ${npc.race}`, cluster:'authored_npc', reconstructed:false, chunks:backstoryChunks() } };
+    const blob=new Blob([JSON.stringify(out,null,2)],{type:'application/json'}); const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob); a.download=`${id}.json`; a.click(); URL.revokeObjectURL(a.href); });
+
+  $('btnImport').addEventListener('click',()=>$('fileInput').click());
+  $('fileInput').addEventListener('change',e=>{ const f=e.target.files[0]; if(!f)return; const rd=new FileReader();
+    rd.onload=()=>{ try{ const d=JSON.parse(rd.result), n=d.npc||{};
+      npc.name=n.name||'NPC'; npc.race=RACES.includes(n.race)?n.race:'Human'; npc.cls=CLASSES.includes(n.class)?n.class:'Fighter';
+      npc.style=STYLES.includes(n.style||n.archetype)?(n.style||n.archetype):'Sellsword'; npc.level=Math.max(1,Math.min(20,n.level||1));
+      STAT_KEYS.forEach(k=>npc.stats[k]=(n.stats&&n.stats[k])||10); npc.kit=new Set((n.kit||[]).filter(g=>KIT.includes(g)));
+      npc.backstory=(d.rag&&d.rag.chunks||[]).map(c=>c.text).join('\n\n');
+      syncForm();
+    }catch(err){ alert('import failed: '+err.message); } }; rd.readAsText(f); e.target.value=''; });
+
+  $('btnNew').addEventListener('click',()=>{ if(!confirm('Start a new NPC?'))return;
+    npc.name='New NPC'; npc.race='Human'; npc.cls='Fighter'; npc.style='Sellsword'; npc.level=1;
+    STAT_KEYS.forEach(k=>npc.stats[k]=10); npc.kit=new Set(); npc.backstory=''; syncForm(); });
+
+  function syncForm(){ $('name').value=npc.name; $('race').value=npc.race; $('cls').value=npc.cls; $('style').value=npc.style; $('level').value=npc.level;
+    STAT_KEYS.forEach(k=>$('s_'+k).value=npc.stats[k]); $('backstory').value=npc.backstory;
+    document.querySelectorAll('#kit input').forEach(cb=>cb.checked=npc.kit.has(cb.value)); render(); }
+
+  syncForm();
+})();
+</script>
+</body>
+</html>

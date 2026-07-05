@@ -161,7 +161,10 @@ No `VERSION`/`CHANGELOG` file exists; these two are the source of truth.
 
 ## Parallel lanes (Homebase = conductor)
 
-Full map: **`docs/LANE_MAP.md`**. Default to the maximum *worthwhile* concurrency, **per lane-type**: parallel by default for **content / UI / docs-design**; **serial** for **competence hot files** (`playloop.js`, `dialogue.js`, `grace/`, composer, `escapeCombat.js`), **schema/`WORLD_VERSION`**, and taste-critical narration. Assume warm worker lanes may be running.
+Full map: **`docs/LANE_MAP.md`**. **Conductor loop: `docs/CONDUCTOR_FORM.md`** (the
+dispatch→integrate ritual — diagnose-first briefs, fences+patch-block escape hatches, lane algebra,
+the integration ritual, honesty economics; sibling of `FORM_PROMPT.md` — ANY conductor window loads
+it at boot). Default to the maximum *worthwhile* concurrency, **per lane-type**: parallel by default for **content / UI / docs-design**; **serial** for **competence hot files** (`playloop.js`, `dialogue.js`, `grace/`, composer, `escapeCombat.js`), **schema/`WORLD_VERSION`**, and taste-critical narration. Assume warm worker lanes may be running.
 
 - **Homebase conducts + integrates:** plan the split, own the merge into `v2-polish`, never delegate the global-invariants lane. Worker lanes produce branches; Homebase lands them.
 - **Isolate parallel lanes in their own git worktree** (`git worktree add` / Agent `isolation: "worktree"`) — branch names do NOT isolate a shared working dir. Stay off another lane's hot files; coordinate first. **Never commit edits you didn't make.**

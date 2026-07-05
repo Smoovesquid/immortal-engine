@@ -193,6 +193,14 @@ done_when · rollback`.
   segments + openings {x,y,orient,len}) → 2d windows as sight apertures. MR-1b brief is READY-TO-FIRE
   (`docs/briefs/MR-1b-marker-reads-pos.md`, U501–U502) — dispatches the moment MR-1a lands.
 
+### MR-2a — walls block + doors become canon (the WORLD_VERSION packet)  ·  Phase 1/2 (MAP-REAL stage 2)  ·  **CUT + DISPATCHED 2026-07-05-eve (Opus worktree; design `docs/briefs/MR-2-FUNCTIONAL-INK.md` §2a; U503–U506; dispatched under Tim's autonomous-continuation grant — integration held to Basecamp's gate)**
+- Walkable mask from plans · exterior front-door record (MR-1a's flag) + door states {open|shut|barred|
+  locked} as stored canon (ONE WORLD_VERSION bump, full 6-step protocol) · `door` op via applyDeltas ·
+  interior room-moves respect door states TODAY (locked door = honest in-fiction resolution, DM Test) ·
+  tactical-move mask consumption activates with TAC-2 (noted, not owed) · MR-ORACLE grows
+  GEOMETRY_BREACH. Live wiring for lockpicks/force via resolve.js; forced entry mints a ledger fact
+  (moral-physics seam).
+
 ### MR-1a — egress writes the doorstep: exit lands you at the door you used  ·  Phase 1 (MAP-REAL stage 1, engine serial)  ·  **✅ LANDED v0.28.36 b085 (worker `fc7ef397` → integrated `7a11f607`; U497 flipped + U498–U500; suite 10094/0; probe GREEN — 247 ft teleport → 5 ft doorstep; `playtest:position` now a permanent `npm run check` rung)**
 - **Worker divergence flags (honest, carried):** (1) structures have NO explicit exterior-door record
   — doorstep derived from the entry room's outer wall (deterministic, 4-direction tested); MR-2a/2c

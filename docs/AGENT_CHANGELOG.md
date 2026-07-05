@@ -2570,3 +2570,13 @@ other agents. (none active)
   doorstep, schema record folded into MR-2a; entry-side 5-ft-inside audited OK, exact-cell = MR-2a;
   TAC-2 untouched).
 - MR-1b (marker reads pos; U501–U502) dispatched per the ready-to-fire brief on this landing.
+
+## 2026-07-05 — Basecamp (second window) — MR-1b + MR-2a dispatched (parallel: renderer + serial engine)
+
+- MR-1b (Sonnet, public/** only; U501–U502): marker consumes engine pos via worldSpace frame
+  transform; ux/uy demoted to tween. MR-2a (Opus, THE serial hot dispatch; U503–U506): door-state
+  canon + exterior-door record + walkable mask + WORLD_VERSION bump full protocol; interior room
+  moves gate on door states now; GEOMETRY_BREACH probe class. No file overlap between lanes.
+  Claimed numbers now U491–U506 (next free U507+).
+- Dispatch authority: Tim's explicit "continue autonomously" grant (13:3x) + worktree-exemption
+  ritual; both integrations still pass Basecamp's own check gate before landing.

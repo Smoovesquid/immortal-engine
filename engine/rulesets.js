@@ -22,7 +22,26 @@ export function normalizePack(raw) {
     // downstream (introduceThread + ensureFactions) remain the caps/guards they
     // already are; this is a defensive front door, not a second authority.
     threads: normalizePackThreads(p.threads),
-    factions: normalizePackFactions(p.factions)
+    factions: normalizePackFactions(p.factions),
+    // PACK-3: admit the authored content trio. All three already have live
+    // engine consumers that fell back to thin defaults because the whitelist
+    // dropped the fields before the engine ever saw them:
+    //   - locations     -> playloop pickFrom('locations') (else 3 starterLocations)
+    //                      and generateMap node names (else the fallback pool)
+    //   - objectives    -> playloop pickFrom('objectives') (else 3 starterObjectives)
+    //                      and settlementTicker founding-thread seeding
+    //   - sensoryMotifs -> composer.pickMotifWithMemory / instrument.seedMotifs
+    //                      (else the single hardcoded 'a low hum…' string)
+    // Admitting them also heals mergeSubRegion: it appends base+subregion for
+    // each field, but both sides arrived pre-stripped, so it silently produced
+    // []. With the fields carried through, the four fantasy sub-regions
+    // (westmarch/ashenmoor/crownlands/hallowed_reaches) finally merge their
+    // authored pools onto the base pack. All three are plain string arrays, so
+    // arrayStrings (same discipline as starterLocations) is the right, safe
+    // normalizer — a malformed field degrades to [] and never throws.
+    locations: arrayStrings(p.locations),
+    objectives: arrayStrings(p.objectives),
+    sensoryMotifs: arrayStrings(p.sensoryMotifs)
   };
 }
 

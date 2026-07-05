@@ -131,17 +131,22 @@ test('U454-E: default fantasy/tallow boot (real normalizePack idiom) — post-PA
   assert.ok((result.world.instrument?.threads || []).length >= 1,
     'PACK-1: default tallow boot must now seed at least one pack thread into the instrument');
 
-  // RELOCKED for PACK-1: the default boot's worldHash shifts ONCE because
-  // w.instrument.threads now carries a seeded entry (worldHash includes
-  // w.instrument). This is deliberate content enrichment, not a determinism
-  // break — the boot remains byte-identical to itself under replay (asserted
-  // ×2 below). Captured 2026-07-04 after admitting threads through normalizePack.
-  const HASH_AFTER_PACK1 = '982c62b5069e81e7e369a3be9afc040f5bdc3112e1ad925d3d477dcec0f25dac';
-  assert.equal(worldHash(result.world), HASH_AFTER_PACK1,
-    'default fantasy/tallow boot worldHash pinned post-PACK-1 (threads now seeded)');
+  // RELOCKED for PACK-3: the default boot's worldHash shifts ONCE MORE (from the
+  // PACK-1 value 982c62b5… to ca6c4b5d…) because admitting `objectives` through
+  // normalizePack means beginAdventure now draws its opening objective from the
+  // authored 90-entry pool instead of the 3-item starterObjectives fallback, and
+  // that objective string is recorded in the `begin` timeline event (worldHash
+  // includes w.timeline). Verified this is the sole delta: settlement decompression
+  // tensions/history and instrument motifs were unchanged in the boot snapshot; only
+  // the recorded objective moved. Deliberate content enrichment, not a determinism
+  // break — the boot remains byte-identical to itself under replay (asserted ×2
+  // below). Captured 2026-07-04 after admitting locations/objectives/sensoryMotifs.
+  const HASH_AFTER_PACK3 = 'ca6c4b5d9810e630ae1fb0ea2945146e8e958cb26f112c81fac875954fb1f237';
+  assert.equal(worldHash(result.world), HASH_AFTER_PACK3,
+    'default fantasy/tallow boot worldHash pinned post-PACK-3 (objective now from authored pool)');
 
   // Same seed => identical world (the enrichment is deterministic).
   const w2 = newWorld({ seed: 'tallow', fate: 0.3, mode: 'escape', pack: { primaryId: 'fantasy', mixerId: null } });
-  assert.equal(worldHash(beginAdventure(w2, PACKS).world), HASH_AFTER_PACK1,
-    'default tallow boot must be deterministic ×2 after PACK-1');
+  assert.equal(worldHash(beginAdventure(w2, PACKS).world), HASH_AFTER_PACK3,
+    'default tallow boot must be deterministic ×2 after PACK-3');
 });

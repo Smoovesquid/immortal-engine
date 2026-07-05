@@ -25,7 +25,9 @@ const DEAD_FIELDS = ['regions', 'npcs', 'seeds', 'toneVectors'];
 // PACK-1 additions. Every normalized pack must expose exactly these keys.
 const EXPECTED_KEYS = [
   'id', 'name', 'toneWords', 'starterLocations', 'starterObjectives',
-  'starterGoals', 'skills', 'threads', 'factions'
+  'starterGoals', 'skills', 'threads', 'factions',
+  // PACK-3: admitted the authored content trio through the same whitelist.
+  'locations', 'objectives', 'sensoryMotifs'
 ].sort();
 
 function loadRawPacks() {

@@ -131,22 +131,27 @@ test('U454-E: default fantasy/tallow boot (real normalizePack idiom) — post-PA
   assert.ok((result.world.instrument?.threads || []).length >= 1,
     'PACK-1: default tallow boot must now seed at least one pack thread into the instrument');
 
-  // RELOCKED for PACK-3: the default boot's worldHash shifts ONCE MORE (from the
-  // PACK-1 value 982c62b5… to ca6c4b5d…) because admitting `objectives` through
-  // normalizePack means beginAdventure now draws its opening objective from the
-  // authored 90-entry pool instead of the 3-item starterObjectives fallback, and
-  // that objective string is recorded in the `begin` timeline event (worldHash
-  // includes w.timeline). Verified this is the sole delta: settlement decompression
-  // tensions/history and instrument motifs were unchanged in the boot snapshot; only
-  // the recorded objective moved. Deliberate content enrichment, not a determinism
-  // break — the boot remains byte-identical to itself under replay (asserted ×2
-  // below). Captured 2026-07-04 after admitting locations/objectives/sensoryMotifs.
-  const HASH_AFTER_PACK3 = 'ca6c4b5d9810e630ae1fb0ea2945146e8e958cb26f112c81fac875954fb1f237';
-  assert.equal(worldHash(result.world), HASH_AFTER_PACK3,
-    'default fantasy/tallow boot worldHash pinned post-PACK-3 (objective now from authored pool)');
+  // RELOCKED for FACT-1: the default boot's worldHash shifts ONCE MORE (from the
+  // PACK-3 value ca6c4b5d… to 7aa7b987…) because FACT-1 makes beginAdventure MERGE
+  // the four fantasy sub-regions' authored factions into w.factions (was only the
+  // two generic civic/shadow defaults) and extends w.reputation to key them — and
+  // worldHash includes both w.factions and w.reputation. Verified this is the SOLE
+  // delta: reverting ONLY factions+reputation back to the civic/shadow defaults
+  // reproduces the exact prior ca6c4b5d… hash, so nothing else in the boot snapshot
+  // (timeline objective, decompression, motifs, threads) moved. MERGE (not replace)
+  // keeps civic/shadow live because every settlement NPC is affiliated with the
+  // "civic" founding faction and the deed->faction wire (U324) only moves KNOWN
+  // factions. Deliberate content enrichment — the political sub-regions now boot
+  // with their real named factions alongside the defaults — not a determinism
+  // break; the boot remains byte-identical to itself under replay (asserted ×2
+  // below). Captured 2026-07-04 after wiring authored pack factions through to
+  // world state.
+  const HASH_AFTER_FACT1 = '7aa7b9872bac16fa2aa801b9b721e1266b3c871e2e44283e169234d6aa320034';
+  assert.equal(worldHash(result.world), HASH_AFTER_FACT1,
+    'default fantasy/tallow boot worldHash pinned post-FACT-1 (authored pack factions now merged in)');
 
   // Same seed => identical world (the enrichment is deterministic).
   const w2 = newWorld({ seed: 'tallow', fate: 0.3, mode: 'escape', pack: { primaryId: 'fantasy', mixerId: null } });
-  assert.equal(worldHash(beginAdventure(w2, PACKS).world), HASH_AFTER_PACK3,
-    'default tallow boot must be deterministic ×2 after PACK-3');
+  assert.equal(worldHash(beginAdventure(w2, PACKS).world), HASH_AFTER_FACT1,
+    'default tallow boot must be deterministic ×2 after FACT-1');
 });

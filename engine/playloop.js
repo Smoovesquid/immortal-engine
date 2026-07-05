@@ -1,4 +1,4 @@
-import { ensureWorld, appendRecentBeat } from './state.js';
+import { ensureWorld, appendRecentBeat, ensureFactions } from './state.js';
 import { makeRng, seedFromString } from './rng.js';
 import { parseHazard, resolveHazard } from './combat/hazard.js';
 import { addFact, addQuestion, addThreat, factStrings } from './ledger.js';
@@ -297,9 +297,56 @@ export function beginAdventure(world, packsById) {
     }
   }
 
-  // Seed pack factions into world state (safe — does not overwrite existing factions).
-  if (Array.isArray(pack.factions) && pack.factions.length && !Array.isArray(w.factions)) {
-    w = { ...w, factions: pack.factions };
+  // Seed authored pack factions into world state (FACT-1). ensureWorld()
+  // pre-fills the generic civic/shadow defaults on every world, so the old guard
+  // (!Array.isArray(w.factions)) was dead — authored pack factions never reached
+  // the world and the political sub-regions (crownlands/hallowed_reaches/etc.)
+  // booted with only the two placeholders. We seed only when the world's factions
+  // are the *untouched* ensureWorld defaults (the fresh-boot signal):
+  //   - fresh new-game: factions === defaults => merge in the authored set.
+  //   - a world whose factions have evolved via worldTick (pressure/hostility/
+  //     lastMove moved) or were already extended => NOT default => never re-seed.
+  //   - a pack that authored no factions => the outer length guard is false =>
+  //     no-op, defaults stay EXACTLY as today.
+  // beginAdventure runs only on a fresh start (the load/resume path calls
+  // loadSlot->ensureWorld, never beginAdventure), so old saves never reach here.
+  //
+  // Merge-vs-replace: MERGE (append authored onto the defaults). The civic/shadow
+  // defaults are LOAD-BEARING, not disposable placeholders: settlement
+  // decompression (decompression/settlementTicker.js buildFoundingState) has no
+  // pack `factionPool` to draw from in any shipped pack, so every settlement NPC
+  // is affiliated with the founding faction id "civic". The deed->faction
+  // social-physics wire (U324 / reactionTable.js) only moves standing for a
+  // faction that is a KNOWN world faction, so if "civic" were dropped the
+  // witnessed-deed reputation path would silently go dark for the default world.
+  // Merging keeps civic/shadow (so NPC affiliations still resolve + witnessed
+  // deeds still land) while adding the authored factions for worldTick escalation,
+  // map pressure, and narration. Packs without factions are untouched. Authored
+  // faction `agenda` maps onto the world-faction `goal`; ensureFactions()
+  // normalizes/clamps the shape (defensive front door, not a second authority).
+  if (Array.isArray(pack.factions) && pack.factions.length && factionsAreUntouchedDefaults(w.factions)) {
+    const authored = ensureFactions(pack.factions.map(f => ({
+      id: f.id,
+      goal: f.agenda || f.name || '',
+      pressure: f.pressure,
+      hostility: f.hostility,
+      assets: [],
+      lastMove: ''
+    })));
+    // Append authored factions the defaults don't already carry (id-deduped;
+    // defaults win on collision so civic/shadow keep their canonical shape).
+    const have = new Set((w.factions || []).map(f => String(f.id)));
+    const added = authored.filter(f => !have.has(f.id));
+    if (added.length) {
+      const merged = [...w.factions, ...added];
+      // Extend reputation to key the new factions (start at neutral 0). The
+      // reputation invariant (invariants.js) requires every reputation.factions
+      // key to be a known faction; adding factions only ADDS keys, so civic/shadow
+      // reputation is preserved and each new faction gets a 0 standing.
+      const repFactions = { ...(w.reputation?.factions || {}) };
+      for (const f of added) if (!(f.id in repFactions)) repFactions[f.id] = 0;
+      w = { ...w, factions: merged, reputation: { factions: repFactions } };
+    }
   }
 
   // Tactical zoom defaults off at start.
@@ -10012,6 +10059,30 @@ function inferUpdateKindFromDeltas(deltas) {
     if (d?.op === 'ledger' && d.addFact) return 'fact';
   }
   return 'ledger';
+}
+
+// FACT-1 — true iff `factions` is byte-for-byte the untouched ensureWorld()
+// default set (civic/shadow, unmoved). This is the fresh-boot signal the pack-
+// faction seeder gates on: once worldTick bumps a faction's pressure/hostility/
+// lastMove, or authored factions have already been merged onto the defaults (the
+// length no longer matches), this returns false and the seeder never fires again
+// — so an evolved (or already-seeded) world is never re-seeded and a
+// reloaded save (which never re-enters beginAdventure anyway) is doubly safe.
+// Compared against ensureFactions(null) directly so it tracks the canonical
+// default automatically if it ever changes.
+function factionsAreUntouchedDefaults(factions) {
+  if (!Array.isArray(factions)) return false;
+  const defaults = ensureFactions(null);
+  if (factions.length !== defaults.length) return false;
+  const key = (list) => JSON.stringify(
+    list.map(f => [
+      String(f?.id ?? ''), String(f?.goal ?? ''),
+      Number(f?.pressure ?? 0), Number(f?.hostility ?? 0),
+      String(f?.lastMove ?? ''),
+      (Array.isArray(f?.assets) ? f.assets.map(String) : [])
+    ])
+  );
+  return key(factions) === key(defaults);
 }
 
 function mergePacks(primary, mixer) {

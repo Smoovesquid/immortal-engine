@@ -1196,7 +1196,7 @@ function ensureAiMode(x) {
   return (s === 'off' || s === 'advisory' || s === 'conductor') ? s : 'off';
 }
 
-function ensureFactions(factions) {
+export function ensureFactions(factions) {
   const list = Array.isArray(factions) ? factions : [];
   if (list.length) {
     return list.map(f => ({

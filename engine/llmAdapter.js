@@ -194,6 +194,39 @@ function outdoorTerrainFact(terrain) {
   return `TERRAIN (canon — describe these exactly as the wild standing around the player; a body-height obstruction like a tree or boulder is in the way, not something to walk through): ${clauses.join('; ')}. Invent no landmark, wood, or clearing beyond what is named here and the roads already given.`;
 }
 
+// MP-5a — the loudness FRAMING per omen register (docs/MORAL_PHYSICS.md §5: "Tier chooses
+// the loudness"). The vocabulary phrase (engine/morality/omenVocabulary.js) supplies the
+// sign itself; this supplies how insistently the world states it — faint and easy to miss,
+// a rumor a stranger might remark on, or a sign that has sharpened and will not be ignored.
+const OMEN_FRAMING = {
+  faint:  'a faint sign, easy to miss',
+  rumor:  'a sign starting to be remarked on by strangers',
+  hunted: 'a sign that has sharpened and presses close',
+};
+
+// MP-5a — the moral OMEN line (docs/MORAL_PHYSICS.md §5, "Surfacing — tier → omen"). The
+// escalation ladder's tier (engine/morality/escalation.js, computed read-only in
+// narratorContext.js's moralOmen — the tier NUMBER itself never reaches this function or
+// its output) selects how LOUD the world's manifest-karma sign reads; the dominant vice
+// axis's own trademark vocabulary supplies WHICH sign. HIDE-THE-MATH, same discipline as
+// the door/window/terrain facts above: the DM is handed a finished sentence, a register
+// name, and a fixed phrase — never a number, never "corruption", "heat", "tier", or any
+// digit (invariant I — U578 sweeps this). Returns '' at Tier 0 / no omen — "unremarked
+// means unremarked," an all-clear soul needs no announcement, matching how an all-open
+// house needs no door line. Never throws.
+function moralOmenFact(omen) {
+  if (!omen || typeof omen !== 'object') return '';
+  const phrase = String(omen.phrase || '').trim();
+  if (!phrase) return '';
+  const framing = OMEN_FRAMING[String(omen.register)] || OMEN_FRAMING.faint;
+  // The guardrail below must NEVER itself name the forbidden vocabulary (a mistake U578
+  // exists to catch: an early draft's own instruction, "never say corruption/heat/tier,"
+  // ironically put those exact words on the line it was protecting). State the RULE by its
+  // effect instead — render this as the world's own texture, never a status readout — so
+  // the instruction stays as clean of moral-mechanism words as the phrase itself already is.
+  return `OMEN (canon — a sign the world itself carries; render it purely as color in the telling, the way weather or a stranger's glance would read, never as a verdict spoken AT the player or a status line recited to them): ${framing} — ${phrase}.`;
+}
+
 // ROM-2 — the PEOPLE HERE display list. Reads ctx.settlement.npcs (already
 // earned-name-filtered by buildNarratorContext — a name only appears once the
 // player has met that NPC or is home) and keeps only those NOT marked
@@ -276,6 +309,10 @@ export function buildSystemPrompt(ctx) {
   // narrates the real wood and never contradicts the map. '' indoors or in a bare
   // clearing (ctx.terrain null). The outdoor sibling of the door/window facts.
   const terrainFact = (!ctx.interior && ctx.terrain) ? outdoorTerrainFact(ctx.terrain) : '';
+  // MP-5a: the moral omen — location-agnostic (a sign the world carries follows the
+  // actor, indoors or out), so it is not gated on ctx.interior like the terrain fact.
+  // '' at Tier 0 / no omen (ctx.moralOmen null) — see moralOmenFact above.
+  const omenFact = moralOmenFact(ctx.moralOmen);
   const presenceLawFact = ctx.interior
     ? `Anyone else at this settlement is elsewhere — never place, voice, or have them act in this room; never state a wall/floor material other than the one above.`
     : '';
@@ -297,6 +334,7 @@ export function buildSystemPrompt(ctx) {
     ...(doorFact ? [`- ${doorFact}`] : []),
     ...(windowFact ? [`- ${windowFact}`] : []),
     ...(terrainFact ? [`- ${terrainFact}`] : []),
+    ...(omenFact ? [`- ${omenFact}`] : []),
     ...(presenceLawFact ? [`- ${presenceLawFact}`] : []),
     ``
   ];

@@ -10,7 +10,7 @@
  *   buildDMContext(world, outcome, pack)  — full DM briefing with NPCs, world pressure, player, rules
  */
 
-import { ensureWorld } from '../state.js';
+import { ensureWorld, VICE_AXES } from '../state.js';
 import { ensureInstrumentLayer } from '../instrument.js';
 import { fateBand } from '../rulesets.js';
 import { filterContext, applyMoodOverlay } from '../npc/perspectiveFilter.js';
@@ -20,6 +20,8 @@ import { companionApproachForRole } from '../combat/companionTurn.js';
 import { statMod, maxWounds } from '../ruleset/core/stats.js';
 import { buildAsciiMap } from './asciiMap.js';
 import { describeInteriorLayout } from '../structures/interiors.js';
+import { escalationTier } from '../morality/escalation.js';
+import { pickOmenPhrase } from '../morality/omenVocabulary.js';
 import { getRoomState } from '../structures/roomState.js';
 import { occupantsOfRoom, outdoorOccupants, visibleThroughWindows } from '../structures/roomOccupancy.js';
 import { roomWindows, roomWindowFacings } from '../structures/roomWindows.js';
@@ -126,7 +128,12 @@ export function buildNarratorContext(world, outcome = {}) {
     roomName: scene.interior?.room?.name ?? null,
     speaker,
     dialogueTurn: buildDialogueTurn(w, outcome),
-    combat: buildNarratorCombatBlock(w, outcome)
+    combat: buildNarratorCombatBlock(w, outcome),
+    // MP-5a (docs/MORAL_PHYSICS.md §5) — the tier→sign-vocabulary omen: null at Tier 0
+    // ("unremarked means unremarked," no line at all) or { register, axis, phrase } at
+    // Tier 1+. READ-ONLY re-derivation off live morality standing + the most recent deed;
+    // never stored, never numeric (invariant I — llmAdapter.js renders only the phrase).
+    moralOmen: moralOmen(w)
   };
 }
 
@@ -139,6 +146,87 @@ function roomOccupantsHere(w) {
   return interior
     ? occupantsOfRoom(w, String(interior.structureKey || ''), String(interior.roomId || ''))
     : outdoorOccupants(w);
+}
+
+// MP-5a — tier (0..4, the escalation ladder's rung, docs/MORAL_PHYSICS.md §4) → the
+// omen vocabulary's loudness REGISTER (docs/MORAL_PHYSICS.md §5). T0 has no register at
+// all (moralOmen returns null — "unremarked means unremarked", no line). T1 is a faint
+// sign; T2 is the register a stranger might start to remark on ("reputation travels");
+// T3 and T4 share the loudest register this slice has (the pact-gift's OWN beat — "the
+// gift on the doorstep" — is MP-5b/the Cassandra, a later packet; MP-5a only needs to
+// say the sign has sharpened to its loudest).
+const TIER_REGISTER = ['', 'faint', 'rumor', 'hunted', 'hunted'];
+
+// A deed KIND'S natural axis home — used ONLY as the dominant-axis fallback for the rare
+// real deed (engine/magic/castConsequence.js's GM_TAG light-cruelty path) that records a
+// deed without a paired axisDelta bump (every OTHER recordDeed call site — playloop.js's
+// applyDeedCharges/the coerced-build marker, castConsequence's dedicated-kill branch —
+// pairs recordDeed with axisDelta in the SAME batch, so this fallback rarely engages).
+// Cruelty/forbidden reach for wrath (the deed-kind most directly wrath-flavored, and
+// MORALITY_SYSTEM.md's own scripted Wrath-god vocabulary is the house's most-worked
+// register); mercy/aid/atonement never reach Tier 1+ in the first place (the escalation
+// ladder only climbs on cruelty/forbidden — see engine/morality/escalation.js), so those
+// kinds never need a fallback here.
+const DEED_KIND_AXIS_FALLBACK = 'wrath';
+
+// MP-5a — moralOmen(world) → { register, axis, phrase } | null.
+//
+// READ-ONLY, derived, never stored (docs/MORAL_PHYSICS.md §5 + invariant I: no numeric
+// moral value may reach a player-facing string). Recomputes the escalation tier from the
+// player's CURRENT standing (corruption/heat live on morality — the same figures MP-3's
+// hunt latch reads in worldTick.js) folded with the MOST RECENT deed's own severity/kind/
+// witness-reach (the same inputs effectsCore.recordDeed already fed escalationTier at
+// record-time — this is a read-only re-derivation, not a new rule). Returns null at Tier 0
+// (no deed yet, or nothing has accumulated) — "unremarked means unremarked," no line at
+// all, matching how the doors/terrain facts return '' when there's nothing to state.
+//
+// The dominant axis is the vice axis carrying the highest score (mirrors
+// state.js `deriveCorruption` — "the dominant pole defines you," never a blended average).
+// Tier > 0 is the SOLE gate for whether an omen fires (the escalation ladder's own
+// contract already answers "has anything grave/accumulated happened" — a real deed that
+// graded Tier 1+ must always speak, even on the rare path where its axisDelta bump hasn't
+// landed yet, so a stale "no axis moved" check would wrongly silence a real omen).
+// A phrase is sampled DETERMINISTICALLY from the dominant axis's register pool, seeded
+// from STABLE world fields (world seed + actor id + axis + the deed-ledger length) — never
+// Math.random, never the LLM's choice, and stable across re-renders of the same world
+// state (only changes when the underlying moral state actually changes, which is what
+// "derived, not stored" means for U579's save/load round-trip test). Never throws.
+function moralOmen(w) {
+  const actor = Array.isArray(w?.party) && w.party.length ? w.party[0] : null;
+  if (!actor || !actor.morality || typeof actor.morality !== 'object') return null;
+
+  const standing = { corruption: Number(actor.morality.corruption ?? 0), heat: Number(actor.morality.heat ?? 0) };
+  const deeds = Array.isArray(w.deeds) ? w.deeds : [];
+  const lastDeed = deeds.length ? deeds[deeds.length - 1] : null;
+  // No deed at all yet → feed an empty deed (severity 0, no kind) so T1/T2 correctly stay
+  // silent while T3/T4 can still fire purely from accumulated standing (escalationTier's
+  // own contract — see engine/morality/escalation.js — evaluates T3/T4 off actor alone).
+  const deed = lastDeed ? { severity: lastDeed.severity, kind: lastDeed.kind } : {};
+  const wild = lastDeed ? (Array.isArray(lastDeed.witnesses) && lastDeed.witnesses.length === 0) : false;
+  const witnessReach = lastDeed ? (Array.isArray(lastDeed.witnesses) ? lastDeed.witnesses.length : 0) : 0;
+
+  const tier = escalationTier(deed, standing, { witnessReach, wild });
+  if (tier <= 0) return null;
+
+  const register = TIER_REGISTER[Math.min(tier, TIER_REGISTER.length - 1)];
+  if (!register) return null;
+
+  const axes = (actor.morality.axes && typeof actor.morality.axes === 'object') ? actor.morality.axes : {};
+  let dominantAxis = '';
+  let best = 0;
+  for (const axis of VICE_AXES) {
+    const v = Number(axes[axis] ?? 0);
+    if (v > best) { best = v; dominantAxis = axis; }
+  }
+  // Every axis reads zero (the rare unpaired-recordDeed path) — fall back to the deed
+  // kind's natural axis home rather than going silent on a real, tier-graded omen.
+  if (!dominantAxis) dominantAxis = DEED_KIND_AXIS_FALLBACK;
+
+  const seedKey = `${String(w.meta?.seed ?? '')}|${String(actor.id ?? 'party')}|${deeds.length}`;
+  const phrase = pickOmenPhrase(dominantAxis, register, seedKey);
+  if (!phrase) return null;
+
+  return { register, axis: dominantAxis, phrase };
 }
 
 /**

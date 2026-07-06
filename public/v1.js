@@ -662,6 +662,11 @@ async function tryLocalNpcVoice(dialogue) {
         // Grounds the Opus voice line for NPCs who aren't named historical figures.
         voiceCorpusId: dialogue.voiceCorpusId || '',
         claim: dialogue.claim || null,
+        // PW-3 — the picked-up rumor (present only on a rumor_pickup turn). Lets the
+        // server re-voice the engine's minted S2 body as hearsay (S3 prose upgrade);
+        // absent/failed → the S2 body already shown stands. Additive: server ignores
+        // it for every other mode.
+        rumor: dialogue.rumor || null,
         substrateContext: dialogue.substrateContext || [],
         // P3 (WB-Q9) — real room layout facts, so the voice layer stops
         // inventing rooms/floors the current building doesn't have.

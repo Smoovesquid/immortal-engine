@@ -44,6 +44,9 @@ import { proposeGoalFromDialogue } from './goals/proposeGoal.js';
 import { playerReputation, generateNewspaper, renderNewspaperForRead, isNewspaperRead, isKasualKornerAnswer, findKasualKornerAd, resolveKasualKornerEncounter } from './newspaper/lastingWord.js';
 import { castArcs, tickArcs } from './story/storyEngine.js';
 import { beginDialogue, askNpc, endDialogue, resolveNpcAtCurrentNode, isRecruitIntent, npcVoice, voiceManner, commonKnowledgeAnswer, extractTopic } from './npc/dialogue.js';
+import { computeTier } from './rumor/tier.js';
+import { garbleRumor } from './rumor/garble.js';
+import { deterministicBody } from './rumor/mint.js';
 import { mintThing, revealTrueEdge } from './things.js';
 import { mintClaim } from './claims.js';
 import { generateSubstrate, ensureNodeSubstrate, substrateEventsFor, npcSubstrateContext } from './substrate.js';
@@ -1434,12 +1437,19 @@ function playerMoveCore(world, packsById, text, dqIntent) {
       // Treat input as an ask inside the current dialogue.
       const asked = askNpc(w, text);
       w = asked.world;
+      // PW-3 — the rumor layer's first live trigger. If the NPC volunteered no
+      // fact of their own but a latent seed reaching town answers the ask, they
+      // pick it up and retell it (skeleton + S2 body mint here, in the reducer).
+      // The picked-up body then overrides a bare deflection below.
+      const picked = tryPickUpRumor(w, asked.outcome);
+      w = picked.world;
+      const rumorPickup = picked.pickup; // { rumorId, body, tier, sourceSeedId } | null
       w = pushEvent(w, {
         kind: 'dialogueAsk',
         data: {
           npcId: asked.outcome.npcId || '',
           topic: asked.outcome.topic || '',
-          mode: asked.outcome.mode || '',
+          mode: rumorPickup ? 'rumor_pickup' : (asked.outcome.mode || ''),
           factId: asked.outcome.factId || ''
         }
       });
@@ -1463,11 +1473,18 @@ function playerMoveCore(world, packsById, text, dqIntent) {
       }
       w = appendRecentBeat(w, askBeat);
       w = maybeCheckGoals(w);
+      // PW-3 — a picked-up rumor overrides a bare deflection: the NPC passes
+      // along what they've heard, garbled to their tier. The body is the minted
+      // S2 skeleton body; the server may upgrade THIS body (S3) — same rumorId.
+      const askMode = rumorPickup ? 'rumor_pickup' : asked.outcome.mode;
+      const askNarration = rumorPickup
+        ? rumorPickupNarration(asked.outcome, rumorPickup.body, w)
+        : dialogueAskNarration(asked.outcome, w);
       return {
         world: w,
         output: {
-          narration: dialogueAskNarration(asked.outcome, w),
-          mechanics: `[dialogue ask | ${asked.outcome.mode}${asked.outcome.factId ? ` | ${asked.outcome.factId}` : ''} | trust:${asked.outcome.trustLevel}]`,
+          narration: askNarration,
+          mechanics: `[dialogue ask | ${askMode}${asked.outcome.factId ? ` | ${asked.outcome.factId}` : ''} | trust:${asked.outcome.trustLevel}${rumorPickup ? ` | rumor:t${rumorPickup.tier}` : ''}]`,
           // P6 — structured handle for the local voice layer (presentation
           // only; the decision above is already canon). `manner` styles the
           // LLM delivery; `commonBody` carries data-true answers (names,
@@ -1475,9 +1492,16 @@ function playerMoveCore(world, packsById, text, dqIntent) {
           dialogue: {
             npcName: String(asked.outcome.npcName || ''),
             npcRole: String(asked.outcome.npcRole || ''),
-            mode: String(asked.outcome.mode || ''),
+            mode: String(askMode || ''),
             mood: String(asked.outcome.brainMood || ''),
             manner: String(asked.outcome.manner || 'even'),
+            // PW-3 — the picked-up rumor. Present ONLY on a pickup turn. The
+            // server's async layer may rewrite `body` (S3 prose upgrade) for this
+            // exact `rumorId`; it must never touch `tier` or mint a different one.
+            // Silent-fallback law: no key → this S2 body stands, the game unaware.
+            rumor: rumorPickup
+              ? { id: String(rumorPickup.rumorId), tier: Number(rumorPickup.tier) || 0, body: String(rumorPickup.body || '') }
+              : null,
             factPhrase: asked.outcome.factId ? factPhrase(asked.outcome.factId) : '',
             factBody: String(asked.outcome.factBody || ''),
             commonBody: String(asked.outcome.commonBody || ''),
@@ -5454,6 +5478,146 @@ function askBeatOutcome(mode) {
   return 'mixed';
 }
 
+// ── PW-3: live rumor surfacing (RUMOR_LAYER.md lifecycle trigger #1) ─────────
+// The rumor layer is minted for months but had ZERO live call sites. This is the
+// trigger: when the player asks an NPC about a topic that a latent seed already
+// reaching town answers — and this NPC doesn't yet carry it — the NPC "picks it
+// up" and retells it as their own, garbled to their sophistication tier. The
+// SKELETON (+ deterministic S2 body) mints HERE, in the synchronous reducer:
+// seeded, replayable, worldHash-honest. The server's async layer may upgrade the
+// PROSE BODY only (S3) afterward — never the skeleton, never which rumor.
+//
+// Budget: at most RUMOR_MINTS_PER_SCENE carrier rumors per scene. A scene is a
+// conversation at a node; a new node (a scene transition) means a fresh NPC set,
+// so counting carrier rumors CARRIED BY LOCAL NPCs at the current node is the
+// per-scene count with no new hashed state (RUMOR_LAYER.md budget model).
+const RUMOR_MINTS_PER_SCENE = 3;
+
+// Strip a leading hearsay frame ("They say ", "Word is, ", "I heard ") so a body
+// that is ALREADY written as a rumor doesn't get re-framed when picked up. Only
+// the leading frame; the rest of the sentence (and its capitalization) survives.
+function stripHearsayPrefix(s) {
+  let str = String(s || '').trim();
+  const m = str.match(/^(they say|word is|i heard|rumor has it|word'?s? (?:around|about))[,:]?\s+/i);
+  if (m) {
+    str = str.slice(m[0].length);
+    str = str.charAt(0).toUpperCase() + str.slice(1); // re-capitalize the new lead
+  }
+  return str;
+}
+
+// Count carrier-attributed rumors currently carried by NPCs at `nodeId`. County
+// mutterings (carrierNpcId === '') are latent seeds, not mints — excluded.
+function carrierRumorCountAtNode(world, nodeId) {
+  const nid = String(nodeId || '');
+  const node = (world?.map?.nodes || []).find(n => n && String(n.id) === nid) || null;
+  const localIds = new Set(
+    (node?.settlement?.npcs || []).filter(n => n && n.id).map(n => String(n.id))
+  );
+  if (!localIds.size) return 0;
+  const rumors = Array.isArray(world?.rumors) ? world.rumors : [];
+  let n = 0;
+  for (const r of rumors) {
+    const carrier = String(r?.carrierNpcId || '');
+    if (carrier && localIds.has(carrier)) n++;
+  }
+  return n;
+}
+
+// tryPickUpRumor(world, outcome) → { world, pickup } | { world, pickup: null }
+//
+// pickup (when minted): { rumorId, body, tier, sourceSeedId } — the reducer's
+// committed skeleton + S2 body; the server may swap `body` for an S3 upgrade of
+// the SAME rumorId, tier untouched.
+function tryPickUpRumor(world, outcome) {
+  // A pickup is what an NPC offers when they have NOTHING of their own to say. It
+  // must never override a real answer — a shared fact, a lie, a withhold, a claim
+  // recall, common knowledge — only a bare DEFLECTION (the ask missed). Otherwise
+  // "tell me about the well" would surface hearsay from the very NPC who knows the
+  // truth firsthand (U134-06).
+  if (!outcome || outcome.mode !== 'deflected') return { world, pickup: null };
+
+  const hint = outcome.rumorMintHint;
+  const seed = hint && hint.seed;
+  if (!seed) return { world, pickup: null };
+
+  const npcId = String(hint.npcId || '');
+  if (!npcId) return { world, pickup: null };
+
+  const nodeId = String(world?.map?.currentNodeId || '');
+  const node = (world?.map?.nodes || []).find(n => n && String(n.id) === nodeId) || null;
+  const npc = (node?.settlement?.npcs || []).find(n => String(n?.id) === npcId) || null;
+  if (!npc) return { world, pickup: null }; // Purity rule 8: NPC must be at the player's node
+
+  // Budget: decline silently (the narration falls back to deflection) once the
+  // scene's mint cap is hit. This is the ENGINE-side enforcement.
+  if (carrierRumorCountAtNode(world, nodeId) >= RUMOR_MINTS_PER_SCENE) {
+    return { world, pickup: null, budgetHit: true };
+  }
+
+  const turn = Number(world?.time?.turn ?? 0);
+  const sourceSeedId = String(seed.sourceSeedId || '');
+  if (!sourceSeedId) return { world, pickup: null };
+
+  // Deterministic id — mirrors mintRumorForNpc's shape so replay is byte-stable
+  // and a repeat ask on the same turn is idempotent (the mintRumor op dedupes).
+  const rumorId = `rumor:${sourceSeedId}:${npcId}:${turn}`;
+  const existing = (Array.isArray(world.rumors) ? world.rumors : []).find(r => r.id === rumorId);
+  if (existing) {
+    return { world, pickup: { rumorId, body: String(existing.body || ''), tier: Number(existing.tier ?? 0), sourceSeedId } };
+  }
+
+  // Tier: the seed is `originHop` hops into town; this carrier is one mouth
+  // further, resisted by their sophistication. Pure, deterministic. FLOOR at 1:
+  // a picked-up rumor is hearsay BY DEFINITION — the NPC is explicitly not the
+  // source — so it never surfaces as tier-0 firsthand truth, even for a shrewd
+  // carrier who'd otherwise resist the garble down to 0.
+  const sophistication = Number(npc.sophistication ?? 2);
+  const hopCount = Math.max(0, Number(seed.originHop ?? 1)) + 1;
+  const tier = Math.max(1, computeTier(hopCount, 0, sophistication));
+
+  // S2 body: garble the seed's KNOWN body to this tier (never invent the fact).
+  // The stored body is CONTENT — the hearsay framing ("they say…") is a narration
+  // concern, added once by rumorPickupNarration. So strip any leading hearsay
+  // prefix from the seed (arc hooks are authored AS "They say…") before garbling,
+  // and again from the garble output (tier-1 re-adds one) — otherwise picking up
+  // an already-rumor-shaped seed stacks "They say they say…". deterministicBody
+  // is the floor when garbling yields nothing.
+  const traits = npc.personality || {};
+  const truthBody = stripHearsayPrefix(String(seed.truthBody || ''));
+  const garbled = stripHearsayPrefix(garbleRumor(truthBody, tier, traits));
+  const body = (garbled && garbled.trim())
+    || deterministicBody({ primaryName: truthBody, tags: seed.tags, direction: '' }, tier)
+    || truthBody;
+  if (!body || !body.trim()) return { world, pickup: null };
+
+  const rumor = {
+    id: rumorId,
+    sourceSeedId,
+    carrierNpcId: npcId,
+    hopCount,
+    tier,
+    age: 0,
+    mintedAt: turn,
+    body: body.trim(),
+    tags: Array.isArray(seed.tags) ? seed.tags.map(String).slice(0, 8) : []
+  };
+
+  let w = applyDeltas(world, [{ op: 'mintRumor', rumor }]);
+  // Replay marker: a resolution event so re-driving the transcript re-executes
+  // this pickup path (the physics-path discipline, playloop.js:3042).
+  w = pushEvent(w, {
+    kind: 'resolution',
+    data: {
+      actorId: 'party', text: '', intent: 'ask',
+      roll: 0, dc: 0, outcome: 'success',
+      updateKind: 'rumor:pickup', rumorId, npcId, tier
+    }
+  });
+
+  return { world: w, pickup: { rumorId, body: rumor.body, tier, sourceSeedId } };
+}
+
 // Turn a knowledge-graph factId into something a person would SAY.
 // 'local_well_gossip' → 'the talk around the well'. Falls back to a plain
 // humanization so no fact is ever unspeakable.
@@ -5691,6 +5855,35 @@ function dialogueAskNarration(outcome, world) {
       return V(`deflected:${outcome?.manner || 'even'}`, pools[outcome?.manner] || pools.even);
     }
   }
+}
+
+// PW-3 — the picked-up-rumor voice. The NPC has no fact of their OWN on the
+// topic, but they pass along what's reached town — hearsay, framed as hearsay
+// ("word is…", "they say…"), NEVER as firsthand truth. The body is the minted
+// (garbled-to-tier) rumor body; the frame is deterministic per-NPC. This is the
+// line the server may replace with an S3 prose upgrade of the SAME rumor body.
+function rumorPickupNarration(outcome, body, world) {
+  const name = outcome?.npcName || 'They';
+  const b = String(body || '').trim();
+  if (!b) return dialogueAskNarration(outcome, world);
+  const frames = [
+    `${name} doesn't know it firsthand, but they've heard the talk. "${b}"`,
+    `${name} scratches their chin. "Not my business, but — ${lowerLead(b)}"`,
+    `"Only what's come down the road, mind." ${name} lowers their voice. "${b}"`,
+    `${name} shrugs. "You hear things. ${b}"`
+  ];
+  return `Wizard: ${sentenceLead(pickVariant(frames, world, `rumorpickup:${outcome?.npcId || ''}:${b.slice(0, 12)}`))}`;
+}
+
+// Lowercase the first letter of a fragment being spliced mid-sentence (after a
+// dash), unless it opens with a quote or proper-noun-looking capital run.
+function lowerLead(s) {
+  const str = String(s || '');
+  const i = str.search(/[A-Za-z]/);
+  if (i < 0) return str;
+  // Don't lowercase an all-caps or Title acronym start; only a lone leading cap.
+  if (/^[A-Z][a-z]/.test(str.slice(i))) return str.slice(0, i) + str.charAt(i).toLowerCase() + str.slice(i + 1);
+  return str;
 }
 
 // (H-81) Resolve a person-approach to a PRESENT NPC ("go talk to Kael", "go say

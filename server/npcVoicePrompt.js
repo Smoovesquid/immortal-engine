@@ -59,6 +59,29 @@ const DECISIONS = {
     return `You are terrified and you want to LIVE. Beg for your life — yield, promise, plead, bargain, whatever it takes to make them stay their hand. ${common}`;
   },
 
+  // PW-3 (docs/RUMOR_LAYER.md S3, PROSE_TO_WORLD_CONTRACT.md law 1+6): the picked-up
+  // rumor. The ENGINE already minted the skeleton and a deterministic S2 body (the
+  // FACT and its fidelity tier are fixed canon); this decision lets the model rewrite
+  // only the PROSE of that body into the NPC's mouth as hearsay. It must NOT change the
+  // fact, add specifics, or claim firsthand knowledge — it retells what came down the
+  // road. Second arg carries the rumor { body, tier }. Mirrors claim_recall's "render
+  // your version, don't quote" discipline; the S2 body stands if this call fails/absent.
+  rumor_pickup: (_factPhrase, rumor) => {
+    const body = String(rumor?.body || '').trim();
+    const tier = Math.max(0, Math.min(4, Number(rumor?.tier ?? 2)));
+    const fidelity = tier <= 1
+      ? 'You have it fairly straight, but it is still not YOURS — frame it as talk you heard, not something you witnessed.'
+      : tier === 2
+      ? 'The details are muddled in the telling — keep the gist, but stay vague on names and specifics; you are not sure you have it right.'
+      : 'It reached you as little more than a whisper — a direction and a feeling, no reliable detail. Convey unease, not facts.';
+    return [
+      body ? `Word that has reached town: "${body}"` : '',
+      'You do NOT know this firsthand — pass it along as hearsay ("word is", "they say", "what I heard").',
+      fidelity,
+      'Retell it in your own voice — do NOT quote the line above verbatim, and invent no new specifics (no names, numbers, or places you were not given).',
+    ].filter(Boolean).join(' ');
+  },
+
   claim_recall: (_factPhrase, claim) => {
     const base = claim?.eventDescription
       ? `What is actually known about the event: "${claim.eventDescription}"`
@@ -202,8 +225,10 @@ export function buildNpcVoicePrompt(p = {}) {
     : null;
   const worldKnowledge = buildWorldKnowledgeBlock(p.npcName, p.substrateContext);
   const sceneFactsBlock = buildSceneFactsBlock(p.sceneFacts);
-  // claim_recall passes two args; all other modes ignore the second.
-  const decisionText = decision(String(p.factPhrase || ''), p.claim ?? null);
+  // claim_recall + rumor_pickup pass a second arg (the belief/rumor); other modes
+  // ignore it. rumor_pickup carries the engine's minted S2 body to be re-voiced (S3).
+  const secondArg = mode === 'rumor_pickup' ? (p.rumor ?? null) : (p.claim ?? null);
+  const decisionText = decision(String(p.factPhrase || ''), secondArg);
   const persona = MANNER_PERSONA[String(p.manner || '')] || '';
   const relation = trustTier(p.trust);
   const roleWord = p.role || 'villager';

@@ -141,7 +141,14 @@ From 15 → 16. Follow the `CLAUDE.md` checklist including `worldHash.browser.js
 - Rumor minting is deterministic given `(seed, canonLog)`.
 - LLM failure fallback is deterministic.
 - On replay from Canon Log, no LLM call is made — rumors are loaded from the `rumor.minted` events.
-- `worldHash` projection includes `world.rumors` (id, tier, age, verified — NOT body, since body is immutable and body changes are impossible).
+- `worldHash` projection includes `world.rumors` as **`{id, tier, age}`** — NOT `body` (immutable
+  LLM/fallback prose; hash-excluded so an S3 upgrade never moves the hash — PROSE_TO_WORLD_CONTRACT.md
+  Hash-law S3), and **NOT `verified`**. `verified` is a display-only comparison marker set once by the
+  reveal path (`engine/rumor/verify.js`); it is read by no canon decision, so excluding it keeps
+  replay-equality (adding it to the projection would move the hash on any world that reached a seed,
+  for zero behavioral gain). This aligns the doc to the shipped code — both `engine/worldHash.js:37`
+  and `engine/worldHash.browser.js` project exactly `{id, tier, age}`. **PW-3 seam decision (2026-07-06):
+  aligned DOC → CODE (no hash moved); pinned by test U610 so the two can never silently drift again.**
 
 ---
 

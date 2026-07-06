@@ -323,6 +323,17 @@ return res.json({ ok:false, reason:safe });
         eventDescription: rawClaim.eventDescription ? String(rawClaim.eventDescription).slice(0, 300) : null,
         provenance:       Array.isArray(rawClaim.provenance) ? rawClaim.provenance.map(String) : [],
       } : null;
+      // PW-3 — the picked-up rumor to re-voice (S3 prose upgrade). Present ONLY on a
+      // rumor_pickup turn. The engine already minted the skeleton + S2 body; the
+      // server may rewrite the BODY prose into the NPC's voice and NOTHING else — it
+      // returns a display line, never touches world state (so the skeleton, tier, and
+      // WHICH rumor are immovable here by construction). No key / failure → S2 stands.
+      const rawRumor = req.body?.rumor && typeof req.body.rumor === 'object' ? req.body.rumor : null;
+      const rumor = rawRumor ? {
+        id:   String(rawRumor.id   || '').slice(0, 120),
+        tier: Number.isFinite(Number(rawRumor.tier)) ? Math.max(0, Math.min(4, Number(rawRumor.tier))) : 2,
+        body: String(rawRumor.body || '').slice(0, 400),
+      } : null;
       // Cascade substrate context — NPC's rung of world history. Validated here
       // so buildNpcVoicePrompt can trust the shape. Max 8 events, label ≤200 chars.
       const VALID_CLARITIES = new Set(['vivid', 'dim', 'myth']);
@@ -364,7 +375,7 @@ return res.json({ ok:false, reason:safe });
         const { retrieveChunks } = await import('./server/rag/ragRetriever.js');
         ({ chunks: ragChunks, reconstructed: ragReconstructed } = retrieveChunks(corpusId, playerLine, 4));
       }
-      const prompt = buildNpcVoicePrompt({ npcName, role, mood, manner, trust, mode, factPhrase, playerLine, ragChunks, ragReconstructed, claim, substrateContext, sceneFacts });
+      const prompt = buildNpcVoicePrompt({ npcName, role, mood, manner, trust, mode, factPhrase, playerLine, ragChunks, ragReconstructed, claim, rumor, substrateContext, sceneFacts });
       if (!prompt) return res.json({ ok: false, reason: 'bad_mode' });
 
       // D-C1: Opus 4.8 is the primary voice (“Opus voice for every NPC”).
@@ -375,7 +386,7 @@ return res.json({ ok:false, reason:safe });
       const anthropicKey = (process.env.ANTHROPIC_API_KEY || '').trim();
       // ML-1: validateNpcVoiceCandidate gates BOTH the Opus and Ollama return paths.
       const { callNpcVoice, validateNpcVoiceCandidate } = await import('./engine/llmAdapter.js');
-      const voiceCtx = { npcName, role, factPhrase, playerLine, ragChunks, substrateContext, claim, mode };
+      const voiceCtx = { npcName, role, factPhrase, playerLine, ragChunks, substrateContext, claim, rumor, mode };
       if (anthropicKey) {
         try {
           const opusLine = await callNpcVoice({ prompt, apiKey: anthropicKey });

@@ -759,6 +759,7 @@ export function validateNpcVoiceCandidate(line, {
   ragChunks        = [],
   substrateContext = [],
   claim            = null,
+  rumor            = null,
   mode             = '',
 } = {}) {
   try {
@@ -780,6 +781,11 @@ export function validateNpcVoiceCandidate(line, {
     for (const c of (Array.isArray(ragChunks)        ? ragChunks        : [])) addNouns(c?.text);
     for (const e of (Array.isArray(substrateContext)  ? substrateContext  : [])) addNouns(e?.label);
     if (claim?.eventDescription) addNouns(claim.eventDescription);
+    // PW-3: a rumor pickup re-voices the engine's minted S2 body — its proper nouns
+    // (people, places the rumor already names) are GROUNDED, not invented. Without
+    // this the S3 upgrade of "Brogan walked out of a burned hamlet…" would be
+    // rejected as fabrication and silently fall back to the S2 template.
+    if (rumor?.body) addNouns(rumor.body);
 
     // Withheld-mode secret-leak guard: the voiced line must not contain the factPhrase.
     if (mode === 'withheld' && factPhrase) {
@@ -796,7 +802,8 @@ export function validateNpcVoiceCandidate(line, {
       factPhrase, playerLine,
       ...(Array.isArray(ragChunks)        ? ragChunks.map(c        => String(c?.text  || '')) : []),
       ...(Array.isArray(substrateContext)  ? substrateContext.map(e => String(e?.label || '')) : []),
-      claim?.eventDescription || ''
+      claim?.eventDescription || '',
+      rumor?.body || ''
     ].join(' ');
     const yearRe = /\b(1[0-9]{3}|20[0-9]{2})\b/g;
     let m;

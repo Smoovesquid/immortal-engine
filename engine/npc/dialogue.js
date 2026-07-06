@@ -1263,34 +1263,95 @@ export function resolveNpcFromList(npcs, npcRef) {
 // ─────────────────────────────────────────────────────────────────────────────
 // Pass R2 — rumor surfacing helper
 
+// Interrogatives and asking-verbs that are NOISE in a topic — they appear in
+// almost every "what do you know about X" ask, so matching on them manufactures
+// false topic hits (the tag "arc:what-the-fire-left" must not match EVERY ask
+// merely because both contain "what"). Kept local to rumor topic-matching; the
+// shared STOP_TOKENS set is tuned for fact-id scoring, a different job.
+const TOPIC_NOISE = new Set([
+  // interrogatives / asking-verbs
+  'what', 'when', 'where', 'which', 'whom', 'whose', 'know', 'tell', 'hear',
+  'heard', 'have', 'seen', 'been', 'said', 'says', 'ask', 'asked', 'about',
+  'anything', 'something', 'happened', 'going',
+  // Poetic / metaphorical arc-title words that are NOT reliable literal topics.
+  // Arc slugs are titles ("the-wages-of-blood" is a bounty on raiders, not literal
+  // blood), so matching their abstract words hijacks idioms — "bad BLOOD between Tove
+  // and Kael" must not surface the wages-of-blood arc (corpus C9-002). Concrete
+  // subject nouns (fire, well, cold…) stay matchable; only the abstractions are muted.
+  'blood', 'wages', 'judge', 'passes', 'left', 'fall', 'fell', 'passing'
+]);
+
+// Does a rumor's TOPIC (its curated tags) overlap the ask? A rumor's `tags` are the
+// designed "what this is about" surface ("arc:what-the-fire-left" → the fire); the
+// BODY is narrative prose full of incidental entities — the addressee's name, a road,
+// a number — that manufacture false matches ("…that road, Corwin?" must NOT pick up an
+// arc whose body merely mentions "Corwin"). So pickup matches on TAG segments only, as
+// whole content tokens (no substrings, no interrogatives, no stopwords): a genuine
+// topic ask, never word-soup overlap. This is also why an accusation or a mechanics
+// aside that shares stray words with a rumor body does NOT hijack the NPC's deflection.
+function rumorMatchesTopic(rumor, t) {
+  const tags = Array.isArray(rumor.tags) ? rumor.tags : [];
+  const askTokens = new Set(String(t || '').split(/[^a-z0-9]+/).filter(Boolean));
+  const isContent = (w) => w.length >= 4 && !STOP_TOKENS.has(w) && !TOPIC_NOISE.has(w);
+  return tags.some(tag => {
+    const s = String(tag).toLowerCase();
+    if (!s || s === 'arc' || s === 'villain') return false; // structural, not a topic
+    if (askTokens.has(s)) return true;
+    return s.split(/[:\-]/).some(seg => isContent(seg) && askTokens.has(seg));
+  });
+}
+
 function surfaceRumorsForTopic(world, npc, text) {
   const empty = { bodies: [], mintHint: null };
   if (!npc || !text) return empty;
 
-  const rumorIds = Array.isArray(npc.rumorIds) ? npc.rumorIds : [];
+  const rumorIds = new Set((Array.isArray(npc.rumorIds) ? npc.rumorIds : []).map(String));
   const rumors = Array.isArray(world.rumors) ? world.rumors : [];
-  if (!rumors.length && !rumorIds.length) return empty;
+  if (!rumors.length && !rumorIds.size) return empty;
 
   const trust = Number(npc.conversationState?.trustLevel ?? 5);
   const { surfacedRumors } = filterRumors(npc, rumors, { trust });
 
-  // Match surfaced rumors to the topic text via tag overlap
+  // Match the NPC's OWN carried rumors to the topic — these they volunteer.
   const t = String(text || '').toLowerCase();
   const bodies = [];
   for (const rumor of surfacedRumors) {
-    const tags = Array.isArray(rumor.tags) ? rumor.tags : [];
-    const bodyLower = String(rumor.body || '').toLowerCase();
-    const tagMatch = tags.some(tag => t.includes(String(tag).toLowerCase()));
-    const bodyMatch = bodyLower.split(/\s+/).some(w => w.length >= 4 && t.includes(w));
-    if (tagMatch || bodyMatch) {
-      bodies.push(String(rumor.body || ''));
-    }
+    if (rumorMatchesTopic(rumor, t)) bodies.push(String(rumor.body || ''));
   }
+  if (bodies.length > 0) return { bodies, mintHint: null };
 
-  // If no existing rumors matched, signal that lazy minting could apply.
-  // The caller (playloop) can then trigger async mintRumorForNpc.
-  const mintHint = bodies.length === 0 && rumorIds.length === 0
-    ? { npcId: String(npc.id || ''), topic: t }
+  // ── PW-3: pick-up path ────────────────────────────────────────────────────
+  // The NPC carries nothing on the topic, but the county might. Find a LATENT
+  // seed — a rumor already reaching town (present in world.rumors) that THIS NPC
+  // does not yet carry — whose tags/body answer the ask. The NPC "picks it up"
+  // and retells it as their own, garbled to their sophistication tier. The seed
+  // is resolved here (pure read); the reducer mints the skeleton (S2 body) and
+  // enforces the per-scene budget. Deterministic pick: lowest source tier first,
+  // then id order, so the same ask always collapses the same seed.
+  const seedCandidates = rumors
+    .filter(r => r && String(r.body || '').trim() && !rumorIds.has(String(r.id)))
+    .filter(r => rumorMatchesTopic(r, t))
+    .sort((a, b) => (Number(a.tier ?? 0) - Number(b.tier ?? 0))
+      || String(a.id).localeCompare(String(b.id)));
+  const seedRumor = seedCandidates[0] || null;
+
+  const mintHint = seedRumor
+    ? {
+        npcId: String(npc.id || ''),
+        topic: t,
+        seed: {
+          // The stable seed identity travels through to the minted rumor's
+          // sourceSeedId, so pickups fold into rumorsReaching under one subject.
+          sourceSeedId: String(seedRumor.sourceSeedId || seedRumor.id || ''),
+          // Known body of the seed as it reached town — the reducer garbles THIS
+          // to the carrier's tier (never invents the fact).
+          truthBody: String(seedRumor.body || ''),
+          tags: Array.isArray(seedRumor.tags) ? seedRumor.tags.map(String).slice(0, 8) : [],
+          // Hops the seed already traveled to reach town; the carrier is one more
+          // mouth further, so tier is computed from hopCount + 1.
+          originHop: Number(seedRumor.hopCount ?? 1)
+        }
+      }
     : null;
 
   return { bodies, mintHint };

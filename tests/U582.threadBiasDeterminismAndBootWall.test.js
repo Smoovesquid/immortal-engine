@@ -36,12 +36,29 @@ function loadPacks() {
 const PACKS = loadPacks();
 const bootTallow = () => beginAdventure(newWorld({ seed: 'tallow', fate: 0.3, mode: 'escape', pack: { primaryId: 'fantasy', mixerId: null } }), PACKS).world;
 
-// The exact value U454-E pins after MP-4. OCC-STORY-2 must leave it untouched (no bias at age-0 boot).
-const HASH_AFTER_MP4 = 'db503a117ea89fc1ca8191672257983781754223724c0a6492b0ee772bc6dcc3';
+// INTEGRATION REWRITE (Basecamp, 2026-07-06): this test originally duplicated U454-E's
+// boot-anchor LITERAL ("the exact MP-4 pin") — and went stale the same day when MP-5b's
+// legitimate additive-field re-pin moved the anchor. Fourth occurrence of the class; the
+// standing law (already in every brief since): the boot anchor lives in U454-E ALONE —
+// assert what YOUR packet owns. What OCC-STORY-2 owns is that thread-aware placement is
+// INERT at boot: with every boot thread cold, the placement derivation must be byte-equal
+// to the same derivation with threads removed entirely. That is asserted structurally
+// below — no hash literal, valid on any tree, and it fails precisely when a bias leaks
+// into an age-0 boot (the original test's true intent).
 
-test('U582 (boot wall): the default tallow boot worldHash is UNCHANGED by thread-aware placement', () => {
-  assert.equal(worldHash(bootTallow()), HASH_AFTER_MP4,
-    'OCC-STORY-2 must not move the boot — every boot thread is age-0/cold, so no bias fires');
+test('U582 (boot wall): placement is thread-INERT at boot — derivation equals the threadless derivation', () => {
+  const w = bootTallow();
+  const wNoThreads = { ...w, instrument: { ...w.instrument, threads: [] } };
+  const occupants = outdoorOccupants(w) || [];
+  assert.ok(occupants.length >= 1, 'premise: the boot settlement has outdoor occupants to place');
+  for (const npc of occupants) {
+    assert.deepEqual(placementFor(w, npc), placementFor(wNoThreads, npc),
+      `boot placement for ${npc?.name || npc?.id} must not read cold threads (age-0 boot = OCC-STORY-1 baseline)`);
+  }
+  // And the boot itself is deterministic ×2 (self-equality, no pinned literal — the
+  // global anchor is U454-E's to own).
+  assert.equal(worldHash(bootTallow()), worldHash(bootTallow()),
+    'default tallow boot must be byte-identical to itself');
 });
 
 test('U582 (boot wall): the boot thread really is cold, so no onlooker bias is possible at boot', () => {

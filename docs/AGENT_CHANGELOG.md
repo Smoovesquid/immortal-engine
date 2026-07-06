@@ -3148,3 +3148,16 @@ other agents. (none active)
   (the gory killing-blow prose + the CG death class in the LIVE validator) in the narration lane.
   Zero file overlap; both corpus-touching lanes fenced to their OWN rows. PW-3 queued next (Opus);
   SOCIAL-PHYSICS arc row annotated "queued for an Opus" per Tim.
+
+## 2026-07-06 — Basecamp (successor) — DEATH-3 → v0.31.3 build 116 "the blow reads true" — THE DEATH ARC CLOSES
+
+- DEATH-3 landed (`34379fac` → `1a57f10b`): the death fact becomes the blow's prose — gory-honest,
+  means-tailored, stance-aware, zero numerics; LLM-off base lines byte-stable; CG-DEATH armed in
+  the LIVE validator (0 false alarms / 204 fixture combinations). Live blows verbatim in PACKETS.
+  Ladder 10746/0 · 131/131 · screen truth 7/7.
+- **The DEATH arc closes at Tim's descoped line** — "enemies occasionally beg for their lives and
+  the end described in gory detail" — delivered whole in three packets, b114–b116, same day as
+  commissioned. DEATH-4/5 stay descoped; the contract parked. Flagged follow-up queued in the row:
+  the one-line downed-foe corpus fixture once PW-2 frees the fixtures file.
+- Still in flight: PW-2 (the honest floor — prose-to-world's first new packet). PW-3 dispatches
+  into the freed playloop lane at its landing; SP-2 queued-for-Opus behind.

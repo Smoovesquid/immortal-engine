@@ -3350,3 +3350,18 @@ other agents. (none active)
   dissolve now, sums to one) → 800 ms later self-settled to z=32.00, 1/0 — one projection.
   Screenshots: clean flat plan · clean diorama (no label bleed-through). The only two rest states
   that now exist.
+
+## 2026-07-06 — Basecamp — MAP-VIEW-1 → v0.32.8 build 128 "the table steps back" — Tim's framing note
+
+- Tim: "change the tilt into the 3d view so that it's a bit further away — a bit too close."
+  Fix `9e1ac9f5`: dioramaPull in tiltStateForZoom — a camera pull-back riding the SAME tilt ramp
+  as the pitch (exactly 1 at `start`/crossfade → no size pop against the fading ink, U477's
+  no-jump law held; eases to `dioramaScale` 0.72 at full tilt ≈ 28% wider vantage). Applied as a
+  factor on the sheet-locked pxPerTile in applyFromCam; LIVE-TUNABLE (window.__tilt.dioramaScale,
+  clamped 0.4..1 — 1 restores the old nose-to-nose framing exactly).
+- U631 5/5 (flat=1 · cross ≈1 within 2% · full=dioramaScale · monotonic ease · knob-off identity);
+  tilt family U476/U477/U630 untouched-green. Ladder 10885/0 · 135/135 · screen truth 7/7.
+- LIVE receipt, same 4-notch gesture as the b127 comparison shot: sheet spw 6.55 → 4.72 (×0.72 at
+  that depth), mini still measures its true 1.83 wu against the ink (proportions untouched — the
+  size law rides the same transform; only the vantage moved). Screenshot committed to the eye:
+  mini ~40% → ~28% of frame height, neighbouring rooms in view.

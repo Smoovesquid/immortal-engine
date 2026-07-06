@@ -2820,3 +2820,17 @@ other agents. (none active)
   renderer lies; engine honest. Bisect-first lane dispatched (suspect MR-3b's render3d rework).
   Basecamp lesson recorded: the screen outranks the probe — I initially answered with engine truth
   against Tim's eyes; wrong order. U548–U550 claimed.
+
+## 2026-07-06 — Basecamp — FURN-1 integrated → v0.30.1 build 099 "furniture is solid"
+
+- Cherry-picked `63371405`; gate GREEN (10402/0, 131/131, probe furniture-aware). Furniture blocks its
+  anchor cell (full-footprint verified WORSE at v1 cell resolution — 4/12 seeds lost ALL standing room;
+  reversible call, documented in U545); wake seeds to the nearest free cell; doors never furniture-
+  blocked; FURNITURE_BLOCK probe class armed. Default-seed worldHash UNCHANGED (its wake cell was
+  already free — the brief's (2,3) evidence had drifted; worker generalized the repro honestly).
+- Integration hand-fixes: U541's three dirty-tree scope guards removed (dispatch-time receipts that
+  tripped on any WIP engine work — FURN-1's flag). U496 class-string update accepted (sanctioned).
+- **PACKETS row update DEFERRED:** the Fable constitution window has PACKETS.md mid-edit in this
+  checkout (MORAL_PHYSICS.md + contracts + contradiction hunt in flight — hands off). Flip the FURN-1
+  row to ✅ LANDED v0.30.1 b099 once that lane commits.
+- Still out: REND-TRUTH-1 (bisecting the people-projection bug — the remaining half of Tim's screen).

@@ -2977,3 +2977,17 @@ other agents. (none active)
     Cassandra beat sliced OUT to MP-5b (needs MP-4's tick lane). U577–U579.
 - Held deliberately: OCC-STORY-2 (cut after MP-4 — worldTick adjacency), MP-5b (after MP-4),
   CG-2 paid gate (needs a stable integrated build), MP-6 the Carl Witness Test LAST (Tim's order).
+
+## 2026-07-06 — Basecamp (successor) — MP-4 integrated → v0.30.9 build 107 "the gift unbidden"; OCC-STORY-2 dispatched
+
+- MP-4 landed: `6c50eef7` → `49568f04`; ladder 10541/0 · 131/131 · screen truth 7/7. Tier 4 acts:
+  a level-triggered forbiddenGates reader + `tickPact` in the world-tick deliver the dark gift
+  through the EXISTING grant machinery when standing corruption is over the line — slow-creep
+  corruption can no longer silently skip the claiming. Live receipt: an over-threshold save learned
+  `animate_dead` unbidden (usable, zero numerics). Latch `pactT` on MP-3's precedent; clean runs
+  byte-identical. Worker's flagged call (first-owed gift, not deepest) recorded in PACKETS.
+- The MP ladder is now FULLY LIVE T0–T4. Remaining in the arc: MP-5a (in flight) → MP-5b Cassandra
+  (cut when 5a lands) → MP-6 the Carl Witness Test LAST.
+- OCC-STORY-2 cut + dispatched into the freed engine lane (U580–U582; thread-driven placement +
+  live reasons; boot placement pinned unchanged). In flight now: JR-HUNT-1 · WILD-SCALE-1 · MP-5a ·
+  OCC-STORY-2.

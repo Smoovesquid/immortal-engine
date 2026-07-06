@@ -3365,3 +3365,21 @@ other agents. (none active)
   that depth), mini still measures its true 1.83 wu against the ink (proportions untouched — the
   size law rides the same transform; only the vantage moved). Screenshot committed to the eye:
   mini ~40% → ~28% of frame height, neighbouring rooms in view.
+
+## 2026-07-06 — Basecamp — MAP-VIEW-2 → v0.32.9 build 129 "lean in when you want" — Tim's second framing pass + the one-way-zoom bug
+
+- Tim after playing b128: start the 3D camera another 50% further away, keep max zoom-in
+  reachable — and "once zoomed in, I can't zoom back out."
+- THE BUG (real find, pre-dated today): past ~15% tilt the 3D overlay claims pointer events for
+  the orbit drag but had NO wheel handler — the wheel died on it; zoom was one-way. Fix
+  `59156480`: layer3d forwards wheel to the 2D canvas (the single zoom authority), non-passive,
+  loop-safe. Proven on the REAL hit-tested path (my earlier synthetic-dispatch tests had bypassed
+  hit-testing — that's why it never showed): wheel-out from z=60 → 2 straight through the overlay.
+- THE CURVE, inverted from b128 (which capped the deep end at 0.72 and barely moved the entry):
+  dioramaPull now ENTRY-far → DEEP-close: opens at dioramaScale (0.66 ≈ 50% further out) and
+  eases to exactly 1 at full — max wheel-in reaches the TRUE sheet-locked framing (live receipt:
+  spw 6.55299 at z=60, the pre-pullback value to five decimals). NEW LAW U631d: effective zoom
+  z·pull strictly increasing — no rubber-band. U631f pins the wheel forwarder as a source
+  contract. 6/6 + tilt family green; ladder 10886/0 · 135/135 · screen truth 7/7.
+- Receipts: entry view = small mini, whole rooms in frame (~10% frame height, was ~28-40%);
+  deep view = the close-up, opt-in at the wheel's end. dioramaScale stays live-tunable.

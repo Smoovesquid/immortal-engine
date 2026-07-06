@@ -174,6 +174,11 @@ export function assertWorldInvariants(world) {
     if (!Number.isInteger(d.severity) || d.severity < 0 || d.severity > 100) {
       throw new Error(`Invariant: deeds[${i}].severity must be integer 0..100`);
     }
+    // MP-2 — the escalation-ladder rung (docs/MORAL_PHYSICS.md §4). Additive; old
+    // saves normalize to 0 in ensureDeeds. Must be an integer in the ladder's range.
+    if (!Number.isInteger(d.tier) || d.tier < 0 || d.tier > 4) {
+      throw new Error(`Invariant: deeds[${i}].tier must be integer 0..4`);
+    }
   }
 
   // SP-1 — player↔faction reputation. Bounded standing keyed only by known factions

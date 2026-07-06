@@ -1101,8 +1101,11 @@ function ensureMorality(m) {
 }
 
 // v22 — deeds index. Each entry: { t, actorId, kind, severity, witnesses[], nodeId,
-// summary }. Capped (recency window); the canon log holds the full history. Kept
+// summary, tier }. Capped (recency window); the canon log holds the full history. Kept
 // minimal and defensively normalized so malformed/old saves can't violate invariants.
+// tier (MP-2, docs/MORAL_PHYSICS.md §4): the escalation-ladder rung 0..4 stamped at
+// record-time. Additive field with a safe default (0) — old saves (no tier) normalize
+// to 0 cleanly, so no WORLD_VERSION bump is needed.
 const DEEDS_CAP = 64;
 const DEED_KINDS = new Set(['cruelty', 'forbidden', 'mercy', 'aid', 'atonement']);
 function ensureDeeds(d) {
@@ -1119,7 +1122,8 @@ function ensureDeeds(d) {
       severity: clampInt(e.severity ?? 1, 0, 100),
       witnesses: Array.isArray(e.witnesses) ? e.witnesses.map(String) : [],
       nodeId: String(e.nodeId || ''),
-      summary: String(e.summary || '').slice(0, 200)
+      summary: String(e.summary || '').slice(0, 200),
+      tier: clampInt(e.tier ?? 0, 0, 4)
     });
   }
   return out.slice(-DEEDS_CAP);

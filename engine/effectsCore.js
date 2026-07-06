@@ -6,6 +6,7 @@ import { statMod, maxWounds } from './ruleset/core/stats.js';
 import { applyCondition as applyConditionPure } from './combat/conditions.js';
 import { ensureStructures } from './structures/structuresState.js';
 import { DOOR_STATES } from './structures/doors.js';
+import { escalationTier } from './morality/escalation.js';
 
 // MR-2a — the valid target states for the `door` op (canon door-state enum).
 const DOOR_STATE_ENUM = new Set(DOOR_STATES);
@@ -16,6 +17,25 @@ const DOOR_STATE_ENUM = new Set(DOOR_STATES);
 export function applyDeltas(world, deltas = []) {
   let w = ensureWorld(world);
   const ops = Array.isArray(deltas) ? deltas : [];
+
+  // ── MP-2: standing-corruption snapshot at BATCH ENTRY (docs/MORAL_PHYSICS.md §4) ──
+  // The escalation ladder grades a deed against the actor's ACCUMULATED standing coming
+  // IN — not against the corruption this very deed adds (that would collapse the ladder:
+  // a single helpless-kill bumps a vice axis to the pact threshold, so reading post-delta
+  // would make the first atrocity leap straight to Tier 4, skipping the escalation).
+  // Deeds are recorded in the SAME batch as their axisDelta bumps (playerMove, coerced
+  // build, cast consequence), so we freeze each party entity's morality here, before any
+  // op mutates it, and recordDeed reads this frozen "prior standing." Deterministic under
+  // replay (batch-entry state is deterministic).
+  const moralityAtEntry = new Map(); // entity id -> { corruption, heat }
+  for (const e of (Array.isArray(w.party) ? w.party : [])) {
+    if (!e || !e.id) continue;
+    const mo = (e.morality && typeof e.morality === 'object') ? e.morality : {};
+    moralityAtEntry.set(String(e.id), {
+      corruption: Number(mo.corruption ?? 0),
+      heat: Number(mo.heat ?? 0),
+    });
+  }
 
   // ── Batch-stable furniture resolution (splice-proof; ROM-4) ──────────────
   // modifyFurniture/removeFurniture carry `furnitureId` = the piece's index in
@@ -176,14 +196,36 @@ export function applyDeltas(world, deltas = []) {
       const deedKind = VALID.has(String(op.deedKind)) ? String(op.deedKind) : '';
       if (!deedKind) continue;
       const t = toInt(op.t ?? (Array.isArray(w.timeline) ? w.timeline.length : 0));
+      const severity = clampInt(toInt(op.severity ?? 1), 0, 100);
+      const witnesses = Array.isArray(op.witnesses) ? op.witnesses.map(String) : [];
+      // MP-2 — grade the act on the ONE escalation ladder and carry the tier on the
+      // record (docs/MORAL_PHYSICS.md §4). recordDeed is the single chokepoint every
+      // moral-fact source flows through (playerMove deed pass, coerced-build, cast
+      // consequence, story arcs), so tagging here means every deed carries an
+      // authoritative 0..4 loudness — no emitter can forget, and downstream packets
+      // (MP-3 heat→hunt, MP-4 corruption→pact, MP-5 surfacing) read ONE number. Pure +
+      // deterministic (reads the actor's live corruption/heat + this deed's witnesses);
+      // T3/T4 are COMPUTED here but NOT ACTED ON (that is MP-3/MP-4). No player-facing
+      // string is touched — the tier is silent structured state (invariant I). Standing
+      // corruption/heat come from the BATCH-ENTRY snapshot (prior accumulation), not the
+      // post-delta entity — see moralityAtEntry above.
+      const actorId = resolvePlayerEntityId(w, op.actorId);
+      const standing = moralityAtEntry.get(actorId)
+        || (() => { const a = findPlayerEntity(w, op.actorId); return { corruption: Number(a?.morality?.corruption ?? 0), heat: Number(a?.morality?.heat ?? 0) }; })();
+      const tier = escalationTier(
+        { severity, kind: deedKind },
+        standing,
+        { witnessReach: witnesses.length, wild: witnesses.length === 0 }
+      );
       const deed = {
         t: Math.max(0, t),
         actorId: String(op.actorId || 'party'),
         kind: deedKind,
-        severity: clampInt(toInt(op.severity ?? 1), 0, 100),
-        witnesses: Array.isArray(op.witnesses) ? op.witnesses.map(String) : [],
+        severity,
+        witnesses,
         nodeId: String(op.nodeId || ''),
-        summary: String(op.summary || '').slice(0, 200)
+        summary: String(op.summary || '').slice(0, 200),
+        tier
       };
       const deeds = Array.isArray(w.deeds) ? [...w.deeds, deed].slice(-64) : [deed];
       w = { ...w, deeds };
@@ -1073,6 +1115,15 @@ function resolvePlayerEntityId(world, entityId) {
   const id = String(entityId || 'party');
   if (id !== 'party') return id;
   return String(world?.party?.[0]?.id || 'party');
+}
+
+// Read-only lookup of the acting entity (resolves the 'party' sentinel to party[0]).
+// Used by recordDeed's escalation-tier grading to read the actor's live morality
+// without mutating. Returns the entity object or null.
+function findPlayerEntity(world, entityId) {
+  const id = resolvePlayerEntityId(world, entityId);
+  const party = Array.isArray(world?.party) ? world.party : [];
+  return party.find(e => e && String(e.id) === id) || party[0] || null;
 }
 
 function mutateEntity(world, entityId, fn) {

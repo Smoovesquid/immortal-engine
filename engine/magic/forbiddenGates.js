@@ -28,6 +28,19 @@ const GIFTS = [
 ];
 
 /**
+ * darkGiftThresholds()
+ *
+ * The corruption thresholds at which dark gifts arrive, ascending. The SINGLE
+ * source of these numbers — consumers (e.g. MP-2's escalation ladder, which derives
+ * PACT_CORRUPTION from the lowest one) read this rather than forking the literals
+ * (docs/MORAL_PHYSICS.md §4: "read from forbiddenGates thresholds — do not fork").
+ * Pure; returns a fresh array.
+ */
+export function darkGiftThresholds() {
+  return GIFTS.map(g => g.threshold);
+}
+
+/**
  * darkGiftForThreshold(oldCorruption, newCorruption)
  *
  * Returns the first spell from the newly-crossed tier, or null.

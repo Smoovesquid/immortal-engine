@@ -8,6 +8,11 @@ LLMs get social DIRECTION right and MAGNITUDE wrong, so every social delta's siz
 deterministic table, routed through `effectsCore.applyDeltas`. SP-1 (the foundational packet) is
 IMPLEMENTED alongside this doc; SP-2..6 are specced below.*
 
+> **Reputation substrate:** governed by [`../REPUTATION_UNIFICATION.md`](../REPUTATION_UNIFICATION.md) —
+> faction rep / trust are its Layer 4, the `deeds`→`rumorsReaching` synthesis its Layer 5; read
+> reputation only via `rumorsReaching`. Its **F1** fix lifts the dead `severity>=25` deed-rumor gate
+> this contract cites at §1.3. Reconciled 2026-07-06.
+
 ---
 
 ## 1. What exists today vs. greenfield (the audit)

@@ -5,6 +5,10 @@ into its inverse — observation collapses latent detail into persistent canon, 
 without breaking replay (`worldHash` equality under same seed + same transcript). Grounded against
 v2-polish @ `2f0c272`.*
 
+> **Reputation substrate:** governed by [`../REPUTATION_UNIFICATION.md`](../REPUTATION_UNIFICATION.md) —
+> this contract's rumor layer converges onto that ruling's `claims` belief-interface, read through the
+> single `rumorsReaching` sink (no rebuild; migrate behind the sink). Reconciled 2026-07-06.
+
 ---
 
 ## 1. The hypothesis, confirmed in PATTERN and refuted in LOCATION — plus the one correction that makes it implementable

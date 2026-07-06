@@ -71,7 +71,7 @@ import {
 //      multiple so panning/orbiting never runs off the edge before the next
 //      zoom-drift redraw catches up.
 import { renderOneMap, playerFocusWu } from './oneMap.js';
-import { NODE_WU, regionCellToWu } from './worldSpace.js';
+import { NODE_WU, regionCellToWu, entityScenePosOnSheet } from './worldSpace.js';
 // TT-PROPS — placedTokenModel(world, nodeId) is the pure engine-position read
 // (people/trees/props/livestock, all {wx,wy} world units) the 2-D sheet
 // already draws minis from; the tilt view reuses the SAME model, never a
@@ -429,6 +429,43 @@ export async function mountSlice3D(container, sceneData, opts = {}) {
   // enough move happened to justify a re-render (never every frame).
   let _sheetTarget = { x: worldPos0.x, z: worldPos0.z };
 
+  // REND-TRUTH-1 — THE ONE ENTITY↔SHEET TRANSFORM. A world-unit point projected
+  // onto the ground sheet's OWN ink, so an engine-occupancy mini (people/props)
+  // stands exactly where the sheet drew it — at ANY zoom. The sheet paints its
+  // 2-D capture (SHEET_PX px, at its live px-per-wu currentZ()) across a plane of
+  // `mesh.scale.x` 3-D units, centred at `mesh.position` (== the camera target).
+  // So on the sheet ONE wu spans `span·z/SHEET_PX` 3-D units — the same factor
+  // the ink itself uses — and the sheet centre corresponds to the focus wu
+  // `Fwu = center · NODE_WU/TILE_WU` (the exact inverse buildWorldSheet uses to
+  // derive its own focusWu). A mini at `wu` therefore lands at
+  // `center + (wu - Fwu)·scenePerWu`. This is why worldPosFromWu (a FIXED
+  // node-tile scale, right only for the region lattice) was wrong here: at
+  // interior zoom the sheet zooms in but that fixed scale did not, collapsing
+  // every occupant onto the player. Pure view — reads the sheet's own live
+  // transform, writes only mini positions.
+  function entityScenePos(wx, wy) {
+    // Delegates to worldSpace.js's pure entityScenePosOnSheet (the ONE derivation,
+    // hermetically tested by U548/U549), reading the sheet's OWN live transform:
+    // its plane centre (== the camera target), its plane span in 3-D units, and its
+    // current px-per-wu texture zoom.
+    const center = { x: worldSheet.mesh.position.x, z: worldSheet.mesh.position.z };
+    return entityScenePosOnSheet(center, worldSheet.mesh.scale.x, worldSheet.currentZ(), SHEET_PX, TILE_WU, wx, wy);
+  }
+  // Reproject every engine-occupancy mini onto the sheet's current ink. Called at
+  // mount (below, once the entities exist) and on every setCamera after the sheet
+  // re-centres/re-zooms, so people/props never drift off their own drawn footprint.
+  // Only touches x/z (+ the flat ground y) — figure geometry, scale, and breathe
+  // baseY offsets are untouched (beauty locked; positions only).
+  function repositionEntities() {
+    for (const m of entityMinis) {
+      if (!m || !m.group) continue;
+      const p = entityScenePos(m.wx, m.wy);
+      const y = heightAt(p.x, p.z) + (Number(m.yOff) || 0);
+      m.group.position.set(p.x, y, p.z);
+      m.baseY = y; // the breathe loop bobs around this
+    }
+  }
+
   // MR-3b — the fog-edge overlay disc, mounted just above the ground sheet
   // (never replacing its texture — see buildFogEdgeOverlay's own header).
   // Y-offset is tiny (well under a mini's own ground-clearance) purely to
@@ -619,6 +656,10 @@ export async function mountSlice3D(container, sceneData, opts = {}) {
   // push onto this array (combat board minis, TT-PROPS people/props, the
   // player mini) is unaffected, they still just .push() the same array.
   let sliceMinis = [];
+  // REND-TRUTH-1 — the subset of sliceMinis that are engine-occupancy entities
+  // (people + props) carrying a canonical `.wx/.wy`; repositionEntities reprojects
+  // exactly these through the ground sheet's live scale on every camera change.
+  const entityMinis = [];
   let playerToken = null, playerMini = null; // set in the non-combat branch (setPlayerFocus).
   if (sceneData?.combat) {
     // Combat is this overworld scene zoomed in: the tactical board sits ON the ground at
@@ -650,22 +691,35 @@ export async function mountSlice3D(container, sceneData, opts = {}) {
   // both use ('humanoid'); trees stay on their existing worldAssets.js path
   // (buildWilderness/addTreeScatter) — TT-PROPS only adds furniture + people,
   // per the brief's Stage 3 scope ("trees (already law), PLUS props").
+  // REND-TRUTH-1 — engine-occupancy minis (people + props) whose scene position
+  // must track the GROUND SHEET's live wu→scene scale, not the fixed node-tile
+  // scale worldPosFromWu bakes in. `.wx/.wy` are the entity's canonical world
+  // units; `entityScenePos` (defined with the sheet, below) reprojects them onto
+  // the sheet's own ink every time the sheet re-zooms/re-centers (repositionEntities,
+  // called at mount + on every setCamera). Without this, a person 60 ft away (a
+  // small wu offset) collapsed onto the player at interior zoom — reading as
+  // "standing in the bedroom" while the ink correctly drew them outside (the
+  // MAP-REAL promise-3 falsifier this packet closes). Player + wild minis keep
+  // their own placement: the player sits AT the focus (entityScenePos of its own
+  // wu is the sheet centre, unchanged) and the wild bubble is region-frame-only,
+  // never in an interior.
   if (opts.world && !sceneData?.combat) {
     for (const node of nodes) {
       if (node.nodeType !== 'settlement') continue;
       const tok = placedTokenModel(opts.world, node.id);
       for (const npc of (tok.people || [])) {
-        const p = worldPosFromWu(npc.wx, npc.wy);
+        const p = entityScenePos(npc.wx, npc.wy);
         const y = heightAt(p.x, p.z);
         const fig = buildArchetypeFigure(THREE, 'humanoid', {});
         fig.position.set(p.x, y + 0.02, p.z);
         scene.add(fig);
-        sliceMinis.push({ group: fig, baseY: y + 0.02, baseScale: 1, rate: 1.3, phase: phaseFromKey(npc.id || npc.name), bob: 0.04, defeated: false });
+        const rec = { group: fig, baseY: y + 0.02, baseScale: 1, rate: 1.3, phase: phaseFromKey(npc.id || npc.name), bob: 0.04, defeated: false, wx: npc.wx, wy: npc.wy, yOff: 0.02 };
+        sliceMinis.push(rec); entityMinis.push(rec);
       }
       for (const prop of (tok.props || [])) {
         const mini = buildPropMini(THREE, prop.kind);
         if (!mini) continue;
-        const p = worldPosFromWu(prop.wx, prop.wy);
+        const p = entityScenePos(prop.wx, prop.wy);
         const y = heightAt(p.x, p.z);
         mini.position.set(p.x, y, p.z);
         scene.add(mini);
@@ -673,10 +727,15 @@ export async function mountSlice3D(container, sceneData, opts = {}) {
         // alive; the tiny bob is only enough to avoid a perfectly static scene
         // reading as a screenshot (Dejarik-alive per the brief, kept honest —
         // furniture doesn't have a pulse).
-        sliceMinis.push({ group: mini, baseY: y, baseScale: 1, rate: 0.6, phase: phaseFromKey(prop.kind + prop.wx + prop.wy), bob: 0.008, defeated: false });
+        const rec = { group: mini, baseY: y, baseScale: 1, rate: 0.6, phase: phaseFromKey(prop.kind + prop.wx + prop.wy), bob: 0.008, defeated: false, wx: prop.wx, wy: prop.wy, yOff: 0 };
+        sliceMinis.push(rec); entityMinis.push(rec);
       }
     }
   }
+  // REND-TRUTH-1 — settle the entities onto the sheet's mount-time projection.
+  // (setCamera, called by the host right after mount, reprojects them onto the
+  // live zoom; this guarantees a correct placement even before that first call.)
+  repositionEntities();
 
   // MR-3b (docs/briefs/MR-3-FOG-PROCGEN.md §MR-3b) — THE WILD DRAWN. The wild
   // stands wherever the engine says it stands (MR-3a's wildFeaturesAround) —
@@ -969,6 +1028,10 @@ export async function mountSlice3D(container, sceneData, opts = {}) {
     if (zoomDrifted || targetDrifted) {
       _sheetTarget = { x: target.x, z: target.z };
       worldSheet.refresh(_sheetTarget, opts.world, zNew != null ? zNew : zCur, curRad, vFovTan);
+      // REND-TRUTH-1 — the sheet just re-centred/re-zoomed, so its wu→scene scale
+      // and origin changed; reproject the engine-occupancy minis onto the new ink
+      // (they share the SAME transform the sheet's own drawing uses).
+      repositionEntities();
     }
     positionCamera(); // base + the player's orbit offset
     renderFrame();

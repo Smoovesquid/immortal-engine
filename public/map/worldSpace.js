@@ -424,3 +424,40 @@ export function resolveEntityWuFromWorld(world, place, frame, loc) {
   }
   return resolveEntityWu({ node, place, frame, plan }, effLoc);
 }
+
+// ── REND-TRUTH-1 — the entity↔ground-sheet projection (docs/MAP_REAL.md promise 3) ──
+//
+// The 3-D tilt view's ground is the 2-D sheet's OWN ink, painted on ONE flat
+// plane (render3d.js's TT-WORLD world-sheet). An engine-occupancy mini
+// (person/prop) must stand exactly where that ink drew it, at ANY zoom — anything
+// else is the "people in the bedroom" falsifier (they collapsed onto the player at
+// interior zoom while the ink correctly drew them 60–300 ft away). This is the ONE
+// transform that keeps the two in lockstep, factored out here (pure, hermetic) so
+// the render path and its tests share ONE derivation.
+//
+// The sheet paints a SHEET_PX-pixel capture, drawn at `sheetZ` px-per-wu, across a
+// plane of `sheetSpanScene` 3-D units centred at `center` (3-D {x,z}, == the camera
+// target). So on the sheet ONE wu spans `sheetSpanScene · sheetZ / SHEET_PX` 3-D
+// units — the SAME factor the ink itself uses — and the plane centre corresponds to
+// the focus world-unit point `center · NODE_WU/TILE_WU` (the exact inverse
+// buildWorldSheet uses to derive its focus). An entity at `wu` therefore lands at
+// `center + (wu − focusWu) · scenePerWu`. `worldPosFromWu`'s FIXED node-tile scale
+// (right only for the region lattice) was the bug: at interior zoom the sheet zooms
+// in but that fixed scale did not.
+//
+// `TILE_WU` (render3d.js's world-units-per-node-tile, == 40) is passed in rather
+// than imported, so this module keeps its zero-dependency, pure-math character
+// (render3d.js owns that constant). Pure + deterministic; never serialized/hashed.
+export function sheetScenePerWu(sheetSpanScene, sheetZ, sheetPx) {
+  const span = Number(sheetSpanScene) || 0;
+  const z = Number(sheetZ) || 0;
+  const px = Number(sheetPx) || 1;
+  return span * z / px;
+}
+export function entityScenePosOnSheet(center, sheetSpanScene, sheetZ, sheetPx, tileWu, wx, wy) {
+  const cx = Number(center?.x) || 0, cz = Number(center?.z) || 0;
+  const tw = Number(tileWu) || 1;
+  const fwx = cx * NODE_WU / tw, fwy = cz * NODE_WU / tw; // the sheet centre in world units (== the focus)
+  const s = sheetScenePerWu(sheetSpanScene, sheetZ, sheetPx);
+  return { x: cx + ((Number(wx) || 0) - fwx) * s, z: cz + ((Number(wy) || 0) - fwy) * s };
+}

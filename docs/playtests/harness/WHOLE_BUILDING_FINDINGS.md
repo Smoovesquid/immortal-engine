@@ -99,19 +99,24 @@ downstream of WB-Q1 + WB-Q5.
   isolation risks masking the real cause. **Queue** (revisit after WB-Q1/Q5). Also fix
   the **"reach for the it"** templating bug (a missing object name).
 
-### WB-Q4 — Phantom acquisition: "pocket the letter" adds no inventory item
-`object-interaction/high` (run -15-40-57 t15): "I pocket the letter" — the DM narrates
-acquiring it, but the letter is **revealed container text**, not a takeable entity, so the
-engine adds nothing to the pack (narration ≠ canon). The player then "shows the letter"
-to an NPC that the engine has no record of.
-- **Why deep:** requires modeling revealed container contents as takeable item entities
-  (inventory + canon). **Packet.**
-- **Proposed prompt:** *"Revealed container contents (the letter from the iron-bound chest,
-  via tryContainerReveal / containerContents) are narrative-only — 'take/pocket the letter'
-  narrates acquisition but adds no inventory item (phantom-acquisition oracle, high). Make
-  named revealed contents takeable: on a take/pocket intent targeting a revealed item, mint
-  a real item via applyDeltas so it enters the pack and can later be shown/read. Determinism-
-  safe. Seed tallow."*
+### WB-Q4 — ✅ DONE (PW-1, v0.22.0) — Phantom acquisition: "pocket the letter" added no inventory item
+`object-interaction/high` (run -15-40-57 t15): "I pocket the letter" — the DM narrated
+acquiring it, but the letter was **revealed container text**, not a takeable entity, so the
+engine added nothing to the pack (narration ≠ canon). The player could then "show the letter"
+to an NPC that the engine had no record of.
+- **Fixed by PW-1** (the prose-to-world materialization contract, `docs/briefs/PROSE_TO_WORLD_CONTRACT.md` §PW-1;
+  commit `4b8c8747`, shipped v0.22.0). A take/pocket intent naming a revealed item now COMMITS the
+  acquisition: the gate `tryTakeRevealedContainerItem` (`engine/playloop.js`) mints a real inventory
+  item via `applyDeltas` (`createItem`, the authored body carried in the item's `notes` so reading
+  from the pack stays byte-identical) plus a `modifyFurniture {takenItems}` overlay that subtracts the
+  item from the container's derived view (never re-offered), and pushes a `resolution` event
+  (`updateKind:'take:revealed'`) so replay re-executes the path. Re-taking is inert
+  (`[take:already-held | no roll]`, hash unchanged). Value-source is the pure `containerContents`
+  deriver — the LLM sets no value; determinism-safe (no `WORLD_VERSION` bump). Locked by
+  `tests/U323.takeRevealedItem.test.js` (open→take→pack lists it; survey no longer offers it;
+  read-before ≡ read-after ≡ read-after-save/load; second take hash-equal; two-fresh-worlds
+  transcript determinism). Note: `takeReveal` allocated `U322` in the brief but landed as `U323`
+  (U322 was taken by trait-algebra).
 
 ### WB-Q5 — Node-global furniture: the same chest is in every room
 Furniture lives on the NODE, not the room, so "look around" lists the SAME "straw pallet,
@@ -177,9 +182,10 @@ cosmetic (the #4 anti-repeat intent); fold into a buildLocationSurvey pass.
   Layout questions are answered from the map (WB-F6). **The first building (the cottage) is
   coherent and navigable.**
 - **What's left has moved off the first building:** generic failed-roll narration (**WB-Q2**,
-  the biggest remaining quality lever), phantom item pickup (**WB-Q4**), node-global furniture
-  (**WB-Q5**), dialogue memory/voice (**WB-Q6/Q8**), and the settlement-layer + fidelity
-  residuals (**WB-Q9**). None are first-building blockers; each is its own packet.
+  the biggest remaining quality lever), node-global furniture (**WB-Q5**), dialogue
+  memory/voice (**WB-Q6/Q8**), and the settlement-layer + fidelity residuals (**WB-Q9**). None
+  are first-building blockers; each is its own packet. *(Phantom item pickup — **WB-Q4** — is
+  now ✅ DONE via PW-1, v0.22.0.)*
 - The harness still reports "stuck" because `tour-building` demands probing every object AND
   the AI player wanders into the settlement — NOT because the building is broken (the
   hermetic `U258-F` proves the building tours to completion when driven properly).
@@ -217,9 +223,11 @@ what the engine generates (one building + roads), which is the root of the entry
   {presence:true})` ~L6031). Add the bare forms to the exit disjunct AND guard that
   handler with the presence-query predicate. Test: "I head outside" exits; "I head
   outside, who's here?" delivers the roster.
-- **T-Q2 (HIGH, = WB-Q4 reconfirmed): phantom item acquisition.** Town run t1 — the DM
-  "handed you an item the engine never put in your pack." Deep: the item-grant path
-  doesn't `applyDeltas` an `addItem` for DM-narrated pickups. Same packet as WB-Q4.
+- **T-Q2 (= WB-Q4 reconfirmed): phantom item acquisition — ✅ DONE (PW-1, v0.22.0).** Town run
+  t1 — the DM "handed you an item the engine never put in your pack." The revealed-container
+  case (take/pocket a named revealed item) now `applyDeltas` a real item; PW-2 (v0.31.4) added
+  the honest floor so an *ungrounded* take no longer narrates a phantom acquisition either. See
+  the WB-Q4 row above.
 - **T-Q3 (med, = WB-Q3): rolled-a-free-action.** Town run t17 — a free action got a d20.
   Same intent-routing seam as WB-Q3.
 - **T-Q4 (cosmetic, = WB-Q9): building-type "inn" drift.** The DM calls the cottage "the
@@ -236,8 +244,9 @@ what the engine generates (one building + roads), which is the root of the entry
   language now keeps canon and narration in sync — **NO state-desync across 3 post-fix
   real-DM runs** (was a HIGH desync pre-fix). The DM also respects the real geometry at the
   settlement layer ("building number one", "the single substantial building") — WB-Q1 holds.
-- **What's left is not town-navigation:** phantom items (T-Q2/WB-Q4), a free-action roll
-  (T-Q3/WB-Q3), a cosmetic label (T-Q4), and DM prose quality (T-Q5). Each is queued.
+- **What's left is not town-navigation:** a free-action roll (T-Q3/WB-Q3), a cosmetic label
+  (T-Q4), and DM prose quality (T-Q5). Each is queued. *(Phantom items — T-Q2/WB-Q4 — are now
+  ✅ DONE via PW-1+PW-2.)*
 - The harness "stuck"/goal-miss in some runs is the AI player's wandering path, not an
   engine block — `explore-town` is reachable (runs #1–#2 reached it; `U259` proves the
   metric climbs as the player gets out and meets people).

@@ -1,3 +1,17 @@
+// ============================================================================
+// ⚠️  DEAD PROTOTYPE — DO NOT BUILD ON THIS FILE.  (quarantined by PW-6, 2026-07-06)
+// ----------------------------------------------------------------------------
+// The abandoned CANON_CREATE proof-of-concept: it "collapses" a latent surface
+// on the MINIMAL-WORLD prototype shape (`world.nodes[].surfaces`, see
+// engine/world/minimalWorld.js) — NOT the live world (`world.map.nodes`). It also
+// mutates the world DIRECTLY (spread copies below) instead of routing through
+// engine/effectsCore.applyDeltas, which is why it is a sandbox toy, not a seam.
+// Superseded by the LANDED prose-to-world arc (PW-1..PW-5); the real design and
+// the reasons this file is dark are in docs/briefs/PROSE_TO_WORLD_CONTRACT.md
+// (see §1b). Its only importers are the minimalWorld sandbox and the U8 /
+// latentProjection determinism tests — kept solely to keep those green. If the
+// minimalWorld sandbox is retired, delete this file with it. Do NOT extend it.
+// ============================================================================
 import crypto from 'node:crypto';
 
 import { canonizeSurface } from '../csl/latent.js';

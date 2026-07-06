@@ -43,7 +43,9 @@ construction — a fixed function of fixed hashed inputs cannot change.
   `world.map.nodes` (`decompress.js:16`, `rumor/mint.js:121`). Their only importers are
   `engine/world/minimalWorld.js` and the U8/latentProjection tests. `resolveSurfaceContact` also
   mutates the world directly instead of through `applyDeltas`. It is a proof-of-concept of the
-  CANON_CREATE idea, not the seam. Do not build on it (packet PW-6 disposes of it).
+  CANON_CREATE idea, not the seam. Do not build on it (packet PW-6 quarantined it in place —
+  loud dead-prototype header comments; kept only because the minimalWorld sandbox + U8/latent
+  determinism tests still import it, so deleting would cascade `ERR_MODULE_NOT_FOUND`).
 - `mintFact` does not exist at HEAD. History (`git log -S mintFact`) shows it in the H-96 arc
   ("revealed letters deliver authored prose", `5750bf8`) — that lineage *became*
   `containerItemText` (`generateFurniture.js:168-173`), i.e. it already evolved into the pure-deriver
@@ -255,12 +257,19 @@ where a latent value should collapse). Substantial prior machinery exists (`clai
 LAW_OF_EARNED_KNOWLEDGE. Deliberately unscoped here; needs its own brief. Do not start before PW-3
 soaks.
 
-### PW-6 — prototype disposal + doc alignment (hygiene)
+### PW-6 — prototype disposal + doc alignment (hygiene) — ✅ DONE (2026-07-06, arc closes)
 
 Retire or clearly quarantine `engine/csl/latent.js` + `engine/world/resolveSurfaceContact.js`
 (minimal-world only; header comment saying so) so no future worker builds on the wrong shape; fix
 RUMOR_LAYER.md:144 (PW-3 note); update `docs/playtests/harness/WHOLE_BUILDING_FINDINGS.md` WB-Q4 row
 when PW-1 lands.
+
+**Landed:** both prototype files **quarantined in place** (loud dead-prototype headers) — retiring
+would cascade `ERR_MODULE_NOT_FOUND` because the minimalWorld sandbox + U8/latent determinism tests
+still import them, so the import graph is not clean enough to delete. RUMOR_LAYER.md:144 was already
+aligned to code during PW-3 (projects `{id, tier, age}`, not `verified`; pinned by U610) — verified,
+no change needed. WB-Q4 row (and its T-Q2 cross-references) re-marked ✅ DONE (PW-1). **This closes
+the prose-to-world arc: PW-1 (v0.22.0) → PW-2 (v0.31.4) → PW-3 (v0.31.5) → PW-4 → PW-5 (v0.32.2) → PW-6.**
 
 **Order:** PW-1 → PW-2 (pairs with 1) → PW-3 → PW-4 (parallel-safe with PW-3; disjoint files) →
 PW-5 → PW-6 anytime after PW-3.

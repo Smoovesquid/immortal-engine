@@ -3291,3 +3291,26 @@ other agents. (none active)
   end-to-end through real aldermere decompression.
 - U625–U627 now committed — the allocator sees them again. ENSURE-STATS-1's lane (state/combat)
   is FREE — dispatching next.
+
+## 2026-07-06 — Basecamp — UNIT-CLASH-1 → v0.32.5 build 125 "minis at true size" — Tim's colossus report, root-caused live
+
+- Tim's live report ("Please make the map work. Please." + screenshot: a building-sized statue
+  blended over the Aldermere plan): REPRODUCED on the desk preview, root-caused to a unit clash —
+  the ONE-MAP sheet is METRIC (worldSpace.js: NODE_WU 1 km, PLACE_WU 4 m; plans/scale-bar/tree
+  ink all metres) but figures3d.js's mini tables shipped raw FEET as wu (villager 6, bed 7).
+  Every person/prop/wild mini drew ×3.28 colossal against its own ink; invisible while the map
+  was flat + everything uniformly inflated (REND-SCALE-1's ratio law kept Hobbit-vs-human right),
+  detonated when MAP-3DR's diorama tilted the camera into the bedchamber with a 6 m statue.
+- Fix `d5bd49cb`: ONE ft→wu seam (WU_PER_FT=0.3048) in figures3d.js — authored sizes stay
+  SRD-feet (legible), export metric; dwarf override + prop + wild tables converted; tree path
+  untouched (already ink-anchored metric). The teaching comments that spread the wrong frame
+  corrected at source, including worldSpace.js's original-sin gloss "1 wu ≈ 1 ft/1 m".
+- Honest relocks: U566c/d (dwarf/bed/barrel via WU_PER_FT), U567 rewritten to the metric frame
+  (villager = 0.366 of a 5 wu cell; the foot-tall-Hobbit falsifier restated frame-honestly),
+  U576e re-pinned to authored-ft × WU_PER_FT. 22/22; full ladder 10866/0 · 135/135 · screen
+  truth 7/7 (2-D ink byte-identical per U576a — this fix sizes minis only).
+- LIVE receipts, both surfaces (map-fidelity rule): fullscreen Map at plan zoom + the in-play
+  panel through a real "look around" turn — audit person 6.0→1.8288 wu, bed 7→2.1336; screenshots
+  show a tabletop mini at the marker ring, bed bigger than the man. NOTE for combat-taste later:
+  a tactical cell is 5 wu ≈ 5 m of ground; the "5-ft square" wording elsewhere is rules flavour,
+  not a unit — flagged, not changed here.

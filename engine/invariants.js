@@ -85,6 +85,15 @@ export function assertWorldInvariants(world) {
     if (!Number.isInteger(mo.lastDeedT) || mo.lastDeedT < 0) {
       throw new Error(`Invariant: party[${i}].morality.lastDeedT must be non-negative integer`);
     }
+    // MP-3 — the hunt latch (docs/MORAL_PHYSICS.md §4): world-tick index of the last hunt,
+    // 0 = never / re-armed. Non-negative integer, same shape as lastDeedT.
+    if (!Number.isInteger(mo.huntedT) || mo.huntedT < 0) {
+      throw new Error(`Invariant: party[${i}].morality.huntedT must be non-negative integer`);
+    }
+    // MP-3 — the decay counter: ticks toward the next heat-decay step. Non-negative integer.
+    if (!Number.isInteger(mo.heatCoolTicks) || mo.heatCoolTicks < 0) {
+      throw new Error(`Invariant: party[${i}].morality.heatCoolTicks must be non-negative integer`);
+    }
     // v23 — the seven sin + seven virtue accumulators, each 0..100.
     const axes = mo.axes;
     if (!axes || typeof axes !== 'object' || Array.isArray(axes)) {

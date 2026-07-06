@@ -1096,7 +1096,19 @@ function ensureMorality(m) {
     locked: Boolean(x.locked ?? false),
     patrons,
     axes,
-    lastDeedT: clampIntMin(x.lastDeedT ?? 0, 0)
+    lastDeedT: clampIntMin(x.lastDeedT ?? 0, 0),
+    // MP-3 (docs/MORAL_PHYSICS.md §4) — the hunt latch: the world-tick index at which the
+    // last hunt (Tier 3) was dispatched. Prevents the hunt from re-firing every tick while
+    // heat stays over HUNT_HEAT — it fires ONCE per crossing, then re-arms only after heat
+    // decays back below the threshold. Additive with a safe default (0 = never hunted); old
+    // saves normalize cleanly, so no WORLD_VERSION bump (same pattern as lastDeedT / deed.tier).
+    huntedT: clampIntMin(x.huntedT ?? 0, 0),
+    // MP-3 — the decay counter: ticks accrued toward the next heat-decay step. Heat bleeds one
+    // point every HEAT_DECAY_INTERVAL world-ticks (a GENTLE rate — a single turn can advance the
+    // clock by many ticks, e.g. a multi-day build; a per-tick bleed would launder a fresh
+    // atrocity to nothing before the turn returned). A dedicated counter makes the rate robust
+    // to the world-tick's irregular timeline clock. Additive, default 0, no WORLD_VERSION bump.
+    heatCoolTicks: clampIntMin(x.heatCoolTicks ?? 0, 0)
   };
 }
 

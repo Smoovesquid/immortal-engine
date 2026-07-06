@@ -9,6 +9,9 @@ import { propagateRumors } from './rumor/propagate.js';
 import { propagateClaims } from './claims.js';
 import { mintVillain, corruptionTier, VILLAIN_STAGE_COST, VILLAIN_GOAL_ACCEL } from './story/villain.js';
 import { addThreat } from './ledger.js';
+import { HUNT_HEAT, HEAT_DECAY_INTERVAL, HEAT_DECAY_PER_TICK } from './morality/escalation.js';
+import { selectCreatures, spawnEncounter } from './combat/encounterSpawn.js';
+import { biomeForNode } from './world/biome.js';
 
 // Living System Core — deterministic world evolution.
 
@@ -64,6 +67,14 @@ export function worldTick(world, seed = '') {
   // 5.8) Propagate epistemic claims along the social graph (deterministic, zero LLM calls).
   // Epistemic variance lives here — claims drift and fracture; engine truth is never touched.
   w = propagateClaims(w, rng);
+
+  // 5.9) MP-3 (docs/MORAL_PHYSICS.md §4) — heat→hunt. The hunt fires FIRST (reads the heat
+  // the player's deeds accrued), THEN heat decays with time/distance and re-arms once cooled.
+  // Both are deterministic-by-seed; the hunt spawns through the existing organ on its OWN
+  // sub-RNG so it never perturbs the shared tick stream (a no-deed run leaves heat at 0 → no
+  // hunt, no decay effect → worldHash unchanged).
+  w = tickHunt(w);
+  w = tickHeatDecay(w);
 
   // 6) Modify reputation + alignment state
   w = tickReputation(w, severity);
@@ -469,6 +480,100 @@ function tickReputation(w, severity) {
     next.factions[f.id] = clampInt(cur + drift, -100, 100);
   }
   return { ...w, reputation: next };
+}
+
+// ── MP-3 — the hunt (Tier 3 goes live). docs/MORAL_PHYSICS.md §4 T3 row ──────────────
+// When the player's accumulated heat crosses HUNT_HEAT, the world stops waiting: the
+// virtue-gods' avengers / crime pressure arrive through the EXISTING spawnEncounter organ
+// (a ROUTER to a live organ, not new effect code). Fires ONCE per crossing — a `huntedT`
+// latch on morality prevents re-spawning every tick while heat stays hot; the latch re-arms
+// in tickHeatDecay once heat cools back below the threshold. Deterministic-by-seed: the
+// encounter runs on its OWN sub-RNG (seeded by the tick clock + heat), so it NEVER draws from
+// the shared tick stream — a run that never crosses the threshold is byte-identical to before.
+// HIDE-THE-MATH: the player sees hunters at the node, never a heat number (invariant I).
+function tickHunt(w) {
+  const player = Array.isArray(w.party) ? w.party[0] : null;
+  const mo = (player && player.morality && typeof player.morality === 'object') ? player.morality : null;
+  if (!mo) return w;
+
+  const heat = Number(mo.heat ?? 0);
+  const hunted = Number(mo.huntedT ?? 0);
+  // Below the threshold, or already dispatched and not yet re-armed (huntedT set) → no hunt.
+  if (heat < HUNT_HEAT || hunted > 0) return w;
+
+  const tick = w.time?.turn ?? 0;
+  const node = (w.map?.nodes || []).find(n => n && n.id === w.map?.currentNodeId) || null;
+  const biome = node ? biomeForNode(w.meta?.seed, node) : 'wilderness';
+  // Seed unique to THIS crossing (tick + heat + timeline depth) — same seed ⇒ same hunters.
+  const hRng = makeRng(seedFromString(`${w.meta?.seed}|moral-hunt|t${tick}|tl${w.timeline?.length ?? 0}|heat${Math.round(heat)}`));
+  // Party of avengers; a second hunter joins once heat is well over the line (deeper guilt =
+  // heavier answer). CR mild — this is a reckoning the player can face or flee, not an execution.
+  const overBy = heat - HUNT_HEAT;
+  const count = overBy >= HUNT_HEAT ? 3 : 2;
+  const cr = 1 + (overBy >= HUNT_HEAT ? 1 : 0);
+  const creatures = selectCreatures(cr, count, null, hRng, biome);
+  if (!Array.isArray(creatures) || creatures.length === 0) {
+    // No creature could be selected (degenerate world) — still latch so we don't spin.
+    return mutatePlayerMorality(w, (m) => ({ ...m, huntedT: Math.max(1, tick) }));
+  }
+
+  // ambush:false — the hunters ARRIVE at the node (the player sees them and chooses to
+  // engage), rather than a force-started combat cut mid-world-tick. This is the DM-authentic
+  // "they show up looking for you," and it touches no combat state (spawnEncounter places
+  // them as hostile NPCs at currentNodeId).
+  let w2 = spawnEncounter(w, creatures, { ambush: false, reason: 'moral-hunt' }, hRng);
+  // Latch: record the tick we dispatched (Math.max(1,…) so tick 0 still marks "hunted"),
+  // so this fires once, not every tick.
+  w2 = mutatePlayerMorality(w2, (m) => ({ ...m, huntedT: Math.max(1, tick) }));
+  return pushTickLog(w2, `[TICK] the hunt arrives (moral reckoning at ${w.map?.currentNodeId || 'here'})`);
+}
+
+// Heat bleeds off with time/distance (§4), and the hunt re-arms once heat has cooled back
+// below HUNT_HEAT. GENTLE + robust: a per-tick counter (heatCoolTicks) accrues one tick per
+// world-tick, and every HEAT_DECAY_INTERVAL ticks it sheds HEAT_DECAY_PER_TICK heat and
+// resets. This makes the rate independent of the world-tick's irregular timeline clock, and
+// crucially survives a single player turn that advances many ticks at once (a multi-day build
+// runs up to 30 downtime ticks — a per-tick bleed would launder a fresh atrocity to nothing).
+// Deterministic: pure counter arithmetic, no RNG consumed.
+function tickHeatDecay(w) {
+  const player = Array.isArray(w.party) ? w.party[0] : null;
+  const mo = (player && player.morality && typeof player.morality === 'object') ? player.morality : null;
+  if (!mo) return w;
+
+  const heat = Number(mo.heat ?? 0);
+  const cool = Number(mo.heatCoolTicks ?? 0);
+  const hunted = Number(mo.huntedT ?? 0);
+
+  let nextHeat = heat;
+  let nextCool = cool;
+  if (heat > 0) {
+    nextCool = cool + 1;
+    if (nextCool >= HEAT_DECAY_INTERVAL) {
+      const steps = Math.floor(nextCool / HEAT_DECAY_INTERVAL);
+      nextHeat = Math.max(0, heat - HEAT_DECAY_PER_TICK * steps);
+      nextCool = nextCool % HEAT_DECAY_INTERVAL;
+    }
+  } else {
+    nextCool = 0; // cold — nothing to count toward.
+  }
+  // Re-arm the hunt latch once heat has cooled back below the threshold (a reformed / fled
+  // actor can be hunted AGAIN if they climb back over later).
+  const nextHunted = nextHeat < HUNT_HEAT ? 0 : hunted;
+
+  if (nextHeat === heat && nextCool === cool && nextHunted === hunted) return w;
+  return mutatePlayerMorality(w, (m) => ({ ...m, heat: nextHeat, heatCoolTicks: nextCool, huntedT: nextHunted }));
+}
+
+// Small helper — apply fn to party[0].morality, functionally (mirrors mutateEntity in
+// effectsCore but scoped to the player's morality, which is where heat/huntedT live).
+function mutatePlayerMorality(w, fn) {
+  const party = Array.isArray(w.party) ? w.party : [];
+  if (party.length === 0) return w;
+  const nextParty = party.slice();
+  const e = nextParty[0] || {};
+  const mo = (e.morality && typeof e.morality === 'object') ? e.morality : {};
+  nextParty[0] = { ...e, morality: fn(mo) };
+  return { ...w, party: nextParty };
 }
 
 function tickMotifs(w, rng, severity) {

@@ -21,7 +21,7 @@ describe('U107-A: state shape & safe defaults', () => {
   it('WORLD_VERSION is 31', () => assert.equal(WORLD_VERSION, 31));
   it('a fresh party member has neutral morality', () => {
     const m = mk().party[0].morality;
-    assert.deepEqual(m, { corruption: 0, virtue: 0, heat: 0, locked: false, patrons: {}, axes: ZERO_AXES, lastDeedT: 0 });
+    assert.deepEqual(m, { corruption: 0, virtue: 0, heat: 0, locked: false, patrons: {}, axes: ZERO_AXES, lastDeedT: 0, huntedT: 0, heatCoolTicks: 0 });
   });
   it('the world has an empty deeds index', () => assert.deepEqual(mk().deeds, []));
   it('an old save with no morality upgrades to a clean neutral slate', () => {

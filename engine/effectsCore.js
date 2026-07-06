@@ -6,7 +6,7 @@ import { statMod, maxWounds } from './ruleset/core/stats.js';
 import { applyCondition as applyConditionPure } from './combat/conditions.js';
 import { ensureStructures } from './structures/structuresState.js';
 import { DOOR_STATES } from './structures/doors.js';
-import { escalationTier } from './morality/escalation.js';
+import { escalationTier, heatAccrual } from './morality/escalation.js';
 
 // MR-2a — the valid target states for the `door` op (canon door-state enum).
 const DOOR_STATE_ENUM = new Set(DOOR_STATES);
@@ -212,10 +212,13 @@ export function applyDeltas(world, deltas = []) {
       const actorId = resolvePlayerEntityId(w, op.actorId);
       const standing = moralityAtEntry.get(actorId)
         || (() => { const a = findPlayerEntity(w, op.actorId); return { corruption: Number(a?.morality?.corruption ?? 0), heat: Number(a?.morality?.heat ?? 0) }; })();
+      // The wild = a deed with no settlement witnesses (§6): reach 0 AND the slow, no-claim
+      // "getting away with it" accrual. Witnesses present ⇒ not wild.
+      const wild = witnesses.length === 0;
       const tier = escalationTier(
         { severity, kind: deedKind },
         standing,
-        { witnessReach: witnesses.length, wild: witnesses.length === 0 }
+        { witnessReach: witnesses.length, wild }
       );
       const deed = {
         t: Math.max(0, t),
@@ -229,11 +232,33 @@ export function applyDeltas(world, deltas = []) {
       };
       const deeds = Array.isArray(w.deeds) ? [...w.deeds, deed].slice(-64) : [deed];
       w = { ...w, deeds };
-      // Stamp lastDeedT on the actor so erosion/decay math has an anchor (resolve the
-      // 'party' sentinel to the real player entity).
+      // MP-3 (docs/MORAL_PHYSICS.md §4) — HEAT ACCRUAL, at the SAME chokepoint as the tier
+      // so every emitter (playerMove deed pass, coerced build, cast consequence, story arcs)
+      // accrues uniformly and none can forget. Cruelty/forbidden add heat scaled by severity
+      // + witnesses, reduced by the actor's WITS (concealment); a wild deed accrues slowly and
+      // mints no claim (the asymmetry). mercy/aid/atonement — and every FAIR kill (which never
+      // records a cruelty deed, U556) — add ZERO. Heat is SILENT structured state, the
+      // accumulator MP-3's world-tick reads to send the hunt at HUNT_HEAT; no player-facing
+      // string is touched (invariant I). Pure + deterministic (batch-entry heat + this deed's
+      // engine-set severity/witnesses + the actor's WITS); the hunt itself fires in worldTick,
+      // NOT here (this is the accrual, not the effect).
+      const actorEntity = findPlayerEntity(w, op.actorId);
+      const gained = heatAccrual(
+        { severity, kind: deedKind },
+        actorEntity,
+        { witnessReach: witnesses.length, wild }
+      );
+      // Base off the LIVE heat (reflects any earlier accruing deed in THIS batch), so two
+      // atrocities in one turn COMPOUND rather than the second clobbering the first. (The
+      // TIER above deliberately reads batch-entry `standing` — a first atrocity must not
+      // self-boost its own tier — but the accumulator is additive and must not lose a deed.)
+      const liveHeat = Number(actorEntity?.morality?.heat ?? standing.heat ?? 0);
+      const nextHeat = Math.max(0, Math.round(liveHeat + gained));
+      // Stamp heat + lastDeedT on the actor so the hunt has an accumulator and decay math has
+      // an anchor (resolve the 'party' sentinel to the real player entity).
       w = mutateEntity(w, resolvePlayerEntityId(w, op.actorId), (e) => {
         const mo = (e.morality && typeof e.morality === 'object') ? e.morality : {};
-        return { ...e, morality: { ...mo, lastDeedT: deed.t } };
+        return { ...e, morality: { ...mo, heat: nextHeat, lastDeedT: deed.t } };
       });
       continue;
     }

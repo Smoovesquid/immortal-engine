@@ -11,6 +11,7 @@ import { profBonusFor } from '../ruleset/core/levelTable.js';
 import { makeRng, seedFromString } from '../rng.js';
 import { normalizeTopology, adjacentRooms } from '../structures/topology.js';
 import { roomWindows, windowSurveyPhrase } from '../structures/roomWindows.js';
+import { outdoorTerrainFacts, terrainSurveyPhrases } from '../world/wildFacts.js';
 import { occupantsOfRoom, outdoorOccupants, visibleThroughWindows, occupiedWindowsFromOutside } from '../structures/roomOccupancy.js';
 import { objectsHere } from '../structures/roomObjects.js';
 import { getRoomState } from '../structures/roomState.js';
@@ -3069,6 +3070,22 @@ export function buildLocationSurvey(world, opts = {}) {
   // reads (an empty or shuttered settlement adds nothing).
   if (!insideStructure && occupiedWindowsFromOutside(w)) {
     parts.push('Through a lit window nearby, a shape moves within.');
+  }
+
+  // MR-3c — the WILD READ. Outdoors, a look-around names what actually stands in the
+  // visibility bubble (engine/world/wildFacts.js over MR-3a's derivation): the notable
+  // features by compass direction ("a stand of trees to the north") and the roads in
+  // sight as orientation anchors ("the road runs west" — the most load-bearing line
+  // for a lost traveller). The SAME derivation the map draws and the DM prompt reads,
+  // so narrated wild can never contradict the world (the design's falsifier). One
+  // capped, stable-ordered line; omitted for a bare clearing off any road (null facts).
+  if (!insideStructure) {
+    // Roads omitted here — the exits-by-direction block below already names the roads
+    // leaving, so we'd otherwise double them ("a path runs south … a path leads south").
+    const terrainPhrases = terrainSurveyPhrases(outdoorTerrainFacts(w), { roads: false });
+    if (terrainPhrases.length) {
+      parts.push(titleCase(joinList(terrainPhrases)) + '.');
+    }
   }
 
   // Exits by compass direction (grounded in real map geometry)

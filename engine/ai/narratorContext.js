@@ -24,6 +24,7 @@ import { getRoomState } from '../structures/roomState.js';
 import { occupantsOfRoom, outdoorOccupants, visibleThroughWindows } from '../structures/roomOccupancy.js';
 import { roomWindows, roomWindowFacings } from '../structures/roomWindows.js';
 import { doorsOf } from '../structures/doors.js';
+import { outdoorTerrainFacts } from '../world/wildFacts.js';
 
 /**
  * buildNarratorContext(world, outcome) → NarratorContext (original slim context)
@@ -83,6 +84,10 @@ export function buildNarratorContext(world, outcome = {}) {
     objective: String(w.scene?.objective ?? ''),
     structuresHere: scene.structuresHere,
     interior: scene.interior,
+    // MR-3c: the outdoor wild read (features-by-direction + roads in sight), null
+    // indoors or for a bare clearing — the DM prompt renders it as a hide-the-math
+    // TERRAIN line so the narrated wild matches the map and the survey exactly.
+    terrain: scene.terrain,
     // The roads that lead onward from here (real adjacency) — so the DM can tell the
     // player where they can go and never narrate a waypoint as a dead end (journey fix).
     exits: scene.location.exits,
@@ -573,9 +578,18 @@ function buildScene(w, outcome) {
   // Settlement data
   const settlement = currentNode?.settlement ?? null;
 
+  // MR-3c: the outdoor wild read — the derived features in the player's bubble by
+  // compass direction + the roads in sight, the SAME derivation the survey composes
+  // and the map draws (engine/world/wildFacts.js over MR-3a). null indoors (the
+  // interior seam owns that) or for a bare clearing. Threaded to the DM prompt as a
+  // hide-the-math TERRAIN line (llmAdapter.outdoorTerrainFact), mirroring how the door/
+  // window planFacts ride the interior into the prompt. Pure f(world), no stored state.
+  const terrain = outdoorTerrainFacts(w);
+
   return {
     location: { name: placeName, type: nodeType, exits },
     interior,
+    terrain,
     structuresHere,
     timeOfDay,
     activeThreat: pickActiveThreat(w),

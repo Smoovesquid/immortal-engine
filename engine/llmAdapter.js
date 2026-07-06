@@ -159,6 +159,41 @@ function interiorWindowFact(interior) {
   return `WINDOW (canon): this room has a window open onto the outside — no one is in view through it right now. Invent no window other than this.`;
 }
 
+// The read-noun for a wild feature KIND, phrased as fiction (what the DM CALLS the
+// thing) — never a coordinate, never a blocking flag. Mirrors wildFacts' survey
+// vocabulary so the prompt and the look-around speak the same wild. HIDE-THE-MATH.
+const TERRAIN_NOUN = {
+  tree: 'a stand of trees',
+  boulder: 'a cluster of boulders',
+  deadfall: 'fallen deadfall',
+  stump: 'an old stump',
+  brush: 'thick brush',
+};
+
+// MR-3c — the outdoor TERRAIN fact line. The wild derivation (MR-3a, via wildFacts'
+// outdoorTerrainFacts on ctx.terrain) reaches the DM as perceivable texture so it
+// narrates the REAL features standing around the player — never invents a wood that
+// isn't there and never contradicts what the map draws. HIDE-THE-MATH: features arrive
+// pre-bucketed by compass direction as fiction ("a stand of trees to the north", "the
+// road runs west") — no cells, no coordinates, no blocking=true. A great pine leaning
+// over the trail's north side, not "blocking @(406,65)". Returns '' when there's no
+// wild to read (indoors, or a bare clearing — ctx.terrain null). Never throws.
+function outdoorTerrainFact(terrain) {
+  if (!terrain || typeof terrain !== 'object') return '';
+  const clauses = [];
+  for (const f of (Array.isArray(terrain.features) ? terrain.features : [])) {
+    const noun = TERRAIN_NOUN[f?.kind];
+    if (!noun || !f.dir) continue;
+    clauses.push(`${noun} to the ${f.dir}`);
+  }
+  for (const r of (Array.isArray(terrain.roads) ? terrain.roads : [])) {
+    if (!r?.dir) continue;
+    clauses.push(`${r.kind === 'road' ? 'the road runs' : 'a path runs'} ${r.dir}`);
+  }
+  if (!clauses.length) return '';
+  return `TERRAIN (canon — describe these exactly as the wild standing around the player; a body-height obstruction like a tree or boulder is in the way, not something to walk through): ${clauses.join('; ')}. Invent no landmark, wood, or clearing beyond what is named here and the roads already given.`;
+}
+
 // ROM-2 — the PEOPLE HERE display list. Reads ctx.settlement.npcs (already
 // earned-name-filtered by buildNarratorContext — a name only appears once the
 // player has met that NPC or is home) and keeps only those NOT marked
@@ -236,6 +271,11 @@ export function buildSystemPrompt(ctx) {
   // MR-2d: the window canon — the real apertures this room has and who is visible
   // through them (line of sight, never presence). '' when the room has no window.
   const windowFact = ctx.interior ? interiorWindowFact(ctx.interior) : '';
+  // MR-3c: the outdoor terrain canon — the wild features standing around the player
+  // (features-by-direction + roads in sight) as hide-the-math fiction, so the DM
+  // narrates the real wood and never contradicts the map. '' indoors or in a bare
+  // clearing (ctx.terrain null). The outdoor sibling of the door/window facts.
+  const terrainFact = (!ctx.interior && ctx.terrain) ? outdoorTerrainFact(ctx.terrain) : '';
   const presenceLawFact = ctx.interior
     ? `Anyone else at this settlement is elsewhere — never place, voice, or have them act in this room; never state a wall/floor material other than the one above.`
     : '';
@@ -256,6 +296,7 @@ export function buildSystemPrompt(ctx) {
     ...(materialFact ? [`- ${materialFact}`] : []),
     ...(doorFact ? [`- ${doorFact}`] : []),
     ...(windowFact ? [`- ${windowFact}`] : []),
+    ...(terrainFact ? [`- ${terrainFact}`] : []),
     ...(presenceLawFact ? [`- ${presenceLawFact}`] : []),
     ``
   ];

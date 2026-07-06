@@ -21,7 +21,10 @@ describe('U107-A: state shape & safe defaults', () => {
   it('WORLD_VERSION is 31', () => assert.equal(WORLD_VERSION, 31));
   it('a fresh party member has neutral morality', () => {
     const m = mk().party[0].morality;
-    assert.deepEqual(m, { corruption: 0, virtue: 0, heat: 0, locked: false, patrons: {}, axes: ZERO_AXES, lastDeedT: 0, huntedT: 0, heatCoolTicks: 0, pactT: 0 });
+    // MP-5b: extended with cassandraArmed/cassandraT (both default false/0), the same class
+    // of update MP-3 (huntedT/heatCoolTicks) and MP-4 (pactT) already made to this shared
+    // shape assertion when they landed their own additive morality fields.
+    assert.deepEqual(m, { corruption: 0, virtue: 0, heat: 0, locked: false, patrons: {}, axes: ZERO_AXES, lastDeedT: 0, huntedT: 0, heatCoolTicks: 0, pactT: 0, cassandraArmed: false, cassandraT: 0 });
   });
   it('the world has an empty deeds index', () => assert.deepEqual(mk().deeds, []));
   it('an old save with no morality upgrades to a clean neutral slate', () => {

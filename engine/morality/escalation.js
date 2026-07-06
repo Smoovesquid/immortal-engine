@@ -41,6 +41,30 @@ export const DEED_SEV = Object.freeze({ LIGHT: 5, MOD: 12, HEAVY: 20 });
 // design-owned magnitude the farm tunes against determinism tests.
 export const HUNT_HEAT = 40;
 
+// MP-5b — THE CASSANDRA (docs/MORAL_PHYSICS.md §5: "The Cassandra fires at the T2→T3
+// boundary — a person who sees you clearly and says the hard thing once, plainly, and
+// can be waved off"). The pinned interpretation (docs/briefs/MP-5b-the-cassandra.md):
+// "at the boundary" = the APPROACH BAND, not the boundary line itself — the warning must
+// land BEFORE the hunt, while heeding (cooling off, making amends, leaving) can still
+// matter. The band is `[HUNT_HEAT - CASSANDRA_MARGIN, HUNT_HEAT)`; worldTick.js arms the
+// one-shot latch the instant heat enters or clears this band (see `cassandraBandFloor`
+// below and `tickCassandra` in worldTick.js). Starting calibration ≈8 — chosen to sit
+// INSIDE MP-3's decay horizon (HEAT_DECAY_PER_TICK/HEAT_DECAY_INTERVAL below) so a player
+// who is warned at the floor and stops offending can actually cool back out of the band
+// before the hunt would otherwise catch them; a margin narrower than one decay step would
+// make the warning arrive too late to matter in practice. A design-owned magnitude, tuned
+// against determinism tests (U583+), never by the model at runtime.
+export const CASSANDRA_MARGIN = 8;
+
+// The band floor, as a named read (never re-derive `HUNT_HEAT - CASSANDRA_MARGIN` inline
+// at a call site — one arithmetic home, same discipline as PACT_CORRUPTION being READ
+// rather than forked). heat >= this floor arms the Cassandra latch; heat falling back
+// below it re-arms (clears) the latch for a future crossing. Pure; no clamping needed
+// since both constants are fixed non-negative literals.
+export function cassandraBandFloor() {
+  return HUNT_HEAT - CASSANDRA_MARGIN;
+}
+
 // Tier-4 threshold. Corruption at or above this and the gift arrives unbidden (MP-4
 // routes forbiddenGates through the ladder as an omen). This is READ FROM
 // forbiddenGates — the lowest dark-gift threshold — and is NEVER forked here (§4:

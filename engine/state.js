@@ -1116,7 +1116,28 @@ function ensureMorality(m) {
     // corruption stays over the line, and re-arms only after corruption falls back below the
     // threshold. Additive with a safe default (0 = never claimed); old saves normalize cleanly,
     // so no WORLD_VERSION bump (same pattern as huntedT / lastDeedT / deed.tier).
-    pactT: clampIntMin(x.pactT ?? 0, 0)
+    pactT: clampIntMin(x.pactT ?? 0, 0),
+    // MP-5b (docs/MORAL_PHYSICS.md §5) — THE CASSANDRA: a person who sees the doer clearly and
+    // says the hard thing once, plainly, before the hunt. TWO fields (mirroring MP-3's
+    // huntedT+heatCoolTicks pairing, not a single flag) because the Cassandra has a HOLD state
+    // the hunt/pact latches never needed — she is a real present NPC, never a voice from
+    // nowhere, so arming and DELIVERING the beat are different moments when nobody happens to
+    // be at the player's node:
+    //   cassandraArmed — true from the instant heat enters the approach band
+    //     ([HUNT_HEAT-CASSANDRA_MARGIN, HUNT_HEAT), engine/morality/escalation.js) until the
+    //     beat is actually spoken. Stays true (HOLDING) across ticks with nobody present.
+    //   cassandraT — the world-tick index at which the beat was actually DELIVERED (a present
+    //     NPC spoke it); 0 = never yet delivered for the current arming. Once >0 the beat has
+    //     CLEARED (narratorContext.js's surfacing reads this to show the line for exactly the
+    //     one turn it was delivered, then goes silent) — it never repeats while heat stays in
+    //     or above the band.
+    // Both re-arm (armed:false, T:0) together only once heat cools back below the band FLOOR
+    // (docs/MORAL_PHYSICS.md §5's own wording — "re-arms only after cooling below the band
+    // floor"), so a player who is warned, cools off, and later re-offends earns one more plain
+    // warning. Additive, safe defaults, no WORLD_VERSION bump (same normalize-cleanly pattern
+    // as huntedT/pactT/heatCoolTicks).
+    cassandraArmed: Boolean(x.cassandraArmed ?? false),
+    cassandraT: clampIntMin(x.cassandraT ?? 0, 0)
   };
 }
 

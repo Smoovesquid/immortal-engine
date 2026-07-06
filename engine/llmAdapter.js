@@ -227,6 +227,35 @@ function moralOmenFact(omen) {
   return `OMEN (canon — a sign the world itself carries; render it purely as color in the telling, the way weather or a stranger's glance would read, never as a verdict spoken AT the player or a status line recited to them): ${framing} — ${phrase}.`;
 }
 
+// MP-5b — THE CASSANDRA (docs/MORAL_PHYSICS.md §5, docs/briefs/MP-5b-the-cassandra.md).
+// "A person who sees you clearly and says the hard thing once, plainly, and can be waved
+// off — the Creator's quiet register; heeding is the drama." ctx.cassandraOmen is null
+// unless narratorContext.js's cassandraOmen just found a real present witness for the
+// one-time delivery (see that function's own comment for the exact freshness rule) — this
+// function only supplies HOW to render it: a QUIET, plain, ONE-TIME line from a named
+// person actually in the room, never thunder, never a sermon, never a mechanical demand
+// riding on it (heeding is the player's own drama, not a gate the DM enforces). HIDE-THE-
+// MATH — same discipline as moralOmenFact: no number, no "corruption"/"heat"/"tier"/
+// "escalation"/"cassandra" (the mechanic's own NAME must never leak either — U578's wall
+// pattern, extended to this beat's own vocabulary). Returns '' when there's nothing to
+// deliver (the common case — most turns never light the approach band). Never throws.
+function cassandraFact(cassandra) {
+  if (!cassandra || typeof cassandra !== 'object') return '';
+  const role = String(cassandra.role || '').trim();
+  const name = String(cassandra.name || '').trim();
+  // Earned name if the player knows this person; otherwise describe them by their role
+  // (never invent a name), and if even a role is missing, fall back to a bare stranger —
+  // presence is the gate, not acquaintance (mirrors the settlement roster's own
+  // name-vs-role convention above).
+  const who = name ? name : (role ? `the ${role}` : 'someone here');
+  // The engine's own base narration ALREADY states this moment plainly (the LLM-off
+  // fallback line, engine/llmAdapter.js augmentNarration — the silent-fallback law means
+  // it must exist even offline). Tell the model to RESTYLE that same sentence with craft,
+  // the same "restyle the grounded base, don't invent a second telling" discipline this
+  // file already uses for every other grounded fact — never render the beat TWICE.
+  return `A MOMENT (canon, happens ONCE — the base narration you were given already states this plainly; render the SAME single moment with more craft, then move on — do NOT add a second version of it, never repeat it, never turn it into a scene or a lecture, never attach any demand or consequence to it beyond the words themselves): ${who} looks at the player for a long moment and says the hard thing plainly, once — quietly, not as a threat or a judgment, just as something true they needed to say. The player may take it to heart or shrug it off; either is fine, and nothing more is asked of them for it.`;
+}
+
 // ROM-2 — the PEOPLE HERE display list. Reads ctx.settlement.npcs (already
 // earned-name-filtered by buildNarratorContext — a name only appears once the
 // player has met that NPC or is home) and keeps only those NOT marked
@@ -313,6 +342,10 @@ export function buildSystemPrompt(ctx) {
   // actor, indoors or out), so it is not gated on ctx.interior like the terrain fact.
   // '' at Tier 0 / no omen (ctx.moralOmen null) — see moralOmenFact above.
   const omenFact = moralOmenFact(ctx.moralOmen);
+  // MP-5b: the Cassandra's one-time moment — also location-agnostic (she is wherever the
+  // player is when she speaks); '' unless narratorContext.js just delivered a fresh beat
+  // (ctx.cassandraOmen null on every other turn — the common case).
+  const cassandraMomentFact = cassandraFact(ctx.cassandraOmen);
   const presenceLawFact = ctx.interior
     ? `Anyone else at this settlement is elsewhere — never place, voice, or have them act in this room; never state a wall/floor material other than the one above.`
     : '';
@@ -335,6 +368,7 @@ export function buildSystemPrompt(ctx) {
     ...(windowFact ? [`- ${windowFact}`] : []),
     ...(terrainFact ? [`- ${terrainFact}`] : []),
     ...(omenFact ? [`- ${omenFact}`] : []),
+    ...(cassandraMomentFact ? [`- ${cassandraMomentFact}`] : []),
     ...(presenceLawFact ? [`- ${presenceLawFact}`] : []),
     ``
   ];
@@ -1664,7 +1698,27 @@ export async function augmentNarration({
   fetchImpl = globalThis.fetch,
   ref = {}            // THE REF (Tier 2) — { enabled, judge, regenerate, budget }. Default OFF.
 } = {}) {
-  const base = String(baseNarration ?? '').trim();
+  const baseTrimmed = String(baseNarration ?? '').trim();
+  // MP-5b (docs/MORAL_PHYSICS.md §5) — THE CASSANDRA, LLM-OFF FALLBACK. The silent-fallback
+  // law (CLAUDE.md "LLM layer never throws — silent fallback to deterministic path") means
+  // the Cassandra must exist WITHOUT the API too — a warned player must see the beat even
+  // with no key, a dead key, a network failure, or the validator swapping back to base.
+  // Computed here (not inside the ctx built further below, which only exists on the
+  // LLM-enabled path) and appended to `base` itself so EVERY exit out of this function —
+  // the offline early-returns below, the swap-gate's fallback-to-base rung, the coherence
+  // floor built FROM base — carries it. buildNarratorContext is pure/read-only/cheap (no
+  // network, no mutation), so calling it here even on the offline path costs nothing and
+  // breaks no invariant. Silently absent (base unchanged) on any failure — this fallback
+  // must never be the thing that breaks a turn.
+  let base = baseTrimmed;
+  try {
+    const cassandra = buildNarratorContext(world, outcome)?.cassandraOmen;
+    if (cassandra) {
+      const who = String(cassandra.name || '').trim() || (String(cassandra.role || '').trim() ? `the ${String(cassandra.role).trim()}` : 'someone here');
+      const line = `${who} looks at you a long moment and says something true and plain — quiet, not a threat, just a thing they needed you to hear. You can take it to heart or let it go.`;
+      base = baseTrimmed ? `${baseTrimmed} ${line}` : line;
+    }
+  } catch { /* never let the fallback line break a turn — degrade to base untouched */ }
 
   // ── the finalize() choke point (CG-2 / CG-LIVE-2 §3 Candidate A) ───────────
   // EVERY delivery path out of augmentNarration exits through finalize(text):

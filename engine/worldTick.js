@@ -9,7 +9,8 @@ import { propagateRumors } from './rumor/propagate.js';
 import { propagateClaims } from './claims.js';
 import { mintVillain, corruptionTier, VILLAIN_STAGE_COST, VILLAIN_GOAL_ACCEL } from './story/villain.js';
 import { addThreat } from './ledger.js';
-import { HUNT_HEAT, HEAT_DECAY_INTERVAL, HEAT_DECAY_PER_TICK, PACT_CORRUPTION } from './morality/escalation.js';
+import { HUNT_HEAT, HEAT_DECAY_INTERVAL, HEAT_DECAY_PER_TICK, PACT_CORRUPTION, cassandraBandFloor } from './morality/escalation.js';
+import { occupantsOfRoom, outdoorOccupants } from './structures/roomOccupancy.js';
 import { selectCreatures, spawnEncounter } from './combat/encounterSpawn.js';
 import { biomeForNode } from './world/biome.js';
 import { darkGiftAtCorruption } from './magic/forbiddenGates.js';
@@ -70,8 +71,17 @@ export function worldTick(world, seed = '') {
   // Epistemic variance lives here — claims drift and fracture; engine truth is never touched.
   w = propagateClaims(w, rng);
 
-  // 5.9) MP-3 (docs/MORAL_PHYSICS.md §4) — heat→hunt. The hunt fires FIRST (reads the heat
-  // the player's deeds accrued), THEN heat decays with time/distance and re-arms once cooled.
+  // 5.85) MP-5b (docs/MORAL_PHYSICS.md §5) — the Cassandra. Fires BEFORE the hunt (she is the
+  // warning that heeding can still outrun, per the brief's pinned interpretation: "the T2→T3
+  // BOUNDARY" means the approach band, landing before the hunt so cooling off can matter) and
+  // BEFORE heat decays this tick (so the crossing is judged on the SAME heat value the deed
+  // just produced, not an already-decayed one). Pure read of live heat + node occupancy; the
+  // one RNG draw it can make (tie-break among equally-trusted present NPCs) runs on its own
+  // sub-stream, so a run that never enters the band is byte-identical to before.
+  w = tickCassandra(w);
+
+  // 5.9) MP-3 (docs/MORAL_PHYSICS.md §4) — heat→hunt. The hunt fires (reads the heat the
+  // player's deeds accrued), THEN heat decays with time/distance and re-arms once cooled.
   // Both are deterministic-by-seed; the hunt spawns through the existing organ on its OWN
   // sub-RNG so it never perturbs the shared tick stream (a no-deed run leaves heat at 0 → no
   // hunt, no decay effect → worldHash unchanged).
@@ -493,6 +503,116 @@ function tickReputation(w, severity) {
   return { ...w, reputation: next };
 }
 
+// ── MP-5b — the Cassandra (docs/MORAL_PHYSICS.md §5) ─────────────────────────────────
+// "A person who sees you clearly and says the hard thing once, plainly, and can be waved
+// off." Pinned interpretation (docs/briefs/MP-5b-the-cassandra.md): "at the T2→T3
+// boundary" means the APPROACH BAND, `[cassandraBandFloor(), HUNT_HEAT)` — the warning
+// must land BEFORE the hunt, while heeding (cooling off, making amends, leaving) can
+// still matter. She is a REAL present NPC, never a voice from nowhere: if nobody is at
+// the player's node when heat enters the band, the beat HOLDS (armed, undelivered) until
+// someone is. This is the one structural difference from MP-3's huntedT / MP-4's pactT
+// (a single latch is enough for them — the hunt/gift never "wait for a witness"), so the
+// Cassandra needs TWO fields on morality (engine/state.js's ensureMorality has the full
+// reasoning): `cassandraArmed` (true while the warning is owed but unspoken) and
+// `cassandraT` (the tick it was actually SPOKEN — 0 until delivered). Once set, cassandraT
+// is a PERMANENT latch — exactly huntedT's own convention — it stays >0 across every later
+// worldTick call (never re-fires) until heat cools back below the band FLOOR (not merely
+// below HUNT_HEAT — staying in-band after being warned must not immediately re-arm a
+// second warning); tickHeatDecay clears both fields together on that cooling, mirroring
+// where huntedT re-arms.
+//
+// "FIRES ONCE" (this latch) is a different, STRONGER guarantee than "shows for one
+// narrated turn" (a softer, best-effort cosmetic concern owned entirely by the surfacing
+// layer): narratorContext.js's cassandraOmen (MP-5a's idiom) only PRINTS the line while
+// this delivery is still the freshest thing the world-tick log recorded — see that
+// function's comment for the exact freshness read. If that softer check ever shows the
+// line for more than one literal render in some edge case, the beat has still only fired
+// ONCE canonically (this latch is unaffected) — a narration nicety, not a physics bug.
+//
+// DETERMINISM: no RNG consumed unless there is a genuine tie among present NPCs at equal
+// trust (a sub-stream seeded off node+roster, never the shared tick stream) — a run that
+// never enters the band, or enters it with a single obvious present witness, draws
+// nothing extra and stays byte-identical to before this packet.
+// HIDE-THE-MATH: this function stores no NPC choice and produces no player-facing string
+// (that is narratorContext.js's read-only surfacing, MP-5a's idiom) — it only decides
+// WHEN the beat is owed and WHEN it was spoken, exactly as MP-3's tickHunt decides WHEN
+// the hunt arrives without itself writing the encounter's prose.
+function tickCassandra(w) {
+  const player = Array.isArray(w.party) ? w.party[0] : null;
+  const mo = (player && player.morality && typeof player.morality === 'object') ? player.morality : null;
+  if (!mo) return w;
+
+  const heat = Number(mo.heat ?? 0);
+  const armed = Boolean(mo.cassandraArmed ?? false);
+  const delivered = Number(mo.cassandraT ?? 0);
+  const floor = cassandraBandFloor();
+
+  // Below the band floor: nothing owed. (Re-arming when heat FALLS below the floor is
+  // tickHeatDecay's job, mirroring where huntedT/pactT re-arm — this function only ARMS
+  // and DELIVERS forward, it never itself clears a stale latch.)
+  if (heat < floor) return w;
+
+  // Already delivered for this crossing (cassandraT set) and heat hasn't cooled back
+  // below the floor since (that would have cleared it in tickHeatDecay) → nothing to do.
+  if (delivered > 0) return w;
+
+  // Heat is in (or has blown through) the band and the beat hasn't been spoken yet.
+  // Arm the latch (idempotent if already armed) and look for a present witness to speak it.
+  const tick = w.time?.turn ?? 0;
+  const witness = pickCassandraWitness(w);
+  if (!witness) {
+    // Nobody is here. HOLD — arm (if not already) and wait; no player-facing effect.
+    if (armed) return w;
+    return mutatePlayerMorality(w, (m) => ({ ...m, cassandraArmed: true }));
+  }
+
+  // A real present NPC speaks it. Deliver: stamp the tick (Math.max(1,…) so tick 0 still
+  // marks "delivered", same convention as huntedT/pactT), clear the HOLD flag. No RNG
+  // beyond pickCassandraWitness's own tie-break sub-stream; no player-facing string here —
+  // narratorContext.js's cassandraOmen calls this SAME pickCassandraWitness(w) fresh, off
+  // the SAME live occupancy read, while the freshness window holds (MP-5a's "derived, never
+  // stored" discipline — see U579-03's precedent — extended: the NPC choice is re-derived,
+  // not cached, so it can never drift from a stored-but-stale id).
+  const w2 = mutatePlayerMorality(w, (m) => ({ ...m, cassandraArmed: false, cassandraT: Math.max(1, tick) }));
+  return pushTickLog(w2, `[TICK] the Cassandra speaks (moral warning at ${w.map?.currentNodeId || 'here'})`);
+}
+
+// The "who is HERE right now" pool, duplicated from narratorContext.js's roomOccupantsHere
+// rather than imported (the repo convention noted in escalation.js's own DEED_SEV comment:
+// mirror a small value/branch across a layer boundary rather than reach across it — worldTick
+// is the world-simulation layer, narratorContext is the narration layer, and this keeps the
+// dependency direction narration→engine, never the reverse). Pure; never throws.
+function cassandraOccupantsHere(w) {
+  const interior = (w.scene?.interior && typeof w.scene.interior === 'object' && w.scene.interior) ? w.scene.interior : null;
+  return interior
+    ? occupantsOfRoom(w, String(interior.structureKey || ''), String(interior.roomId || ''))
+    : outdoorOccupants(w);
+}
+
+// Deterministically choose the present NPC who speaks the Cassandra line. Prefers the
+// highest conversationState.trustLevel (a witness-trusted voice reads truer than a
+// stranger's), tie-broken by a seeded pick so the same standing always yields the same
+// speaker. Returns the NPC object, or null if nobody is present. Exported so
+// narratorContext.js can re-derive the SAME answer at render time from cassandraT's tick
+// (never stored on state — the same "derived, not stored" discipline moralOmen uses).
+export function pickCassandraWitness(w) {
+  const present = cassandraOccupantsHere(w).filter(n => n && (n.id || n.name));
+  if (!present.length) return null;
+  if (present.length === 1) return present[0];
+
+  let best = -Infinity;
+  for (const n of present) {
+    const t = Number(n?.conversationState?.trustLevel ?? 5);
+    if (t > best) best = t;
+  }
+  const topTrust = present.filter(n => Number(n?.conversationState?.trustLevel ?? 5) === best);
+  if (topTrust.length === 1) return topTrust[0];
+
+  const nodeId = String(w.map?.currentNodeId || '');
+  const wRng = makeRng(seedFromString(`${w.meta?.seed}|cassandra-witness|${nodeId}|${topTrust.map(n => String(n.id || n.name)).sort().join(',')}`));
+  return topTrust[wRng.int(0, topTrust.length - 1)];
+}
+
 // ── MP-3 — the hunt (Tier 3 goes live). docs/MORAL_PHYSICS.md §4 T3 row ──────────────
 // When the player's accumulated heat crosses HUNT_HEAT, the world stops waiting: the
 // virtue-gods' avengers / crime pressure arrive through the EXISTING spawnEncounter organ
@@ -554,6 +674,8 @@ function tickHeatDecay(w) {
   const heat = Number(mo.heat ?? 0);
   const cool = Number(mo.heatCoolTicks ?? 0);
   const hunted = Number(mo.huntedT ?? 0);
+  const cassandraArmed = Boolean(mo.cassandraArmed ?? false);
+  const cassandraT = Number(mo.cassandraT ?? 0);
 
   let nextHeat = heat;
   let nextCool = cool;
@@ -570,9 +692,26 @@ function tickHeatDecay(w) {
   // Re-arm the hunt latch once heat has cooled back below the threshold (a reformed / fled
   // actor can be hunted AGAIN if they climb back over later).
   const nextHunted = nextHeat < HUNT_HEAT ? 0 : hunted;
+  // MP-5b — re-arm the Cassandra ONLY once heat has cooled back below the approach band's
+  // OWN floor (docs/MORAL_PHYSICS.md §5: "re-arms only after cooling below the band floor")
+  // — a lower bar than HUNT_HEAT itself, deliberately: a player who was warned and then sat
+  // in-band (neither cooling fully nor crossing into the hunt) must NOT get re-warned every
+  // time heat merely dips and climbs again inside the same band. Both fields clear together.
+  const floor = cassandraBandFloor();
+  const belowFloor = nextHeat < floor;
+  const nextCassandraArmed = belowFloor ? false : cassandraArmed;
+  const nextCassandraT = belowFloor ? 0 : cassandraT;
 
-  if (nextHeat === heat && nextCool === cool && nextHunted === hunted) return w;
-  return mutatePlayerMorality(w, (m) => ({ ...m, heat: nextHeat, heatCoolTicks: nextCool, huntedT: nextHunted }));
+  if (nextHeat === heat && nextCool === cool && nextHunted === hunted
+      && nextCassandraArmed === cassandraArmed && nextCassandraT === cassandraT) return w;
+  return mutatePlayerMorality(w, (m) => ({
+    ...m,
+    heat: nextHeat,
+    heatCoolTicks: nextCool,
+    huntedT: nextHunted,
+    cassandraArmed: nextCassandraArmed,
+    cassandraT: nextCassandraT
+  }));
 }
 
 // ── MP-4 — the pact (Tier 4 goes live). docs/MORAL_PHYSICS.md §4 T4 row ───────────────

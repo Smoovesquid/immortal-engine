@@ -99,6 +99,17 @@ export function assertWorldInvariants(world) {
     if (!Number.isInteger(mo.pactT) || mo.pactT < 0) {
       throw new Error(`Invariant: party[${i}].morality.pactT must be non-negative integer`);
     }
+    // MP-5b — the Cassandra (docs/MORAL_PHYSICS.md §5): cassandraArmed is true from the
+    // moment heat enters the approach band until the beat is delivered (a HOLD state the
+    // hunt/pact latches never needed — see engine/state.js's ensureMorality comment).
+    if (typeof mo.cassandraArmed !== 'boolean') {
+      throw new Error(`Invariant: party[${i}].morality.cassandraArmed must be boolean`);
+    }
+    // cassandraT — world-tick index the beat was actually SPOKEN, 0 = not yet delivered for
+    // the current arming (or re-armed). Non-negative integer, same shape as huntedT/pactT.
+    if (!Number.isInteger(mo.cassandraT) || mo.cassandraT < 0) {
+      throw new Error(`Invariant: party[${i}].morality.cassandraT must be non-negative integer`);
+    }
     // v23 — the seven sin + seven virtue accumulators, each 0..100.
     const axes = mo.axes;
     if (!axes || typeof axes !== 'object' || Array.isArray(axes)) {

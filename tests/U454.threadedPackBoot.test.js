@@ -170,15 +170,28 @@ test('U454-E: default fantasy/tallow boot (real normalizePack idiom) — post-PA
   // normalize to 0, NO WORLD_VERSION bump), NOT a determinism break: corruption is still 0 on this
   // no-deed boot, no gift fires, and the boot is byte-identical to itself under replay (asserted ×2
   // below; MP-4's own U572 pins the replay-equality of a scripted OVER-threshold pact run). SOLE
-  // DELTA vs the MP-3+CONSEQ-1 tree is the pactT:0 key. NOTE: if another packet's fields land ahead
-  // of this at integration, Basecamp recomputes this anchor (it happened to MP-3+CONSEQ-1 today).
+  // DELTA vs the MP-3+CONSEQ-1 tree is the pactT:0 key.
   // (Anchor chain: … MP-3 d06096ee… → MP-3+CONSEQ-1 56d52255… → MP-4 db503a11….)
-  const HASH_AFTER_MP4 = 'db503a117ea89fc1ca8191672257983781754223724c0a6492b0ee772bc6dcc3';
-  assert.equal(worldHash(result.world), HASH_AFTER_MP4,
-    'default fantasy/tallow boot worldHash re-pinned post-MP-4 (additive pactT morality field)');
+  //
+  // RE-PINNED for MP-5b (2026-07-06): the default boot's worldHash shifts ONCE MORE (db503a11… →
+  // bbf2ef13…) because MP-5b adds TWO additive morality fields — `cassandraArmed` (the Cassandra's
+  // HOLD flag) and `cassandraT` (the Cassandra's delivery latch, mirroring huntedT/pactT) — both
+  // defaulting to false/0 on a no-deed boot. worldHash projects the full party morality, so two new
+  // zero/false-valued keys move the fingerprint. This is a deliberate additive-state re-pin
+  // (deterministically derived, old saves normalize to false/0, NO WORLD_VERSION bump), NOT a
+  // determinism break: heat is still 0 on this no-deed boot, no Cassandra ever arms, and the boot is
+  // byte-identical to itself under replay (asserted ×2 below; MP-5b's own U585 pins the
+  // replay-equality of scripted warned-then-cooled and warned-then-hunted runs). SOLE DELTA vs the
+  // MP-4 tree is the cassandraArmed:false + cassandraT:0 keys. NOTE: if another packet's fields land
+  // ahead of this at integration, Basecamp recomputes this anchor (it has happened twice already
+  // today, per this file's own history).
+  // (Anchor chain: … MP-3+CONSEQ-1 56d52255… → MP-4 db503a11… → MP-5b bbf2ef13….)
+  const HASH_AFTER_MP5B = 'bbf2ef13c375efce655042b15e3dc786794aeef3380ed5426ac3a91edb4a21ab';
+  assert.equal(worldHash(result.world), HASH_AFTER_MP5B,
+    'default fantasy/tallow boot worldHash re-pinned post-MP-5b (additive cassandraArmed/cassandraT morality fields)');
 
   // Same seed => identical world (the placement is deterministic).
   const w2 = newWorld({ seed: 'tallow', fate: 0.3, mode: 'escape', pack: { primaryId: 'fantasy', mixerId: null } });
-  assert.equal(worldHash(beginAdventure(w2, PACKS).world), HASH_AFTER_MP4,
-    'default tallow boot must be deterministic ×2 after MP-4');
+  assert.equal(worldHash(beginAdventure(w2, PACKS).world), HASH_AFTER_MP5B,
+    'default tallow boot must be deterministic ×2 after MP-5b');
 });

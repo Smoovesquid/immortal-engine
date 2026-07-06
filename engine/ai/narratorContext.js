@@ -12,6 +12,7 @@
 
 import { ensureWorld, VICE_AXES } from '../state.js';
 import { ensureInstrumentLayer } from '../instrument.js';
+import { seedFromString, makeRng } from '../rng.js';
 import { fateBand } from '../rulesets.js';
 import { filterContext, applyMoodOverlay } from '../npc/perspectiveFilter.js';
 import { isInfoSeekingText } from '../grace/gracefulAdjudication.js';
@@ -133,7 +134,12 @@ export function buildNarratorContext(world, outcome = {}) {
     // ("unremarked means unremarked," no line at all) or { register, axis, phrase } at
     // Tier 1+. READ-ONLY re-derivation off live morality standing + the most recent deed;
     // never stored, never numeric (invariant I — llmAdapter.js renders only the phrase).
-    moralOmen: moralOmen(w)
+    moralOmen: moralOmen(w),
+    // MP-5b (docs/MORAL_PHYSICS.md §5) — the Cassandra: null unless a real present NPC has
+    // just delivered the one-time warning (see cassandraOmen's own comment for the exact
+    // freshness + speaker-selection rules); { name, role } when she has just spoken —
+    // llmAdapter.js renders this as ONE quiet, waveable line, never a mechanic name.
+    cassandraOmen: cassandraOmen(w, roomOccupants)
   };
 }
 
@@ -227,6 +233,87 @@ function moralOmen(w) {
   if (!phrase) return null;
 
   return { register, axis: dominantAxis, phrase };
+}
+
+// MP-5b — THE CASSANDRA (docs/MORAL_PHYSICS.md §5, docs/briefs/MP-5b-the-cassandra.md).
+// "A person who sees you clearly and says the hard thing once, plainly, and can be waved
+// off." worldTick.js's tickCassandra owns the WHEN (a permanent latch, `party[0].morality.
+// cassandraT > 0` once delivered — mirrors huntedT, never re-fires until heat cools below
+// the approach band's own floor). This function owns the WHO and IS-IT-STILL-WORTH-SAYING:
+//
+//   (a) FRESHNESS — cassandraT is a PERMANENT latch (by design; see worldTick.js's own
+//       comment on tickCassandra), so a bare `cassandraT > 0` check would keep narrating
+//       the same line turn after turn while the player idles in the band. The line must
+//       print for the delivering turn only. The freshest signal available without a
+//       dedicated per-render counter (none exists that increments exactly once per player
+//       action — time.turn and timeline.length both sometimes hold flat across a real
+//       no-op turn, verified empirically) is the SAME idiom pickWorldWhisper already uses
+//       below: scan world.timeline for the most recent `kind:'worldTick'` entry and check
+//       whether it is the Cassandra's OWN delivery line (tickCassandra's pushTickLog text,
+//       "[TICK] the Cassandra speaks..."). The instant ANY later tick activity logs
+//       anything else, this stops matching and the line goes silent — while cassandraT
+//       stays set underneath, correctly blocking a second delivery until real cooling.
+//   (b) THE SPEAKER — re-derived FRESH from live occupancy (never cached/stored), mirroring
+//       pickCassandraWitness in worldTick.js exactly (same trust-preferring, seed-tied-break
+//       selection over the SAME roomOccupantsHere pool this file already computes) — while
+//       the freshness window (a) holds, nothing else has moved the world, so this returns
+//       the identical NPC who was actually present at delivery. An earned name (met/home,
+//       the SAME rule settlement.npcs already applies above) is used if available; a
+//       present-but-unmet stranger still speaks — presence, not acquaintance, is the gate.
+//
+// Returns null when there is nothing to say (not delivered, or delivered but stale) —
+// "nothing owed" reads the same as MP-5a's omen: no line at all, matching moralOmen's own
+// silence contract. Never throws.
+function cassandraOmen(w, roomOccupants) {
+  const actor = Array.isArray(w?.party) && w.party.length ? w.party[0] : null;
+  const mo = actor?.morality;
+  if (!mo || typeof mo !== 'object') return null;
+  if (!(Number(mo.cassandraT ?? 0) > 0)) return null; // never delivered (or re-armed by cooling)
+
+  // Freshness: the Cassandra's own tick-log line must be the MOST RECENT worldTick entry.
+  const timeline = Array.isArray(w.timeline) ? w.timeline : [];
+  let latestTickText = '';
+  for (let i = timeline.length - 1; i >= 0; i--) {
+    const e = timeline[i];
+    if (e?.kind === 'worldTick' && e?.data?.text) { latestTickText = String(e.data.text); break; }
+  }
+  if (!latestTickText.startsWith('[TICK] the Cassandra speaks')) return null; // superseded — stale, stay silent
+
+  const witness = pickCassandraSpeaker(w, roomOccupants);
+  if (!witness) return null; // defensive — tickCassandra never delivers without a present witness
+
+  const nodeId = String(w.map?.currentNodeId ?? '');
+  const currentNode = (w.map?.nodes ?? []).find(n => n.id === nodeId) ?? null;
+  const homeNodeId = String(w?.meta?.homeNodeId || '');
+  const known = (Boolean(homeNodeId) && homeNodeId === nodeId) || Boolean(witness?.conversationState?.metPlayer);
+  const name = known ? String(witness.name || '').trim() : '';
+  const role = String(witness.role || '').trim();
+
+  return { name, role };
+}
+
+// The trust-preferring, seed-tied-break present-NPC pick — duplicated from worldTick.js's
+// pickCassandraWitness (the repo's own mirror-rather-than-reach-across convention,
+// engine/morality/escalation.js's DEED_SEV comment) so this narration-layer file never
+// imports the world-simulation layer. Operates over roomOccupants (the SAME occupancy pool
+// buildNarratorContext already computed above), not a re-derivation, so it can never
+// disagree with what "who is here" already answered for this exact render. Pure.
+function pickCassandraSpeaker(w, roomOccupants) {
+  const present = (Array.isArray(roomOccupants) ? roomOccupants : []).filter(n => n && (n.id || n.name));
+  if (!present.length) return null;
+  if (present.length === 1) return present[0];
+
+  let best = -Infinity;
+  for (const n of present) {
+    const t = Number(n?.conversationState?.trustLevel ?? 5);
+    if (t > best) best = t;
+  }
+  const topTrust = present.filter(n => Number(n?.conversationState?.trustLevel ?? 5) === best);
+  if (topTrust.length === 1) return topTrust[0];
+
+  const nodeId = String(w.map?.currentNodeId || '');
+  const rng = makeRng(seedFromString(`${w.meta?.seed}|cassandra-witness|${nodeId}|${topTrust.map(n => String(n.id || n.name)).sort().join(',')}`));
+  return topTrust[rng.int(0, topTrust.length - 1)];
 }
 
 /**

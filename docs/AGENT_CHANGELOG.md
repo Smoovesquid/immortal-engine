@@ -3037,3 +3037,20 @@ other agents. (none active)
 - Combined ladder: 10598/0 · 131/131 · position probe clean · screen truth 7/7 · goldens locked.
 - In flight: MP-5b (the Cassandra) — last lane of the wave. Then: CG-2 paid-gate rehearsal on the
   stable build → NPC-DEED-1 audit → MP-6 (the Carl Witness Test) closes the constitution.
+
+## 2026-07-06 — Basecamp (successor) — MP-5b integrated → v0.30.13 build 111 "the Cassandra speaks"; the surfacing complete
+
+- MP-5b landed: `8badfc3a` → `f536cbb0` (+ integration fix `206a9168`); ladder 10622/0 · 131/131 ·
+  screen truth 7/7. The approach-band warning: one real present NPC says the hard thing once,
+  quietly, waveable; holds until someone is present; LLM-off fallback. Live (Asha): "You carry more
+  than you let on, and one day the weight of that will matter more than the deed itself."
+- The day's one RED: U582 (OCC-STORY-2's boot wall) had duplicated U454-E's anchor literal — the
+  4th stale-anchor of the day — went red when MP-5b's legitimate re-pin moved the anchor. Rewritten
+  structurally (placement thread-INERT at boot: placementFor(world) ≡ placementFor(no-threads) per
+  occupant; no hash literal). The class is now closed: briefs forbid duplication, and both offender
+  tests assert what their packets own.
+- **MP-1 through MP-5 ALL LANDED.** The moral physics surface end-to-end: witness→rumor · the
+  ladder · the hunt (roadside included) · the gift unbidden · the omen line · the Cassandra.
+  Remaining: NPC-DEED-1 audit → MP-6 (the Carl Witness Test). Next: CG-2 live-flip gate rehearsal
+  on this stable build (the queued paid gate; server restart first so the gate measures b111's
+  engine, not the boot-time code).

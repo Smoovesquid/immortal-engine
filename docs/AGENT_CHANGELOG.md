@@ -3188,3 +3188,14 @@ other agents. (none active)
 - PW-4 dispatched (Opus, narration lane): derived room dressing — license-to-invent becomes
   license-to-RENDER; pure deriver, authored micro-detail bank, pre-authorized derived canon,
   S1 nothing stored. PW-5 stays audit-first per the contract's own instruction.
+
+## 2026-07-06 — Basecamp (successor) — PW-4 → v0.31.6 build 119 "rooms remember"
+
+- PW-4 landed (`009498b6` → `641d612e`): rooms carry 1–2 permanent seed-true micro-details (the
+  chalk tally, the scratched initials) the DM renders as PRE-AUTHORIZED canon — the license to
+  invent becomes license to render, guarded by law 6 (grounded nouns). Pure S1: boot hash
+  invariant by construction; zero corpus relocks. Ladder 10790/0 · screen truth 7/7.
+- U612–U613 released back to the pool (the worker N-prefixed its narration test — N12, the right
+  call beside N7/N10).
+- Still in flight: SP-2 (faction ethos — the WORLD_VERSION packet) · PW-5 audit (report-only) ·
+  CORPUS-KILL-1 (micro). PW-6 = the arc's remaining row after PW-5's audit verdict.

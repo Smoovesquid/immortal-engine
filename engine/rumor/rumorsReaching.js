@@ -10,6 +10,17 @@ function clamp(v, lo, hi) {
   return Math.max(lo, Math.min(hi, v));
 }
 
+// MP-1 (docs/MORAL_PHYSICS.md §3 · REPUTATION_UNIFICATION.md R5) — the gossip floor for
+// player-deed reputation. A deed only becomes travelling reputation once it is grave
+// enough that strangers speak of it. This MUST sit at or below the deed-severity ceiling
+// or the whole world.deeds → reputation synthesis is dead (contradiction-hunt F1: the old
+// gate was 25, but max deed severity DEED_SEV.HEAVY = 20, so the branch never fired).
+// Calibrated to HEAVY: only the heaviest deeds (and forbidden acts, always HEAVY) travel —
+// matching the escalation ladder's Tier-1 threshold (§4: `severity >= HEAVY`). MOD/LIGHT
+// deeds stay local (witness-trust only). Design-owned taste default; keep in lockstep with
+// DEED_SEV.HEAVY in engine/playloop.js. Pure read-time projection → no worldHash impact.
+const DEED_GOSSIP_MIN = 20; // === DEED_SEV.HEAVY (playloop.js)
+
 // Derive a stable deed id from (t, kind, nodeId) — the deed schema has no explicit id field.
 function deedId(deed) {
   return `deed:${String(deed.nodeId || 'unknown')}:${String(deed.kind || 'unknown')}:${Number(deed.t || 0)}`;
@@ -85,8 +96,8 @@ export function rumorsReaching(world, nodeId, opts = {}) {
   }
 
   // ── 2. Player-deed rumors (world.deeds) ─────────────────────────────────────
-  // Notable deeds (severity >= 25) become diegetic reputation. The body is the
-  // deed's summary, garbled by tier. Tier = 0 when the deed happened at this
+  // Notable deeds (severity >= DEED_GOSSIP_MIN) become diegetic reputation. The body is
+  // the deed's summary, garbled by tier. Tier = 0 when the deed happened at this
   // exact node (witnessed here); tier = 2 when it happened elsewhere (heard
   // secondhand). This is a SYNTHETIC rumor derived at read-time — pure, no rng.
   const deeds = Array.isArray(world?.deeds) ? world.deeds : [];
@@ -98,7 +109,7 @@ export function rumorsReaching(world, nodeId, opts = {}) {
   for (const deed of sortedDeeds) {
     if (result.length >= max) break;
     const severity = Number(deed.severity ?? 0);
-    if (severity < 25) continue; // below gossip threshold
+    if (severity < DEED_GOSSIP_MIN) continue; // below gossip threshold (MP-1: was `< 25`, dead vs max sev 20)
     const summary = String(deed.summary || '').trim();
     if (!summary) continue;
 

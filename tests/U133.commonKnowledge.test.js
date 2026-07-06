@@ -50,14 +50,18 @@ test('U133-02: they know the ground under their feet', () => {
 });
 
 test('U133-03: they know the roads — real bearings to real places', () => {
+  // WAYFINDING ("way to / next town") still earns a compass bearing.
   const r = playerMove(base, packs, 'do you know the way to the next town?');
   assert.match(r.output.mechanics, /dialogue ask \| directions/);
   assert.match(r.output.narration, /\b(north|south|east|west)\b/i, 'a compass bearing');
-  // a real named node earns a bearing too
+  // PW-5: "what do you know about <named place>" is a LORE ask, not wayfinding —
+  // a local recounts that place's grounded founding (common_lore) rather than
+  // just pointing (the audit's F1 win). The place is still named in the answer.
+  // (A named place with NO grounded lore would fall back to a directions bearing.)
   const named = base.map.nodes.find(n => n.id !== here.id && n.name);
   const r2 = playerMove(base, packs, `what do you know about ${named.name}?`);
-  assert.match(r2.output.mechanics, /dialogue ask \| directions/);
-  assert.ok(r2.output.narration.includes(named.name));
+  assert.match(r2.output.mechanics, /dialogue ask \| common_lore/);
+  assert.ok(r2.output.narration.includes(named.name), 'names the place it recounts');
 });
 
 test('U133-04: news surfaces a rumor they carry; quiet is honest when they have none', () => {

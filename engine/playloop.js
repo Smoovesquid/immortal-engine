@@ -5757,6 +5757,7 @@ function dialogueAskNarration(outcome, world) {
     case 'origin':     // (NBIO-1) NPC's own founding-vs-later tenure — deterministic from originTick
     case 'directions':
     case 'services':
+    case 'common_lore':  // (PW-5) grounded lore of a NEIGHBOURING place — body IS the answer
     case 'news': {
       const body = String(outcome?.commonBody || '').trim();
       if (body) {

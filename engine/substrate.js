@@ -286,6 +286,44 @@ export function substrateEventsFor(world, nodeId) {
 }
 
 /**
+ * substrateEventsPeek(world, nodeId) → SubstrateEvent[]
+ *
+ * READ-ONLY sibling of substrateEventsFor for a node the player has NOT visited
+ * yet (so its node-layer events aren't cached in world.substrate.nodes). It
+ * returns the SAME events substrateEventsFor would return once the node were
+ * visited — by deriving the node layer through the SAME pure buildNodeEvents,
+ * WITHOUT writing them into the world (no mutation, no cache side-effect).
+ *
+ * This is the one-source-of-truth read for PW-5's region-common-knowledge bank:
+ * asking a local about a NEIGHBORING settlement's founding/history surfaces the
+ * identical grounded label the DM-narrator would render on arrival — never a
+ * second store of truth, never a fabrication. buildNodeEvents is a pure hash of
+ * (worldSeed | node id) on a LOCAL rng (it never draws from world.rng), so the
+ * peek is deterministic and leaves the determinism gates untouched.
+ *
+ * If the node's events are ALREADY cached, we reuse the cache (identical output);
+ * this keeps a visited-node peek byte-equal to substrateEventsFor.
+ */
+export function substrateEventsPeek(world, nodeId) {
+  const sub = world?.substrate;
+  if (!sub) return [];
+
+  const id         = String(nodeId || '');
+  const worldSeed  = String(sub.worldSeed ?? world?.meta?.seed ?? 'seed');
+  const numRegions = Object.keys(sub.regions || {}).length || 1;
+  const regIdx     = nodeRegionIndex(worldSeed, id, numRegions);
+  const regId      = `region-${regIdx}`;
+
+  const cosmologyEvents = sub.cosmology?.age ? [sub.cosmology.age] : [];
+  const regionEvents    = Array.isArray(sub.regions?.[regId]) ? sub.regions[regId] : [];
+  const nodeEvents      = Array.isArray(sub.nodes?.[id])
+    ? sub.nodes[id]                       // already visited → reuse the cache verbatim
+    : (id ? buildNodeEvents(worldSeed, id) : []);  // unvisited → derive read-only, DO NOT cache
+
+  return [...cosmologyEvents, ...regionEvents, ...nodeEvents].sort((a, b) => a.t - b.t);
+}
+
+/**
  * npcSubstrateContext(world, nodeId) → NpcSubstrateEntry[]
  *
  * Formats the substrate events for this node as cascade-weighted voice context.

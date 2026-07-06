@@ -13,6 +13,7 @@ import { extractMemory } from './npcMemory.js';
 import { exitsFrom } from '../map/mapState.js';
 import { classifyPlaceQuery, resolvePlaceFact } from '../world/placeQuery.js';
 import { classifyPersonQuery, resolvePersonFact } from '../world/personQuery.js';
+import { resolveCommonLore } from '../world/commonKnowledge.js';
 import { notorietyReaching, notorietyReachingAbout } from './reputation.js';
 import { rumorsReaching } from '../rumor/rumorsReaching.js';
 import { npcVoiceCorpusId } from './npcVoiceResolve.js';
@@ -322,6 +323,19 @@ export function commonKnowledgeAnswer(world, npc, text) {
       .filter(n => n && n.id !== here.id && n.name && t.includes(String(n.name).toLowerCase()))
       .sort((a, b) => String(b.name).length - String(a.name).length)[0] || null;
     const generic = /\b(?:next town|nearest (?:town|village|settlement))\b/.test(t);
+    // (PW-5) LORE beats a bearing for "tell me about / know about <named place>":
+    // a local asked ABOUT the next town recounts what they know of it (grounded
+    // founding/history), not merely a compass point. Only when the ask is a
+    // LORE-seeking phrasing (not explicit wayfinding — "way to / where is / which
+    // way" still want the road) AND the named place has a grounded lore fact. No
+    // grounded fact → fall through to the bearing below (a place you know OF but
+    // can't recount still earns directions). Guards live inside resolveCommonLore,
+    // so secret/motive/agent asks never reach here as lore.
+    const wayfinding = /\b(?:way to|road to|how do i get to|where is|which way|next town|nearest (?:town|village|settlement))\b/.test(t);
+    if (named && !wayfinding) {
+      const lore = resolveCommonLore(w, { text: t, hereId: here.id });
+      if (lore) return { mode: 'common_lore', body: renderCommonLoreNpc(npc, lore) };
+    }
     let dest = named;
     if (!dest && generic) {
       dest = nodes
@@ -423,6 +437,22 @@ export function commonKnowledgeAnswer(world, npc, text) {
       if (fact?.type === 'location') return { mode: 'identity', body: renderPersonLocationNpc(npc, fact) };
       if (fact) return { mode: 'identity', body: renderPersonIdentityNpc(npc, fact) };
     }
+  }
+
+  // ── region-common knowledge (PW-5): the lore of a NEIGHBOURING place ──
+  // A local plausibly knows the next town's founding/history even though it isn't a
+  // fact in THIS node's substrate, isn't a rumour, and isn't in the NPC's own head.
+  // resolveCommonLore reuses placeQuery's resolvers against the NAMED other node (one
+  // fact, two voices) and is READ-ONLY (mutates nothing, invents nothing). It fires
+  // AFTER current-node place-facts and present-person identity (those win — a fact you
+  // hold firsthand beats what you know of elsewhere) and BEFORE the generic place-blurb
+  // catch-all + the final deflection. A hit is non-'deflected', so it AUTOMATICALLY
+  // precedes PW-3's rumour pickup (tryPickUpRumor fires only on a bare deflection):
+  // firsthand common knowledge beats hearsay. Secret/motive/§0/agent asks return null
+  // here (guarded inside resolveCommonLore) and stay deferred — the Law holding, not a bug.
+  if (here) {
+    const lore = resolveCommonLore(w, { text: t, hereId: here.id });
+    if (lore) return { mode: 'common_lore', body: renderCommonLoreNpc(npc, lore) };
   }
 
   // ── place: the ground under their feet ──
@@ -619,6 +649,51 @@ function renderPlaceFactNpc(npc, fact) {
     return f[manner] || f.even;
   }
   return `${S}.`;
+}
+
+// (PW-5) Render a resolved NEIGHBOURING-place lore fact in NPC VOICE — a RENDERER only,
+// adds ZERO facts. `lore.body` is the SAME grounded founding/history/events label the
+// DM-narrator would render on arrival there (one fact, two voices); `lore.nodeName` is the
+// place it's ABOUT. Manner colours delivery, never content. The frames name the other place
+// and mark the epistemic distance ("over that way", "so it's told") — a local recounting
+// what they know of elsewhere, not claiming to have stood there. §0-safe: founding/history/
+// events labels only, authored never to allude to the cosmology.
+function renderCommonLoreNpc(npc, lore) {
+  const raw   = String(lore?.body || '').trim();
+  if (!raw) return null;
+  const S     = capitalize(raw);
+  const where = String(lore?.nodeName || '').trim();
+  const at    = where ? `${where}? ` : '';
+  const manner = voiceManner(npcVoice(npc));
+  if (lore.type === 'events') {
+    const f = {
+      guarded: `${at}${S}. That's the word off that road. Make of it what you will.`,
+      skittish: `${at}${S}, is what they say comes down from there. I keep my distance.`,
+      blunt: `${at}${S}. That's what's stirred over there.`,
+      open: `${at}Oh, there's talk out of there — ${S}! That's the way of it.`,
+      even: `${at}${S}. That's what's said to be stirring out that way.`
+    };
+    return f[manner] || f.even;
+  }
+  if (lore.type === 'history') {
+    const f = {
+      guarded: `${at}${S}. Old troubles, up the valley. Best not stirred.`,
+      skittish: `${at}${S} — or so the old tales run. I'd not dwell on it.`,
+      blunt: `${at}${S}. That's the history of these parts.`,
+      open: `${at}Ah, the old story! ${S}. That's what this land's seen.`,
+      even: `${at}${S}. That's the past these parts carry.`
+    };
+    return f[manner] || f.even;
+  }
+  // founding (also the "tell me about <place>" fall-in)
+  const f = {
+    guarded: `${at}${S}, so it's told. That's all I know of the place.`,
+    skittish: `${at}${S} — that's the tale, anyway. I've not been up that way much.`,
+    blunt: `${at}${S}. That's how that one started.`,
+    open: `${at}Oh, that place! ${S}. That's how it came to be, they say.`,
+    even: `${at}${S} — that's the tale of how it came to be, over that way.`
+  };
+  return f[manner] || f.even;
 }
 
 // (P-2) Render a resolved person-IDENTITY fact in NPC VOICE — a RENDERER only, adds ZERO facts.

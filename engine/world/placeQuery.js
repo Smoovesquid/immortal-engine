@@ -25,7 +25,7 @@
 // level, never the cosmology. Substrate-backed types are safe by construction (labels are
 // authored never to allude). Folk-level types added later (rumor/dangers) get a §0 check.
 
-import { substrateEventsFor } from '../substrate.js';
+import { substrateEventsFor, substrateEventsPeek } from '../substrate.js';
 import { npcWant } from '../npc/npcArc.js';
 import { SLICE_SEED, pickAldermereWorry, isAldermereTownNode } from './sliceRegion.js';
 
@@ -61,10 +61,24 @@ function isFoundingCircumstance(text) {
   return PLACE_FOUNDING_QUERY_RE.test(t);
 }
 
-function resolveFounding(world) {
-  const nodeId = String(world?.map?.currentNodeId || '');
+// Event source for a resolver, honouring an OPTIONAL explicit target node.
+// query.nodeId absent (or === currentNodeId) → the current node via substrateEventsFor
+// (unchanged behaviour). query.nodeId naming a DIFFERENT node → substrateEventsPeek
+// (READ-ONLY: the neighbouring node's grounded events, derived without caching — the
+// same labels a visit would surface). This is the ONLY difference between resolving
+// "here" and resolving a named neighbour; the fact logic below is shared verbatim.
+function eventsForQuery(world, query) {
+  const cur    = String(world?.map?.currentNodeId || '');
+  const target = query && query.nodeId != null ? String(query.nodeId) : cur;
+  if (!target) return { nodeId: '', events: [] };
+  const events = target === cur ? substrateEventsFor(world, target) : substrateEventsPeek(world, target);
+  return { nodeId: target, events };
+}
+
+function resolveFounding(world, query) {
+  const { nodeId, events } = eventsForQuery(world, query);
   if (!nodeId) return null;
-  const ev = substrateEventsFor(world, nodeId).find(e => e && e.layer === 'node' && e.kind === 'founding');
+  const ev = events.find(e => e && e.layer === 'node' && e.kind === 'founding');
   return ev?.label ? { type: 'founding', body: String(ev.label), clarity: 'vivid' } : null;
 }
 
@@ -96,10 +110,10 @@ function isEventsQuery(text) {
   return PLACE_EVENTS_QUERY_RE.test(t);
 }
 
-function resolveEvents(world) {
-  const nodeId = String(world?.map?.currentNodeId || '');
+function resolveEvents(world, query) {
+  const { nodeId, events } = eventsForQuery(world, query);
   if (!nodeId) return null;
-  const evs = substrateEventsFor(world, nodeId).filter(e => e && e.layer === 'node' && e.kind === 'local-event');
+  const evs = events.filter(e => e && e.layer === 'node' && e.kind === 'local-event');
   if (!evs.length) return null;
   const body = evs.map(e => String(e.label)).join('; also, ');
   return { type: 'events', body, clarity: 'vivid' };
@@ -330,11 +344,13 @@ function isHistoryQuery(text) {
   return PLACE_HISTORY_QUERY_RE.test(t);
 }
 
-function resolveHistory(world) {
-  const nodeId = String(world?.map?.currentNodeId || '');
+function resolveHistory(world, query) {
+  const { nodeId, events } = eventsForQuery(world, query);
   if (!nodeId) return null;
-  // Region events only — node events surface through the `events` type.
-  const evs = substrateEventsFor(world, nodeId).filter(
+  // Region events only — node events surface through the `events` type. (Region
+  // events are keyed by the node's region, so a neighbour in the same region
+  // shares this history — still grounded, never invented.)
+  const evs = events.filter(
     e => e && e.layer === 'region' && (e.kind === 'crisis' || e.kind === 'blessing')
   );
   if (!evs.length) return null;
@@ -376,4 +392,29 @@ export function classifyPlaceQuery(text) {
 export function resolvePlaceFact(world, query) {
   const slot = PLACE_TYPES.find(s => s.type === (query && query.type));
   return slot ? slot.resolve(world, query) : null;
+}
+
+// The LORE types a NEIGHBOURING node can honestly answer: its founding, its local
+// events, and its region's history. NOT population/concern/overview — those are
+// live-roster / civic-now / here-name facts that only hold for where you STAND (a
+// local doesn't know who is in the next town this moment, nor its present worry).
+const NEIGHBOUR_LORE_TYPES = new Set(['founding', 'events', 'history']);
+
+/**
+ * resolvePlaceFactForNode(world, nodeId, query) → { type, body, clarity } | null
+ *
+ * PW-5's region-common-knowledge read: resolve a grounded LORE fact for a NAMED node
+ * (a neighbouring settlement), reusing the exact same resolvers as resolvePlaceFact so
+ * the NPC voice and the DM narrator render one identical canon fact — never a second
+ * source, never a fabrication. READ-ONLY and deterministic: for an unvisited node it
+ * derives the node layer through substrateEventsPeek (pure, no cache write, no world.rng
+ * draw). Restricted to founding/events/history; any other type returns null. A node with
+ * no such grounded fact returns null → the caller honest-declines.
+ */
+export function resolvePlaceFactForNode(world, nodeId, query) {
+  const id   = String(nodeId || '');
+  const type = query && query.type;
+  if (!id || !NEIGHBOUR_LORE_TYPES.has(type)) return null;
+  const slot = PLACE_TYPES.find(s => s.type === type);
+  return slot ? slot.resolve(world, { ...query, nodeId: id }) : null;
 }

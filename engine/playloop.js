@@ -2067,7 +2067,7 @@ function playerMoveCore(world, packsById, text, dqIntent) {
     && ((interiorAction.roomHint && /\b(?:room|rooms|doorway|doorways|chamber|hall|hallway)\b/i.test(String(text || '')))
       || !!namedRoomId);
   if (!combatEngageAction && !declaredNpcViolence && interiorAction.kind === 'move'
-      && (roomMoveWins || (!isSeekPersonIntent(text) && !approachPresentNpcRef(w, text) && !talkOrApproachResolvesPresentNpc(w, text)))) {
+      && (roomMoveWins || (!isSeekPersonIntent(text) && !extractSeekNameRef(text) && !approachPresentNpcRef(w, text) && !talkOrApproachResolvesPresentNpc(w, text)))) {
     const wantsRiskyMove = isRiskyOrObstructedMoveIntent(interiorAction.moveText || text);
 
     // MR-2a — DOORS GATE INTERIOR MOVES (docs/briefs/MR-2-FUNCTIONAL-INK.md §MR-2a).
@@ -2633,6 +2633,25 @@ function playerMoveCore(world, packsById, text, dqIntent) {
   // phrases like "head to the tavern and find the oldest person there" route to
   // the NPC encounter rather than the travel bounce path.
   let talkRef = !w.combat?.active ? extractDialogueRef(text) : null;
+  // SEEK-3 — a NAMED-person seek ("find Carl", "go find Asha and greet her") names the
+  // real target in the SEEK clause; a trailing "and greet HIM" is a subordinate pronoun.
+  // So the seek-NAME takes precedence over a VAGUE talkRef (a bare pronoun/generic that
+  // extractDialogueRef's greet-branch grabbed from the tail): "go find Carl and greet him"
+  // must resolve on "Carl", not the pronoun "him". A PRESENT name → the greeting; an
+  // ABSENT name → the honest npcReferentClarify miss downstream (never the blocked bank).
+  // Retained even unresolved: for a name-shaped seek, "no one here by that name" IS the
+  // correct in-fiction answer. Left untouched when the current talkRef is already a
+  // specific name (a plain "greet Asha" keeps its own resolution).
+  if (!w.combat?.active) {
+    const talkRefIsVague = !talkRef || /^(?:him|her|them|it|someone|somebody|anyone|anybody|people|folk|locals?|a\s+local|villagers?)$/i.test(String(talkRef).trim());
+    if (talkRefIsVague) {
+      const seekName = extractSeekNameRef(text);
+      if (seekName) {
+        const npc = resolvePresentNpcStrict(w, seekName) || resolvePresentNpcLoose(w, seekName);
+        talkRef = npc ? String(npc.name || npc.id || '') : seekName;
+      }
+    }
+  }
   if (!talkRef && !w.combat?.active) {
     const approachRef = extractApproachRef(text);
     if (approachRef) {
@@ -6056,6 +6075,46 @@ function extractFindPersonRef(text) {
   if (g && g[1]) return 'someone';   // normalize the generic family to the vague token
   const r = t.match(SEEK_PERSON_ROLE_RE);
   return (r && r[1]) ? cleanDialogueRef(r[1]) : '';
+}
+
+// SEEK-3 — a NAMED-person seek: "find Carl", "go find Asha and greet her", "look for
+// Elske". The generic/role arms above never match a proper NAME, and the "find" verb was
+// never on the approach path (extractApproachRef keys on go/walk/head TO, extractDialogueRef
+// on talk/greet/approach) — so a "find <NAME>" phrasing slipped past BOTH deliveries and the
+// interior-move gate read "find Carl" as a room-move → the blocked bank (DM_TEST_DEADEND).
+// This returns the NAME candidate (compound greet/talk tail stripped) so the caller's talkRef
+// machinery resolves it: a PRESENT name enters the greeting; an ABSENT name hits the honest
+// npcReferentClarify miss (never a nav refusal, never "no record", never an invented person).
+//
+// Deliberately narrow so objects/places/generics/roles/contested seeks all pass through
+// UNCHANGED (each owns its existing path):
+//   • a seek verb (find / go find / look for / search for / seek out / track down / hunt for) …
+//   • … NOT carrying a generic referent (extractFindPersonRef owns those) or a role word;
+//   • … NOT a contested purpose (rob/fight/… — the contested resolver owns those);
+//   • … whose object is a bare NAME token: 1–2 alphabetic words, NOT preceded by a determiner/
+//     possessive ("the"/"my"/"a"…), NOT an OBJECT noun (sword/exit/way/door/…), NOT a known
+//     place. The determiner/object guards keep "find my hatchet", "find the exit", "find the
+//     way out", "find the treasure" off this path — those have no bare name.
+const SEEK_NAME_VERB_RE = /\b(?:go\s+(?:and\s+)?find|find|look\s+for|search\s+for|seek(?:\s+out)?|track\s+down|hunt\s+(?:for|down))\s+/i;
+const SEEK_NAME_OBJECT_NOUN_RE = /^(?:sword|blade|dagger|axe|hatchet|knife|bow|shield|staff|wand|hammer|mace|spear|club|weapon|gear|pack|bag|kit|map|key|coin|coins|purse|gold|silver|torch|lantern|light|rope|food|water|drink|ale|potion|book|scroll|note|letter|door|doorway|window|exit|way|route|path|road|trail|stairs?|stairway|ladder|hatch|entrance|entryway|treasure|loot|hoard|chest|crate|barrel|cask|body|corpse|tracks?|trail|clue|clues|sign|signs|shelter|cover|fire|hearth|bed|cot|room|place|spot|corner)\b/i;
+function extractSeekNameRef(text) {
+  const t = String(text || '');
+  if (SEEK_PERSON_CONTESTED_RE.test(t)) return '';       // hostile-purpose seek → contested resolver
+  if (SEEK_PERSON_GENERIC_RE.test(t)) return '';         // generic referent → extractFindPersonRef
+  if (SEEK_PERSON_ROLE_RE.test(t)) return '';            // role referent → extractFindPersonRef
+  const m = t.match(SEEK_NAME_VERB_RE);
+  if (!m) return '';
+  // The text right after the seek verb, up to a clause boundary.
+  const after = t.slice(m.index + m[0].length).replace(/^\s+/, '');
+  if (!after) return '';
+  // A determiner/possessive lead-in means it's a thing/role/other, not a bare name.
+  if (/^(?:the|a|an|my|your|his|her|its|our|their|some|any|this|that|these|those)\b/i.test(after)) return '';
+  // Take the leading proper-name-shaped token(s): 1–2 alphabetic words (allow ' and -).
+  const nameMatch = after.match(/^([a-z][a-z'’-]+(?:\s+[a-z][a-z'’-]+)?)\b/i);
+  if (!nameMatch) return '';
+  const cand = nameMatch[1].trim();
+  if (SEEK_NAME_OBJECT_NOUN_RE.test(cand)) return '';    // "find sword / exit / way / body …" — not a name
+  return cleanApproachRef(cand);                          // strips a trailing "and greet him" tail
 }
 
 // SEEK-PERSON — a SOCIAL SEARCH: "go find someone who can tell me who founded this

@@ -47,8 +47,11 @@ test('U321-1b: "see my inventory" folds gear in a compound, and diverge: a bare 
   assert.match(r.output.narration, LOADOUT_RE, 'gear folds into the class+inventory compound');
 });
 
-// ── #2 — a committed plunge exits; a tentative climb still asks which ────────
-test('U321-2: a COMMITTED plunge through a window exits (no which-prompt); a bare climb still asks', () => {
+// ── #2 — every window egress resolves; the DM never bounces a which-prompt ───
+// WIN-EGRESS-1 (2026-07-06) superseded the P10 "tentative climb still asks" carve-out: THE_DM_TEST.md
+// forbids the cardinal menu outright, so BOTH a committed plunge AND a bare climb-out now resolve —
+// the DM picks a window deterministically and narrates it. (Full coverage: U588/U589.)
+test('U321-2: both a committed plunge AND a bare climb-out resolve out a window — no which-prompt', () => {
   const w = bootEscape();
   const facings = roomWindowFacings(w, w.scene.interior);
   if (facings.length < 2) return; // single-window room — nothing to disambiguate
@@ -57,9 +60,11 @@ test('U321-2: a COMMITTED plunge through a window exits (no which-prompt); a bar
   assert.doesNotMatch(plunge.output.mechanics || '', /\[window:exit\|which\]/, `a committed plunge must not stall: ${plunge.output.mechanics}`);
   assert.match(plunge.output.mechanics || '', /\[window:exit\|(north|east|south|west)\]/, `it resolves with a facing: ${plunge.output.mechanics}`);
   assert.equal(plunge.world.scene?.interior, null, 'the committed plunge exits the building');
-  // tentative: no plunge, no destination → the which-prompt (map-placement) is preserved
+  // bare climb-out: no plunge, no destination → the DM still picks and resolves, never a menu
   const tentative = playerMove(w, PACKS, 'climb out the window');
-  assert.match(tentative.output.mechanics || '', /\[window:exit\|which\]/, 'a bare climb-out still asks which window');
+  assert.doesNotMatch(tentative.output.mechanics || '', /\[window:exit\|which\]/, 'a bare climb-out no longer asks which window');
+  assert.match(tentative.output.mechanics || '', /\[window:exit\|(north|east|south|west)\]/, `it resolves with a facing: ${tentative.output.mechanics}`);
+  assert.equal(tentative.world.scene?.interior, null, 'the bare climb-out also exits the building');
 });
 
 // ── #3 — adjacent places are in the judge/Ref canon oracle ──────────────────

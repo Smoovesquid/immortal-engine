@@ -1774,30 +1774,35 @@ function playerMoveCore(world, packsById, text, dqIntent) {
         return { world: w, output: { narration: 'Wizard: You loose a shot through the window — it skips off the ground outside. There\'s nothing out there to hit; save it for when there is.', mechanics: '[window:shoot|no-target]' } };
       }
       if (wv === 'exit') {
-        // Which window? Each carries a compass facing. With more than one and no side named, the DM
-        // asks — and the chosen facing is recorded in canon (the interior-exit event) so the map can
-        // place you on that side. Climbing out an (accessible) window never rolls.
+        // WIN-EGRESS-1 — the door pattern, extended to windows. Each window carries a compass
+        // facing. When more than one qualifies the DM NEVER bounces the intent back as a "which
+        // window?" cardinal menu (THE_DM_TEST.md: making the player operate the compass to do
+        // what they already said in words is the cardinal sin). A real DM picks the obvious
+        // window and narrates it. The pick is deterministic (same world+utterance → same window):
+        //   1. an explicitly NAMED window side ("the east window") — honored, or honestly
+        //      declined if no window faces that way;
+        //   2. else the side the player is HEADING ("run north, out the window") if a window
+        //      faces it — the goal-directed pick;
+        //   3. else the FIRST facing by the plan's own deterministic order (the nearest /
+        //      most prominent window).
+        // Climbing out an (accessible) window never rolls; the chosen facing is recorded in canon
+        // (the interior-exit event) so the map can place you on that side.
         const facings = roomWindowFacings(w, w.scene.interior);
-        const requested = parseWindowFacing(text);
-        // A COMMITTED plunge ("dive/leap through", "…into the flames", "headfirst")
-        // has decided to go — the specific window is immaterial, so resolve with the
-        // nearest facing instead of stalling on "which?". A tentative "I go out a
-        // window" (no plunge, no beyond-window destination) still asks, so the
-        // map-placement facing stays a real choice. (P10 gate Chaos-5: "climb through
-        // the burning window into the flames" got a which-prompt, resolved nothing.)
-        const committedPlunge = /\b(?:dive|leap|plunge|lunge)\b|\b(?:hurl|throw)\s+(?:myself|him|her)\b|\bhead\s?first\b|\binto\s+the\s+\w+/i.test(String(text || ''));
-        if (facings.length > 1 && !requested && !committedPlunge) {
-          return { world: w, output: { narration: `Wizard: There's more than one window — ${joinFacings(facings)}. Which do you go out?`, mechanics: '[window:exit|which]' } };
+        const namedSide = parseWindowSide(text);            // strict: a window picked by its side
+        const goalDir = parseGoalFacing(text);              // loose: any heading in the utterance
+        // A NAMED window side that the room doesn't have is declined honestly (you stay inside).
+        // A bare goal direction is NEVER a "no-such" — it just fails to bias the pick.
+        if (namedSide && facings.length && !facings.includes(namedSide)) {
+          return { world: w, output: { narration: `Wizard: No window faces ${namedSide} here — ${facings.length > 1 ? 'they face' : 'it faces'} ${joinFacings(facings)}.`, mechanics: '[window:exit|no-such]' } };
         }
-        if (requested && facings.length && !facings.includes(requested)) {
-          return { world: w, output: { narration: `Wizard: No window faces ${requested} here — ${facings.length > 1 ? 'they face' : 'it faces'} ${joinFacings(facings)}.`, mechanics: '[window:exit|no-such]' } };
-        }
-        const chosen = (requested && facings.includes(requested)) ? requested : (facings[0] || '');
+        const chosen = (namedSide && facings.includes(namedSide)) ? namedSide
+          : (goalDir && facings.includes(goalDir)) ? goalDir
+          : (facings[0] || '');
         const w1 = exitStructureInterior(w);
         if (w1 !== w) {
           const w2 = pushEvent(w1, { kind: 'resolution', data: { actorId, intent: String(text || ''), text: String(text || ''), roll: 0, dc: 0, outcome: 'success', updateKind: 'interior-exit', windowFacing: chosen } });
-          const via = chosen ? `out the ${chosen}-facing window` : 'out the window';
-          return { world: w2, output: { narration: `Wizard: You go ${via} and drop to the open ground outside.`, mechanics: `[window:exit${chosen ? '|' + chosen : ''}]` } };
+          const via = chosen ? `the ${chosen}-facing window` : 'the window';
+          return { world: w2, output: { narration: `Wizard: You shoulder through ${via} and drop to the open ground outside.`, mechanics: `[window:exit${chosen ? '|' + chosen : ''}]` } };
         }
       }
     }
@@ -4762,18 +4767,37 @@ function lockActionKind(text) {
   return null;
 }
 
-// parseWindowFacing(text) → 'north'|'east'|'south'|'west'|null — a compass side named for a window
-// ("the east window", "the window to the north", "the north-facing one").
-function parseWindowFacing(text) {
+// parseGoalFacing(text) → 'north'|'east'|'south'|'west'|null — ANY compass side named
+// anywhere in the utterance. Loose on purpose: it is only ever a PREFERENCE among the
+// windows that exist (pick the one that points the player's way), never a reason to
+// decline. "the east window" and "run east at the barn" both surface 'east' here.
+function parseGoalFacing(text) {
   const t = String(text || '').toLowerCase();
-  if (/\bnorth(?:ern|\s*-?\s*facing)?\b/.test(t)) return 'north';
-  if (/\bsouth(?:ern|\s*-?\s*facing)?\b/.test(t)) return 'south';
-  if (/\beast(?:ern|\s*-?\s*facing)?\b/.test(t)) return 'east';
-  if (/\bwest(?:ern|\s*-?\s*facing)?\b/.test(t)) return 'west';
+  if (/\bnorth(?:ward|ern|erly|\s*-?\s*facing)?\b/.test(t)) return 'north';
+  if (/\bsouth(?:ward|ern|erly|\s*-?\s*facing)?\b/.test(t)) return 'south';
+  if (/\beast(?:ward|ern|erly|\s*-?\s*facing)?\b/.test(t)) return 'east';
+  if (/\bwest(?:ward|ern|erly|\s*-?\s*facing)?\b/.test(t)) return 'west';
   return null;
 }
 
-// joinFacings(['north','east']) → "one to the north or one to the east" — for the "which?" prompt.
+// parseWindowSide(text) → 'north'|'east'|'south'|'west'|null — a compass side bound to the
+// WINDOW itself ("the east window", "the window to the north", "the north-facing one/window").
+// This is the STRICT read: only when the player has explicitly picked a window by its side does
+// naming an absent side earn an honest "no window faces that way" — a bare goal direction
+// ("run north, out the window") is NOT a window-side and must never trigger that decline.
+function parseWindowSide(text) {
+  const t = String(text || '').toLowerCase();
+  for (const dir of ['north', 'south', 'east', 'west']) {
+    // side directly on the window noun: "east window", "north-facing window/one"
+    if (new RegExp(`\\b${dir}(?:ern)?(?:\\s*-?\\s*facing)?\\s+(?:window|windows|one)\\b`).test(t)) return dir;
+    // "window (that is) to the/on the/facing east", "windowsill on the north side"
+    if (new RegExp(`\\b(?:window|windows|windowsill|sill)\\b[^.!?]*\\b(?:to|on|facing|toward|towards)\\s+the\\s+${dir}\\b`).test(t)) return dir;
+  }
+  return null;
+}
+
+// joinFacings(['north','east']) → "one to the north or one to the east" — names the real sides
+// when declining a NAMED window side the room doesn't have ("no window faces south — they face …").
 function joinFacings(facings) {
   const parts = (facings || []).map(f => `one to the ${f}`);
   if (parts.length <= 1) return parts[0] || '';

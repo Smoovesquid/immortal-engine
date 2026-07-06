@@ -1,7 +1,12 @@
-// U289 — each window has a compass FACING, so climbing out is per-window: with more than one window
-// the DM asks WHICH, naming the sides; climbing out a named window exits (no roll) and records the
-// chosen facing in canon (the interior-exit event), so the map can place you on that side. Naming a
-// window that isn't there is declined. Deterministic. Hermetic — no network, no API key.
+// U289 — each window has a compass FACING, so climbing out is per-window: climbing out a named
+// window exits (no roll) and records the chosen facing in canon (the interior-exit event), so the
+// map can place you on that side. Naming a window that isn't there is declined. Deterministic.
+// Hermetic — no network, no API key.
+//
+// WIN-EGRESS-1 (2026-07-06): a bare climb-out on a MULTI-window room no longer asks "which?" — the
+// DM picks one deterministically and narrates it (THE_DM_TEST.md: the cardinal-menu bounce is the
+// cardinal sin). The full resolution + goal-directed selection lives in U588/U589; here we just hold
+// that the bare climb-out RESOLVES (out the first facing) rather than stalling on a menu.
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -33,15 +38,17 @@ test('U289: each window has a distinct compass facing (deterministic)', () => {
   for (const f of a) assert.match(f, /^(north|east|south|west)$/);
 });
 
-test('U289: with >1 window, a bare climb-out asks WHICH one and keeps you inside', () => {
+test('U289: with >1 window, a bare climb-out RESOLVES (picks the first facing, no which-menu)', () => {
   const w = boot();
   const facings = roomWindowFacings(w, w.scene.interior);
   if (facings.length < 2) return; // single-window room — nothing to disambiguate
   const r = playerMove(w, PACKS, 'climb out the window');
-  assert.match(r.output.mechanics || '', /\[window:exit\|which\]/, r.output.mechanics);
-  assert.match(r.output.narration, /which/i, r.output.narration);
-  for (const f of facings) assert.match(r.output.narration, new RegExp(f, 'i'), `the prompt lists the ${f} option`);
-  assert.ok(r.world.scene?.interior, 'asking which one keeps you inside');
+  // WIN-EGRESS-1: never bounce the intent back as a cardinal menu.
+  assert.doesNotMatch(r.output.mechanics || '', /\[window:exit\|which\]/, r.output.mechanics);
+  assert.doesNotMatch(r.output.narration, /which do you go out/i, r.output.narration);
+  // It resolves out the first facing by the plan's own deterministic order, and you are outside.
+  assert.match(r.output.mechanics || '', new RegExp(`\\[window:exit\\|${facings[0]}\\]`), r.output.mechanics);
+  assert.equal(r.world.scene?.interior, null, 'the bare climb-out resolves — you are outside');
 });
 
 test('U289: climbing out a NAMED window exits, records the facing in canon, and never rolls', () => {

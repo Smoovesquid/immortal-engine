@@ -11,6 +11,8 @@ import { generateNodeFurniture } from './generateFurniture.js';
 import { verifyRumorsForSeed } from '../rumor/verify.js';
 import { ensureNodeSubstrate } from '../substrate.js';
 import { injectDemoFigures } from '../world/demoFigures.js';
+import { notorietyReaching } from '../npc/reputation.js';
+import { startingTrust } from '../social/startingTrust.js';
 
 export async function decompressAndCanonize(world, nodeId, pack, llmOptions = {}) {
   const node = world.map.nodes.find(n => n.id === nodeId);
@@ -92,10 +94,25 @@ export function decompressAndCanonizeSync(world, nodeId, pack) {
 
   // Generate deterministic names and conversation state via npcGenesis
   const buildingTypes = settlement.buildings.map(b => String(b.name || '').split(' ').pop());
+  // SP-3 — starting trust reads standing. Resolve the player's institutional standing
+  // (faction rep) and traveling notoriety at THIS node once. Both are derived from
+  // already-hashed state (w.reputation.factions, w.deeds via notorietyReaching) →
+  // deterministic, no new state, no rng.
+  const repFactions = world.reputation?.factions || {};
+  const notorietyScore = notorietyReaching(world, nodeId).score;
+  // The FINAL factionId wins — computeNpcDepth may reassign an NPC's faction from
+  // settlement history AFTER genesis, and F1/dialogue read that final id. So trust is
+  // stamped here, against each merged NPC's actual factionId (see the merge below),
+  // not genesis's tentative one. Genesis still gets the inputs (for direct callers).
+  const trustForNpc = (finalFactionId) => startingTrust({
+    factionId: finalFactionId,
+    factionRep: finalFactionId ? Number(repFactions[finalFactionId]) || 0 : 0,
+    notorietyScore
+  });
   const genesisNpcs = generateSettlementNPCs(
     nodeId, world.meta.seed, pack,
     world.factions, world.ecology,
-    { buildings: buildingTypes }
+    { buildings: buildingTypes, reputation: repFactions, notorietyScore }
   );
 
   // Merge genesis data (name, conversationState, disposition) onto depth NPCs.
@@ -120,13 +137,18 @@ export function decompressAndCanonizeSync(world, nodeId, pack) {
   };
   const namedNpcs = deepNpcs.map((npc, i) => {
     const gen = genesisNpcs[i];
+    // SP-3 — starting trust against the FINAL (depth) factionId.
+    const finalFactionId = String(npc?.factionId || '').trim() || null;
     if (!gen) {
       // Overflow beyond genesis count: mint a deterministic name AND a full
       // conversation state — a person without one can't accrue trust.
+      const baseCs = npc.conversationState || { metPlayer: false, topicsDiscussed: [], trustLevel: 5, lastInteraction: null };
       return {
         ...npc,
         name: npc.name && !/^the /.test(npc.name) ? npc.name : mintUnique(`${nodeId}|${world.meta.seed}|overflow|${i}`),
-        conversationState: npc.conversationState || { metPlayer: false, topicsDiscussed: [], trustLevel: 5, lastInteraction: null },
+        // Only stamp standing-trust onto a fresh/neutral mint — never overwrite trust
+        // an NPC has already accrued (metPlayer) if this node were ever re-minted.
+        conversationState: baseCs.metPlayer ? baseCs : { ...baseCs, trustLevel: trustForNpc(finalFactionId) },
         description: '',
         factualDetail: ''
       };
@@ -135,7 +157,9 @@ export function decompressAndCanonizeSync(world, nodeId, pack) {
     return {
       ...npc,
       name: gen.name,
-      conversationState: gen.conversationState,
+      // gen.conversationState is a fresh mint (metPlayer:false); re-derive trustLevel
+      // against the NPC's final faction so it matches what F1/dialogue read.
+      conversationState: { ...gen.conversationState, trustLevel: trustForNpc(finalFactionId) },
       knowledgeGraph: mergedKg,
       description: '',
       factualDetail: ''

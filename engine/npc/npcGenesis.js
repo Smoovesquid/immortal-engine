@@ -2,6 +2,7 @@
 // Same seed + same node = same NPCs. Always.
 
 import { seedFromString, makeRng } from '../rng.js';
+import { startingTrust } from '../social/startingTrust.js';
 
 // ── Archetype-to-building mapping ───────────────────────────────────────────
 // When a settlement has specific building types, assign matching archetypes.
@@ -59,7 +60,12 @@ const EPITHETS = [
  * @param {object} pack - Pack data (may contain npcArchetypes)
  * @param {object[]} factionState - Array of faction objects
  * @param {object} ecology - { corruption, instability, scarcity }
- * @param {object} [opts] - Optional: { buildings: string[] } building types at this node
+ * @param {object} [opts] - Optional:
+ *   { buildings: string[] } building types at this node
+ *   { reputation: {[factionId]: number} } player↔faction standing (w.reputation.factions);
+ *     SP-3 — an affiliated NPC's starting trust reads its faction's standing (default {} → neutral).
+ *   { notorietyScore: number } 0..1 traveling-notoriety at this node (notorietyReaching(...).score);
+ *     SP-3 — an UNAFFILIATED NPC's starting trust reads this (default 0 → neutral).
  * @returns {object[]} Array of NPC base records
  */
 export function generateSettlementNPCs(nodeId, seed, pack, factionState, ecology, opts = {}) {
@@ -70,6 +76,12 @@ export function generateSettlementNPCs(nodeId, seed, pack, factionState, ecology
   const factions = Array.isArray(factionState) ? factionState : [];
   const eco = ecology && typeof ecology === 'object' ? ecology : { corruption: 0, instability: 0, scarcity: 0 };
   const buildings = Array.isArray(opts.buildings) ? opts.buildings.map(b => String(b).toLowerCase()) : [];
+
+  // SP-3 — starting-trust standing inputs (deterministic, table-driven; see
+  // engine/social/startingTrust.js). Absent → neutral, so a world where standing
+  // never moved mints trust 5 exactly as before (byte-identical to pre-SP-3).
+  const reputation = opts.reputation && typeof opts.reputation === 'object' ? opts.reputation : {};
+  const notorietyScore = Number(opts.notorietyScore) || 0;
 
   // 3-5 NPCs per settlement. Scarcity reduces count.
   const baseCount = 3 + rng.int(0, 2);
@@ -168,7 +180,15 @@ export function generateSettlementNPCs(nodeId, seed, pack, factionState, ecology
       conversationState: {
         metPlayer: false,
         topicsDiscussed: [],
-        trustLevel: 5, // starts neutral (0-10 scale)
+        // SP-3 — starting trust reads standing (0-10 scale; 5 neutral, clamped 3..7).
+        // Affiliated NPC → its faction's reputation; unaffiliated → traveling notoriety.
+        // Table-driven magnitude (startingTrust.js); neutral unless the player has a
+        // reputation, so a clean-slate world still mints 5.
+        trustLevel: startingTrust({
+          factionId,
+          factionRep: factionId ? Number(reputation[factionId]) || 0 : 0,
+          notorietyScore
+        }),
         lastInteraction: null
       }
     });

@@ -60,7 +60,11 @@ export const MAP_3D_ENABLED = true;
 // See TILT_DEFAULTS below for the meaning + default of each.
 const TILT_DEFAULTS = {
   start:       BAND.plan,        // z (px/wu) where the paper BEGINS to tilt (flat below).
-  cross:       BAND.plan * 1.35, // z where the 3D diorama is fully opaque (2D faded out beneath).
+  cross:       BAND.plan * 1.12, // z where the 3D diorama is fully opaque (2D faded out beneath).
+                                 // MAP-BLEND-1 (Tim's double-vision report, 2026-07-06): was ×1.35 —
+                                 // a band that wide let the camera SIT mid-crossfade showing two
+                                 // projections at once. Narrow enough that one wheel notch crosses it;
+                                 // the settle-snap below guarantees no REST inside it regardless.
   full:        Z_MAX,            // z where the tilt reaches its full oblique angle.
   pitchTopDeg: 4,                // camera pitch from straight-down at `start` (≈flat plan).
   pitchDeg:    58,               // camera pitch (deg from top-down) at `full` — the diorama vantage.
@@ -109,6 +113,22 @@ export function tiltStateForZoom(z, knobs) {
   return { tiltFrac, phi, blend };
 }
 export { TILT_DEFAULTS };
+
+// MAP-BLEND-1 — the camera must never REST mid-crossfade (Tim's double-vision
+// report: two projections of the same place ghosted over each other). Pure math,
+// exported for U630: given a settled zoom z, the z it should glide to — the
+// nearer blend edge — or null when it's already cleanly 2D (blend ≤ 0.02) or
+// cleanly 3D (≥ 0.98). Mid-band exactly (blend 0.5) resolves INTO the diorama:
+// the gesture that parked you there was almost always an inward zoom. The live
+// driver (scheduleBlendSettle in onCamera) debounces this so it only fires when
+// the wheel/pinch goes idle — a transition may dissolve, a resting view may not.
+export function settleZoomTarget(z, knobs) {
+  if (!MAP_3D_ENABLED) return null;
+  const k = knobs || TILT_DEFAULTS;
+  const b = ramp(k, k.start, k.cross, z);
+  if (b <= 0.02 || b >= 0.98) return null;
+  return b < 0.5 ? k.start : k.cross;
+}
 
 // ── PERSISTENT MOUNT STATE (module-level — survives v1's full-rebuild render) ──
 // `_persist` is the ONE map subtree we re-adopt across renders. `_live` is the
@@ -213,6 +233,9 @@ export function renderContinuousMap(world, opts = {}) {
     onCamera: (cam) => onCamera(cam),
   });
   twoD.style.zIndex = '1';
+  // MAP-BLEND-1: the plan is one HALF of a true crossfade — it fades OUT as the
+  // diorama fades in (onCamera drives both). Same easing as layer3d's own.
+  twoD.style.transition = 'opacity .12s linear';
 
   // The 3D overlay: empty + transparent until the zoom crosses into the tilt band.
   const layer3d = document.createElement('div');
@@ -302,6 +325,23 @@ export function renderContinuousMap(world, opts = {}) {
     _persist.hud.textContent = `z ${cam.z.toFixed(2)} · tilt ${pct}% · fade ${Math.round(blend * 100)}%`;
   }
 
+  // MAP-BLEND-1 — debounced rest-settle: while the wheel/pinch is moving, the
+  // crossfade is free to dissolve; the moment the camera goes idle INSIDE the
+  // band, glide z to the nearer edge so the resting view is always ONE
+  // projection (flat plan or diorama), never both ghosted. Recomputed from live
+  // knobs at fire time; the glide itself re-enters onCamera and converges to a
+  // no-op at the edge (settleZoomTarget returns null there).
+  let settleTimer = 0;
+  function scheduleBlendSettle() {
+    clearTimeout(settleTimer);
+    settleTimer = setTimeout(() => {
+      if (token !== _token || !lastCam || !_live) return;
+      const zt = settleZoomTarget(lastCam.z, tiltKnobs());
+      if (zt == null || typeof twoD.__oneMapFocus !== 'function') return;
+      twoD.__oneMapFocus(lastCam.cx, lastCam.cy, zt);
+    }, 250);
+  }
+
   function onCamera(cam) {
     if (token !== _token) return;
     lastCam = cam;
@@ -310,6 +350,7 @@ export function renderContinuousMap(world, opts = {}) {
     const b = tiltStateForZoom(cam.z, tiltKnobs()).blend;
     if (b <= 0.001) {            // pure 2D — hide & idle the diorama, pass pointer through
       layer3d.style.opacity = '0';
+      twoD.style.opacity = '1';  // MAP-BLEND-1: the plan fully back
       layer3d.style.pointerEvents = 'none';
       _lastTiltFrac = 0;
       if (_live) _live.ctrl.pause();
@@ -317,14 +358,19 @@ export function renderContinuousMap(world, opts = {}) {
       return;
     }
     ensureMounted();
-    if (!_live) { layer3d.style.opacity = '0'; updateHud(cam, 0); return; } // still mounting / failed
+    if (!_live) { layer3d.style.opacity = '0'; twoD.style.opacity = '1'; updateHud(cam, 0); return; } // still mounting / failed
     _live.ctrl.resume();
     applyFromCam(cam);
     layer3d.style.opacity = String(b);
+    // MAP-BLEND-1: TRUE crossfade — the plan fades out exactly as the diorama
+    // fades in (was: plan pinned at 1 beneath a translucent diorama = Tim's
+    // double-vision photo, both projections at once).
+    twoD.style.opacity = String(1 - b);
     // Once the diorama is substantially visible, let the overlay claim drags to
     // orbit; below that keep it transparent so zoom/pan reach the 2D map.
     layer3d.style.pointerEvents = (_lastTiltFrac > 0.15) ? 'auto' : 'none';
     updateHud(cam, b);
+    scheduleBlendSettle();
   }
 
   _persist = { wrap, twoD, layer3d, fillMode: Boolean(fillMode), hud, world, onCamera };

@@ -242,7 +242,7 @@ done_when · rollback`.
   w/ deliberate-accept ritual. RED today on the wake scene by design (independent repro of
   REND-TRUTH-1); wires into `npm run check` when green — the position-probe arc, step for step.
 
-### REND-TRUTH-1 — four NPCs drawn in the bedroom; their true positions are 60–300 ft away  ·  Phase 1/2 (MAP-REAL falsifier #2, live on Tim's screen)  ·  **CUT + DISPATCHED 2026-07-06-am (Opus renderer lane; U548–U550)**
+### REND-TRUTH-1 — four NPCs drawn in the bedroom; their true positions are 60–300 ft away  ·  Phase 1/2 (MAP-REAL falsifier #2)  ·  **✅ LANDED v0.30.2 b100 (worker `5d56fb10`; U548–U550 18/18; suite 10420/0; BISECT EXONERATED MR-3b — pre-existing 128× sheet-vs-mini scale mismatch since MAP-3DR; minis now project through the sheet's own transform, error=0; headless receipt: only the player stands in the Bedchamber). Tim's live receipt = his next look. VIS-ORACLE's wake-scene expected-fail FLIPS at its integration.**
 - **provenance:** Tim's v0.30.0 wake, interior zoom: four NPC figures render in/around the bedchamber.
   Engine truth (live-save probe): Carl wu(-29.6,0.9), Galen (-12.6,-10.7), Lingerer (4.7,-14.0),
   masked hostile (21.7,-8.4) — all outdoors, 12–60 wu from the cottage (~(-44,-45)). The DRAWING

@@ -2850,3 +2850,14 @@ other agents. (none active)
 - MP-1 (witness→rumor bridge; F1 dead-gate fix rides it; F6 fair-combat guard mandatory) dispatched
   to the free engine serial slot (Opus; U555–U557). Parallel lanes untouched: REND-TRUTH-1 (renderer)
   · VIS-ORACLE (harness). Next free numbers U558+.
+
+## 2026-07-06 — Basecamp (closing act) — REND-TRUTH-1 integrated → v0.30.2 build 100 "nobody in your bedroom"
+
+- Cherry-picked `5d56fb10`; gate GREEN (10420/0, 131/131, probe clean). Worker's bisect EXONERATED
+  the brief's suspect (MR-3b byte-identical at b096/HEAD) — root cause was a pre-existing 128×
+  sheet-vs-mini scale mismatch (since MAP-3DR): at interior zoom all occupancy minis huddled at plane
+  centre. Fix: one shared sheet-transform projection (`entityScenePosOnSheet`), reproject on every
+  re-centre/re-zoom; error=0. Premise-correction honored — the falsifier was real, the blame was not.
+- This window closes here. Successor: VIS-ORACLE integration flips its wake-scene expected-fail
+  (the bug it was born to see is now fixed — its U553 marker flips GREEN); MP-1 continues. Handoff
+  file updated.

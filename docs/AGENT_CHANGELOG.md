@@ -2899,3 +2899,16 @@ other agents. (none active)
   to MP-2 (zero file overlap). Draw sites pre-located for the worker (placeFromNode.js:296,
   generatePlace.js:53 — the file's own comments admit the split). Done-when chain ends with wiring
   `playtest:screen` into `npm run check` (all scenes green precondition).
+
+## 2026-07-06 — Basecamp (successor) — MP-2 integrated → v0.30.5 build 103 "the ladder"; MP-3 dispatched
+
+- MP-2 landed: `07135253` → `5e7815fd`; ladder GREEN (10479/0 · 131/131 · probe clean). One tier
+  function (`engine/morality/escalation.js`) now grades every deed 0–4 at the effectsCore
+  recordDeed chokepoint — all five emitters uniformly, playloop untouched. Worker's smart call:
+  tier reads BATCH-ENTRY standing (a first atrocity can't self-boost to Tier 4 in its own batch).
+  T3/T4 computed-not-acted (MP-3/MP-4's job). Worker's version-file bump dropped at integration
+  (claimed b102, already taken) — briefs now say: workers never touch version files.
+- MP-3 (heat→hunt) cut + dispatched → `briefs/MP-3-heat-to-hunt.md`; U563–U565 claimed; same
+  engine-serial lane, now free. Heat accrual f(severity, witnessReach, concealment), wild
+  asymmetry as a NAMED feature, deterministic decay, hunt via existing spawnEncounter at
+  HUNT_HEAT. PLAN-SPLIT-1 (renderer) still in flight in parallel.

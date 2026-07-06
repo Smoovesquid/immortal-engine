@@ -2861,3 +2861,12 @@ other agents. (none active)
 - This window closes here. Successor: VIS-ORACLE integration flips its wake-scene expected-fail
   (the bug it was born to see is now fixed — its U553 marker flips GREEN); MP-1 continues. Handoff
   file updated.
+
+## 2026-07-06 — Basecamp (final act) — MP-1 integrated → v0.30.3 build 101 "word travels"
+
+- Cherry-picked `bfbb529e`; gate GREEN (10431/0, 131/131, probe clean). Reputation was dead behind ONE
+  constant (gate 25 vs ceiling 20), masked by U276's impossible fixtures — now real deeds travel,
+  garbled with distance, witnesses as provenance, fair fights clean, no meter ever. The worker
+  honored constitution-over-brief on the mintClaim conflict (flagged for the design window's errata
+  pass). This window's ledger closes: b083→b101, nineteen releases in two days. Successor owns:
+  VIS-ORACLE integration (flip U553, capture wake golden, wire when green) → MP-2 cut → the queue.

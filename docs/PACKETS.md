@@ -200,7 +200,15 @@ done_when · rollback`.
   determinism ladder + `npm run check` green; playtest:quick clean.
 - **follow-ups queued:** OCC-STORY-2 (below) · TT-OCC (below).
 
-### OCC-STORY-2 — "up to something" becomes thread-driven  ·  Phase 1/4 seam  ·  **CUT + DISPATCHED 2026-07-06 (Basecamp; brief `briefs/OCC-STORY-2-up-to-something.md`; U580–U582 claimed; opus; extends OCC-STORY-1's anchor derivation, reads instrument.threads READ-ONLY; boot placement pinned UNCHANGED — no U454-E move; burglary→deed wiring ONLY through an existing NPC-deed organ, else flagged)** *(was UNBLOCKED same day — OCC-STORY-1 b092 + CONSEQ-1 b106)*
+### OCC-STORY-2 — "up to something" becomes thread-driven  ·  Phase 1/4 seam  ·  **✅ LANDED v0.30.12 b110 (worker `14a85c18` → integrated `2d0f1a63`; U580–U582 17/17; storyAnchors extended not forked: hot/aged threads pull their tied NPCs to the thread's locus, reasons carry the LIVE mutated objective; live receipt: the Lingerer at the chapel path — "watching the chapel path — choose what to sacrifice to survive"; boot placement UNCHANGED — anchor + goldens held, exactly as briefed; FLAGGED GAP → NPC-DEED-1 below: the deed recorder is player-only, so a witnessed NPC burglary can't feed the rumor mill yet)**
+
+### NPC-DEED-1 — NPC crimes get a recording path (the rumor mill hears the world, not just the player)  ·  MP-arc seam  ·  **QUEUED 2026-07-06 (OCC-STORY-2's flagged gap; LIKELY MP-6 PREREQUISITE)**
+- `recordDeed`/`applyDeedCharges` stamp guilt/heat on PARTY members only — a witnessed NPC burglary
+  (OCC-STORY-2's bandit) or Carl's villainy has no path into `world.deeds`/`rumorsReaching`. But
+  MORAL_PHYSICS Arc A ("the world grinds Carl") REQUIRES NPC deeds to mint travelling reputation —
+  audit first whether the npc claims/rumor substrate already carries this (REPUTATION_UNIFICATION
+  ruled rumorsReaching = sole read-sink); if not, extend the deed record with an actor field
+  (additive, engine-owned). Cut BEFORE MP-6; size the audit first.
 - Stage 2 of the ruling: placement overrides read live world threads/goals (worldTick) — the Lingerer
   haunts the chapel path *because the chapel thread is hot*; a hostile indoors is a burglary IN PROGRESS
   with consequences, not an accident. Still derived + deterministic. Scope on cut.
@@ -258,7 +266,7 @@ done_when · rollback`.
 ### REND-SCALE-1 — the foot-tall Hobbit: minis are SIZED by the sheet, not a fixed authored scale  ·  Phase 1/2 (MAP-REAL falsifier #4, Tim's live report 2026-07-06)  ·  **✅ LANDED v0.30.6 b104 (desk packet `381fdde2`; U566–U567 7/7; suite 10486/0; ladder green)**
 - Tim: "my Hobbit figurine looks about a foot tall relative to the squares which are 5'" — REAL. REND-TRUTH-1 made mini POSITIONS ride the sheet transform; SIZE stayed authored-fixed, so figures shrank against the squares as the zoom deepened.
 - The law: drawn size = true feet × `sheetScenePerWu` (the SAME factor the ink's 5-ft squares use), floored at the authored token look zoomed-out. Species truth from the sheet (`party[0].dnd.species` size — Small 3.5 ft, dwarf 4.5, medium 6); props per kind (bed LENGTH-true 7 ft). `window.__rendScaleAudit` = live numeric receipt; A/B receipt Halfling-vs-Human on the real screen (exactly 3.5 vs 6.0 drawn wu, 1.7× on screen).
-- **Follow-up → WILD-SCALE-1 CUT + DISPATCHED 2026-07-06** (brief `briefs/WILD-SCALE-1-trees-match-their-ink.md`; U575–U576 claimed; renderer lane): the law refined past the taste question — a wild mini's FOOTPRINT matches its OWN ink footprint (treeRadiusWu / feature wu extent) through the same transform; height follows authored proportions; absurd-reading scenes get the smallest reversible cap + a Tim taste flag with screenshots. Combat-board minis stay on their own cell contract by design.
+- **Follow-up → WILD-SCALE-1 ✅ LANDED v0.30.12 b110** (worker `03f8d7c5` → integrated `72c65c2a`; U575–U576 22/22 w/ REND-SCALE regression; trees THREADED LIVE from the ink's own treeRadiusWu — retune the paper map and the 3-D trees follow; boulder/brush/deadfall/stump on real-world sizes, rotation-safe measurement for deadfall; NO taste cap needed — no zoom read absurd on the real screen; worker caught its own first-load ordering crash via the live screenshot check before shipping; flagged: the OLDER village tree-scatter path predates the sheet contract — separate lane if it ever matters). Combat-board minis stay on their own cell contract by design.
 
 ### REND-TRUTH-1 — four NPCs drawn in the bedroom; their true positions are 60–300 ft away  ·  Phase 1/2 (MAP-REAL falsifier #2)  ·  **✅ LANDED v0.30.2 b100 (worker `5d56fb10`; U548–U550 18/18; suite 10420/0; BISECT EXONERATED MR-3b — pre-existing 128× sheet-vs-mini scale mismatch since MAP-3DR; minis now project through the sheet's own transform, error=0; headless receipt: only the player stands in the Bedchamber). Tim's live receipt = his next look. VIS-ORACLE's wake-scene expected-fail FLIPS at its integration.**
 - **provenance:** Tim's v0.30.0 wake, interior zoom: four NPC figures render in/around the bedchamber.

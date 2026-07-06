@@ -3022,3 +3022,18 @@ other agents. (none active)
   HUNT_HEAT (CASSANDRA_MARGIN≈8 — heeding can still matter), spoken by a real present NPC, quiet
   register, waveable; LLM-off fallback included. In flight: WILD-SCALE-1 · OCC-STORY-2 · MP-5b.
   After they land: CG-2 paid-gate rehearsal on the stable build, then MP-6 — the Carl Witness Test.
+
+## 2026-07-06 — Basecamp (successor) — OCC-STORY-2 + WILD-SCALE-1 integrated → v0.30.12 build 110 "plots place people"
+
+- **OCC-STORY-2:** `14a85c18` → `2d0f1a63`. Hot/aged threads pull their tied NPCs to the plot's
+  locus; reasons carry the LIVE mutated objective (CONSEQ-1's substrate paying off). Live receipt:
+  the Lingerer on the chapel path — "watching the chapel path — choose what to sacrifice to
+  survive." Boot placement unchanged (anchor + goldens held, as briefed). Flagged gap → NPC-DEED-1
+  queued: the deed recorder is player-only; Arc A (Carl) needs NPC deeds in the rumor mill —
+  LIKELY MP-6 PREREQUISITE, audit-first row cut.
+- **WILD-SCALE-1:** `03f8d7c5` → `72c65c2a`. Wild minis match their OWN ink (trees threaded live
+  from treeRadiusWu — the two views can never drift); no taste cap needed on the real screen;
+  legacy village tree-scatter flagged as a separate pre-contract lane.
+- Combined ladder: 10598/0 · 131/131 · position probe clean · screen truth 7/7 · goldens locked.
+- In flight: MP-5b (the Cassandra) — last lane of the wave. Then: CG-2 paid-gate rehearsal on the
+  stable build → NPC-DEED-1 audit → MP-6 (the Carl Witness Test) closes the constitution.

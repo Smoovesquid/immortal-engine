@@ -3274,3 +3274,20 @@ other agents. (none active)
   green. U628 (PW-6's spare) unused — released back to the pool.
 - **THE PROSE-TO-WORLD ARC CLOSES: PW-1 → PW-6 all landed.** SP-3 (starting trust reads standing)
   still in flight on its own lane (Opus worktree, U625–U627); ENSURE-STATS-1 cuts when it lands.
+
+## 2026-07-06 — Basecamp — SP-3 → v0.32.4 build 124 "your name precedes you" — strangers start leaning
+
+- SP-3 landed (worker `2c8ebfe0` → integrated `6b596c74`; U625–U627, 17 new tests): NPC starting
+  trust reads standing at mint — `5 + floor(rep[factionId]/25)` clamped 3..7 from a pure table
+  module (`engine/social/startingTrust.js`); unaffiliated NPCs read the notoriety score through
+  discrete bands (crimes travel, virtues don't — ceiling stays neutral 5, floor matches the
+  faction path at 3). Clean-slate worlds mint everyone at 5 — byte-identical to before, no
+  WORLD_VERSION bump (new state, not reshaped).
+- Worker's load-bearing catch: `computeNpcDepth` can REASSIGN factionId after genesis, so
+  decompress re-derives trust against each NPC's FINAL faction — without this an NPC could open
+  cold for a faction it no longer belongs to. Failing-first live-wire test (U626) forced the fix.
+- Ladder on the integrated tree: suite 10866/0 · corpus 135/135 · screen truth 7/7 · worker also
+  ran playtest:quick 50/0 in-worktree. Done-when proven: −60 civic world → trust 3 · +50 → trust 7,
+  end-to-end through real aldermere decompression.
+- U625–U627 now committed — the allocator sees them again. ENSURE-STATS-1's lane (state/combat)
+  is FREE — dispatching next.

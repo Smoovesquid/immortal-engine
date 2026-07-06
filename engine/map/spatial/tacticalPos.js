@@ -230,6 +230,126 @@ export function roomOfStructCell(plan, gx, gy) {
   return '';
 }
 
+// ── FURN-1 — furniture footprints join the struct walkable mask ──────────────
+// docs/MAP_REAL.md promise 1 ("architecture is real … a bed occupies its cells; a
+// body doesn't share them") + the FURN-1 packet. floorPlan furniture carries a
+// normalized centre (fx,fy in the room BOX, 0..1) and a layout-unit size (w,h for a
+// rect; r for a circle — see roomDetail.js FURN). A PLACED piece of furniture makes
+// its footprint cells UNWALKABLE, exactly as a wall does: nobody stands inside the
+// bed. This is the struct-frame analogue of wildFeatures' outdoor mask.
+//
+// TASTE DEFAULT (pinned from the plan's furniture catalog, roomDetail.js FURN): in
+// v1 EVERY furniture KIND blocks its ANCHOR CELL — a bed, a table, an altar, a
+// barrel, a chest are all solid to a body on the cell the mini stands on. The one
+// exception is a FLAT floor covering (`flat:1` — rugs, aisle runners), which you
+// stand ON, not inside; those never block. If a future pass wants half-blocking
+// cover (the D&D "heavy table = half cover" idea already in FURN.cover) to be
+// steppable, it changes THIS predicate, not the geometry.
+//
+// WHY THE ANCHOR CELL, NOT THE FULL BOUNDING BOX (a deliberate v1 call): floorPlan
+// lays furniture across a room's FULL layout box (fx/fy span 0.12..0.88), but the
+// WALKABLE rect (roomRectCells) is that box INSET by the shared-wall band — so at
+// v1's cell resolution (PLACE_WU=4) a typical bedchamber is only ~1–3 walkable cells
+// wide while its six pieces of furniture are laid out edge-to-edge. Blocking every
+// grazed cell of every piece leaves such a room with ZERO standing room — the player
+// would wake with nowhere to stand, which is worse than the bed-lump bug and breaks
+// "you wake BESIDE the pallet." Blocking each piece's ANCHOR cell (the cell its mini
+// sits on) is the honest, non-degenerate rule at this resolution: the bed's cell is
+// solid, the gaps between pieces stay walkable, and a room always keeps standing
+// room (verified across seeds in U545/U546). When rooms grow past a couple of cells
+// (authored houses, larger halls), revisit toward true multi-cell footprints.
+
+// The struct cell a single furniture item ANCHORS on (its mini's cell): the item's
+// centre, at layout coord → cell. fx/fy are fractions of the room BOX. Returns
+// {gx,gy}, or null when the geometry can't be grounded. Pure integer arithmetic;
+// deterministic. `room` is a floorPlan room ({cx,cy,w,h} layout box); `f` a furniture
+// entry.
+function furnitureAnchorCell(room, f) {
+  if (!room || !f) return null;
+  const ax = Number(room.cx) + (Number(f.fx) - 0.5) * Number(room.w || 0);
+  const ay = Number(room.cy) + (Number(f.fy) - 0.5) * Number(room.h || 0);
+  if (!Number.isFinite(ax) || !Number.isFinite(ay)) return null;
+  return { gx: layoutToCells(ax), gy: layoutToCells(ay) };
+}
+
+// The cells a plan's DOORS occupy, plus the two ORTHOGONAL approach cells straddling
+// each doorway — the crossing corridor that must ALWAYS stay clear. A furniture
+// footprint can never win these cells: doors are the only room↔room crossings
+// (MR-2a), so a piece of furniture that would seal a doorway would soft-lock the
+// building. The plan is authored/derived UPSTREAM (floorPlan / an authored override);
+// the mask does not edit it — it simply REFUSES to let furniture block a door cell
+// (the furniture loses those cells here). Returns a Set of "gx,gy" keys.
+function doorCellKeys(plan) {
+  const keys = new Set();
+  const doors = Array.isArray(plan?.doors) ? plan.doors : [];
+  for (const d of doors) {
+    if (!d) continue;
+    const dx = layoutToCells(d.x), dy = layoutToCells(d.y);
+    if (!Number.isFinite(dx) || !Number.isFinite(dy)) continue;
+    keys.add(`${dx},${dy}`);
+    // The crossing runs perpendicular to the shared wall: a N/S door is crossed
+    // vertically (approach cells above/below), an E/W door horizontally. Keep both
+    // approach cells clear so the body can always step through.
+    const dir = String(d.dir || '');
+    if (dir === 'north' || dir === 'south') {
+      keys.add(`${dx},${dy - 1}`); keys.add(`${dx},${dy + 1}`);
+    } else if (dir === 'east' || dir === 'west') {
+      keys.add(`${dx - 1},${dy}`); keys.add(`${dx + 1},${dy}`);
+    } else {
+      // Diagonal/non-tileable edge (floorPlan.nonAdjacent): keep the 4-neighbourhood.
+      keys.add(`${dx - 1},${dy}`); keys.add(`${dx + 1},${dy}`);
+      keys.add(`${dx},${dy - 1}`); keys.add(`${dx},${dy + 1}`);
+    }
+  }
+  return keys;
+}
+
+// The full set of BLOCKED struct cells of a structure's plan — every non-flat
+// furniture item's footprint, MINUS the door cells + approach cells (which can never
+// be furniture-blocked). Cached per structure id (plan is pure). This is the struct
+// mask's blocking layer; roomRectCells already carves the walls out, so a cell is
+// walkable iff it is in a room rect AND not in this set. Pure; no rng; no mutation.
+function furnitureBlockedCells(structure, cache) {
+  const id = String(structure?.id ?? '');
+  if (cache && cache.has(id)) return cache.get(id);
+  const plan = floorPlan(structure);
+  const rooms = Array.isArray(plan?.rooms) ? plan.rooms : [];
+  const doorKeys = doorCellKeys(plan);
+  const blocked = new Set();
+  for (const r of rooms) {
+    const furniture = Array.isArray(r.furniture) ? r.furniture : [];
+    for (const f of furniture) {
+      if (f && f.flat) continue; // rugs/runners: a floor covering, stand on it
+      const anchor = furnitureAnchorCell(r, f);
+      if (!anchor) continue;
+      const key = `${anchor.gx},${anchor.gy}`;
+      if (doorKeys.has(key)) continue; // a doorway is never furniture-blocked
+      blocked.add(key);
+    }
+  }
+  if (cache) cache.set(id, blocked);
+  return blocked;
+}
+
+/**
+ * structCellFree(structure, gx, gy) -> boolean
+ *
+ * Whether a struct cell is FREE for a body to rest on — the indoor analogue of
+ * regionWalkCellFree. TRUE iff the cell lies in a real room rect (roomOfStructCell
+ * ≠ '') AND no placed furniture occupies it (FURN-1). A cell in the wall band/void,
+ * or under a bed/table/chest, is NOT free. This is the exported form of the struct
+ * mask's blocking predicate: the tactical walk honours it (a walk stops honestly at
+ * a dresser), the seeded placement lands only on free cells, and the position probe
+ * asserts a committed struct pos never sits ON furniture. Pure & deterministic;
+ * never throws. `cache` (optional) memoizes the blocked-set for a batch of calls.
+ */
+export function structCellFree(structure, gx, gy, cache = null) {
+  if (!structure || !Number.isInteger(gx) || !Number.isInteger(gy)) return false;
+  const plan = floorPlan(structure);
+  if (roomOfStructCell(plan, gx, gy) === '') return false; // wall band / void
+  return !furnitureBlockedCells(structure, cache).has(`${gx},${gy}`);
+}
+
 // ── Door thresholds (MR-1a) — the struct↔region cells a doorway maps ─────────
 // docs/POSITION_AS_CANON.md §2 ("arrivals enter at the doorway/road edge they came
 // by") + §3 ("stepping through an entry doorway swaps frame struct: ↔ region at the
@@ -586,8 +706,14 @@ export function resolveTacticalWalk(world, { actorId = 'party', dir, cells } = {
     if (!rect) return null; // current cell isn't in a room rect — leave to the caller
     // Walk within the CURRENT room's rect only. Leaving the room means crossing a
     // doorway (an adjacent-room transition) — not this cell walk's job (§3).
+    // FURN-1 — and a cell a piece of furniture stands on is NOT walkable: the walk
+    // STOPS HONESTLY one cell short of the dresser ("the wardrobe blocks the way"),
+    // never on it. furnitureBlockedCells is pure & deterministic, so this keeps the
+    // walk replay-stable and adds no randomness (mirrors the outdoor tree-block above).
+    const furnBlocked = furnitureBlockedCells(st, null);
     const inBounds = (nx, ny) =>
-      nx >= rect.minX && nx <= rect.maxX && ny >= rect.minY && ny <= rect.maxY;
+      nx >= rect.minX && nx <= rect.maxX && ny >= rect.minY && ny <= rect.maxY
+      && !furnBlocked.has(`${nx},${ny}`);
     landed = walkWhile(pos.gx, pos.gy, vec.dx, vec.dy, asked, inBounds);
   }
 
@@ -627,14 +753,37 @@ function placeStream(worldSeed, entityId, frameId) {
 }
 
 // Place an entity inside a room rect: the room centre plus a seeded jitter that
-// never leaves the rect. In-bounds + correct-room is all TAC-1 owes (walkable-mask
-// validation arrives with TAC-2's movement).
-function placeInRoomRect(rect, rng) {
+// never leaves the rect. FURN-1 — the landing cell must be FREE (no furniture): the
+// seeded jitter picks a CANDIDATE, and if that candidate is furniture-blocked we
+// spiral out DETERMINISTICALLY (Chebyshev rings, then a stable scan tie-break) to
+// the nearest free cell in the rect — "you wake BESIDE the pallet," exactly what the
+// narration implies. `isFree(gx,gy)` defaults to always-free (a caller with no
+// furniture mask keeps the historical behaviour byte-for-byte). When the candidate
+// is already free — every non-furniture case — the result is IDENTICAL to before, so
+// only cells that used to land ON furniture move (the documented worldHash shift).
+// If NO cell in the rect is free (a pathologically overfurnished room), we keep the
+// candidate: the body sits where it always did rather than fail (reversible; flagged
+// in the FURN-1 report). Pure integer geometry over the rng's chosen candidate.
+function placeInRoomRect(rect, rng, isFree = null) {
   const spanX = rect.maxX - rect.minX;
   const spanY = rect.maxY - rect.minY;
   const gx = spanX > 0 ? rect.minX + rng.int(0, spanX) : rect.cx;
   const gy = spanY > 0 ? rect.minY + rng.int(0, spanY) : rect.cy;
-  return { gx, gy };
+  if (!isFree || isFree(gx, gy)) return { gx, gy };
+  // Candidate is blocked: nearest free cell by expanding Chebyshev rings around it.
+  // Within a ring, scan in a fixed (dy, dx) order so ties break deterministically.
+  const maxR = Math.max(spanX, spanY);
+  for (let r = 1; r <= maxR; r++) {
+    for (let dy = -r; dy <= r; dy++) {
+      for (let dx = -r; dx <= r; dx++) {
+        if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue; // ring shell only
+        const nx = gx + dx, ny = gy + dy;
+        if (nx < rect.minX || nx > rect.maxX || ny < rect.minY || ny > rect.maxY) continue;
+        if (isFree(nx, ny)) return { gx: nx, gy: ny };
+      }
+    }
+  }
+  return { gx, gy }; // no free cell in the rect — keep the candidate (reversible)
 }
 
 // Place an entity outdoors near a node centre: within ± a quarter of the node
@@ -659,7 +808,11 @@ function structPos(structure, roomId, worldSeed, entityId, cache) {
   if (!rect) return null;
   const structId = String(structure.id);
   const rng = placeStream(worldSeed, entityId, `struct:${structId}|${roomId}`);
-  const { gx, gy } = placeInRoomRect(rect, rng);
+  // FURN-1 — seed onto a FREE cell: nobody (player OR NPC) is placed inside the bed.
+  // furnitureBlockedCells is memoized per structure for this placement batch.
+  const furnBlocked = furnitureBlockedCells(structure, null);
+  const isFree = (gx, gy) => !furnBlocked.has(`${gx},${gy}`);
+  const { gx, gy } = placeInRoomRect(rect, rng, isFree);
   return { frame: `struct:${structId}`, gx, gy };
 }
 

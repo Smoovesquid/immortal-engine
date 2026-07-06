@@ -52,7 +52,7 @@ import { beginAdventure, playerMove } from '../engine/playloop.js';
 import { SLICE_SEED } from '../engine/world/sliceRegion.js';
 import {
   nodeGridToRegionCell, nearestNodeToRegionCell, roomOfStructCell,
-  pathCrossesWallWithoutDoor, regionWalkCellFree,
+  pathCrossesWallWithoutDoor, regionWalkCellFree, structCellFree,
   NODE_CELLS, PLACE_WU, CELL_FT
 } from '../engine/map/spatial/tacticalPos.js';
 import { floorPlan } from '../engine/structures/floorPlan.js';
@@ -77,6 +77,7 @@ export const FINDING_CLASSES = {
   TOPOLOGY_BREACH:  'An interior move landed in a room not adjacent-by-door to its origin',
   GEOMETRY_BREACH:  'A committed struct move crossed a wall without passing through a door (MR-2a)',
   FEATURE_BLOCK:    'A committed outdoor pos landed ON a blocking wild feature — a body inside a tree (MR-3a)',
+  FURNITURE_BLOCK:  'A committed struct pos landed ON a furniture cell — a body inside the bed (FURN-1)',
 };
 
 // ── Thresholds (documented inline; all in engine-native units) ───────────────
@@ -271,6 +272,33 @@ export function assertRegionPosNotBlocked(world, ctx = 'region') {
 }
 
 /**
+ * INDOOR FURNITURE anchor (FURN-1): a committed struct-frame `pos` must never land ON
+ * a furniture cell — the body is never inside the bed. structCellFree is the struct
+ * mask's own predicate (a cell is free iff it is in a room rect AND no furniture
+ * occupies it), so this asserts the same truth the tactical walk honours and the
+ * seeding respects: after any transition that leaves the player INDOORS (wake,
+ * re-enter, an interior move), the cell they rest on is FURNITURE-FREE. A non-struct
+ * pos is skipped (outdoors is a different mask). Pure; no throw, no mutation.
+ */
+export function assertStructPosNotOnFurniture(world, ctx = 'struct') {
+  const findings = [];
+  const pos = playerPos(world);
+  if (!pos || typeof pos.frame !== 'string') return findings;
+  const m = /^struct:(.+)$/.exec(pos.frame);
+  if (!m) return findings; // outdoors / absent — not this check
+  const st = (world?.structures?.byId && world.structures.byId[m[1]]) || null;
+  if (!st) return findings; // no structure to verify against
+  if (!structCellFree(st, pos.gx, pos.gy)) {
+    findings.push({
+      class: 'FURNITURE_BLOCK',
+      detail: `struct pos (${pos.gx},${pos.gy}) in ${m[1]} sits ON a furniture cell — a body inside the bed/table/chest`,
+      context: ctx,
+    });
+  }
+  return findings;
+}
+
+/**
  * TOPOLOGY_BREACH: given a structure and a (from → to) interior room move, assert
  * `to` is adjacent-by-door to `from` in the structure's topology. Returns findings.
  */
@@ -398,6 +426,8 @@ export function runSequence({ seed = SLICE_SEED } = {}) {
     const snap = snapshot(world, 'wake');
     snap.narration = '(boot)';
     push(assertWakeInsideRoom(world, 'wake'), 'wake');
+    // FURN-1 — you wake BESIDE the pallet, never ON it.
+    push(assertStructPosNotOnFurniture(world, 'wake'), 'wake');
     steps.push(snap);
   }
 
@@ -410,6 +440,8 @@ export function runSequence({ seed = SLICE_SEED } = {}) {
     snap.narration = (r.output?.narration || '').slice(0, 120);
     // Still inside the wake room after a pure look.
     push(assertWakeInsideRoom(world, 'look'), 'look');
+    // FURN-1 — a look never nudges the body onto furniture.
+    push(assertStructPosNotOnFurniture(world, 'look'), 'look');
     // A look must not silently change the interior room (topology safety).
     const postInterior = world?.scene?.interior || null;
     if (preInterior && postInterior && String(preInterior.roomId) !== String(postInterior.roomId)) {
@@ -444,6 +476,8 @@ export function runSequence({ seed = SLICE_SEED } = {}) {
     snap.narration = (r.output?.narration || '').slice(0, 120);
     // If we're inside again, the body must be inside a real room.
     if (world?.scene?.interior) push(assertWakeInsideRoom(world, 're-enter'), 're-enter');
+    // FURN-1 — re-entering drops the body on a free cell, never on furniture.
+    push(assertStructPosNotOnFurniture(world, 're-enter'), 're-enter');
     void preRoom;
     steps.push(snap);
   }
@@ -502,6 +536,9 @@ export function runSequence({ seed = SLICE_SEED } = {}) {
     if (preRoom && postRoom && String(preRoom) !== String(postRoom)) {
       push(assertInteriorMoveAdjacent(world, structureKey, preRoom, postRoom, 'interior-move'), 'interior-move');
     }
+    // FURN-1 — the room→room move re-seeds the body on a FREE cell of the new room,
+    // never on a piece of furniture (a body inside the table).
+    push(assertStructPosNotOnFurniture(world, 'interior-move'), 'interior-move');
     steps.push(snap);
   }
 

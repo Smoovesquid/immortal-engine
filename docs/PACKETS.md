@@ -202,16 +202,33 @@ done_when · rollback`.
 
 ### OCC-STORY-2 — "up to something" becomes thread-driven  ·  Phase 1/4 seam  ·  **✅ LANDED v0.30.12 b110 (worker `14a85c18` → integrated `2d0f1a63`; U580–U582 17/17; storyAnchors extended not forked: hot/aged threads pull their tied NPCs to the thread's locus, reasons carry the LIVE mutated objective; live receipt: the Lingerer at the chapel path — "watching the chapel path — choose what to sacrifice to survive"; boot placement UNCHANGED — anchor + goldens held, exactly as briefed; FLAGGED GAP → NPC-DEED-1 below: the deed recorder is player-only, so a witnessed NPC burglary can't feed the rumor mill yet)**
 
-### NPC-DEED-1 — NPC crimes get a recording path (the rumor mill hears the world, not just the player)  ·  MP-arc seam  ·  **AUDIT DISPATCHED 2026-07-06 (report-first; code ONLY if a one-call through an existing organ; U590–U591 claimed conditionally; sonnet)** *(was QUEUED same day — OCC-STORY-2's flagged gap; LIKELY MP-6 PREREQUISITE)*
-- `recordDeed`/`applyDeedCharges` stamp guilt/heat on PARTY members only — a witnessed NPC burglary
-  (OCC-STORY-2's bandit) or Carl's villainy has no path into `world.deeds`/`rumorsReaching`. But
-  MORAL_PHYSICS Arc A ("the world grinds Carl") REQUIRES NPC deeds to mint travelling reputation —
-  audit first whether the npc claims/rumor substrate already carries this (REPUTATION_UNIFICATION
-  ruled rumorsReaching = sole read-sink); if not, extend the deed record with an actor field
-  (additive, engine-owned). Cut BEFORE MP-6; size the audit first.
-- Stage 2 of the ruling: placement overrides read live world threads/goals (worldTick) — the Lingerer
-  haunts the chapel path *because the chapel thread is hot*; a hostile indoors is a burglary IN PROGRESS
-  with consequences, not an accident. Still derived + deterministic. Scope on cut.
+### NPC-DEED-1 — NPC crimes get a recording path (the rumor mill hears the world, not just the player)  ·  MP-arc seam  ·  **✅ AUDIT COMPLETE 2026-07-06 (worker, sonnet, worktree-local, no code shipped) — verdict: NO one-call wiring exists; conditional-code clause did NOT trigger. Full report `docs/briefs/NPC-DEED-1-audit.md`. LIKELY MP-6 PREREQUISITE confirmed: Arc A cannot run at all today (Carl has zero deed-recording hook).**
+- **Grepped every angle** (`mintClaim`/`propagateClaims`, `rumorsReaching`, `deedFactionDeltas`,
+  Carl's `demoFigures` entry): `recordDeed`/`applyDeedCharges` stamp guilt/heat on PARTY members
+  only, and the party-only assumption is load-bearing in THREE separate places, not one convention —
+  (1) `effectsCore.js`'s `resolvePlayerEntityId`/`findPlayerEntity` search `world.party` and
+  **silently fall back to `party[0]` (misattributing to the player)** when an id isn't found, not a
+  graceful no-op; (2) NPCs carry **no `morality` field at all** in the schema (`ensureMorality` only
+  runs for party entities); (3) `mutateNpc` is scoped to the player's **current node only** — it
+  cannot reach an NPC (e.g. Carl) standing anywhere else, which Arc A's "over N world-ticks" requires.
+  One genuine near-miss: `rumorsReaching`'s deed-read loop is actually unfiltered on `actorId` at the
+  data level — but its only consumer (`notorietyReaching` → `dialogue.js:468-480`) is hard-coded
+  second-person prose ("I know **who you are**"), so piping an NPC deed through unchanged would
+  accuse the player of someone else's crime.
+- **Smallest honest packet spec'd** (5 pieces, additive-only, no `WORLD_VERSION` bump): (a) NPC
+  morality-lite default field; (b) a node-agnostic NPC mutator beside `mutateEntity`/`mutateNpc` (NOT
+  a parallel read-sink — REPUTATION_UNIFICATION forbids that, not a second internal mutator); (c)
+  `recordDeed` accepts a real non-party actor without the silent party[0] fallback; (d) an emitter for
+  a witnessed NPC deed (OCC-STORY-2's burglar + a scripted Carl misdeed tick — this is the one piece
+  that's new authored content, not wiring); (e) a third-person branch for `notorietyReaching`'s
+  consumer, **flagged as possibly cuttable** if MP-6's assertions only need faction-disposition/heat,
+  not a spoken NPC-gossip line — confirm against MP-6's exact assertions before building it.
+- Ready to dispatch verbatim off the audit doc's §3. U-numbers: allocate fresh at dispatch (audit
+  reserved none; U590-U591 were the packet's provisional guess, not claimed).
+- Stage 2 of the ruling (unchanged, still queued): placement overrides read live world threads/goals
+  (worldTick) — the Lingerer haunts the chapel path *because the chapel thread is hot*; a hostile
+  indoors is a burglary IN PROGRESS with consequences, not an accident. Still derived + deterministic.
+  Scope on cut.
 
 ### MAP-REAL — the drawn world IS the simulated world (Tim's commission)  ·  Phase 1/2 arc  ·  **✅ COMMISSION COMPLETE v0.30.0 b098 (2026-07-06; cut 2026-07-05-pm) — all six promises live or machine-guarded; 17 builds b083→b098; contract `docs/MAP_REAL.md` (completion stamp inside); arc-level live receipt = Tim's next play session (standing)**
 - Symptoms retired by the arc: go-outside 1 km teleport · ghost-Galen · strangers-in-cottage ·

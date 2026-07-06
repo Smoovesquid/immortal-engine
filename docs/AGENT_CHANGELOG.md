@@ -3112,3 +3112,12 @@ other agents. (none active)
 - Tim's dials await his live eyeball: Carl's cadence (worldTick.js). Tim's next commission is
   already on the mainline: THE DEATH CONTRACT (DEATH-1..5) — DEATH-1 (death-fact atom + DOWNED
   state, audit-first) is the next cut.
+
+## 2026-07-06 — Basecamp (successor) — DEATH-1 cut + dispatched (the next commission begins)
+
+- Tim's design window landed THE DEATH CONTRACT (`73a8dd94`) while MP-6 ran — the desk rolls
+  straight from one commission to the next. DEATH-1 (the death-fact atom + DOWNED state +
+  killing-blow verb routing; audit current 0-HP handling FIRST) dispatched into the freed
+  escapeCombat/state serial slot with the contract's own traps armed in the brief (ensureCombat
+  whitelist · escapeCombat is the only live hook-point · WORLD_VERSION protocol if stored,
+  lazy-additive preferred if honest). U596–U598 claimed. DEATH-2..5 queue in contract order.

@@ -20,7 +20,7 @@ done_when · rollback`.
 > after it, **SL-5** (Phase 1 — "Aldermere wants something"), which is **not yet packetized here**
 > (packetize before starting).
 
-### DEATH — THE DEATH CONTRACT (DEATH-1..5) — the final delivery of consequence  ·  morality/combat pillar  ·  **CONTRACT WRITTEN 2026-07-06 (Fable, Tim's direct commission + taste: gory, kill-tailored, loss-delivering; beg/mercy/worse/spare/abandon at the kill moment; man and the gods witness) → `docs/DEATH_CONTRACT.md`. QUEUED — engine-brief each packet at dispatch; DEATH-1 first (death-fact atom + DOWNED state; audit current 0-HP handling FIRST).**
+### DEATH — THE DEATH CONTRACT (DEATH-1..5) — the final delivery of consequence  ·  morality/combat pillar  ·  **CONTRACT WRITTEN 2026-07-06 (Fable, Tim's direct commission + taste: gory, kill-tailored, loss-delivering; beg/mercy/worse/spare/abandon at the kill moment; man and the gods witness) → `docs/DEATH_CONTRACT.md`. **DEATH-1 CUT + DISPATCHED 2026-07-06 (Basecamp, post-MP-arc; brief `briefs/DEATH-1-the-death-fact.md`; U596–U598 claimed; opus; escapeCombat+state serial slot — audit-first per the contract; ensureCombat whitelist trap armed in the brief; WORLD_VERSION protocol pre-authorized if the fact stores, lazy-additive preferred if honest).** DEATH-2..5 queue behind in contract order.
 - Composes with standing law (nothing overturned): permadeath locked (DND_XCOM) · Underworld = sealed
   seam v1 (DX-3/IG-17 case-file handoff) · IG-5 pale-root elegy (§0 never named) · rides MP-1..5's
   live organs (witnesses/rumor/tiers/pacts/omens) · mercy = the first strong POSITIVE claim source ·

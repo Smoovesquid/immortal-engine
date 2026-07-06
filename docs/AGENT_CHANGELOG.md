@@ -3199,3 +3199,15 @@ other agents. (none active)
   call beside N7/N10).
 - Still in flight: SP-2 (faction ethos — the WORLD_VERSION packet) · PW-5 audit (report-only) ·
   CORPUS-KILL-1 (micro). PW-6 = the arc's remaining row after PW-5's audit verdict.
+
+## 2026-07-06 — Basecamp (successor) — PW-5 audit landed; the build dispatched on its spec
+
+- The audit (`e77d4c7c` → `cf4f0d19`, report-only, one file): askNpc's miss-path mapped with
+  file:line receipts; the true remaining dead-end after PW-3 = region-common knowledge (a
+  neighboring town's lore gets a bearing, not its history); the earned-knowledge law's six tiers
+  located; the sole reputation sink confirmed untouched. The §Q4 spec is dispatch-ready.
+- PW-5 BUILD dispatched (opus; U618–U621): a read-only common-knowledge branch at the audited seam
+  — placeQuery against a NAMED node — facts already true in the world, never invented, checked as
+  one more step before the shrug. dialogue.js serial slot (free).
+- In flight: SP-2 (WORLD_VERSION packet) · CORPUS-KILL-1 (micro) · PW-5 build. PW-6 = the arc's
+  last row after this wave.

@@ -3240,3 +3240,13 @@ other agents. (none active)
 - Second screen finding, same session: "I go find Carl and greet him" → "That way is blocked from
   here" — the SEEK-PERSON dead-end class, alive on a named-person compound phrasing. SEEK-3 cut
   diagnose-first (regression-vs-gap classification against today's four playloop commits FIRST).
+
+## 2026-07-06 — Basecamp (successor) — SEEK-3 → v0.32.1 build 121 "find your people"
+
+- SEEK-3 landed (diagnosis `4a7c8bf4` + fix `829fe098`): "find <NAME>" no longer reads as walking
+  into a room named Carl. Verdict: PRE-EXISTING GAP (reproduced at the oldest of today's four
+  playloop checkpoints — none of today's stack regressed it). Present-person seeks walk over and
+  open the greeting same-turn; unknown names get the honest in-fiction miss. The SEEK-PERSON
+  originals (U485–487) all hold. Ladder 10826/0 · 135/135 · screen truth 7/7.
+- Still in flight: the PW-5 routing re-fix (resumed worker). Its release gates on the DESK's OWN
+  browser verification this time — the bounce lesson is one commit old.

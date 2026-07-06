@@ -3250,3 +3250,14 @@ other agents. (none active)
   originals (U485–487) all hold. Ladder 10826/0 · 135/135 · screen truth 7/7.
 - Still in flight: the PW-5 routing re-fix (resumed worker). Its release gates on the DESK's OWN
   browser verification this time — the bounce lesson is one commit old.
+
+## 2026-07-06 — Basecamp (successor) — PW-5 → v0.32.2 build 122 "any local would know" — bounced once, fixed right, the slate closes
+
+- PW-5 landed on the SECOND pass: the routing seam fixed (full map names are PLACES before person
+  disambiguation; present person wins a shared name; fragments keep C7's discovered-only rule);
+  U622 written failing-first against the desk's own bounce receipts; the desk's OWN browser gate
+  passed this time — cold "tell me about Crowfoot Camp" answers with the founding story on the
+  real screen. Ladder 10849/0 · 135/135 · screen truth 7/7. SEEK-3's fix coexists (40/40 joint).
+- Worker ops finding institutionalized to memory: preview_start serves the MAIN checkout — a
+  worker's browser self-check silently tests the wrong code; worktree-rooted servers only.
+- THE DAY'S SLATE IS FULLY INTEGRATED: every dispatched lane home, nothing dark, nothing unpushed.

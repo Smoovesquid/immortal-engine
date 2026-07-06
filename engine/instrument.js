@@ -231,7 +231,17 @@ function normalizeThread(t) {
     label: String(t.label ?? ''),
     introducedAt: clampInt(t.introducedAt ?? 0, 0, 999999),
     tension: clampInt(t.tension ?? 0, 0, 5),
-    status: s
+    status: s,
+    // CONSEQ-1: age/objective/trajectory are set correctly WITHIN a single
+    // worldTick's tickLivingThreads (worldTick.js), but every ensureWorld()
+    // call — including worldTick's OWN opening call, next turn — routes back
+    // through here. Without these three lines, age was silently reset to its
+    // default every turn, so it could never climb past 1 and
+    // mutateObjective's age>4 && age%3===0 branch could never fire in the
+    // live multi-turn loop. Mirrors how tension/status already survive above.
+    age: clampInt(t.age ?? 0, 0, 999),
+    objective: String(t.objective ?? ''),
+    trajectory: String(t.trajectory ?? 'static')
   };
 }
 

@@ -151,12 +151,22 @@ test('U454-E: default fantasy/tallow boot (real normalizePack idiom) — post-PA
   // WORLD_VERSION bump), NOT a determinism break: heat is still 0 on this no-deed boot, no hunt
   // fires, and the boot is byte-identical to itself under replay (asserted ×2 below; MP-3's own
   // U565 pins the replay-equality of a scripted OVER-threshold hunt run).
-  const HASH_AFTER_MP3 = 'd06096eed07ef0e763070dd045d77183aff5c34675e4cac22b108e0d0a6c914e';
-  assert.equal(worldHash(result.world), HASH_AFTER_MP3,
-    'default fantasy/tallow boot worldHash re-pinned post-MP-3 (additive morality fields huntedT + heatCoolTicks)');
+  //
+  // RE-PINNED AGAIN same day for CONSEQ-1 (2026-07-06, integration-time combined delta): MP-3 and
+  // CONSEQ-1 landed in the same integration window, each carrying its own single-delta re-pin
+  // computed WITHOUT the other's fields (MP-3 → d06096ee…; CONSEQ-1's worktree value likewise
+  // partial). CONSEQ-1's normalizeThread now PRESERVES `age`/`objective`/`trajectory` (the fix —
+  // they were stripped every ensureWorld), so three thread keys enter the fingerprint at their
+  // boot defaults (0/''/'static'). The combined tree therefore pins 56d52255… — recomputed and
+  // ×2-replay-asserted at integration by Basecamp; behavior on a no-deed, unaged boot is
+  // otherwise identical. (Anchor chain: … OCC-STORY-1 86432691… → MP-3 d06096ee… →
+  // MP-3+CONSEQ-1 56d52255….)
+  const HASH_AFTER_MP3_CONSEQ1 = '56d52255dcd39e2d9e71ad6ca2785a004cdd07abb81c10a2b9279139cc15e7ab';
+  assert.equal(worldHash(result.world), HASH_AFTER_MP3_CONSEQ1,
+    'default fantasy/tallow boot worldHash re-pinned post-MP-3+CONSEQ-1 (additive morality fields + preserved thread fields)');
 
   // Same seed => identical world (the placement is deterministic).
   const w2 = newWorld({ seed: 'tallow', fate: 0.3, mode: 'escape', pack: { primaryId: 'fantasy', mixerId: null } });
-  assert.equal(worldHash(beginAdventure(w2, PACKS).world), HASH_AFTER_MP3,
-    'default tallow boot must be deterministic ×2 after MP-3');
+  assert.equal(worldHash(beginAdventure(w2, PACKS).world), HASH_AFTER_MP3_CONSEQ1,
+    'default tallow boot must be deterministic ×2 after MP-3+CONSEQ-1');
 });

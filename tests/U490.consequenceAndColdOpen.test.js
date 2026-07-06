@@ -67,43 +67,43 @@ test('U490: an unattended worry survives repeated ticks and its tension climbs (
   assert.ok((after.tension ?? 0) >= startTension, 'tension must climb (or hold at cap), not decrease, from unattended ticking');
 });
 
-// KNOWN PRE-EXISTING GAP (not introduced by SL-5, verified by reverting all SL-5
+// CONSEQ-1 (2026-07-06) — FIXED. This test previously documented a KNOWN
+// PRE-EXISTING GAP (not introduced by SL-5, verified by reverting all SL-5
 // changes via `git stash` and reproducing on a plain `introduceThread(w, 'x')`
 // thread with zero slice code present): engine/instrument.js's normalizeThread()
 // (called by ensureInstrumentLayer, called by ensureWorld() on EVERY invocation,
-// including worldTick's own opening ensureWorld(world) call) returns only
-// {id, label, introducedAt, tension, status} — it silently DROPS age/objective/
+// including worldTick's own opening ensureWorld(world) call) returned only
+// {id, label, introducedAt, tension, status} — it silently DROPPED age/objective/
 // trajectory. tickLivingThreads (worldTick.js) sets those three fields correctly
 // within a single worldTick() call, but the very next worldTick()/ensureWorld()
-// anywhere strips them back out before the NEXT tick can read a real age — so
-// age can never exceed 1 in the live per-turn loop, and mutateObjective's
-// age>4 && age%3===0 branch can never fire in production. This affects EVERY
+// anywhere stripped them back out before the NEXT tick could read a real age —
+// so age could never exceed 1 in the live per-turn loop, and mutateObjective's
+// age>4 && age%3===0 branch could never fire in production. This affected EVERY
 // thread in the engine (PACK-1's Bridge Dispute/Drowned Twin included), not
-// just SL-5's — the SL-5-DRAFT.md claim that this consequence path is "already
-// tested, already firing" is not true of the live multi-turn path (the existing
-// deathSpiral/UX4 tests only ever assert tension/inevitability across ticks,
-// never age/objective survival — so the gap was never caught).
+// just SL-5's.
 //
-// Fix (verified correct by simulation, NOT applied here — instrument.js is
-// outside this packet's allowed_files/lane): add age/objective/trajectory to
-// normalizeThread's return object, mirroring how tension/status already
-// survive:
+// The fix: engine/instrument.js's normalizeThread() now preserves all three
+// fields, mirroring how tension/status already survived:
 //   age: clampInt(t.age ?? 0, 0, 999),
 //   objective: String(t.objective ?? ''),
 //   trajectory: String(t.trajectory ?? 'static'),
-// This test documents the CURRENT (broken) behavior as a regression guard; it
-// should be tightened to assert real mutation once the fix above lands.
-test('U490: KNOWN GAP — age/objective do not currently survive repeated worldTick calls (pre-existing, engine-wide)', () => {
+// This test now asserts the REAL (fixed) behavior: age climbs monotonically
+// across ticks (verified by direct simulation to reach exactly 6 after 6
+// worldTick calls from a freshly-introduced thread), and the objective
+// mutates once age crosses the age>4 && age%3===0 threshold (age 6 here).
+test('U490: age/objective now survive repeated worldTick calls — the aging clock is live', () => {
   let { world } = bootSlice();
   const worry = pickAldermereWorry(SLICE_SEED);
   const before = world.instrument.threads.find(t => t.label === worry.target);
+  assert.equal(before.age ?? 0, 0, 'a freshly-introduced thread starts at age 0');
+  assert.equal(before.trajectory ?? 'static', 'static', 'a freshly-introduced thread starts static (no mutation yet)');
   for (let i = 0; i < 6; i++) {
     world = worldTick(world, `u490-gap-${i}`);
   }
   const after = world.instrument.threads.find(t => t.id === before.id);
-  // Documents today's actual behavior (age never advances past ensureWorld's
-  // strip) — NOT the desired behavior. See the block comment above for the fix.
-  assert.ok((after.age ?? 0) <= 1, 'age is stuck at <=1 today — this assertion should FLIP once normalizeThread is fixed');
+  assert.equal(after.age, 6, 'age must climb by exactly 1 per worldTick call — 6 ticks means age 6, not capped at 1');
+  assert.equal(after.trajectory, 'mutating', 'age 6 crosses the age>4 && age%3===0 threshold — trajectory must flip to mutating');
+  assert.ok(after.objective && after.objective.length > 0, 'objective must be non-empty once the mutation threshold fires');
 });
 
 test('U490: thread aging is deterministic — same seed + same tick sequence → same mutated objective', () => {

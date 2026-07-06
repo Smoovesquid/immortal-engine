@@ -26,10 +26,11 @@
 const TILE_WU = 40; // world units per node tile — keeps the 3D geography to scale.
 
 // Procedural archetype minis + idle breathe (MAPNINJA Step 5), plus the
-// TT-PROPS standing-prop mini builder (barrels/beds/dressers/chests). Pure
-// helpers; they receive the lazily-imported THREE, so this stays a zero-cost
-// static import.
-import { buildArchetypeFigure, buildPropMini, buildCorpseMini, breatheMinis, phaseFromKey } from './figures3d.js';
+// TT-PROPS standing-prop mini builder (barrels/beds/dressers/chests) and
+// MR-3b's wild-feature mini builder (trees/boulders/brush/deadfall/stumps).
+// Pure helpers; they receive the lazily-imported THREE, so this stays a
+// zero-cost static import.
+import { buildArchetypeFigure, buildPropMini, buildWildMini, buildCorpseMini, breatheMinis, phaseFromKey } from './figures3d.js';
 
 // World-asset builders (terrain, dirt roads, settlements, woods, the chapel ruin) —
 // the SAME pure-view module the standalone asset lab (map-proto/asset-lab.html) uses,
@@ -70,19 +71,47 @@ import {
 //      multiple so panning/orbiting never runs off the edge before the next
 //      zoom-drift redraw catches up.
 import { renderOneMap, playerFocusWu } from './oneMap.js';
-import { NODE_WU } from './worldSpace.js';
+import { NODE_WU, regionCellToWu } from './worldSpace.js';
 // TT-PROPS — placedTokenModel(world, nodeId) is the pure engine-position read
 // (people/trees/props/livestock, all {wx,wy} world units) the 2-D sheet
 // already draws minis from; the tilt view reuses the SAME model, never a
 // second derivation, so 2-D and 3-D can never disagree on where a barrel or
 // an NPC actually stands.
 import { placedTokenModel } from './drawModel.js';
+// MR-3b (docs/briefs/MR-3-FOG-PROCGEN.md §MR-3b) — wildFeaturesAround is the
+// SAME pure engine derivation MR-3a's tacticalPos.js walkable-mask reads
+// through (engine/world/wildFeatures.js): a function of (world.meta.seed, the
+// region truth, center, radius), no rng, no stored state. This is a READ of a
+// pure engine module (engine/**), the identical pattern placedTokenModel above
+// already establishes for engine-owned occupancy — never a second derivation.
+import { wildFeaturesAround } from '../../engine/world/wildFeatures.js';
 
 const SHEET_PX = 1024;         // texture resolution (px) — the hidden mount's square canvas.
 const SHEET_SPAN_MARGIN = 4.5; // the plane spans this many multiples of the camera's own ground footprint.
 const SHEET_MIN_SPAN_WU = 40;  // never shrink the plane below this (tight building-plan close-ups).
 const SHEET_REZOOM_RATIO = 1.5; // re-render the texture once z has drifted this much (up or down)
 const SHEET_TARGET_REFRESH_FRAC = 0.28; // re-render once target has drifted this fraction of the plane span
+
+// MR-3b — THE VISIBILITY BUBBLE (docs/briefs/MR-3-FOG-PROCGEN.md §MR-3b): how
+// far out, in REGION CELLS (5 ft/cell, engine/map/spatial/tacticalPos.js's
+// CELL_FT), the wild's individual tree/boulder/brush minis render around the
+// player at walking zoom. Pinned taste, not derived from the ground-sheet's
+// own camera-footprint math (spanWorldForRad/SHEET_SPAN_MARGIN, above): that
+// span is sized generously so PANNING never outruns the captured 2-D texture
+// — at a typical close-in curRad it works out to several HUNDRED cells across,
+// far past where an individual tree silhouette is legible as a tree rather
+// than a texture wash. A tabletop mini reads as a mini a few strides from the
+// player token, not a quarter-mile off. Pinned instead to THE MOVEMENT LAW's
+// own per-turn unit (MAX_WALK_CELLS = 6, engine/map/spatial/tacticalPos.js):
+// 2× a single turn's walk, so the player sees "about the next two moves'
+// worth of woods" — close enough to read as individual minis you'd walk
+// around, far enough that the bubble doesn't visibly pop in as you advance.
+// Verified against a real forest cell (Aldermere slice, seed 'aldermere'):
+// radius 12 derives ~55 features (~35 blocking) per call — legible as a
+// proper stand of trees and cheap enough to rebuild every setPlayerFocus
+// call (radius 24 already balloons past 300 features on a dense cluster,
+// too many fresh THREE.Group instantiations for a per-move rebuild).
+const WILD_BUBBLE_CELLS = 12;
 
 // A hidden, off-DOM renderOneMap mount used ONLY as a texture source. It never
 // receives pointer events (not attached to the visible tree) and its own camera
@@ -205,6 +234,62 @@ function buildWorldSheet(THREE, world, worldPos, z, rad, vFovTan) {
     mesh.position.set(wx, 0, wz);
   }
   return { mesh, heightAt, refresh, currentZ: () => curZ };
+}
+
+// MR-3b (docs/briefs/MR-3-FOG-PROCGEN.md §MR-3b) — THE FOG EDGE. Beyond the
+// wild-mini visibility bubble the page fades to UNPAINTED PARCHMENT — never
+// darkness, never a hard ring (the brief's falsifier). Painted as a separate,
+// thin transparent disc laid just above the ground sheet (never replacing its
+// texture — the sheet stays the single "what's really there" ink; this is a
+// pure ATMOSPHERIC read layered on top, exactly the relationship the sky/fog
+// already have to the ground). A radial-gradient canvas texture: fully
+// transparent at the disc's center (the ground sheet's own ink shows through
+// clean, undimmed, right around the player) easing OUTWARD to the same paper
+// tone the 2-D sheet's own parchment base uses (oneMap.js's PAPER = '#e8ecdd'
+// — matched here so the wash reads as MORE of the same paper, not a
+// different material) — a soft ink-wash, not a cliff.
+const FOG_TEX_PX = 256;      // small — this is a soft gradient, not detail.
+const FOG_PAPER = '#e8ecdd'; // oneMap.js's PAPER constant, matched exactly.
+function fogEdgeTexture(THREE) {
+  const c = document.createElement('canvas');
+  c.width = FOG_TEX_PX; c.height = FOG_TEX_PX;
+  const x = c.getContext('2d');
+  const r = FOG_TEX_PX / 2;
+  const g = x.createRadialGradient(r, r, 0, r, r, r);
+  // Transparent through the bubble's own radius (~62% of the disc — the disc
+  // itself is oversized past the bubble so the OUTER edge, where opacity
+  // finally reaches 1, sits safely past the last mini, never clipping a tree
+  // mid-fade), then a gentle ease to full parchment at the rim. No stop is
+  // ever black or a hard cutoff — every stop is (paper color, some alpha).
+  g.addColorStop(0.0, 'rgba(232,236,221,0)');
+  g.addColorStop(0.55, 'rgba(232,236,221,0)');
+  g.addColorStop(0.78, 'rgba(232,236,221,0.55)');
+  g.addColorStop(1.0, 'rgba(232,236,221,0.96)');
+  x.fillStyle = g;
+  x.fillRect(0, 0, FOG_TEX_PX, FOG_TEX_PX);
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.needsUpdate = true;
+  return tex;
+}
+// buildFogEdgeOverlay(THREE) -> { mesh, setSpan(worldRadius) }. The disc is
+// OVERSIZED relative to the mini bubble (FOG_OVERSIZE) so the gradient's
+// transparent core comfortably covers every drawn mini and only the outer
+// wash extends past them — a mini is never seen fading out mid-tree.
+const FOG_OVERSIZE = 1.6;
+function buildFogEdgeOverlay(THREE) {
+  const geo = new THREE.PlaneGeometry(1, 1, 1, 1);
+  geo.rotateX(-Math.PI / 2);
+  const mat = new THREE.MeshBasicMaterial({
+    map: fogEdgeTexture(THREE), transparent: true, depthWrite: false, fog: false,
+  });
+  const mesh = new THREE.Mesh(geo, mat);
+  mesh.renderOrder = 1; // paint after the ground sheet, before minis/props
+  function setSpan(worldRadius) {
+    const span = Math.max(1e-3, Number(worldRadius) || 1) * 2 * FOG_OVERSIZE;
+    mesh.scale.set(span, 1, span);
+  }
+  return { mesh, setSpan };
 }
 
 // ---------- WebGL capability probe (so we can fall back BEFORE importing) ----------
@@ -343,6 +428,16 @@ export async function mountSlice3D(container, sceneData, opts = {}) {
   // units) — compared against `target` in setCamera to decide whether a real
   // enough move happened to justify a re-render (never every frame).
   let _sheetTarget = { x: worldPos0.x, z: worldPos0.z };
+
+  // MR-3b — the fog-edge overlay disc, mounted just above the ground sheet
+  // (never replacing its texture — see buildFogEdgeOverlay's own header).
+  // Y-offset is tiny (well under a mini's own ground-clearance) purely to
+  // avoid z-fighting with the flat sheet underneath; it sits BELOW every
+  // mini's base geometry, so a tree's trunk/foliage always paint over the
+  // wash, never the reverse.
+  const fogEdge = buildFogEdgeOverlay(THREE);
+  fogEdge.mesh.position.y = 0.02;
+  scene.add(fogEdge.mesh);
 
   // ROOF-PEEL CUTAWAY registry: each modular settlement building registers its
   // separable roof + walls here so the per-frame updateCutaway() can lift/fade the
@@ -518,7 +613,12 @@ export async function mountSlice3D(container, sceneData, opts = {}) {
   const player = sceneData?.player || { nodeId: nodes[0]?.id, x: 0, y: 0 };
   const px = (Number(player.x) || 0) * TILE_WU + 3, pz = (Number(player.y) || 0) * TILE_WU + 3;
   const py = heightAt(px, pz);
-  const sliceMinis = [];
+  // `let`, not `const`: MR-3b's refreshWildMinis splices out last bubble's wild
+  // entries by reassigning a filtered array (cheaper + simpler than an
+  // in-place splice given the set changes shape every rebuild) — every other
+  // push onto this array (combat board minis, TT-PROPS people/props, the
+  // player mini) is unaffected, they still just .push() the same array.
+  let sliceMinis = [];
   let playerToken = null, playerMini = null; // set in the non-combat branch (setPlayerFocus).
   if (sceneData?.combat) {
     // Combat is this overworld scene zoomed in: the tactical board sits ON the ground at
@@ -578,6 +678,94 @@ export async function mountSlice3D(container, sceneData, opts = {}) {
     }
   }
 
+  // MR-3b (docs/briefs/MR-3-FOG-PROCGEN.md §MR-3b) — THE WILD DRAWN. The wild
+  // stands wherever the engine says it stands (MR-3a's wildFeaturesAround) —
+  // this loop only DRAWS it, never invents a feature the derivation didn't
+  // return. Outside a settlement's footprint (wildFeaturesAround itself
+  // excludes settlement extents — TT-PROPS/TT-INK own that ink), a bubble of
+  // WILD_BUBBLE_CELLS region-cells around the player's live tactical position
+  // renders as minis; refreshWildMinis re-derives + rebuilds them on every
+  // real player move (setPlayerFocus, below) and once at mount.
+  //
+  // ONE GROUP, cleared and rebuilt each call — cheaper than diffing a mini set
+  // that changes shape every few steps (a fresh cluster enters/leaves the
+  // bubble), and correctness-simple: the group's children are ALWAYS exactly
+  // what the current bubble derives, by construction, matching this file's
+  // "renderer never invents a position" discipline just like TT-PROPS above.
+  const wildGroup = new THREE.Group();
+  scene.add(wildGroup);
+  let wildMinis = []; // this bubble's { group, baseY, baseScale, rate, phase, bob, defeated } entries — folded into sliceMinis for breathe, but tracked separately so a rebuild can splice out exactly last bubble's set.
+
+  // The current node the player's region-frame pos projects to (regionCellToWu
+  // needs a node with real x/y — the SAME node the pos invariant already keeps
+  // this cell's nearest-node in agreement with, engine/invariants.js). Falls
+  // back to null (no wild bubble) for a bare sceneData caller or an indoor pos.
+  function currentRegionNode() {
+    const nodeId = String(opts.world?.map?.currentNodeId || '');
+    return nodeById[nodeId] || null;
+  }
+
+  // updateFogEdge(centerP): position + size the fog-edge overlay around the
+  // player's OWN 3-D point (centerP = {x,z}, already through worldPosFromWu —
+  // the same point every mini in the bubble is placed relative to), with a
+  // radius derived through the IDENTICAL region-cell -> wu -> 3-D pipeline
+  // the minis themselves use (one cell due east of center, converted the same
+  // way) — so the fog can never drift out of step with where the minis
+  // actually stop. `null` hides the overlay entirely (indoors / no outdoor
+  // pos / bare sceneData caller — nothing to fade around).
+  function updateFogEdge(node, center, centerP) {
+    if (!node || !center || !centerP) { fogEdge.mesh.visible = false; return; }
+    const edgeWu = regionCellToWu(node, center.gx + WILD_BUBBLE_CELLS, center.gy);
+    const edgeP = edgeWu ? worldPosFromWu(edgeWu.wx, edgeWu.wy) : null;
+    const radius = edgeP ? Math.hypot(edgeP.x - centerP.x, edgeP.z - centerP.z) : 0;
+    if (!(radius > 0)) { fogEdge.mesh.visible = false; return; }
+    fogEdge.mesh.visible = true;
+    fogEdge.setSpan(radius);
+    fogEdge.mesh.position.set(centerP.x, heightAt(centerP.x, centerP.z) + 0.02, centerP.z);
+  }
+
+  function refreshWildMinis() {
+    // Clear last bubble's minis (both the group's children and their breathe
+    // entries) before rebuilding — a stale mini from the last cell must never
+    // linger once the player has moved on.
+    wildGroup.clear();
+    if (wildMinis.length) {
+      const drop = new Set(wildMinis);
+      sliceMinis = sliceMinis.filter(m => !drop.has(m));
+    }
+    wildMinis = [];
+    if (!opts.world) { updateFogEdge(null, null, null); return; } // bare sceneData caller — no engine world to derive from (same gate TT-PROPS uses)
+
+    const pos = opts.world?.party?.[0]?.pos;
+    if (!pos || typeof pos !== 'object' || pos.frame !== 'region'
+      || !Number.isInteger(pos.gx) || !Number.isInteger(pos.gy)) { updateFogEdge(null, null, null); return; } // indoors / no tactical pos yet — no wild bubble to draw
+    const node = currentRegionNode();
+    if (!node) { updateFogEdge(null, null, null); return; }
+
+    const center = { gx: pos.gx, gy: pos.gy };
+    const centerWu = regionCellToWu(node, center.gx, center.gy);
+    const centerP = centerWu ? worldPosFromWu(centerWu.wx, centerWu.wy) : null;
+    const feats = wildFeaturesAround(opts.world, center, WILD_BUBBLE_CELLS);
+    for (const f of feats) {
+      const wu = regionCellToWu(node, f.cell.gx, f.cell.gy);
+      if (!wu) continue;
+      const p = worldPosFromWu(wu.wx, wu.wy);
+      const mini = buildWildMini(THREE, f.kind, { seedKey: `${f.cell.gx},${f.cell.gy}`, sizeClass: f.sizeClass });
+      if (!mini) continue;
+      const y = heightAt(p.x, p.z);
+      mini.position.set(p.x, y, p.z);
+      wildGroup.add(mini);
+      // Wild growth breathes barely at all — a tree sways, it doesn't pulse;
+      // slower + smaller bob than even the inert-prop rate above, so a whole
+      // stand of trees reads as gently alive without looking animated.
+      const entry = { group: mini, baseY: y, baseScale: 1, rate: 0.4, phase: phaseFromKey(`${f.cell.gx},${f.cell.gy},${f.kind}`), bob: f.blocking ? 0.012 : 0.006, defeated: false };
+      wildMinis.push(entry);
+      sliceMinis.push(entry);
+    }
+    updateFogEdge(node, center, centerP);
+  }
+  refreshWildMinis(); // the mount-time bubble, before any move
+
   // MAP-3DR — setPlayerFocus(tx, ty): stand the player mini on an exact node-TILE
   // point (tx,ty), the SAME resolveEntityWuFromWorld point the 2D ink marker uses
   // (continuousMap divides wu by NODE_WU to get tiles). So at the 2D→3D morph the
@@ -589,7 +777,16 @@ export async function mountSlice3D(container, sceneData, opts = {}) {
   // SAME point setCamera authoritatively points the 3-D camera at — never a
   // second independent focus (see buildWorldSheet's centering note: that was
   // this packet's third live-found bug). setCamera owns the sheet refresh.
+  //
+  // MR-3b: this is also the wild-mini re-derivation hook. setPlayerFocus is
+  // already called on every real camera/position update (continuousMap.js's
+  // applyFromCam calls it every onCamera tick — the SAME hook the 2-D marker
+  // rides), so re-deriving the bubble here (rather than adding a second,
+  // independent "on move" event) keeps ONE trigger for "the player's position
+  // just became current" — no separate polling, no drift between when the
+  // token moves and when the wild around it catches up.
   function setPlayerFocus(tx, ty) {
+    refreshWildMinis();
     if (!playerToken || !playerMini) return;
     const wx = (Number(tx) || 0) * TILE_WU, wz = (Number(ty) || 0) * TILE_WU;
     const wy = heightAt(wx, wz);

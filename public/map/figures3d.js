@@ -217,6 +217,150 @@ export function buildPropMini(THREE, kind) {
   return g;
 }
 
+// MR-3b (docs/briefs/MR-3-FOG-PROCGEN.md §MR-3b) — the wild drawn: the fog
+// hides a world that was ALWAYS there (MR-3a's engine/world/wildFeatures.js),
+// and this is that world's mini set. Five kinds, procedural (the wishlist GLBs
+// slot in later per mix-by-role, same graceful precedent as buildPropMini/
+// buildArchetypeFigure — this builder never fetches a network asset).
+//
+// DETERMINISM: every random-looking choice here (lean angle, size jitter, hue
+// variance, foliage-clump offsets) comes from `rngFromKey`, a tiny local
+// mulberry32-style PRNG SEEDED from the feature's own cell key (the same
+// technique figures3d.js's phaseFromKey/hashToIndex hash — no rng object is
+// threaded in, no Math.random anywhere) — so the SAME feature (identical
+// world seed + cell) always builds the byte-identical mini, forever (U540).
+// A tree at a given clearing looks like that tree every time you walk back.
+const WILD_PALETTE = {
+  tree:     { trunk: 0x5a3f28, foliage: [0x3f6a35, 0x4f7a3f, 0x35602e, 0x8a9a3a] },
+  boulder:  { color: 0x8a8478, rough: 0.94 },                 // lichen-grey stone
+  brush:    { color: [0x4f7a3f, 0x6b8a4a, 0x5a7a3a] },        // low scrub clump
+  deadfall: { color: 0x6b5a44, rough: 0.9 },                  // bare fallen-log grey-brown
+  stump:    { color: 0x5a4530, rough: 0.92 },                 // cut-off trunk stub
+};
+
+// A tiny seeded PRNG (mulberry32) from a string key — local to this file so a
+// wild mini's "randomness" is 100% a pure function of its cell, never a
+// second hash algorithm to keep in sync with wildFeatures.js's own h32 (this
+// file doesn't need bit-identical numbers with the engine, only ITS OWN
+// internal reproducibility call-to-call, which mulberry32 gives cheaply).
+function rngFromKey(key) {
+  let h = 2166136261;
+  const s = String(key);
+  for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); }
+  let a = h >>> 0;
+  return function next() {
+    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+// sizeClass -> a uniform scale multiplier (large trees/boulders read bigger
+// and more substantial — TT-MINIS-adjacent "a blocking tree reads as a thing
+// you'd walk around" per the brief; small ground-clutter stays modest).
+const WILD_SIZE_SCALE = { large: 1.15, medium: 0.9, small: 0.6 };
+
+function wildTree(THREE, rng, scale) {
+  const g = new THREE.Group();
+  const pal = WILD_PALETTE.tree;
+  const s = (0.75 + rng() * 0.55) * scale;
+  const trunkMat = new THREE.MeshStandardMaterial({ color: pal.trunk, roughness: 0.95 });
+  const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.3, 2.4, 6), trunkMat);
+  trunk.position.y = 1.2 * s; trunk.scale.setScalar(s); trunk.rotation.y = rng() * Math.PI * 2;
+  trunk.castShadow = true; g.add(trunk);
+  const hue = pal.foliage[Math.floor(rng() * pal.foliage.length) % pal.foliage.length];
+  const baseColor = new THREE.Color(hue);
+  for (let k = 0; k < 3; k++) {
+    const bs = (1.0 + rng() * 0.7) * s;
+    const foliMat = new THREE.MeshStandardMaterial({
+      color: baseColor.clone().offsetHSL(0, 0, (rng() - 0.5) * 0.08), roughness: 0.9, flatShading: true,
+    });
+    const foli = new THREE.Mesh(new THREE.IcosahedronGeometry(1.0, 0), foliMat);
+    foli.position.set((rng() - 0.5) * 0.8 * s, (2.2 + k * 0.7) * s, (rng() - 0.5) * 0.8 * s);
+    foli.scale.set(bs, bs * 0.9, bs); foli.rotation.y = rng() * Math.PI * 2;
+    foli.castShadow = true; g.add(foli);
+  }
+  return g;
+}
+
+function wildBoulder(THREE, rng, scale) {
+  const pal = WILD_PALETTE.boulder;
+  const mat = new THREE.MeshStandardMaterial({ color: pal.color, roughness: pal.rough, flatShading: true });
+  const s = (0.5 + rng() * 0.4) * scale;
+  const rock = new THREE.Mesh(new THREE.DodecahedronGeometry(0.55, 0), mat);
+  rock.position.y = 0.4 * s; rock.scale.set(s, s * (0.7 + rng() * 0.3), s);
+  rock.rotation.set(rng() * Math.PI, rng() * Math.PI, rng() * Math.PI);
+  rock.castShadow = true;
+  const g = new THREE.Group(); g.add(rock);
+  return g;
+}
+
+function wildBrush(THREE, rng, scale) {
+  const g = new THREE.Group();
+  const palette = WILD_PALETTE.brush.color;
+  const s = (0.35 + rng() * 0.25) * scale;
+  const n = 3 + Math.floor(rng() * 2);
+  for (let i = 0; i < n; i++) {
+    const color = palette[Math.floor(rng() * palette.length) % palette.length];
+    const mat = new THREE.MeshStandardMaterial({ color, roughness: 0.92, flatShading: true });
+    const bs = s * (0.7 + rng() * 0.5);
+    const clump = new THREE.Mesh(new THREE.IcosahedronGeometry(0.5, 0), mat);
+    const a = rng() * Math.PI * 2, r = rng() * 0.3 * scale;
+    clump.position.set(Math.cos(a) * r, bs * 0.5, Math.sin(a) * r);
+    clump.scale.setScalar(bs); clump.castShadow = true; g.add(clump);
+  }
+  return g;
+}
+
+function wildDeadfall(THREE, rng, scale) {
+  const pal = WILD_PALETTE.deadfall;
+  const mat = new THREE.MeshStandardMaterial({ color: pal.color, roughness: pal.rough });
+  const len = (1.6 + rng() * 0.8) * scale;
+  const log = new THREE.Mesh(new THREE.CylinderGeometry(0.14 * scale, 0.18 * scale, len, 6), mat);
+  log.rotation.z = Math.PI / 2; log.rotation.y = rng() * Math.PI * 2;
+  log.position.y = 0.16 * scale; log.castShadow = true;
+  const g = new THREE.Group(); g.add(log);
+  return g;
+}
+
+function wildStump(THREE, rng, scale) {
+  const pal = WILD_PALETTE.stump;
+  const mat = new THREE.MeshStandardMaterial({ color: pal.color, roughness: pal.rough });
+  const s = (0.45 + rng() * 0.25) * scale;
+  const stump = new THREE.Mesh(new THREE.CylinderGeometry(0.32 * s, 0.36 * s, 0.5 * s, 8), mat);
+  stump.position.y = 0.25 * s; stump.rotation.y = rng() * Math.PI * 2; stump.castShadow = true;
+  const g = new THREE.Group(); g.add(stump);
+  return g;
+}
+
+const WILD_BUILDERS = {
+  tree: wildTree, boulder: wildBoulder, brush: wildBrush, deadfall: wildDeadfall, stump: wildStump,
+};
+
+/**
+ * buildWildMini(THREE, kind, opts) -> THREE.Group | null
+ * A procedural mini for one MR-3a wild feature — kind ∈ tree | boulder | brush
+ * | deadfall | stump (wildFeatures.js's WILD_CONSTANTS.KINDS). `opts.seedKey`
+ * is the feature's own stable identity (the caller passes its cell — e.g.
+ * `${gx},${gy}` — so two boots of the same seed/cell build the identical mini,
+ * U540); `opts.sizeClass` ('large'|'medium'|'small', wildFeatures.js's own
+ * per-kind hint) scales the archetype's base proportions. Feet at y=0, same
+ * "caller positions it" contract as buildArchetypeFigure/buildPropMini.
+ * Returns null for an unrecognized kind (never fabricate a shape for data
+ * outside the five kinds this stage covers — same discipline as buildPropMini).
+ */
+export function buildWildMini(THREE, kind, opts = {}) {
+  const builder = WILD_BUILDERS[String(kind || '')];
+  if (!builder) return null;
+  const rng = rngFromKey(opts.seedKey ?? kind);
+  const scale = WILD_SIZE_SCALE[String(opts.sizeClass || '')] || 1.0;
+  const g = builder(THREE, rng, scale);
+  g.userData.kind = String(kind);
+  g.userData.wild = true;
+  return g;
+}
+
 // TT-MINIS (docs/MINIS_WISHLIST.md's 2026-07-05 "received" corpse pair) — the
 // fallen get bodies. Where a defeated figure used to just topple in place
 // (buildArchetypeFigure's `defeated` branch, above: same standing rig, rotated

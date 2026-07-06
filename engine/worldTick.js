@@ -9,9 +9,11 @@ import { propagateRumors } from './rumor/propagate.js';
 import { propagateClaims } from './claims.js';
 import { mintVillain, corruptionTier, VILLAIN_STAGE_COST, VILLAIN_GOAL_ACCEL } from './story/villain.js';
 import { addThreat } from './ledger.js';
-import { HUNT_HEAT, HEAT_DECAY_INTERVAL, HEAT_DECAY_PER_TICK } from './morality/escalation.js';
+import { HUNT_HEAT, HEAT_DECAY_INTERVAL, HEAT_DECAY_PER_TICK, PACT_CORRUPTION } from './morality/escalation.js';
 import { selectCreatures, spawnEncounter } from './combat/encounterSpawn.js';
 import { biomeForNode } from './world/biome.js';
+import { darkGiftAtCorruption } from './magic/forbiddenGates.js';
+import { applyDeltas } from './effectsCore.js';
 
 // Living System Core — deterministic world evolution.
 
@@ -75,6 +77,15 @@ export function worldTick(world, seed = '') {
   // hunt, no decay effect → worldHash unchanged).
   w = tickHunt(w);
   w = tickHeatDecay(w);
+
+  // 5.95) MP-4 (docs/MORAL_PHYSICS.md §4 T4) — corruption→pact. Once standing corruption
+  // reaches PACT_CORRUPTION (the lowest darkGift threshold, read from forbiddenGates), the
+  // world DELIVERS the dark gift unbidden through the existing forbiddenGates organ — the
+  // player never asked; free power is the sign they are being claimed. Level-triggered with a
+  // `pactT` latch (MP-3's huntedT precedent): fires once per crossing, re-arms only after
+  // corruption falls back below. Pure arithmetic + a learnSpell delta — no RNG consumed, so a
+  // sub-threshold run is byte-identical to before (worldHash unchanged).
+  w = tickPact(w);
 
   // 6) Modify reputation + alignment state
   w = tickReputation(w, severity);
@@ -564,8 +575,75 @@ function tickHeatDecay(w) {
   return mutatePlayerMorality(w, (m) => ({ ...m, heat: nextHeat, heatCoolTicks: nextCool, huntedT: nextHunted }));
 }
 
+// ── MP-4 — the pact (Tier 4 goes live). docs/MORAL_PHYSICS.md §4 T4 row ───────────────
+// When the player's standing corruption reaches PACT_CORRUPTION (the lowest darkGift
+// threshold — read from forbiddenGates, NEVER forked), the world stops merely recoiling and
+// CLAIMS the doer: the forbidden gift arrives UNBIDDEN through the EXISTING forbiddenGates
+// organ (a ROUTER to live effect code — the same learnSpell grant the M4 dark-path already
+// uses, not new effect content). The player never asked; free power is the loudest sign they
+// are being claimed.
+//
+// WHY THE TICK, when playloop.js already grants on a crossing: the live playloop hook is
+// EDGE-triggered on a single player turn's corruption delta (old→new inside playerMoveTraced).
+// It cannot see a crossing that happens any OTHER way — corruption creeping over the line by
+// slow accumulation across turns (no single turn's delta straddles it), or axis effects applied
+// outside that top-level snapshot (cast-consequence, coerced builds, story arcs). This tick is
+// the LEVEL-triggered safety net: it delivers whatever the doer is owed at their CURRENT
+// corruption, so the claiming can never be silently missed. On the common case (the deed itself
+// crosses the threshold), the playloop grants first and marks the spell known → this tick finds
+// it already known and only latches, granting nothing twice.
+//
+// LATCH + RE-ARM: a `pactT` latch (MP-3's huntedT precedent) fires the gift ONCE per crossing
+// and re-arms only after corruption falls back below the threshold — a repented actor who
+// later relapses can be claimed again. DETERMINISTIC: pure arithmetic + a single learnSpell
+// delta; NO rng consumed (unlike the hunt, the gift is fixed by the threshold, not drawn), so a
+// sub-threshold run never touches any stream and is byte-identical to before.
+// HIDE-THE-MATH: no player-facing string is produced here — the diegetic gift-arrival prose is
+// MP-5's surfacing packet. The [TICK] log below is internal diagnostics (never shown), the same
+// as MP-3's hunt log (invariant I).
+function tickPact(w) {
+  const player = Array.isArray(w.party) ? w.party[0] : null;
+  const mo = (player && player.morality && typeof player.morality === 'object') ? player.morality : null;
+  if (!mo) return w;
+
+  const corruption = Number(mo.corruption ?? 0);
+  const pacted = Number(mo.pactT ?? 0);
+  const tick = w.time?.turn ?? 0;
+
+  // Re-arm FIRST: if corruption has fallen back below the pact threshold, clear a spent latch
+  // (a reformed actor who relapses can be claimed anew). Below threshold ⇒ never a gift.
+  if (corruption < PACT_CORRUPTION) {
+    if (pacted === 0) return w;
+    return mutatePlayerMorality(w, (m) => ({ ...m, pactT: 0 }));
+  }
+  // At/over the threshold but already claimed this crossing (latch set) → nothing to do.
+  if (pacted > 0) return w;
+
+  // The world claims the doer. Read the gift the actor is owed at their current corruption from
+  // the SAME table PACT_CORRUPTION derives from (never forked). A positive return means
+  // corruption ≥ PACT_CORRUPTION by construction (PACT_CORRUPTION = the lowest threshold).
+  const gift = darkGiftAtCorruption(corruption);
+  if (!gift) {
+    // Degenerate (no gift table entry qualifies) — still latch so we don't re-check every tick.
+    return mutatePlayerMorality(w, (m) => ({ ...m, pactT: Math.max(1, tick) }));
+  }
+
+  const known = Array.isArray(player.spells?.known) ? player.spells.known : [];
+  if (known.includes(gift.ref)) {
+    // Already granted (typically by the live playloop edge-hook on the crossing turn) — latch
+    // only, grant nothing twice. This is the common path when a deed itself crosses the line.
+    return mutatePlayerMorality(w, (m) => ({ ...m, pactT: Math.max(1, tick) }));
+  }
+
+  // Deliver the gift through the sanctioned mutation path (learnSpell delta → applyDeltas), then
+  // latch (Math.max(1,…) so tick 0 still marks "claimed"). No player-facing string (MP-5 surfaces).
+  let w2 = applyDeltas(w, [{ op: 'learnSpell', spellRef: gift.ref }]);
+  w2 = mutatePlayerMorality(w2, (m) => ({ ...m, pactT: Math.max(1, tick) }));
+  return pushTickLog(w2, `[TICK] the gift arrives unbidden (the doer is claimed at ${w.map?.currentNodeId || 'here'})`);
+}
+
 // Small helper — apply fn to party[0].morality, functionally (mirrors mutateEntity in
-// effectsCore but scoped to the player's morality, which is where heat/huntedT live).
+// effectsCore but scoped to the player's morality, which is where heat/huntedT/pactT live).
 function mutatePlayerMorality(w, fn) {
   const party = Array.isArray(w.party) ? w.party : [];
   if (party.length === 0) return w;

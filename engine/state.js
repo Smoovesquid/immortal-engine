@@ -1108,7 +1108,15 @@ function ensureMorality(m) {
     // clock by many ticks, e.g. a multi-day build; a per-tick bleed would launder a fresh
     // atrocity to nothing before the turn returned). A dedicated counter makes the rate robust
     // to the world-tick's irregular timeline clock. Additive, default 0, no WORLD_VERSION bump.
-    heatCoolTicks: clampIntMin(x.heatCoolTicks ?? 0, 0)
+    heatCoolTicks: clampIntMin(x.heatCoolTicks ?? 0, 0),
+    // MP-4 (docs/MORAL_PHYSICS.md §4 T4) — the pact latch: the world-tick index at which the
+    // dark gift (Tier 4) last arrived unbidden. The world-tick DELIVERS the gift once corruption
+    // reaches PACT_CORRUPTION (the lowest darkGift threshold, read from forbiddenGates — never
+    // forked); this latch (mirroring MP-3's huntedT) prevents it re-firing every tick while
+    // corruption stays over the line, and re-arms only after corruption falls back below the
+    // threshold. Additive with a safe default (0 = never claimed); old saves normalize cleanly,
+    // so no WORLD_VERSION bump (same pattern as huntedT / lastDeedT / deed.tier).
+    pactT: clampIntMin(x.pactT ?? 0, 0)
   };
 }
 

@@ -94,6 +94,11 @@ export function assertWorldInvariants(world) {
     if (!Number.isInteger(mo.heatCoolTicks) || mo.heatCoolTicks < 0) {
       throw new Error(`Invariant: party[${i}].morality.heatCoolTicks must be non-negative integer`);
     }
+    // MP-4 — the pact latch (docs/MORAL_PHYSICS.md §4 T4): world-tick index of the last
+    // unbidden dark gift, 0 = never / re-armed. Non-negative integer, same shape as huntedT.
+    if (!Number.isInteger(mo.pactT) || mo.pactT < 0) {
+      throw new Error(`Invariant: party[${i}].morality.pactT must be non-negative integer`);
+    }
     // v23 — the seven sin + seven virtue accumulators, each 0..100.
     const axes = mo.axes;
     if (!axes || typeof axes !== 'object' || Array.isArray(axes)) {

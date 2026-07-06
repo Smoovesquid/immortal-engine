@@ -161,12 +161,24 @@ test('U454-E: default fantasy/tallow boot (real normalizePack idiom) — post-PA
   // ×2-replay-asserted at integration by Basecamp; behavior on a no-deed, unaged boot is
   // otherwise identical. (Anchor chain: … OCC-STORY-1 86432691… → MP-3 d06096ee… →
   // MP-3+CONSEQ-1 56d52255….)
-  const HASH_AFTER_MP3_CONSEQ1 = '56d52255dcd39e2d9e71ad6ca2785a004cdd07abb81c10a2b9279139cc15e7ab';
-  assert.equal(worldHash(result.world), HASH_AFTER_MP3_CONSEQ1,
-    'default fantasy/tallow boot worldHash re-pinned post-MP-3+CONSEQ-1 (additive morality fields + preserved thread fields)');
+  //
+  // RE-PINNED for MP-4 (2026-07-06): the default boot's worldHash shifts ONCE MORE (56d52255… →
+  // db503a11…) because MP-4 adds ONE additive morality field — `pactT` (the pact latch: the
+  // world-tick index at which the unbidden dark gift last arrived) — defaulting to 0 on a no-deed
+  // boot. worldHash projects the full party morality, so one new zero-valued key moves the
+  // fingerprint. This is a deliberate additive-state re-pin (deterministically derived, old saves
+  // normalize to 0, NO WORLD_VERSION bump), NOT a determinism break: corruption is still 0 on this
+  // no-deed boot, no gift fires, and the boot is byte-identical to itself under replay (asserted ×2
+  // below; MP-4's own U572 pins the replay-equality of a scripted OVER-threshold pact run). SOLE
+  // DELTA vs the MP-3+CONSEQ-1 tree is the pactT:0 key. NOTE: if another packet's fields land ahead
+  // of this at integration, Basecamp recomputes this anchor (it happened to MP-3+CONSEQ-1 today).
+  // (Anchor chain: … MP-3 d06096ee… → MP-3+CONSEQ-1 56d52255… → MP-4 db503a11….)
+  const HASH_AFTER_MP4 = 'db503a117ea89fc1ca8191672257983781754223724c0a6492b0ee772bc6dcc3';
+  assert.equal(worldHash(result.world), HASH_AFTER_MP4,
+    'default fantasy/tallow boot worldHash re-pinned post-MP-4 (additive pactT morality field)');
 
   // Same seed => identical world (the placement is deterministic).
   const w2 = newWorld({ seed: 'tallow', fate: 0.3, mode: 'escape', pack: { primaryId: 'fantasy', mixerId: null } });
-  assert.equal(worldHash(beginAdventure(w2, PACKS).world), HASH_AFTER_MP3_CONSEQ1,
-    'default tallow boot must be deterministic ×2 after MP-3+CONSEQ-1');
+  assert.equal(worldHash(beginAdventure(w2, PACKS).world), HASH_AFTER_MP4,
+    'default tallow boot must be deterministic ×2 after MP-4');
 });

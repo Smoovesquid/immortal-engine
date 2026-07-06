@@ -3161,3 +3161,16 @@ other agents. (none active)
   the one-line downed-foe corpus fixture once PW-2 frees the fixtures file.
 - Still in flight: PW-2 (the honest floor — prose-to-world's first new packet). PW-3 dispatches
   into the freed playloop lane at its landing; SP-2 queued-for-Opus behind.
+
+## 2026-07-06 — Basecamp (successor) — PW-2 → v0.31.4 build 117 "the honest floor"; PW-3 dispatched
+
+- PW-2 landed (`f76d882a` → `f0897edd`): the narration can no longer lie about what you carry —
+  engine-side grounding at commit time, four legitimate sources byte-identical, phantom takes get
+  the in-voice decline or the honest search pivot (bonus: fixed an old wrong-object grab). Zero
+  corpus re-blessings needed (131/131 unmoved — no phantom rows existed). Ladder 10763/0 ·
+  screen truth 7/7. WB-Q4/T-Q2 (twice-confirmed HIGH) closed.
+- PW-3 dispatched into the freed playloop lane (OPUS per Tim): the rumor layer's first live
+  trigger — skeleton in the reducer, LLM upgrades prose only, budget ≤3/scene, the doc-vs-code
+  hash seam aligned in passing. The built-but-dark layer finally fires in real play.
+- Queue: PW-4..6 behind · SP-2 (Opus) cuts when lanes allow · DEATH-3's one-line corpus fixture
+  follow-up now unblocked (the fixtures file freed with PW-2's landing).

@@ -71,6 +71,15 @@ export function worldTick(world, seed = '') {
   // Epistemic variance lives here — claims drift and fracture; engine truth is never touched.
   w = propagateClaims(w, rng);
 
+  // 5.82) NPC-DEED-1 (docs/MORAL_PHYSICS.md §7 Arc A) — the world grinds Carl. When the authored
+  // evildoer is present (slice/demo seed), his supremacist project produces witnessed cruelty on a
+  // seed-stable, escalating cadence: each firing records a deed ATTRIBUTED TO HIM (honest actorId,
+  // effectsCore recordDeed), so his own heat climbs and the deed travels as THIRD-person reputation
+  // (rumorsReaching → notorietyReachingAbout). The player, doing nothing, watches a vile man be
+  // answered by a legible world. On any seed without Carl this is a pure no-op (no deed, no rng
+  // drawn from the shared stream) → worldHash unchanged. Runs on its OWN seeded sub-stream.
+  w = tickCarlDeeds(w, s);
+
   // 5.85) MP-5b (docs/MORAL_PHYSICS.md §5) — the Cassandra. Fires BEFORE the hunt (she is the
   // warning that heeding can still outrun, per the brief's pinned interpretation: "the T2→T3
   // BOUNDARY" means the approach band, landing before the hunt so cooling off can matter) and
@@ -106,6 +115,137 @@ export function worldTick(world, seed = '') {
   // 8) Apply fate weighting already expressed via severity.
   assertWorldInvariants(w);
   return w;
+}
+
+// ══════════════════════════════════════════════════════════════════════════════════════════════
+// NPC-DEED-1 — CARL'S MISDEED CADENCE  (docs/MORAL_PHYSICS.md §7 Arc A)
+// ══════════════════════════════════════════════════════════════════════════════════════════════
+//
+// ▟▙  TIM OWNS THIS SCHEDULE — the constants below are the ONE place Carl's arc is tuned.  ▟▙
+//
+// Arc A's thesis: "over N deterministic world-ticks, [Carl's] deeds mint claims that propagate →
+// the world reads a vile man and answers him," with the player only a witness. This function is the
+// AUTHORED CONTENT that gives Arc A something to tick — Carl had no deed hook before this packet.
+// Everything numeric here is a conservative starting default, seed-stable and retunable in one spot.
+//
+// The cadence: starting after a short grace period, Carl commits a witnessed cruelty every
+// CARL_DEED_INTERVAL world-ticks. Early acts are MOD-severity; from the CARL_ESCALATE_AFTER-th act
+// onward they are HEAVY (his project hardens). HEAVY is the threshold at which a deed both makes the
+// world recoil (Tier-1) and travels as reputation (DEED_GOSSIP_MIN) — so the escalation is what
+// eventually lights up the third-person read at neighbouring towns. Witnesses are the OTHER named
+// people at Carl's node (never Carl himself); with witnesses present the deed is not "wild," so it
+// travels. If Carl stands alone at his node, the act still records (his heat climbs) but mints no
+// travelling claim — the honest wild asymmetry, unchanged.
+//
+// THE CLOCK is the world timeline length (it grows every world-tick; world.time.turn does NOT
+// advance inside worldTick, so it can't be the clock). WHY THESE VALUES: K is chosen so the grind is
+// VISIBLE inside a normal session's tick budget — a player poking around Aldermere for a few dozen
+// ticks should see Carl's reputation curdle at the neighbours, not need a marathon. INTERVAL 6 +
+// ESCALATE_AFTER 3 means his 3rd act (the first HEAVY, travelling one) lands after ~3 intervals of
+// clock past the grace period, then a steady drumbeat follows; a handful of HEAVY witnessed acts is
+// what MP-3's HUNT_HEAT (40) would need, so his heat visibly builds toward (but this packet does not
+// itself fire) the hunt. Tim: raise INTERVAL to slow the grind, lower ESCALATE_AFTER to harden him
+// sooner, bump SEVERITY_* to make each act weigh more. All seed-stable; no determinism cost to tune.
+const CARL_ACTOR_ID = 'figure_carl';
+const CARL_DEED_GRACE = 4;         // world-ticks before Carl's first act (a beat of calm first)
+const CARL_DEED_INTERVAL = 6;      // one witnessed cruelty every K ticks after the grace period
+const CARL_ESCALATE_AFTER = 3;     // act #3 onward is HEAVY (before that, MOD) — the project hardens
+const CARL_SEVERITY_MOD = 12;      // === DEED_SEV.MOD (engine/morality/escalation.js): early acts
+const CARL_SEVERITY_HEAVY = 20;    // === DEED_SEV.HEAVY: escalated acts (travel + recoil threshold)
+const CARL_WITNESS_CAP = 8;        // mirror applyDeedCharges' witness slice
+// Authored one-line summaries, cycled deterministically by act index — flavour for the garbled
+// rumor body (never a number; the world hears WHAT he did, distorted by distance). Tim may reword.
+const CARL_DEED_SUMMARIES = Object.freeze([
+  'Carl drove a frightened neighbour from the square, screaming that the wingless are vermin',
+  'Carl defaced a family shrine, daubing his avian-supremacy creed across the door',
+  'Carl set upon a beggar with a cudgel for the crime of being earthbound',
+  'Carl penned a starving man in a coop overnight to "teach him his place below the birds"',
+  'Carl torched a neighbour\'s dovecote and made them watch, ranting of a purer flock'
+]);
+
+// Locate the node Carl currently stands at (he rides the slice/demo overlay; on any other seed he
+// is absent and this returns null → the whole tick is a no-op). Pure read.
+function findCarlNode(w) {
+  const nodes = Array.isArray(w?.map?.nodes) ? w.map.nodes : [];
+  for (const node of nodes) {
+    const npcs = node?.settlement?.npcs;
+    if (!Array.isArray(npcs)) continue;
+    if (npcs.some(n => n && (String(n.id) === CARL_ACTOR_ID || n.authoredFigure === 'carl'))) return node;
+  }
+  return null;
+}
+
+// THE CLOCK. worldTick does NOT advance world.time.turn (that is a playloop/turn concern), but the
+// timeline grows monotonically every tick — so the tick-count Carl's schedule reads is the
+// timeline length. It does not increment by exactly 1 per tick, which is fine: the schedule is
+// expressed as "how many acts SHOULD Carl have committed by clock C," and each tick fires at most
+// one act to catch up. That makes the cadence self-correcting and INDEPENDENT of the per-tick step
+// size — and needs NO new persistent field (deeds-so-far is read straight from world.deeds).
+function carlClock(w) {
+  return Array.isArray(w?.timeline) ? w.timeline.length : 0;
+}
+
+// How many misdeeds Carl is OWED by a given clock value. Zero during the grace period, then one
+// more every CARL_DEED_INTERVAL ticks. Pure integer schedule.
+function carlDeedsOwed(clock) {
+  if (clock < CARL_DEED_GRACE) return 0;
+  return Math.floor((clock - CARL_DEED_GRACE) / CARL_DEED_INTERVAL) + 1;
+}
+
+// tickCarlDeeds — fire at most one of Carl's scheduled misdeeds this tick, if the schedule has run
+// ahead of what he has actually done. Deterministic: the schedule is a pure function of the monotone
+// tick clock and the count of deeds already attributed to Carl (read from world.deeds); the deed is
+// recorded through the SAME effectsCore.recordDeed chokepoint every other deed uses (honest actorId
+// → his own heat climbs + a THIRD-person travelling claim). Own seeded sub-stream (used only to vary
+// which summary line, so the shared world-tick RNG is never perturbed — a no-Carl world draws
+// nothing and is byte-identical). Self-correcting + idempotent within a tick (fires one act, then
+// the next tick re-checks).
+function tickCarlDeeds(w, seedStr) {
+  const node = findCarlNode(w);
+  if (!node) return w; // Carl absent (any non-slice/demo seed) → pure no-op, no rng drawn.
+
+  const clock = carlClock(w);
+  const owed = carlDeedsOwed(clock);
+  if (owed <= 0) return w; // still in the grace period.
+
+  // How many has he already done? (Deeds attributed to Carl in the recency window.) The window is
+  // capped at 64 deeds; Carl's cadence is slow enough that his own recent count is the schedule
+  // anchor. If the schedule is satisfied, nothing is owed this tick.
+  const done = (Array.isArray(w.deeds) ? w.deeds : [])
+    .reduce((n, d) => n + (d && String(d.actorId) === CARL_ACTOR_ID ? 1 : 0), 0);
+  if (done >= owed) return w;
+
+  // This is act number `done + 1` (1-based) — the next one he owes. Drives escalation + summary.
+  const actNo = done + 1;
+
+  // Witnesses = the OTHER named people at Carl's node (exclude Carl himself). If he stands alone,
+  // the act still records (heat) but is "wild" (no witnesses) → mints no travelling claim.
+  const npcs = Array.isArray(node?.settlement?.npcs) ? node.settlement.npcs : [];
+  const witnesses = npcs
+    .filter(n => n && String(n.id) !== CARL_ACTOR_ID && n.authoredFigure !== 'carl')
+    .map(n => String(n.id))
+    .filter(Boolean)
+    .slice(0, CARL_WITNESS_CAP);
+
+  const severity = actNo >= CARL_ESCALATE_AFTER ? CARL_SEVERITY_HEAVY : CARL_SEVERITY_MOD;
+
+  // Own sub-stream — only picks the summary line, so it never touches the shared tick RNG.
+  const cRng = makeRng(seedFromString(`${seedStr}|carl-deed|a${actNo}`));
+  const summary = CARL_DEED_SUMMARIES[cRng.int(0, CARL_DEED_SUMMARIES.length - 1)];
+
+  // Record through the one chokepoint. actorId = Carl (honest) → his morality-lite heat climbs and
+  // the deed travels as a THIRD-person claim; the player is never the subject. `t` is the monotone
+  // clock so the deed's stable id (deed:<node>:<kind>:<t>) is unique per act.
+  return applyDeltas(w, [{
+    op: 'recordDeed',
+    deedKind: 'cruelty',
+    severity,
+    actorId: CARL_ACTOR_ID,
+    nodeId: String(node.id || ''),
+    witnesses,
+    summary,
+    t: clock
+  }]);
 }
 
 // ── P-74b — the Adversary's reaction loop ───────────────────────────────────

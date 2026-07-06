@@ -13,7 +13,8 @@ import { extractMemory } from './npcMemory.js';
 import { exitsFrom } from '../map/mapState.js';
 import { classifyPlaceQuery, resolvePlaceFact } from '../world/placeQuery.js';
 import { classifyPersonQuery, resolvePersonFact } from '../world/personQuery.js';
-import { notorietyReaching } from './reputation.js';
+import { notorietyReaching, notorietyReachingAbout } from './reputation.js';
+import { rumorsReaching } from '../rumor/rumorsReaching.js';
 import { npcVoiceCorpusId } from './npcVoiceResolve.js';
 
 const TRUST_REVEAL_PUBLIC = 4;
@@ -479,6 +480,27 @@ export function commonKnowledgeAnswer(world, npc, text) {
       };
       return { mode: 'smalltalk', body: pool[voiceManner(npcVoice(npc))] || pool.even };
     }
+    // NPC-DEED-1 (docs/MORAL_PHYSICS.md §7 Arc A) — the world speaks of an EVILDOER in the THIRD
+    // person. If a notable NPC's deeds (Carl's) have reached this place, a local may volunteer the
+    // talk about HIM — never blaming the person they're greeting (that is the player-notoriety block
+    // above, which fires first and only for the PLAYER's own deeds). The subject is any OTHER person
+    // the town has heard ill of; we skip the NPC we're actually talking TO (a man doesn't gossip
+    // about himself in the third person). DISCOVERED in the fiction, never a meter. Clean towns never
+    // reach this — byte-identical greetings for anyone who's heard nothing.
+    const thirdPersonSubject = worstRumoredNpc(w, here?.id, String(npc?.id || ''));
+    if (thirdPersonSubject) {
+      const what = String(thirdPersonSubject.body || 'the things they say')
+        .replace(/[.?!]+\s*$/, '');
+      const manner = voiceManner(npcVoice(npc));
+      const pool = {
+        guarded: `Business first — though if you're new here, mind the talk going round: ${lowerFirst(what)}. That's all I'll say.`,
+        skittish: `Oh — before anything: you've not heard? ${capitalize(what)}. Awful business. Keep your distance, is my advice.`,
+        blunt: `Word of warning while you're here — ${lowerFirst(what)}. Now. What do you want.`,
+        open: `Ah, a new face! You'll hear it soon enough, so hear it from me: ${lowerFirst(what)}. Anyway — what can I do for you?`,
+        even: `Since you're passing through — the talk lately is grim: ${lowerFirst(what)}. Mind yourself. What did you need?`,
+      };
+      return { mode: 'smalltalk', body: pool[manner] || pool.even };
+    }
     // Home village: the player is a known face — no "stranger" language, but
     // manner still colours the delivery (guarded stays curt, open stays warm).
     if (ctx.atHome) {
@@ -523,6 +545,38 @@ export function commonKnowledgeAnswer(world, npc, text) {
 }
 
 function capitalize(s) { const x = String(s || ''); return x.charAt(0).toUpperCase() + x.slice(1); }
+function lowerFirst(s) { const x = String(s || ''); return x.charAt(0).toLowerCase() + x.slice(1); }
+
+// NPC-DEED-1 (docs/MORAL_PHYSICS.md §7 Arc A) — find the OTHER person this town has heard the worst
+// about, for the third-person greeting. Reads the ONE sink (rumorsReaching) for deed rumors whose
+// actor is a real NPC (not 'party' — the player is never a third-person subject), excludes the NPC
+// being spoken TO (`speakingNpcId` — a man doesn't gossip about himself), and returns the single
+// most-resonant one via notorietyReachingAbout. Pure + deterministic (no rng, no mutation). Returns
+// null when the town has heard nothing about anyone else → the greeting stays byte-identical.
+function worstRumoredNpc(world, nodeId, speakingNpcId) {
+  if (!world || !nodeId) return null;
+  const rumors = rumorsReaching(world, nodeId, { subjectPrefix: 'deed:' });
+  // Candidate subjects: distinct NPC actor ids present in the traveled deed rumors.
+  const subjects = [];
+  const seen = new Set();
+  for (const r of rumors) {
+    const a = String(r.actorId || 'party');
+    if (a === 'party' || a === String(speakingNpcId) || seen.has(a)) continue;
+    seen.add(a);
+    subjects.push(a);
+  }
+  if (!subjects.length) return null;
+  // Score each subject via the third-person read; pick the highest (stable tiebreak by id).
+  let best = null;
+  for (const subjectId of subjects.sort()) {
+    const notor = notorietyReachingAbout(world, nodeId, subjectId);
+    if (!notor.heard || !notor.worst) continue;
+    if (!best || notor.score > best.score) {
+      best = { subjectId, score: notor.score, body: notor.worst.body, tier: notor.worst.tier };
+    }
+  }
+  return best;
+}
 
 // (W-6) Render a resolved place-fact in NPC VOICE — a RENDERER only, adds ZERO facts.
 // `fact.body` is the substrate truth the DM-narrator also renders; here it is framed as the

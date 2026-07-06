@@ -45,7 +45,11 @@ function deedId(deed) {
  *   distortion: number,      // [0,1] cumulative drift from the raw observation
  *   provenance: string[],    // ordered npcId chain the claim traveled to get here
  *   eventRef: (string|null), // timeline event id (e.g. "scarFormed:7"), or null
- *   deedRef: (string|null)   // player-deed id when the rumor is ABOUT the PC, else null
+ *   deedRef: (string|null),  // deed id when the rumor is ABOUT a recorded deed, else null
+ *   actorId: (string|null)   // NPC-DEED-1: WHO the deed is about — 'party' (the PC) or an NPC
+ *                            //   id (e.g. 'figure_carl'). Lets a consumer tell a third-person
+ *                            //   reputation (about an NPC) from the player's own. Read-time
+ *                            //   projection of deed.actorId; null for non-deed rumors.
  * }>}
  */
 export function rumorsReaching(world, nodeId, opts = {}) {
@@ -92,6 +96,7 @@ export function rumorsReaching(world, nodeId, opts = {}) {
         : [String(rumor.carrierNpcId || '')],
       eventRef: rumor.eventRef ? String(rumor.eventRef) : null,
       deedRef: null,
+      actorId: null, // minted rumors are not deed-attributed here
     });
   }
 
@@ -134,6 +139,11 @@ export function rumorsReaching(world, nodeId, opts = {}) {
         : [],
       eventRef: null,
       deedRef: subject,
+      // NPC-DEED-1: WHO did it. 'party' = the player (default for legacy/player deeds); a real
+      // NPC id (e.g. 'figure_carl') when an NPC evildoer committed it. The sink stays actor-AGNOSTIC
+      // (any deed clearing DEED_GOSSIP_MIN travels); this field just carries the truth so a consumer
+      // can render the player's own deeds in second person and an NPC's in the third.
+      actorId: String(deed.actorId || 'party'),
     });
   }
 

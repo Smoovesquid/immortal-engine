@@ -1,4 +1,4 @@
-import { ensureWorld, ensureCombat, defaultCombat, VICE_AXES, VIRTUE_AXES, deriveCorruption, deriveVirtue } from './state.js';
+import { ensureWorld, ensureCombat, defaultCombat, VICE_AXES, VIRTUE_AXES, deriveCorruption, deriveVirtue, ensureNpcMorality } from './state.js';
 import { addFact, addThreat, addQuestion } from './ledger.js';
 import { ensureEnv } from './env/envCore.js';
 import { ensureInstrumentLayer } from './instrument.js';
@@ -32,6 +32,24 @@ export function applyDeltas(world, deltas = []) {
     if (!e || !e.id) continue;
     const mo = (e.morality && typeof e.morality === 'object') ? e.morality : {};
     moralityAtEntry.set(String(e.id), {
+      corruption: Number(mo.corruption ?? 0),
+      heat: Number(mo.heat ?? 0),
+    });
+  }
+  // NPC-DEED-1 (docs/MORAL_PHYSICS.md §7 Arc A) — the SAME batch-entry standing freeze, extended to
+  // any NPC actor named by a recordDeed op in this batch. An NPC evildoer's tier must be graded on
+  // the standing he walked IN with, exactly like the player's (the first-atrocity-can't-self-boost
+  // guard, MP-2). NPC deeds arrive on their own worldTick batch (no axisDelta bumps alongside), so
+  // this is belt-and-suspenders, but it keeps the two actor kinds symmetric under one rule. Only
+  // ids that resolve to a REAL, present NPC (not 'party', not a party member) are snapshotted here.
+  for (const op of ops) {
+    if (!op || String(op.op) !== 'recordDeed') continue;
+    const aid = String(op.actorId || '');
+    if (!aid || aid === 'party' || moralityAtEntry.has(aid)) continue;
+    const npc = findNpcAnywhere(w, aid);
+    if (!npc) continue;
+    const mo = (npc.morality && typeof npc.morality === 'object') ? npc.morality : {};
+    moralityAtEntry.set(aid, {
       corruption: Number(mo.corruption ?? 0),
       heat: Number(mo.heat ?? 0),
     });
@@ -209,12 +227,27 @@ export function applyDeltas(world, deltas = []) {
       // string is touched — the tier is silent structured state (invariant I). Standing
       // corruption/heat come from the BATCH-ENTRY snapshot (prior accumulation), not the
       // post-delta entity — see moralityAtEntry above.
-      const actorId = resolvePlayerEntityId(w, op.actorId);
-      const standing = moralityAtEntry.get(actorId)
-        || (() => { const a = findPlayerEntity(w, op.actorId); return { corruption: Number(a?.morality?.corruption ?? 0), heat: Number(a?.morality?.heat ?? 0) }; })();
+      //
+      // NPC-DEED-1 (docs/MORAL_PHYSICS.md §7 Arc A) — HONEST ATTRIBUTION. Before this packet an
+      // unknown actor id silently resolved to party[0] (findPlayerEntity's fallback), so an NPC's
+      // deed would be MISATTRIBUTED to the player. Now the actor is resolved honestly: a real,
+      // present NPC id routes the whole tier/heat computation and the standing stamp to THAT NPC;
+      // only the player / 'party' sentinel / a party member takes the (byte-identical) player path.
+      // A stray id that names nobody is a no-op on the actor side — never blamed on the player.
+      const npcActor = findNpcAnywhere(w, op.actorId); // null for player/'party'/party-member/unknown
       // The wild = a deed with no settlement witnesses (§6): reach 0 AND the slow, no-claim
       // "getting away with it" accrual. Witnesses present ⇒ not wild.
       const wild = witnesses.length === 0;
+
+      // Standing (prior accumulation) for the tier grade — from the batch-entry snapshot, which now
+      // covers party AND NPC actors (see moralityAtEntry above). The player path keeps its exact
+      // prior behavior (resolvePlayerEntityId → snapshot → findPlayerEntity fallback).
+      const standing = npcActor
+        ? (moralityAtEntry.get(String(op.actorId))
+            || { corruption: Number(npcActor?.morality?.corruption ?? 0), heat: Number(npcActor?.morality?.heat ?? 0) })
+        : (moralityAtEntry.get(resolvePlayerEntityId(w, op.actorId))
+            || (() => { const a = findPlayerEntity(w, op.actorId); return { corruption: Number(a?.morality?.corruption ?? 0), heat: Number(a?.morality?.heat ?? 0) }; })());
+
       const tier = escalationTier(
         { severity, kind: deedKind },
         standing,
@@ -241,8 +274,10 @@ export function applyDeltas(world, deltas = []) {
       // accumulator MP-3's world-tick reads to send the hunt at HUNT_HEAT; no player-facing
       // string is touched (invariant I). Pure + deterministic (batch-entry heat + this deed's
       // engine-set severity/witnesses + the actor's WITS); the hunt itself fires in worldTick,
-      // NOT here (this is the accrual, not the effect).
-      const actorEntity = findPlayerEntity(w, op.actorId);
+      // NOT here (this is the accrual, not the effect). The actor-object handed to heatAccrual is
+      // the player entity OR the NPC — heatAccrual reads only `actor.stats.WITS` (defaulting to 10
+      // when absent), so an NPC with no stats block simply gets no concealment bonus.
+      const actorEntity = npcActor || findPlayerEntity(w, op.actorId);
       const gained = heatAccrual(
         { severity, kind: deedKind },
         actorEntity,
@@ -254,12 +289,20 @@ export function applyDeltas(world, deltas = []) {
       // self-boost its own tier — but the accumulator is additive and must not lose a deed.)
       const liveHeat = Number(actorEntity?.morality?.heat ?? standing.heat ?? 0);
       const nextHeat = Math.max(0, Math.round(liveHeat + gained));
-      // Stamp heat + lastDeedT on the actor so the hunt has an accumulator and decay math has
-      // an anchor (resolve the 'party' sentinel to the real player entity).
-      w = mutateEntity(w, resolvePlayerEntityId(w, op.actorId), (e) => {
-        const mo = (e.morality && typeof e.morality === 'object') ? e.morality : {};
-        return { ...e, morality: { ...mo, heat: nextHeat, lastDeedT: deed.t } };
-      });
+      // Stamp heat + lastDeedT on the actor so the hunt has an accumulator and decay math has an
+      // anchor. Player → mutateEntity (party, resolving the 'party' sentinel); NPC → the world-scope
+      // mutateNpcAnywhere, which also lazily gives the NPC its morality-lite shape on first touch.
+      if (npcActor) {
+        w = mutateNpcAnywhere(w, String(op.actorId), (n) => {
+          const mo = ensureNpcMorality(n.morality);
+          return { ...n, morality: { ...mo, heat: nextHeat, lastDeedT: deed.t } };
+        });
+      } else {
+        w = mutateEntity(w, resolvePlayerEntityId(w, op.actorId), (e) => {
+          const mo = (e.morality && typeof e.morality === 'object') ? e.morality : {};
+          return { ...e, morality: { ...mo, heat: nextHeat, lastDeedT: deed.t } };
+        });
+      }
       continue;
     }
 
@@ -1140,6 +1183,64 @@ function resolvePlayerEntityId(world, entityId) {
   const id = String(entityId || 'party');
   if (id !== 'party') return id;
   return String(world?.party?.[0]?.id || 'party');
+}
+
+// NPC-DEED-1 (docs/MORAL_PHYSICS.md §7 Arc A) — WORLD-SCOPE NPC mutation.
+//
+// `mutateNpc` (above) is CURRENT-NODE-scoped, and correctly so — its callers (trust deltas,
+// secrets, shared knowledge) are all scene-local, editing the NPC the player is talking to. Arc A
+// needs a DIFFERENT reach: an NPC evildoer (Carl) accrues heat/standing from deeds while the player
+// is elsewhere, so his record has to be found and updated wherever he stands, not only at the
+// player's node. This is that second, world-scope mutator — parallel to `mutateEntity` (party) and
+// `mutateNpc` (current-node NPC), the same "one more entity-mutation path" precedent those two
+// already set. It is NOT a parallel READ-sink (REPUTATION_UNIFICATION.md R2 forbids that);
+// reputation still surfaces through the ONE `rumorsReaching` sink. Returns the world unchanged if
+// the id isn't found at any node (a no-op, never a silent misattribution).
+//
+// The touched NPC is guaranteed a morality-lite shape (ensureNpcMorality) BEFORE `fn` runs, so the
+// escalation functions always receive a well-formed actor — and, critically, an NPC that is NEVER
+// touched keeps NO morality key at all (the lazy-field determinism story; see state.ensureNpcMorality).
+// Deterministic + pure (structural array splice, no rng).
+function mutateNpcAnywhere(world, npcId, fn) {
+  const target = String(npcId || '');
+  if (!target) return world;
+  const nodes = Array.isArray(world?.map?.nodes) ? world.map.nodes : [];
+  for (let ni = 0; ni < nodes.length; ni++) {
+    const node = nodes[ni];
+    const npcs = node?.settlement?.npcs;
+    if (!Array.isArray(npcs) || !npcs.length) continue;
+    const npcIdx = npcs.findIndex(n =>
+      n && (String(n.id) === target || String(n.name).toLowerCase() === target.toLowerCase())
+    );
+    if (npcIdx === -1) continue;
+    const cur = npcs[npcIdx];
+    const withMorality = { ...cur, morality: ensureNpcMorality(cur.morality) };
+    const nextNpcs = npcs.slice();
+    nextNpcs[npcIdx] = fn(withMorality);
+    const nextNodes = nodes.slice();
+    nextNodes[ni] = { ...node, settlement: { ...node.settlement, npcs: nextNpcs } };
+    return { ...world, map: { ...world.map, nodes: nextNodes } };
+  }
+  return world; // not found anywhere — no-op (honest: never falls back to the player)
+}
+
+// NPC-DEED-1 — is `id` a real, present NPC (findable at some node), as opposed to the player /
+// 'party' sentinel / a party member? This is the honest-attribution gate: recordDeed routes to the
+// NPC path only when the id genuinely names a settlement NPC, so a stray/unknown id can NEVER be
+// silently blamed on the player (it becomes a no-op on the NPC side, party untouched). Pure read.
+function findNpcAnywhere(world, npcId) {
+  const target = String(npcId || '');
+  if (!target || target === 'party') return null;
+  const nodes = Array.isArray(world?.map?.nodes) ? world.map.nodes : [];
+  for (const node of nodes) {
+    const npcs = node?.settlement?.npcs;
+    if (!Array.isArray(npcs)) continue;
+    const found = npcs.find(n =>
+      n && (String(n.id) === target || String(n.name).toLowerCase() === target.toLowerCase())
+    );
+    if (found) return found;
+  }
+  return null;
 }
 
 // Read-only lookup of the acting entity (resolves the 'party' sentinel to party[0]).

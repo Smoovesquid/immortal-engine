@@ -1141,6 +1141,36 @@ function ensureMorality(m) {
   };
 }
 
+// NPC-DEED-1 (docs/MORAL_PHYSICS.md §7 Arc A) — MORALITY-LITE for an NPC evildoer.
+//
+// An NPC who commits deeds the world reads (Carl the avian-supremacist, §7) accrues the SAME
+// accumulator the player does — heat toward the hunt, corruption toward the pact — so the
+// escalation ladder (engine/morality/escalation.js, all PURE `(deed, actor, ctx)` functions)
+// can grade an NPC actor with NO new branches. This is the SMALL shape those functions read:
+// { corruption, heat, lastDeedT }. It deliberately OMITS the player-only apparatus (the 14 sin/
+// virtue axes, patrons, the hunt/pact/Cassandra latches, `locked`) — those drive player-facing
+// surfacing an NPC never triggers, and carrying them on every NPC would balloon state for nothing.
+//
+// LAZY BY DESIGN — the CRUX of the determinism story. This helper is NEVER called from a default
+// NPC-normalize path (there is no single `ensureNpc`; NPCs are stamped bare in decompress.js,
+// demoFigures.js, encounterSpawn.js, storyEngine.js). It is applied ONLY when a deed first touches
+// an NPC (effectsCore.mutateNpcAnywhere). So a clean NPC carries NO `morality` key and is
+// byte-identical to before this packet — every seed with no NPC evildoer (and the tallow default
+// boot, where Carl is not at the start node) has an UNCHANGED worldHash. Only once an NPC actually
+// does a recorded deed does the field appear, and only in that NPC's own node.
+//
+// PURE + deterministic. Old saves: an NPC with a legacy `morality` object normalizes to this lite
+// shape (extra keys dropped); absence stays absence. Additive, no WORLD_VERSION bump (same
+// normalize-cleanly precedent as deed.tier / the party morality latches).
+export function ensureNpcMorality(m) {
+  const x = m && typeof m === 'object' ? m : {};
+  return {
+    corruption: clampInt(x.corruption ?? 0, 0, 100),
+    heat: clampIntMin(x.heat ?? 0, 0),
+    lastDeedT: clampIntMin(x.lastDeedT ?? 0, 0)
+  };
+}
+
 // v22 — deeds index. Each entry: { t, actorId, kind, severity, witnesses[], nodeId,
 // summary, tier }. Capped (recency window); the canon log holds the full history. Kept
 // minimal and defensively normalized so malformed/old saves can't violate invariants.

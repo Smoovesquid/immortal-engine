@@ -196,6 +196,13 @@ export function assertWorldInvariants(world) {
     if (!VALID_DEED_KINDS.has(d.kind)) {
       throw new Error(`Invariant: deeds[${i}].kind ${d.kind} not a valid deed kind`);
     }
+    // NPC-DEED-1 — WHO did it must be explicit and honest. ensureDeeds defaults a missing actorId
+    // to 'party' (the player), so this is always a non-empty string; the assertion guards against a
+    // future writer stamping an empty/blank actor (which would let a deed become un-attributable —
+    // the exact silent-misattribution class this packet closes).
+    if (typeof d.actorId !== 'string' || d.actorId.trim() === '') {
+      throw new Error(`Invariant: deeds[${i}].actorId must be a non-empty string`);
+    }
     if (!Number.isInteger(d.severity) || d.severity < 0 || d.severity > 100) {
       throw new Error(`Invariant: deeds[${i}].severity must be integer 0..100`);
     }
@@ -667,6 +674,26 @@ export function assertWorldInvariants(world) {
       if (npc.sophistication != null) {
         if (!Number.isInteger(npc.sophistication) || npc.sophistication < 0 || npc.sophistication > 4) {
           throw new Error(`Invariant: npc ${npc.id} sophistication must be integer 0..4 (got ${npc.sophistication})`);
+        }
+      }
+      // NPC-DEED-1 (docs/MORAL_PHYSICS.md §7 Arc A) — an NPC evildoer's morality-lite accumulator
+      // (state.ensureNpcMorality: { corruption, heat, lastDeedT }). OPTIONAL by design — it is
+      // stamped lazily, only once a deed touches the NPC, so ABSENCE is legal (a clean NPC has no
+      // morality key). When PRESENT it must be well-formed, mirroring the party bounds. This never
+      // fires for a world with no NPC evildoer.
+      if (npc.morality != null) {
+        const mo = npc.morality;
+        if (typeof mo !== 'object' || Array.isArray(mo)) {
+          throw new Error(`Invariant: npc ${npc.id} morality must be a plain object when present`);
+        }
+        if (!Number.isInteger(mo.corruption) || mo.corruption < 0 || mo.corruption > 100) {
+          throw new Error(`Invariant: npc ${npc.id} morality.corruption must be integer 0..100`);
+        }
+        if (!Number.isInteger(mo.heat) || mo.heat < 0) {
+          throw new Error(`Invariant: npc ${npc.id} morality.heat must be non-negative integer`);
+        }
+        if (!Number.isInteger(mo.lastDeedT) || mo.lastDeedT < 0) {
+          throw new Error(`Invariant: npc ${npc.id} morality.lastDeedT must be non-negative integer`);
         }
       }
     }

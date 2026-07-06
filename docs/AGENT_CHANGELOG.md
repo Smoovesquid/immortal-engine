@@ -2940,3 +2940,23 @@ other agents. (none active)
   worker also fixed a latent anchor bug in the oracle's own truth builder and kept exterior
   furniture rendering green via format conversion.
 - Still in flight: MP-3 (heat→hunt, opus) · CONSEQ-1 (thread aging, sonnet).
+
+## 2026-07-06 — Basecamp (successor) — MP-3 + CONSEQ-1 integrated → v0.30.8 build 106 "the world answers"; MP-4 dispatched
+
+- **MP-3 (heat→hunt, T3 LIVE):** `a7aa2c65` → `93d4b656`. Cruelty/forbidden deeds accrue heat at the
+  recordDeed chokepoint (WITS/concealment reduce; the wild accrues slowly and mints no claim — the
+  named "getting away with it" asymmetry); gentle decay; at HUNT_HEAT the world-tick sends hunters
+  through the existing spawnEncounter organ (own seeded stream — no-deed runs byte-identical),
+  latch + re-arm. Live receipt: "2 strangers keeping to the edges, watching." U563–U565 21/21.
+- **CONSEQ-1 (threads actually age):** `016712cc` → `4f460df4`. The 3-line normalizeThread
+  preservation; U490 flipped from documenting the gap to asserting aging+mutation; U568–U569.
+  SL-5's dark 4th beat ("worries worsen if ignored") is now live engine-wide.
+- **Integration note — the predicted canary collision:** both workers re-pinned U454-E solo
+  (each without the other's fields). Basecamp recomputed the combined anchor on the integrated
+  tree (… → MP-3 d06096ee… → MP-3+CONSEQ-1 56d52255…), ×2-replay-asserted, chain documented in
+  the test. Ladder over the combined tree: 10526/0 · 131/131 · position probe clean · screen truth
+  7/7 · goldens locked.
+- **MP-4 (corruption→pact, T4) CUT + DISPATCHED** → `briefs/MP-4-corruption-to-pact.md`;
+  U570–U572 claimed; the gift unbidden via the existing forbiddenGates organ, MP-3's latch
+  precedent. JR-HUNT-1 queued (fast-travel one-turn hunt deferral — MP-3 worker's flagged finding).
+  OCC-STORY-2 unblocked (cut after MP-4). MP-5 (surfacing) then MP-6 (the Carl Witness Test) LAST.

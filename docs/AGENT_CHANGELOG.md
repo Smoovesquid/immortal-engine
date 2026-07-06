@@ -2783,3 +2783,10 @@ other agents. (none active)
   settlement exclusion, trees stop walks honestly. Deadfall non-blocking (worker's reversible call).
 - Dispatching the arc's final two lanes: MR-3b (renderer — wild minis + unpainted-parchment fog edge;
   U539–U541) and MR-3c (look seam — the DM narrates real features; U542–U544). Disjoint files.
+
+## 2026-07-06 — Basecamp — MR-3c integrated → v0.29.10 build 097 "the wild, in words"
+
+- Cherry-picked `8692c3f8`; check GREEN (10347/0 + lane 9/9, 131/131, probe clean). Outdoor look now
+  reads the derivation ("a stand of trees north… the road runs west"); DM prompt gains the TERRAIN
+  line; JR-1 interruptions look around at real features. Worker's lockstep discipline noted (bump
+  left to integration — correct). MR-3b (renderer) is the LAST lane of the commission.

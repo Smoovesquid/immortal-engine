@@ -1,8 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
 
 import { newWorld } from '../engine/state.js';
 import { resolveMove } from '../engine/resolve.js';
+import { beginAdventure, playerMove } from '../engine/playloop.js';
+import { normalizeManifest, normalizePack } from '../engine/rulesets.js';
 import { parseIntent, declaredStat } from '../engine/intent/parseIntent.js';
 import { makeIntent, intentToMove } from '../engine/intent/intentSchema.js';
 
@@ -120,4 +124,56 @@ test('U586-09: a malformed/garbage declared stat falls back to inference (never 
   const { result } = resolveMove(w, bogus);
   // approach:force → MIGHT; the junk statTag is ignored, not honored.
   assert.match(result.mechanicsLine, /stat:MIGHT\+4\b/);
+});
+
+// ── (d) the REAL path: playerMove (LLM-off) honors the declaration end-to-end ─
+// The wire landed: playloop's generic resolve floor sets move.statTag =
+// declaredStat(text) on the move inferMoveFromText builds. These drive the
+// EXACT gate utterance through the real playerMove entry — in-process with no
+// llmPacket, which IS the LLM-off deterministic floor (no ear, no narrator).
+
+const __dirname2 = path.dirname(new URL(import.meta.url).pathname);
+function loadPacks() {
+  const m = normalizeManifest(JSON.parse(fs.readFileSync(path.join(__dirname2, '..', 'packs', 'manifest.json'), 'utf8')));
+  const byId = {};
+  for (const p of m.packs) byId[p.id] = normalizePack(JSON.parse(fs.readFileSync(path.join(__dirname2, '..', p.path), 'utf8')));
+  return byId;
+}
+
+const GATE_UTTERANCE = "I jam the Worn Blade under the hasp and lever with my full weight. Set the DC and I'll roll Strength.";
+const CONTROL_UTTERANCE = 'I jam the Worn Blade under the hasp and lever with my full weight.';
+
+function liveWorld(seed = 'glass-harbor') {
+  const packs = loadPacks();
+  const w = beginAdventure(
+    newWorld({ seed, fate: 0.3, mode: 'escape', pack: { primaryId: 'fantasy', mixerId: null } }),
+    packs
+  ).world;
+  return { w, packs };
+}
+
+test('U586-10: the exact gate utterance through playerMove resolves stat:MIGHT (the declared Strength)', () => {
+  const { w, packs } = liveWorld();
+  const { output } = playerMove(w, packs, GATE_UTTERANCE);
+  const mech = String(output.mechanics || '');
+  assert.match(mech, /stat:MIGHT[+-]?\d*\b/, `declared Strength must key the live roll off MIGHT — got: ${mech}`);
+  assert.doesNotMatch(mech, /stat:WITS/, `the pre-fix inferred WITS must not appear — got: ${mech}`);
+});
+
+test('U586-11: the SAME action without the declaration keeps today\'s inference (the wire only fires on a declaration)', () => {
+  const { w, packs } = liveWorld();
+  const { output } = playerMove(w, packs, CONTROL_UTTERANCE);
+  const mech = String(output.mechanics || '');
+  // "jam/lever/hasp" hits no force keyword in inferMoveFromText → approach:focus → WITS,
+  // exactly the pre-DECL-STAT-1 behavior. This is the control proving the wire is
+  // declaration-gated, not a blanket stat change.
+  assert.match(mech, /stat:WITS[+-]?\d*\b/, `undeclared action must keep the inferred stat — got: ${mech}`);
+});
+
+test('U586-12: the declared run is deterministic through the real path (same seed → byte-identical mech line)', () => {
+  const a = liveWorld();
+  const b = liveWorld();
+  const mechA = String(playerMove(a.w, a.packs, GATE_UTTERANCE).output.mechanics || '');
+  const mechB = String(playerMove(b.w, b.packs, GATE_UTTERANCE).output.mechanics || '');
+  assert.equal(mechA, mechB);
 });

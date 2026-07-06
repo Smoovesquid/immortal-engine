@@ -19,6 +19,7 @@ import { resolveMove } from './resolve.js';
 import { applyDeltas } from './effectsCore.js';
 import { introduceThread, resolveThread, ensureInstrumentLayer, traceIntentPacket, intentTraceOn } from './instrument.js';
 import { assemblePacket } from './intent/assemblePacket.js';
+import { declaredStat } from './intent/parseIntent.js';
 import { applyGeneratedStructuresForNode } from './structures/applyGeneratedStructuresForNode.js';
 import { enterStructureInterior, exitStructureInterior, moveWithinInterior, getInteriorView, interiorDirectionalExits, resolveStructureSelection, interiorDoorBlock } from './structures/interiors.js';
 import { normalizeTopology, adjacentRooms } from './structures/topology.js';
@@ -3885,6 +3886,12 @@ function playerMoveCore(world, packsById, text, dqIntent) {
   }
 
   const move = inferMoveFromText(w, pack, actorId, text);
+  // DECL-STAT-1 — the one wire: a player-DECLARED ability ("Set the DC and I'll
+  // roll Strength") rides the structured detector onto the generic-floor move, so
+  // resolveMove keys the d20 off the declared stat instead of the approach-inferred
+  // one. declaredStat is PURE (no LLM, no rng, browser-safe); it returns null on
+  // every undeclared turn, and a null statTag leaves resolveMove byte-identical.
+  move.statTag = declaredStat(text);
 
   // H-31 R1 — an info-seeking ask with no grounded fact behind it never rolls
   // a gradeable success/mixed: there is nothing dice can deliver, so fortune

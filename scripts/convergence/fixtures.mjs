@@ -3,6 +3,7 @@ import { beginAdventure } from '../../engine/playloop.js';
 import { beginCombat, mintEnemyFromNpc } from '../../engine/combat/combatLifecycle.js';
 import { applyDeltas } from '../../engine/effectsCore.js';
 import { ensureNodeSubstrate } from '../../engine/substrate.js';
+import { resolveEscapeCombatTurn } from '../../engine/combat/escapeCombat.js';
 
 export const PACKS = {
   fantasy: {
@@ -195,6 +196,25 @@ export function activeCombatWorld() {
       escapeMaxHp: 12
     }
   });
+}
+
+// (CORPUS-KILL-1) DEATH-3 flagged this as its own follow-up: the convergence corpus
+// drives ONE playerMove per scenario, but a kill needs TWO beats — down the foe (a
+// resolveEscapeCombatTurn 'strike' that corners it to DOWNED/dying/begging, mirroring
+// DEATH-2's dyingEnabled flow in U600/U602/U604), THEN the player's verb finishes it.
+// This fixture bakes in beat one so a single corpus case only has to supply beat two
+// (the kill verb text) — a communicator foe (canCommunicate defaults true; DEATH_CONTRACT
+// §3 — only a communicator can be cornered to DOWNED/beg at all), seed-stable, boot-cheap
+// (built on activeCombatWorld, same as U600/U602/U604's own downedWorld() helpers).
+export function downedFoeWorld() {
+  const base = activeCombatWorld();
+  const enemies = base.combat.enemies.map(e => ({ ...e, name: 'Brigand', hp: 1, ac: 1, maxHp: 20, damageType: 'slashing' }));
+  const w = ensureWorld({
+    ...base,
+    meta: { ...base.meta, seed: 'aldermere', mode: 'escape' },
+    combat: { ...base.combat, enemies, dyingEnabled: true }
+  });
+  return resolveEscapeCombatTurn(w, 'strike').world; // → DOWNED, dying clock ticking, begging
 }
 
 export function dialogueActiveWorld() {
@@ -427,6 +447,7 @@ export const FIXTURES = {
   empty_room: emptyRoomWorld,
   interior_npc: interiorNpcWorld,
   active_combat: activeCombatWorld,
+  downed_foe: downedFoeWorld,
   dialogue_active: dialogueActiveWorld,
   crowd_baker: crowdBakerWorld,
   defeated_npc: defeatedNpcWorld,

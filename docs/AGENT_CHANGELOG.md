@@ -2834,3 +2834,10 @@ other agents. (none active)
   checkout (MORAL_PHYSICS.md + contracts + contradiction hunt in flight — hands off). Flip the FURN-1
   row to ✅ LANDED v0.30.1 b099 once that lane commits.
 - Still out: REND-TRUTH-1 (bisecting the people-projection bug — the remaining half of Tim's screen).
+
+## 2026-07-06 — Basecamp — VIS-ORACLE cut + dispatched (Tim's word); FURN-1 row flipped
+
+- The screen gets what the engine got: a standing truth gate. Brief `docs/briefs/VIS-ORACLE.md`;
+  U551–U554; RED-first against the live wake-scene projection bug; check-rung when green. FURN-1
+  PACKETS row flipped to LANDED (deferred while the constitution window held the file — its
+  consequence-contract stack landed `c3faa87e`, noted with respect).

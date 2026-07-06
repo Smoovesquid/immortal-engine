@@ -235,6 +235,13 @@ done_when · rollback`.
   **MAP-REAL STAGE 1 (position truth) COMPLETE** — engine writes the doorstep, every reader consumes
   `pos`, the probe stands guard in `npm run check`.
 
+### VIS-ORACLE — the Screen-Truth Oracle (MR-ORACLE for pixels)  ·  Phase 1/2 (the missing gate)  ·  **CUT + DISPATCHED 2026-07-06 (Opus; brief `docs/briefs/VIS-ORACLE.md`; U551–U554; Tim's word: "cut the screen oracle")**
+- The morning's lesson made law: engine truth had a standing gate and never broke; the screen had none
+  and broke twice in one night. Headless canonical scenes → drawn model asserted against engine truth
+  (PROJECTION_EQUALITY · PHANTOM · MISSING · LAYER_ORIGIN · INK_EXCLUSION) + golden-image beauty lock
+  w/ deliberate-accept ritual. RED today on the wake scene by design (independent repro of
+  REND-TRUTH-1); wires into `npm run check` when green — the position-probe arc, step for step.
+
 ### REND-TRUTH-1 — four NPCs drawn in the bedroom; their true positions are 60–300 ft away  ·  Phase 1/2 (MAP-REAL falsifier #2, live on Tim's screen)  ·  **CUT + DISPATCHED 2026-07-06-am (Opus renderer lane; U548–U550)**
 - **provenance:** Tim's v0.30.0 wake, interior zoom: four NPC figures render in/around the bedchamber.
   Engine truth (live-save probe): Carl wu(-29.6,0.9), Galen (-12.6,-10.7), Lingerer (4.7,-14.0),
@@ -246,7 +253,7 @@ done_when · rollback`.
   figures inside the plan + people at their true offsets; U548 reproduce · U549 projection-equality
   property (people scene-pos == worldPosFromWu(their wu), all four) · U550 regression guard.
 
-### FURN-1 — furniture is physical: you don't stand inside the bed  ·  Phase 1/2 (MAP-REAL falsifier, arc reopened)  ·  **CUT + DISPATCHED 2026-07-06-am (Opus engine lane; U545–U547)**
+### FURN-1 — furniture is physical: you don't stand inside the bed  ·  Phase 1/2 (MAP-REAL falsifier)  ·  **✅ LANDED v0.30.1 b099 (worker `63371405`; U545–U547 23/23; suite 10402/0; anchor-cell blocking — full-footprint verified WORSE at v1 resolution; doors never furniture-blocked; FURNITURE_BLOCK probe class armed; default-seed worldHash unchanged)**
 - **provenance:** Tim's first v0.30.0 wake — the honest marker (MR-1b) draws the player INSIDE the bed
   mini: fiction seeds you ON the pallet, and furniture never joined any blocking mask (MR-2a masked
   walls+doors only). Not a truth regression — a truth revelation: drawn furniture isn't functionally

@@ -3228,3 +3228,15 @@ other agents. (none active)
   derivation for old saves · U454-E re-pin held on the integrated tree). MINOR version bump per
   the MR-2a precedent. Ladder 10817/0 · 135/135 · playtest 50/0 (+ the worker's 550-run full).
 - ENSURE-STATS-1 unblocked (the state lane freed). In flight: PW-5 build only.
+
+## 2026-07-06 — Basecamp (successor) — PW-5 BOUNCED at integration (the screen law earns its keep); SEEK-3 cut
+
+- The desk's own on-screen confirmation (owed because the worker's environment had no browser)
+  caught PW-5 DARK: the bank passes 25/25 at the askNpc seam but is UNREACHABLE through the real
+  player gesture — the person-ask disambiguator intercepts every place-named ask first, LLM-on and
+  LLM-off alike. The worker's tests drove askNpc, not playerMove: the verify-real-input lesson.
+  Pick dropped (worker branch intact); packet re-opened at the routing seam with U622 added
+  (reachability THROUGH playerMove). Build 121 does NOT ship a dark feature.
+- Second screen finding, same session: "I go find Carl and greet him" → "That way is blocked from
+  here" — the SEEK-PERSON dead-end class, alive on a named-person compound phrasing. SEEK-3 cut
+  diagnose-first (regression-vs-gap classification against today's four playloop commits FIRST).

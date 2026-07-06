@@ -3330,3 +3330,23 @@ other agents. (none active)
   proven; NO WORLD_VERSION bump (defensive coercion covers old saves).
 - U628–U629 committed — allocator current again; next free U630 (claimed by the in-progress
   map double-vision fix, Homebase direct).
+
+## 2026-07-06 — Basecamp — MAP-BLEND-1 → v0.32.7 build 127 "one view at a time" — Tim's double-vision report
+
+- Tim's second live map report of the evening (photo: the 2D plan and the 3D diorama ghosted
+  over each other on the play panel). Root cause, two halves: (1) onCamera faded the 3D layer IN
+  but never faded the 2D plan OUT — the "2D faded out beneath" in cross's own comment was
+  aspirational; mid-band = full plan + translucent diorama stacked; (2) the crossfade band
+  [BAND.plan .. ×1.35] was wide enough to REST inside.
+- Fix `88bde7a2` (continuousMap.js + U630): TRUE complementary crossfade (twoD opacity = 1−blend,
+  restored to 1 on the pure-2D/mounting/failed branches) · band narrowed ×1.35 → ×1.12 (one wheel
+  notch crosses it) · settleZoomTarget pure law + debounced (250 ms) idle settle — a camera resting
+  mid-band glides to the nearer blend edge; transition may dissolve, a REST may not. All knobs stay
+  live-tunable (window.__tilt).
+- U630 5/5 (band-edge cleanliness · THE BAND LAW ≤1.15 · null on clean rests · mid-band → edge →
+  clean · convergence no-op); neighbors U476/U477 untouched-green. Ladder 10880/0 · 135/135 ·
+  screen truth 7/7.
+- LIVE receipts on Bryn's own save: stranded mid-band at z=33.73 → layers 0.24/0.76 (a real
+  dissolve now, sums to one) → 800 ms later self-settled to z=32.00, 1/0 — one projection.
+  Screenshots: clean flat plan · clean diorama (no label bleed-through). The only two rest states
+  that now exist.

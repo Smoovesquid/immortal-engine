@@ -202,7 +202,7 @@ done_when · rollback`.
 
 ### OCC-STORY-2 — "up to something" becomes thread-driven  ·  Phase 1/4 seam  ·  **✅ LANDED v0.30.12 b110 (worker `14a85c18` → integrated `2d0f1a63`; U580–U582 17/17; storyAnchors extended not forked: hot/aged threads pull their tied NPCs to the thread's locus, reasons carry the LIVE mutated objective; live receipt: the Lingerer at the chapel path — "watching the chapel path — choose what to sacrifice to survive"; boot placement UNCHANGED — anchor + goldens held, exactly as briefed; FLAGGED GAP → NPC-DEED-1 below: the deed recorder is player-only, so a witnessed NPC burglary can't feed the rumor mill yet)**
 
-### NPC-DEED-1 — NPC crimes get a recording path (the rumor mill hears the world, not just the player)  ·  MP-arc seam  ·  **QUEUED 2026-07-06 (OCC-STORY-2's flagged gap; LIKELY MP-6 PREREQUISITE)**
+### NPC-DEED-1 — NPC crimes get a recording path (the rumor mill hears the world, not just the player)  ·  MP-arc seam  ·  **AUDIT DISPATCHED 2026-07-06 (report-first; code ONLY if a one-call through an existing organ; U590–U591 claimed conditionally; sonnet)** *(was QUEUED same day — OCC-STORY-2's flagged gap; LIKELY MP-6 PREREQUISITE)*
 - `recordDeed`/`applyDeedCharges` stamp guilt/heat on PARTY members only — a witnessed NPC burglary
   (OCC-STORY-2's bandit) or Carl's villainy has no path into `world.deeds`/`rumorsReaching`. But
   MORAL_PHYSICS Arc A ("the world grinds Carl") REQUIRES NPC deeds to mint travelling reputation —

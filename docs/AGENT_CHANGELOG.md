@@ -3218,3 +3218,13 @@ other agents. (none active)
   negatives; U617 tripwires the fixture. The one-command check now gates 135 locked behaviors
   (was 131) and 10,794 tests. Pushed without a version bump — test-net only, nothing
   player-visible. In flight: SP-2 (WORLD_VERSION packet) · PW-5 build (common knowledge).
+
+## 2026-07-06 — Basecamp (successor) — SP-2 → v0.32.0 build 120 "factions take sides" — social physics opens
+
+- SP-2 landed (`22074796` → `eb597041`): factions carry an ethos; outlaw factions read the dark
+  table sign-flipped at half magnitude — live receipt: one public torture moved civic −10 AND
+  shadow +5 in the same turn, all in fiction, zero numbers. WORLD_VERSION 31→32 with the full
+  ritual (16 version-string sweeps · old-save warn+upgrade exercised · deterministic ethos
+  derivation for old saves · U454-E re-pin held on the integrated tree). MINOR version bump per
+  the MR-2a precedent. Ladder 10817/0 · 135/135 · playtest 50/0 (+ the worker's 550-run full).
+- ENSURE-STATS-1 unblocked (the state lane freed). In flight: PW-5 build only.

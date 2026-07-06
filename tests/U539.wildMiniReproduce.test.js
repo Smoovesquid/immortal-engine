@@ -110,24 +110,27 @@ function placePlayer(world, node, cell) {
 
 // -------------------- 1. BEFORE (documented against real HEAD) --------------------
 
-test('U539 (BEFORE, documented): figures3d.js at HEAD had no wild-mini builder at all', () => {
+// LOADER-note (integration fix): these BEFORE-docs originally read `git show HEAD:` — true only in a
+// dirty pre-commit worktree; once the packet is COMMITTED, HEAD contains the fix and the doc-tests
+// invert. Pinned to fc9019df (v0.29.9, the pre-packet base) — immutable, in shared history.
+test('U539 (BEFORE, documented): figures3d.js at the pre-packet base had no wild-mini builder at all', () => {
   let headSrc = '';
   try {
-    headSrc = execFileSync('git', ['show', 'HEAD:public/map/figures3d.js'], { encoding: 'utf8', cwd: REPO_ROOT });
+    headSrc = execFileSync('git', ['show', 'fc9019df:public/map/figures3d.js'], { encoding: 'utf8', cwd: REPO_ROOT });
   } catch { headSrc = ''; }
-  assert.ok(headSrc.length > 0, 'precondition: could read figures3d.js from HEAD via git');
-  assert.ok(!/buildWildMini/.test(headSrc), 'HEAD must not already define buildWildMini — this packet introduces it');
-  assert.ok(!/WILD_PALETTE/.test(headSrc), 'HEAD must not already carry a wild-feature palette');
+  assert.ok(headSrc.length > 0, 'precondition: could read figures3d.js from the pre-packet base via git');
+  assert.ok(!/buildWildMini/.test(headSrc), 'the pre-packet base must not define buildWildMini — this packet introduced it');
+  assert.ok(!/WILD_PALETTE/.test(headSrc), 'the pre-packet base must not carry a wild-feature palette');
 });
 
-test('U539 (BEFORE, documented): render3d.js at HEAD never imported wildFeaturesAround — the wild derivation was never consumed', () => {
+test('U539 (BEFORE, documented): render3d.js at the pre-packet base never imported wildFeaturesAround — the wild derivation was never consumed', () => {
   let headSrc = '';
   try {
-    headSrc = execFileSync('git', ['show', 'HEAD:public/map/render3d.js'], { encoding: 'utf8', cwd: REPO_ROOT });
+    headSrc = execFileSync('git', ['show', 'fc9019df:public/map/render3d.js'], { encoding: 'utf8', cwd: REPO_ROOT });
   } catch { headSrc = ''; }
-  assert.ok(headSrc.length > 0, 'precondition: could read render3d.js from HEAD via git');
-  assert.ok(!/wildFeaturesAround/.test(headSrc), 'HEAD must not already import/call wildFeaturesAround — the render side never asked the derivation for anything');
-  assert.ok(!/refreshWildMinis/.test(headSrc), 'HEAD must not already have a wild-mini refresh hook');
+  assert.ok(headSrc.length > 0, 'precondition: could read render3d.js from the pre-packet base via git');
+  assert.ok(!/wildFeaturesAround/.test(headSrc), 'the pre-packet base must not import/call wildFeaturesAround — the render side never asked the derivation for anything');
+  assert.ok(!/refreshWildMinis/.test(headSrc), 'the pre-packet base must not have a wild-mini refresh hook');
 });
 
 test('U539 (BEFORE, documented): MR-3a\'s derivation itself already returns real features in the Greenwood — proving the fog hid a world that WAS there, only the renderer was blind to it', () => {

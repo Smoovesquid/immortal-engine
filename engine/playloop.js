@@ -2634,6 +2634,16 @@ function playerMoveCore(world, packsById, text, dqIntent) {
           const travelMove = { actorId: 'party', intentText: String(text || ''), approachTag: 'survival', stakeTag: 'time' };
           w1 = appendRecentBeat(w1, buildBeatFromTurn(w1, text, travelMove, { outcome: 'success', mechanicsLine: '[travel | journey-arrive]' }));
           w1 = maybeCheckGoals(w1);
+          // JR-HUNT-1: a fast-travel turn is a real turn — the world must tick ONCE here, before
+          // the journey encounter rolls, so the offscreen world catches up (threads age, heat
+          // decays) AND the moral hunt (MP-3) can meet the traveller AT THE ROADSIDE. Without this
+          // the journey resolver returned before playerMove's per-turn worldTick, so a hunt due on
+          // a fast-travel turn slipped to the player's next normal action. NO DOUBLE-TICK: this
+          // branch RETURNS below (never reaching that per-turn worldTick), so this is the turn's one
+          // and only tick — thread age advances exactly 1 (U568/U574). tickHunt runs on its own
+          // sub-RNG and places hunters as NPCs (ambush:false) at the arrival node, so it COMPOSES
+          // with — never replaces — the journey encounter rolled next.
+          w1 = worldTick(w1, `${w1.meta.seed}|tick|turn${w1.time.turn}|tl${w1.timeline.length}`);
           // The journey may be set upon. Road-ish country → brigands/a toll (an
           // interactive encounter: pay/talk/slip/fight). Wild country → a beast ambush.
           // JR-1: fast travel rolls the ELEVATED premium table (vs. the base walking
@@ -2710,6 +2720,13 @@ function playerMoveCore(world, packsById, text, dqIntent) {
           w1 = pushEvent(w1, { kind: 'travel', data: { from: originId, to: stopId, intent: String(text || '') } });
           w1 = appendRecentBeat(w1, buildBeatFromTurn(w1, text, { actorId: 'party', intentText: String(text || ''), approachTag: 'survival', stakeTag: 'time' }, { outcome: 'success', mechanicsLine: '[travel | journey-arrive]' }));
           w1 = maybeCheckGoals(w1);
+          // JR-HUNT-1: the multi-hop journey's legs (and their per-leg encounters) have already
+          // resolved above; NOW the world ticks ONCE for the whole trip, so the moral hunt (MP-3)
+          // meets the traveller at the node the journey actually reached (arrival OR interrupt).
+          // NO DOUBLE-TICK: every exit below RETURNS, so this branch never reaches playerMove's
+          // per-turn worldTick — this is the turn's one and only tick (thread age +1; U568/U574).
+          // The hunt (own sub-RNG, ambush:false) COMPOSES with any road encounter already rolled.
+          w1 = worldTick(w1, `${w1.meta.seed}|tick|turn${w1.time.turn}|tl${w1.timeline.length}`);
           const destNode = (w1.map?.nodes || []).find(n => n && String(n.id) === farId) || null;
           const destName = cleanPlaceName(destNode?.name) || 'your destination';
           if (pendingEnc && w1.travel?.pending) {

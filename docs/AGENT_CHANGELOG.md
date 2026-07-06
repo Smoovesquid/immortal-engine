@@ -2927,3 +2927,16 @@ other agents. (none active)
 - Ops: PLAN-SPLIT-1's worker held :5179 serving its worktree during its live playtest (and its
   cleanup killed my :5181 verify server) → standing brief rule now: workers playtest on non-default
   ports. Main :5179 server restarted from the main checkout.
+
+## 2026-07-06 — Basecamp (successor) — PLAN-SPLIT-1 integrated → v0.30.7 build 105 "one building, one geometry"
+
+- Worker `9f4a5575` → integrated `d588f44a` (version bump dropped, standing rule). Real structures
+  now DRAW from the engine's own floorPlan — the catalog template only survives for topology-less
+  buildings. The oracle's wake finding closes; U553 flipped; wake golden captured.
+- **`playtest:screen` is now a STANDING `npm run check` rung** — the ladder prints "screen truth:
+  7 scenes green, goldens locked". The screen has a permanent alarm (the morning's lesson made law).
+- Ladder over the integration: 10497/0 · 131/131 · position probe clean · screen truth 7/7.
+  Three goldens re-captured legitimately (wake cottage at TRUE size → deterministic village reflow);
+  worker also fixed a latent anchor bug in the oracle's own truth builder and kept exterior
+  furniture rendering green via format conversion.
+- Still in flight: MP-3 (heat→hunt, opus) · CONSEQ-1 (thread aging, sonnet).

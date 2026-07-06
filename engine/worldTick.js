@@ -1,5 +1,5 @@
 import { assertWorldInvariants } from './invariants.js';
-import { ensureWorld } from './state.js';
+import { ensureWorld, ensureNpcMorality } from './state.js';
 import { ensureInstrumentLayer, reinforceMotif, tickThreads } from './instrument.js';
 import { seedFromString, makeRng } from './rng.js';
 import { fateBand } from './rulesets.js';
@@ -754,7 +754,7 @@ export function pickCassandraWitness(w) {
 }
 
 // ── MP-3 — the hunt (Tier 3 goes live). docs/MORAL_PHYSICS.md §4 T3 row ──────────────
-// When the player's accumulated heat crosses HUNT_HEAT, the world stops waiting: the
+// When an actor's accumulated heat crosses HUNT_HEAT, the world stops waiting: the
 // virtue-gods' avengers / crime pressure arrive through the EXISTING spawnEncounter organ
 // (a ROUTER to a live organ, not new effect code). Fires ONCE per crossing — a `huntedT`
 // latch on morality prevents re-spawning every tick while heat stays hot; the latch re-arms
@@ -762,41 +762,118 @@ export function pickCassandraWitness(w) {
 // encounter runs on its OWN sub-RNG (seeded by the tick clock + heat), so it NEVER draws from
 // the shared tick stream — a run that never crosses the threshold is byte-identical to before.
 // HIDE-THE-MATH: the player sees hunters at the node, never a heat number (invariant I).
+//
+// MP-6 (docs/MORAL_PHYSICS.md §7 Arc A) extends the hunt to NPC actors: the physics are the
+// WORLD'S, so an NPC evildoer (Carl) is answered the same way the player is. The player branch
+// below is byte-identical to before (U564 unchanged); the NPC branch is purely additive and gated
+// so a world with no over-threshold stamped NPC draws nothing and is byte-identical (worldHash
+// unchanged). Both branches route the SAME `spawnEncounter` organ and the SAME latch pattern.
 function tickHunt(w) {
+  // 1) The player hunt — unchanged. (The one difference from MP-6 is factoring the spawn+latch
+  //    into huntActorAtNode so the NPC branch reuses the EXACT encounter selection.)
   const player = Array.isArray(w.party) ? w.party[0] : null;
-  const mo = (player && player.morality && typeof player.morality === 'object') ? player.morality : null;
-  if (!mo) return w;
+  const pmo = (player && player.morality && typeof player.morality === 'object') ? player.morality : null;
+  if (pmo) {
+    const heat = Number(pmo.heat ?? 0);
+    const hunted = Number(pmo.huntedT ?? 0);
+    // Below the threshold, or already dispatched and not yet re-armed (huntedT set) → no hunt.
+    if (heat >= HUNT_HEAT && hunted <= 0) {
+      const node = (w.map?.nodes || []).find(n => n && n.id === w.map?.currentNodeId) || null;
+      w = huntActorAtNode(w, {
+        heat,
+        node,
+        // Seed identical to the pre-MP-6 player hunt so its stream is byte-for-byte unchanged.
+        rngKey: `${w.meta?.seed}|moral-hunt|t${w.time?.turn ?? 0}|tl${w.timeline?.length ?? 0}|heat${Math.round(heat)}`,
+        latch: (ww) => mutatePlayerMorality(ww, (m) => ({ ...m, huntedT: Math.max(1, w.time?.turn ?? 0) })),
+        logNodeId: w.map?.currentNodeId || 'here'
+      });
+    }
+  }
 
-  const heat = Number(mo.heat ?? 0);
-  const hunted = Number(mo.huntedT ?? 0);
-  // Below the threshold, or already dispatched and not yet re-armed (huntedT set) → no hunt.
-  if (heat < HUNT_HEAT || hunted > 0) return w;
-
+  // 2) MP-6 — the NPC hunt. Iterate the (tiny) set of NPCs at the CURRENT node carrying a stamped
+  //    morality accumulator (lazy — only offenders have one). Any at/over HUNT_HEAT and not yet
+  //    latched draws the reckoning to HIS node, exactly as the player's does, and latches huntedT on
+  //    HIS own record (never the player's). We fire at most one per tick (self-correcting: the next
+  //    tick re-checks) so two offenders standing together don't stack a double-spawn in one tick.
+  //
+  //    WHY current-node-only: spawnEncounter places the arriving hostiles at currentNodeId (the DM
+  //    "they show up where the scene is"). In Arc A the player is idle AT Carl's node, so "his node"
+  //    IS the current node and the reckoning lands on him in view. An over-threshold offender in a
+  //    town the player is not standing in has his consequence carried by the reputation layer (his
+  //    deeds already travel as third-person claims); the VISIBLE avenger-spawn waits until the scene
+  //    is where he is. (Future taste: a node-targeted spawn to stage the reckoning off-screen — out
+  //    of scope here, and it would edit the combat organ.)
+  const cur = (w.map?.nodes || []).find(n => n && n.id === w.map?.currentNodeId) || null;
+  const curNpcs = Array.isArray(cur?.settlement?.npcs) ? cur.settlement.npcs : [];
   const tick = w.time?.turn ?? 0;
-  const node = (w.map?.nodes || []).find(n => n && n.id === w.map?.currentNodeId) || null;
+  for (const npc of curNpcs) {
+    const nmo = (npc && npc.morality && typeof npc.morality === 'object') ? npc.morality : null;
+    if (!nmo) continue; // clean NPC — no accumulator, never hunted.
+    const heat = Number(nmo.heat ?? 0);
+    const hunted = Number(nmo.huntedT ?? 0);
+    if (heat < HUNT_HEAT || hunted > 0) continue;
+    const npcId = String(npc.id || '');
+    if (!npcId) continue;
+    w = huntActorAtNode(w, {
+      heat,
+      node: cur,
+      // Own sub-stream keyed by the NPC id so it NEVER collides with the player hunt's stream and a
+      // no-NPC-offender world draws nothing (byte-identical). Same shape as the player key.
+      rngKey: `${w.meta?.seed}|moral-hunt-npc|${npcId}|t${tick}|tl${w.timeline?.length ?? 0}|heat${Math.round(heat)}`,
+      latch: (ww) => mutateNpcMoralityAtNode(ww, cur?.id, npcId, (m) => ({ ...m, huntedT: Math.max(1, tick) })),
+      logNodeId: `${cur?.id || 'here'} (${npcId})`
+    });
+    break; // one reckoning per tick.
+  }
+
+  return w;
+}
+
+// Spawn the avengers for ONE over-threshold actor at its node and run the caller's latch. Factored
+// out of tickHunt so the player and NPC branches share the EXACT encounter selection + spawn organ
+// (the only differences are the RNG key, the latch target, and the log line). Deterministic: all
+// randomness comes from the caller-supplied `rngKey`, on its own sub-stream. Returns w unchanged if
+// no creature could be selected (degenerate world) but STILL latches so the hunt can't spin.
+function huntActorAtNode(w, { heat, node, rngKey, latch, logNodeId }) {
   const biome = node ? biomeForNode(w.meta?.seed, node) : 'wilderness';
-  // Seed unique to THIS crossing (tick + heat + timeline depth) — same seed ⇒ same hunters.
-  const hRng = makeRng(seedFromString(`${w.meta?.seed}|moral-hunt|t${tick}|tl${w.timeline?.length ?? 0}|heat${Math.round(heat)}`));
+  const hRng = makeRng(seedFromString(rngKey));
   // Party of avengers; a second hunter joins once heat is well over the line (deeper guilt =
-  // heavier answer). CR mild — this is a reckoning the player can face or flee, not an execution.
+  // heavier answer). CR mild — this is a reckoning the actor can face or flee, not an execution.
   const overBy = heat - HUNT_HEAT;
   const count = overBy >= HUNT_HEAT ? 3 : 2;
   const cr = 1 + (overBy >= HUNT_HEAT ? 1 : 0);
   const creatures = selectCreatures(cr, count, null, hRng, biome);
   if (!Array.isArray(creatures) || creatures.length === 0) {
-    // No creature could be selected (degenerate world) — still latch so we don't spin.
-    return mutatePlayerMorality(w, (m) => ({ ...m, huntedT: Math.max(1, tick) }));
+    // No creature could be selected — still latch so we don't spin.
+    return latch(w);
   }
-
-  // ambush:false — the hunters ARRIVE at the node (the player sees them and chooses to
-  // engage), rather than a force-started combat cut mid-world-tick. This is the DM-authentic
-  // "they show up looking for you," and it touches no combat state (spawnEncounter places
-  // them as hostile NPCs at currentNodeId).
+  // ambush:false — the hunters ARRIVE at the node (the actor/player is seen and chosen to engage or
+  // flee), not a force-started combat cut mid-world-tick. spawnEncounter places them as hostile NPCs
+  // at currentNodeId; it touches no combat state.
   let w2 = spawnEncounter(w, creatures, { ambush: false, reason: 'moral-hunt' }, hRng);
-  // Latch: record the tick we dispatched (Math.max(1,…) so tick 0 still marks "hunted"),
-  // so this fires once, not every tick.
-  w2 = mutatePlayerMorality(w2, (m) => ({ ...m, huntedT: Math.max(1, tick) }));
-  return pushTickLog(w2, `[TICK] the hunt arrives (moral reckoning at ${w.map?.currentNodeId || 'here'})`);
+  // Latch: record the tick we dispatched so this fires once, not every tick.
+  w2 = latch(w2);
+  return pushTickLog(w2, `[TICK] the hunt arrives (moral reckoning at ${logNodeId})`);
+}
+
+// Stamp an NPC's morality-lite record at a KNOWN node (the NPC hunt already located it, so this is a
+// direct splice rather than a whole-map scan — the local mirror of effectsCore.mutateNpcAnywhere).
+// ensureNpcMorality guarantees the well-formed lite shape (incl. the huntedT latch) BEFORE `fn` runs,
+// so a first-ever touch is still legal. Pure structural update; no RNG. No-op if the node/NPC is gone.
+function mutateNpcMoralityAtNode(w, nodeId, npcId, fn) {
+  const nodes = Array.isArray(w?.map?.nodes) ? w.map.nodes : [];
+  const ni = nodes.findIndex(n => n && String(n.id) === String(nodeId));
+  if (ni === -1) return w;
+  const node = nodes[ni];
+  const npcs = Array.isArray(node?.settlement?.npcs) ? node.settlement.npcs : [];
+  const pi = npcs.findIndex(n => n && String(n.id) === String(npcId));
+  if (pi === -1) return w;
+  const cur = npcs[pi];
+  const nextNpcs = npcs.slice();
+  nextNpcs[pi] = { ...cur, morality: fn(ensureNpcMorality(cur.morality)) };
+  const nextNodes = nodes.slice();
+  nextNodes[ni] = { ...node, settlement: { ...node.settlement, npcs: nextNpcs } };
+  return { ...w, map: { ...w.map, nodes: nextNodes } };
 }
 
 // Heat bleeds off with time/distance (§4), and the hunt re-arms once heat has cooled back

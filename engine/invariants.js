@@ -677,10 +677,11 @@ export function assertWorldInvariants(world) {
         }
       }
       // NPC-DEED-1 (docs/MORAL_PHYSICS.md §7 Arc A) — an NPC evildoer's morality-lite accumulator
-      // (state.ensureNpcMorality: { corruption, heat, lastDeedT }). OPTIONAL by design — it is
-      // stamped lazily, only once a deed touches the NPC, so ABSENCE is legal (a clean NPC has no
+      // (state.ensureNpcMorality: { corruption, heat, lastDeedT, huntedT }). OPTIONAL by design — it
+      // is stamped lazily, only once a deed touches the NPC, so ABSENCE is legal (a clean NPC has no
       // morality key). When PRESENT it must be well-formed, mirroring the party bounds. This never
-      // fires for a world with no NPC evildoer.
+      // fires for a world with no NPC evildoer. (huntedT: MP-6's hunt latch — the tick the reckoning
+      // reached this NPC; non-negative integer, mirrors the player's morality.huntedT.)
       if (npc.morality != null) {
         const mo = npc.morality;
         if (typeof mo !== 'object' || Array.isArray(mo)) {
@@ -694,6 +695,9 @@ export function assertWorldInvariants(world) {
         }
         if (!Number.isInteger(mo.lastDeedT) || mo.lastDeedT < 0) {
           throw new Error(`Invariant: npc ${npc.id} morality.lastDeedT must be non-negative integer`);
+        }
+        if (mo.huntedT != null && (!Number.isInteger(mo.huntedT) || mo.huntedT < 0)) {
+          throw new Error(`Invariant: npc ${npc.id} morality.huntedT must be non-negative integer when present`);
         }
       }
     }

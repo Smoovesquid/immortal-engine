@@ -1147,9 +1147,17 @@ function ensureMorality(m) {
 // accumulator the player does — heat toward the hunt, corruption toward the pact — so the
 // escalation ladder (engine/morality/escalation.js, all PURE `(deed, actor, ctx)` functions)
 // can grade an NPC actor with NO new branches. This is the SMALL shape those functions read:
-// { corruption, heat, lastDeedT }. It deliberately OMITS the player-only apparatus (the 14 sin/
-// virtue axes, patrons, the hunt/pact/Cassandra latches, `locked`) — those drive player-facing
-// surfacing an NPC never triggers, and carrying them on every NPC would balloon state for nothing.
+// { corruption, heat, lastDeedT, huntedT }. It deliberately OMITS the rest of the player-only
+// apparatus (the 14 sin/virtue axes, patrons, the pact/Cassandra latches, `locked`) — those drive
+// player-facing surfacing an NPC never triggers, and carrying them on every NPC would balloon state
+// for nothing.
+//
+// huntedT (MP-6, docs/MORAL_PHYSICS.md §7 Arc A) — the hunt latch, added so the world's reckoning
+// can reach an NPC evildoer the SAME way it reaches the player: worldTick's hunt (MP-3) fires ONCE
+// per HUNT_HEAT crossing and stamps the tick here so avengers don't re-spawn at his node every tick.
+// It is the NPC mirror of the player's morality.huntedT. Still lazy — it only ever materializes on an
+// NPC that has already accrued a recorded deed (heat), so the default (Carl-free) tallow boot carries
+// NO NPC morality at all and its fingerprint (U454-E) is byte-identical to before this packet.
 //
 // LAZY BY DESIGN — the CRUX of the determinism story. This helper is NEVER called from a default
 // NPC-normalize path (there is no single `ensureNpc`; NPCs are stamped bare in decompress.js,
@@ -1167,7 +1175,10 @@ export function ensureNpcMorality(m) {
   return {
     corruption: clampInt(x.corruption ?? 0, 0, 100),
     heat: clampIntMin(x.heat ?? 0, 0),
-    lastDeedT: clampIntMin(x.lastDeedT ?? 0, 0)
+    lastDeedT: clampIntMin(x.lastDeedT ?? 0, 0),
+    // MP-6 — the hunt latch (see the header note above). Preserved across every mutateNpcAnywhere
+    // touch so a latched NPC (one the hunt has already reached) does NOT re-draw avengers each tick.
+    huntedT: clampIntMin(x.huntedT ?? 0, 0)
   };
 }
 

@@ -115,16 +115,23 @@ test('U592-04: OLD-SAVE — NPCs with no morality field normalize to a legal, ha
 
 test('U592-05: OLD-SAVE — a legacy NPC morality object normalizes to the lite shape (extra keys dropped, bounds clamped)', () => {
   // ensureNpcMorality is the normalizer the world-scope mutator applies on first touch; assert it
-  // reduces a fat/dirty legacy object to exactly { corruption, heat, lastDeedT }, clamped.
+  // reduces a fat/dirty legacy object to exactly { corruption, heat, lastDeedT, huntedT }, clamped.
+  // (huntedT joined the lite shape in MP-6 — the NPC hunt latch, docs/MORAL_PHYSICS.md §7 Arc A — so
+  //  the reckoning can reach an NPC evildoer once and not re-spawn every tick, mirroring the player.)
   const legacy = ensureNpcMorality({
-    corruption: 999, heat: -5, lastDeedT: 3,
-    axes: { pride: 50 }, patrons: { x: 1 }, locked: true, huntedT: 7 // player-only cruft that must not survive
+    corruption: 999, heat: -5, lastDeedT: 3, huntedT: -2,
+    axes: { pride: 50 }, patrons: { x: 1 }, locked: true, cassandraArmed: true // player-only cruft that must not survive
   });
-  assert.deepEqual(Object.keys(legacy).sort(), ['corruption', 'heat', 'lastDeedT'], 'lite shape carries exactly three keys');
+  assert.deepEqual(Object.keys(legacy).sort(), ['corruption', 'heat', 'huntedT', 'lastDeedT'], 'lite shape carries exactly four keys');
   assert.equal(legacy.corruption, 100, 'corruption clamped to 0..100');
   assert.equal(legacy.heat, 0, 'heat floored at 0');
   assert.equal(legacy.lastDeedT, 3, 'lastDeedT preserved');
+  assert.equal(legacy.huntedT, 0, 'huntedT floored at 0');
+  assert.equal(legacy.axes, undefined, 'player-only axes dropped');
+  assert.equal(legacy.cassandraArmed, undefined, 'player-only Cassandra latch dropped');
+  // A legacy huntedT within bounds is preserved (a mid-grind save with a latched NPC survives).
+  assert.equal(ensureNpcMorality({ corruption: 0, heat: 50, lastDeedT: 2, huntedT: 7 }).huntedT, 7, 'in-bounds huntedT preserved');
   // An absent/garbage input yields safe zeros.
-  assert.deepEqual(ensureNpcMorality(null), { corruption: 0, heat: 0, lastDeedT: 0 }, 'null → safe defaults');
-  assert.deepEqual(ensureNpcMorality('nope'), { corruption: 0, heat: 0, lastDeedT: 0 }, 'garbage → safe defaults');
+  assert.deepEqual(ensureNpcMorality(null), { corruption: 0, heat: 0, lastDeedT: 0, huntedT: 0 }, 'null → safe defaults');
+  assert.deepEqual(ensureNpcMorality('nope'), { corruption: 0, heat: 0, lastDeedT: 0, huntedT: 0 }, 'garbage → safe defaults');
 });

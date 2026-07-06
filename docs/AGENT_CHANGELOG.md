@@ -2806,3 +2806,10 @@ other agents. (none active)
   walls/windows/DM-grounding/authored plans) → story placement → the fog-procgen wild, drawn and
   narrated. Six promises: live or machine-guarded. Standing guards: position probe, GEOMETRY_BREACH,
   FEATURE_BLOCK, CG-ARCH, no-foreign-ink, no-soft-lock. Next: Tim plays it.
+
+## 2026-07-06 — Basecamp — FURN-1 cut + dispatched (the bed-lump falsifier; MAP-REAL arc reopened per contract)
+
+- Tim's first v0.30.0 wake showed the player figure clipping through the bed mini. Live-save probe:
+  pos = struct(2,3) ON the pallet (marker HONEST), bed prop co-located, furniture absent from every
+  blocking mask. FURN-1 makes furniture physical + seeds spawns to free cells + extends the probe.
+  U545–U547 claimed.

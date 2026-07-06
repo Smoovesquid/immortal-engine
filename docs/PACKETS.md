@@ -233,6 +233,18 @@ done_when · rollback`.
   **MAP-REAL STAGE 1 (position truth) COMPLETE** — engine writes the doorstep, every reader consumes
   `pos`, the probe stands guard in `npm run check`.
 
+### FURN-1 — furniture is physical: you don't stand inside the bed  ·  Phase 1/2 (MAP-REAL falsifier, arc reopened)  ·  **CUT + DISPATCHED 2026-07-06-am (Opus engine lane; U545–U547)**
+- **provenance:** Tim's first v0.30.0 wake — the honest marker (MR-1b) draws the player INSIDE the bed
+  mini: fiction seeds you ON the pallet, and furniture never joined any blocking mask (MR-2a masked
+  walls+doors only). Not a truth regression — a truth revelation: drawn furniture isn't functionally
+  real yet, which violates promise 1's spirit and promise 5's look.
+- **shape:** furniture footprints join the struct walkable mask (placed furniture blocks its cells) ·
+  seeded spawn/backfill lands on the nearest FREE cell (wake = beside the pallet, matching "you swing
+  your legs off") · doors/thresholds can never be furniture-blocked (no-soft-lock property extends —
+  U506 pattern) · position probe asserts pos never ON a furniture cell · fresh-boot worldHash re-pin
+  documented (OCC-STORY precedent). Live receipt: a fresh wake screenshot, figure standing beside the
+  pallet.
+
 ### MR-3 — THE FOG-PROCGEN WILD (stage 3, designed + slicing)  ·  Phase 1/2  ·  **3a ✅ LANDED v0.29.9 b096 (worker `62b0adaf` → integrated; U533–U536 24/24 + U496 class-string; suite 10347/0; ~9% forest blocking density; FEATURE_BLOCK tripwire armed; deadfall=non-blocking flagged reversible) — 3c ✅ LANDED v0.29.10 b097 (worker `8692c3f8`; U542–U544 9/9; wildFacts + survey + TERRAIN prompt line; journey interruptions land in real places) · 3b ✅ LANDED v0.30.0 b098 (worker `637e8f1e`; U539–U541 26/26; WILD_BUBBLE_CELLS=12 — two walks' worth of woods; parchment fog edge; integration fix: U539 BEFORE-docs pinned to base fc9019df). **MR-3 COMPLETE.**
 - The law: wild features = pure f(worldSeed, cell); fog hides a world that was always there; unpainted
   parchment, never darkness; roads stay clear; blocking trees stop walks honestly; settlements own

@@ -3134,3 +3134,17 @@ other agents. (none active)
 - DEATH-2 cut next: the beg (capability + hopelessness gates, two plea types, personality voice) +
   the four verbs wired to the FRESH moral physics (mercy-flag extends F6; sparing mints the living
   witness + the first strong POSITIVE claim; betrayal odds engine-owned); flips `dyingEnabled`.
+
+## 2026-07-06 — Basecamp (successor) — DEATH-2 → v0.31.2 build 115 "mercy counts"; TIM'S DESCOPE; two arcs in parallel
+
+- DEATH-2 landed (`40bdf73f` → `e394f59b`): the beg is LIVE ("make it quick" — heard in play), the
+  four verbs mint honest witnessed deeds through the MP organs; sparing = the reputation system's
+  first strong POSITIVE claim. Ladder 10711/0 · 131/131 · screen truth 7/7.
+- **TIM'S RULING: DEATH-4/5 DESCOPED** ("I do not need the Elegy or Underworld portions… I just
+  want enemies to occasionally beg for their lives and the end described in gory detail.") — the
+  arc closes at DEATH-3; the contract stands as parked law; player death keeps today's behavior.
+- **TIM'S RULING: prose-to-world BEGINS, on Opus, in parallel** — PW-2 (the honest floor for
+  ungrounded takes; the WB-Q4/T-Q2 phantom) dispatched into the playloop slot alongside DEATH-3
+  (the gory killing-blow prose + the CG death class in the LIVE validator) in the narration lane.
+  Zero file overlap; both corpus-touching lanes fenced to their OWN rows. PW-3 queued next (Opus);
+  SOCIAL-PHYSICS arc row annotated "queued for an Opus" per Tim.

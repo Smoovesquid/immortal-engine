@@ -456,9 +456,10 @@ export async function mountSlice3D(container, sceneData, opts = {}) {
   // re-centres/re-zooms, so people/props never drift off their own drawn footprint.
   // Touches x/z (+ the flat ground y) AND — REND-SCALE-1 — the mini's SIZE: a
   // figure whose true height is `heightWu · scenePerWu` scene units is exactly as
-  // tall against the ink's 5-ft squares as the real thing (a 6-ft man spans 1.2
-  // squares, a 3½-ft hobbit 0.7 — the "foot-tall Hobbit" falsifier, Tim
-  // 2026-07-06). `wuPerAuthored` is stamped at each build site; the breathe loop
+  // tall against the ink as the real thing (heightWu is METRIC wu since
+  // UNIT-CLASH-1 — a 6-ft man is 1.83 wu, ~0.37 of a 5 wu cell; the old feet-
+  // as-wu reading drew him 6 m tall, the colossus-in-the-bedchamber report,
+  // Tim 2026-07-06). `wuPerAuthored` is stamped at each build site; the breathe loop
   // re-applies `baseScale` every frame, so writing it here is the whole change.
   // Floored at each rec's `floorScale` (default 1 = the authored token look) so
   // region-zoom tokens stay legible where no squares are drawn. Figure geometry

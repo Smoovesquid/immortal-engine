@@ -487,7 +487,7 @@ export function phaseFromKey(key) {
 // U450 sizing-truth law). A figure whose size is AUTHORED-fixed therefore reads
 // smaller and smaller as the squares grow — the "foot-tall Hobbit on a 5-ft
 // square" falsifier (Tim, 2026-07-06). The law: a mini's drawn height must be
-// its TRUE height in feet pushed through the SAME transform the squares use.
+// its TRUE height in wu pushed through the SAME transform the squares use.
 //
 // `miniSheetScale` has a FLOOR (default 1 = today's authored token look): far
 // zoomed out, true scale would shrink a person to a sub-pixel dot, and a region
@@ -495,10 +495,21 @@ export function phaseFromKey(key) {
 // pre-REND-SCALE-1 behavior everywhere the squares aren't visible, and the true
 // law takes over exactly where they are (street/plan bands). Pure + THREE-free
 // so tests run hermetic in node.
-export const FIGURE_HEIGHT_WU = { small: 3.5, medium: 6 }; // feet; 1 wu = 1 ft at tactical scale
+// UNIT-CLASH-1 (2026-07-06, Tim's colossus report): the sheet's wu is METRIC —
+// worldSpace.js is the contract (NODE_WU=1000 ≈ 1 km, PLACE_WU=4 ≈ 4 m; the
+// scale bar, house plans and tree ink all draw from it). Authored sizes here
+// stay in FEET (they're SRD-native and human-legible: a 6-ft villager, a 7-ft
+// bed) and cross into wu through WU_PER_FT at THIS seam only. Before this
+// constant existed, these tables shipped raw feet as wu — every person/prop/
+// wild mini rendered ×3.28 colossal against its own metric ink (a 6 m statue
+// in the bedchamber the moment MAP-3DR's diorama tilted in).
+export const WU_PER_FT = 0.3048;
+const ftWu = (ft) => ft * WU_PER_FT;
+export const FIGURE_HEIGHT_WU = { small: ftWu(3.5), medium: ftWu(6) }; // authored ft → wu (metres)
 
 /**
- * figureHeightWu(speciesLike) -> feet. `speciesLike` is a chargen sheet species
+ * figureHeightWu(speciesLike) -> wu (metres; authored in feet, see WU_PER_FT).
+ * `speciesLike` is a chargen sheet species
  * ({ id, name, size } — engine/chargen/srd/sheet.js), a bare string, or null.
  * SRD `size` is the honest source ('Small' → hobbit/halfling/gnome stock);
  * name/id matching covers pack-native spellings ("Hobbit") and the one Medium
@@ -509,23 +520,24 @@ export const FIGURE_HEIGHT_WU = { small: 3.5, medium: 6 }; // feet; 1 wu = 1 ft 
 export function figureHeightWu(speciesLike) {
   const sp = speciesLike && typeof speciesLike === 'object' ? speciesLike : { name: speciesLike };
   const text = `${sp?.id || ''} ${sp?.name || ''} ${sp?.subrace || ''}`.toLowerCase();
-  if (/dwarf/.test(text)) return 4.5;
+  if (/dwarf/.test(text)) return ftWu(4.5);
   if (String(sp?.size || '').toLowerCase() === 'small') return FIGURE_HEIGHT_WU.small;
   if (/hobbit|halfling|gnome/.test(text)) return FIGURE_HEIGHT_WU.small;
   return FIGURE_HEIGHT_WU.medium;
 }
 
-// True prop sizes in feet, keyed by buildPropMini kind. `axis` names the authored
+// True prop sizes authored in feet, exported in wu (× WU_PER_FT — see the
+// UNIT-CLASH-1 note above), keyed by buildPropMini kind. `axis` names the authored
 // dimension the true size measures (beds are LENGTH-true — height-scaling a low
 // wide frame would draw a ten-foot bed). Unknown kinds default to a 3-ft 'y'.
 export const PROP_TRUE_SIZE = {
-  barrel:  { axis: 'y', wu: 3.2 },
-  chest:   { axis: 'y', wu: 2.2 },
-  dresser: { axis: 'y', wu: 4.2 },
-  bed:     { axis: 'z', wu: 7 },
+  barrel:  { axis: 'y', wu: ftWu(3.2) },
+  chest:   { axis: 'y', wu: ftWu(2.2) },
+  dresser: { axis: 'y', wu: ftWu(4.2) },
+  bed:     { axis: 'z', wu: ftWu(7) },
 };
 export function propTrueSize(kind) {
-  return PROP_TRUE_SIZE[String(kind || '')] || { axis: 'y', wu: 3 };
+  return PROP_TRUE_SIZE[String(kind || '')] || { axis: 'y', wu: ftWu(3) };
 }
 
 /**
@@ -623,10 +635,10 @@ export function measureAuthoredFootprint(THREE, group) {
 // threaded in as a parameter by render3d.js (which already imports
 // INK_PARAMS for the settlement-band tree ink) rather than imported here.
 export const WILD_TRUE_SIZE = {
-  boulder:  { axis: 'y',        wu: 3.5 },  // height-true: a real trail boulder, big enough to block a body (isBlockingKind)
-  deadfall: { axis: 'footprint', wu: 6.5 }, // length-true fallen log; 'footprint' = measureAuthoredFootprint (yaw-invariant — see above)
-  brush:    { axis: 'x',        wu: 2.5 },  // a low scrub clump a stride across
-  stump:    { axis: 'y',        wu: 2.0 },  // a cut-off trunk stub, knee-to-waist high
+  boulder:  { axis: 'y',        wu: ftWu(3.5) },  // height-true: a real trail boulder, big enough to block a body (isBlockingKind)
+  deadfall: { axis: 'footprint', wu: ftWu(6.5) }, // length-true fallen log; 'footprint' = measureAuthoredFootprint (yaw-invariant — see above)
+  brush:    { axis: 'x',        wu: ftWu(2.5) },  // a low scrub clump a stride across
+  stump:    { axis: 'y',        wu: ftWu(2.0) },  // a cut-off trunk stub, knee-to-waist high
 };
 /**
  * wildTrueSize(kind, treeDiameterWu = 5.6) -> { axis, wu } | null. Returns

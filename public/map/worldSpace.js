@@ -28,8 +28,12 @@ export const PLACE_WU = 4;    // one village place-unit ≈ 4 m (61-unit village
 //     TAC_CELLS_PER_LAYOUT_UNIT cells, so one cell = PLACE_WU / cells-per-unit wu;
 //   • outdoors, a node-grid step is NODE_WU wu and TAC_NODE_CELLS cells, so one
 //     region cell = NODE_WU / node-cells wu.
-// Both land at 5 wu/cell here (5 ft per 5-ft square, 1 wu ≈ 1 ft/1 m on the map),
-// but we keep them as two derivations pinned to their own frame's constants.
+// Both land at 5 wu/cell here. THE UNIT, once and for all (UNIT-CLASH-1): 1 wu
+// ≈ 1 METRE — NODE_WU/PLACE_WU above are the contract, and every drawn thing
+// (plans, scale bar, tree ink) is metric. A tactical cell is 5 wu ≈ 5 m of
+// ground; the "5-ft square" is rules-flavour, NOT a unit claim. The old gloss
+// here ("1 wu ≈ 1 ft/1 m") blurred the two frames into one symbol — that slash
+// is exactly how the mini tables shipped feet-as-wu and drew 6 m villagers.
 const STRUCT_WU_PER_CELL = PLACE_WU / TAC_CELLS_PER_LAYOUT_UNIT;
 const REGION_WU_PER_CELL = NODE_WU / TAC_NODE_CELLS;
 

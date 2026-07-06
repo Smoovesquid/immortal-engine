@@ -28,7 +28,7 @@ import { execFileSync } from 'node:child_process';
 
 import {
   FIGURE_HEIGHT_WU, figureHeightWu, PROP_TRUE_SIZE, propTrueSize, miniSheetScale,
-  wildTrueSize, WILD_TRUE_SIZE,
+  wildTrueSize, WILD_TRUE_SIZE, WU_PER_FT,
 } from '../public/map/figures3d.js';
 import { wildFeaturesAround } from '../engine/world/wildFeatures.js';
 import { newWorld, ensureWorld } from '../engine/state.js';
@@ -145,18 +145,23 @@ test('U576d render3d.js\'s wild loop still derives feats 1:1 from wildFeaturesAr
 
 // -------------------- 3. People/prop scaling (U566/U567 values) untouched --------------------
 
-test('U576e FIGURE_HEIGHT_WU and PROP_TRUE_SIZE (REND-SCALE-1\'s own tables) are byte-value-identical to their landed values — this packet ADDS a wild table, never edits the existing ones', () => {
-  assert.deepEqual(FIGURE_HEIGHT_WU, { small: 3.5, medium: 6 }, 'FIGURE_HEIGHT_WU must be untouched');
+test('U576e FIGURE_HEIGHT_WU and PROP_TRUE_SIZE (REND-SCALE-1\'s own tables) are byte-value-identical to their landed values — UNIT-CLASH-1 relock: authored feet × WU_PER_FT (metric wu)', () => {
+  // Relocked 2026-07-06 (UNIT-CLASH-1): the tables' AUTHORED values (3.5/6 ft
+  // figures; 3.2/2.2/4.2/7 ft props) are unchanged — they now export through
+  // the one ft→wu seam because the sheet's wu is metric. The original packet
+  // constraint this test pinned (WILD-SCALE-1 must not edit REND-SCALE-1's
+  // tables) is preserved in exactly that authored-value form.
+  assert.deepEqual(FIGURE_HEIGHT_WU, { small: 3.5 * WU_PER_FT, medium: 6 * WU_PER_FT }, 'FIGURE_HEIGHT_WU authored values must be untouched');
   assert.deepEqual(PROP_TRUE_SIZE, {
-    barrel: { axis: 'y', wu: 3.2 },
-    chest: { axis: 'y', wu: 2.2 },
-    dresser: { axis: 'y', wu: 4.2 },
-    bed: { axis: 'z', wu: 7 },
-  }, 'PROP_TRUE_SIZE must be untouched');
+    barrel: { axis: 'y', wu: 3.2 * WU_PER_FT },
+    chest: { axis: 'y', wu: 2.2 * WU_PER_FT },
+    dresser: { axis: 'y', wu: 4.2 * WU_PER_FT },
+    bed: { axis: 'z', wu: 7 * WU_PER_FT },
+  }, 'PROP_TRUE_SIZE authored values must be untouched');
   // Spot-check the consumer functions still return the SAME values U566 pins.
-  assert.equal(figureHeightWu({ name: 'Hobbit' }), 3.5);
-  assert.equal(figureHeightWu(null), 6);
-  assert.equal(propTrueSize('bed').wu, 7);
+  assert.equal(figureHeightWu({ name: 'Hobbit' }), 3.5 * WU_PER_FT);
+  assert.equal(figureHeightWu(null), 6 * WU_PER_FT);
+  assert.equal(propTrueSize('bed').wu, 7 * WU_PER_FT);
   assert.equal(propTrueSize('barrel').axis, 'y');
 });
 

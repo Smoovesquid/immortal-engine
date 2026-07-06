@@ -3121,3 +3121,16 @@ other agents. (none active)
   escapeCombat/state serial slot with the contract's own traps armed in the brief (ensureCombat
   whitelist · escapeCombat is the only live hook-point · WORLD_VERSION protocol if stored,
   lazy-additive preferred if honest). U596–U598 claimed. DEATH-2..5 queue in contract order.
+
+## 2026-07-06 — Basecamp (successor) — DEATH-1 integrated → v0.31.1 build 114 "the death fact"
+
+- DEATH-1 landed: audit-first (`67b74658` — 0-HP handling mapped; the ensureCombat whitelist trap
+  PROVEN live) then the build (`4de584e1`); ladder 10695/0 · 131/131 · screen truth 7/7. Every kill
+  now assembles the §2 DEATH FACT — pure, stored, byte-identical, zero numerics; DOWNED
+  built + proven but flagged OFF until DEATH-2's verbs; NO WORLD_VERSION bump (combat-only state,
+  boot anchor held). Live receipt: the fact written to a real save mid-fight.
+- Audit bonus: ENSURE-STATS-1 queued — mintEnemyFromNpc's stats/level silently stripped by the
+  whitelist today (NPC-minted enemies degrade to default combat math on re-normalization).
+- DEATH-2 cut next: the beg (capability + hopelessness gates, two plea types, personality voice) +
+  the four verbs wired to the FRESH moral physics (mercy-flag extends F6; sparing mints the living
+  witness + the first strong POSITIVE claim; betrayal odds engine-owned); flips `dyingEnabled`.

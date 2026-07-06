@@ -27,8 +27,16 @@ export function resolveMove(world, move) {
   const rawDie = rng.int(1, 20);
   let roll = rawDie;
 
-  // Stat modifier (genre-agnostic): map approach -> stat.
-  const statKey = statForApproach(m.approachTag);
+  // Stat modifier (genre-agnostic). DECL-STAT-1: an EXPLICITLY declared ability
+  // ("I'll roll Strength", "using my WITS", "a Dexterity check") WINS over the
+  // approach→stat inference. When the move carries a valid `statTag`, it is
+  // authoritative for BOTH the d20 math and the mech-line label; absent a
+  // declaration, `statForApproach(approach)` stands byte-identical (statTag is
+  // undefined on every legacy caller). The declaration is detected in the
+  // STRUCTURED intent upstream, never by a raw-text regex here — see
+  // engine/intent/parseIntent.js declaredStat(). m.statTag is already
+  // normalized to a valid engine stat (or null) by normalizeMove.
+  const statKey = m.statTag || statForApproach(m.approachTag);
   const statVal = actor?.stats?.[statKey];
   const statBonus = statMod(statVal);
 
@@ -90,6 +98,16 @@ function statForApproach(approachTag) {
   return 'WITS';
 }
 
+// The five engine stats the d20 can key off. A declared stat that isn't one of
+// these (or is absent) yields null, so the caller falls back to the approach
+// map — a malformed declaration never breaks the roll, it just doesn't win.
+const ENGINE_STATS = new Set(['MIGHT', 'AGILITY', 'GRIT', 'CHARM', 'WITS']);
+function normalizeStatTag(statTag) {
+  if (statTag == null) return null;
+  const s = String(statTag).trim().toUpperCase();
+  return ENGINE_STATS.has(s) ? s : null;
+}
+
 // Focus → approach mapping (from CRUNCH_V1.md).
 // Each focus grants proficiency bonus when used with its matching approach.
 const FOCUS_APPROACH = {
@@ -137,6 +155,10 @@ function normalizeMove(move) {
     stakeTag: String(x.stakeTag ?? 'time'),
     targetId: x.targetId ? String(x.targetId) : null,
     toolTag: x.toolTag ? String(x.toolTag) : null,
+    // DECL-STAT-1: a player-DECLARED ability, validated to the engine's five
+    // stats at this boundary (null when absent or malformed → the roll infers
+    // from the approach exactly as before, so every legacy caller is untouched).
+    statTag: normalizeStatTag(x.statTag),
     // DX-2a: tactical modifiers supplied by combatResolve. Defaults are no-ops,
     // so non-combat callers and old replays roll exactly as before.
     tacticalDefenseBonus: clampInt(x.tacticalDefenseBonus ?? 0, 0, 5),

@@ -33,6 +33,14 @@ export const VERBS = [
 // force→MIGHT, finesse→AGILITY, endure→GRIT, heart→CHARM, focus→WITS.
 export const APPROACHES = ['force', 'finesse', 'endure', 'heart', 'focus'];
 
+// The five engine stats the d20 can key off (engine/resolve.js). Distinct from
+// APPROACHES: the approach is HOW you act (and normally implies the stat); the
+// stat is which ability the DIE keys off. DECL-STAT-1: when a player EXPLICITLY
+// declares an ability ("I'll roll Strength", "a WITS check"), that declaration
+// carries here as `stat` and overrides the approach→stat inference downstream —
+// see engine/resolve.js normalizeStatTag / statForApproach.
+export const STATS = ['MIGHT', 'AGILITY', 'GRIT', 'CHARM', 'WITS'];
+
 // What's at stake — drives which clock advances (engine/resolve.js stakeToClockKey).
 export const STAKES = ['time', 'harm', 'survival'];
 
@@ -84,6 +92,8 @@ export const AMBIGUITY_KINDS = ['target', 'object', 'goal', 'referent'];
  *   at       : {x,y} grid position when relevant, or null
  *   with     : instrument tag — weapon/spell/item ('sword','fireball'), or null
  *   approach : one of APPROACHES (how you do it)
+ *   stat     : one of STATS, or null — a player-DECLARED ability ("I'll roll
+ *              Strength"); overrides the approach→stat inference in the resolver
  *   stake    : one of STAKES (what's at risk)
  *   text     : the raw utterance, always preserved (narration + audit)
  *   source   : 'text' | 'click' | 'voice' | 'llm'
@@ -112,6 +122,13 @@ export function makeIntent(partial = {}) {
   let stake = String(p.stake || '').toLowerCase();
   if (!STAKES.includes(stake)) stake = defaultStakeForVerb(verb);
 
+  // DECL-STAT-1: an explicitly declared ability. null unless the player named a
+  // stat to roll ("I'll roll Strength", "a Dexterity check"); a bare action
+  // leaves it null and the resolver infers from the approach exactly as before.
+  // Normalized to the engine stat name (upper-case) and validated against STATS.
+  let stat = p.stat != null ? String(p.stat).trim().toUpperCase() : '';
+  stat = STATS.includes(stat) ? stat : null;
+
   let at = null;
   if (p.at && Number.isFinite(p.at.x) && Number.isFinite(p.at.y)) {
     at = { x: Math.trunc(p.at.x), y: Math.trunc(p.at.y) };
@@ -135,6 +152,7 @@ export function makeIntent(partial = {}) {
     at,
     with: withTool,
     approach,
+    stat,
     stake,
     text: String(p.text ?? '').trim(),
     source,
@@ -178,6 +196,10 @@ export function intentToMove(intent, { actorId = 'party' } = {}) {
     actorId: String(actorId),
     intentText: i.text || verbPhrase(i),
     approachTag: i.approach,
+    // DECL-STAT-1: carry an explicitly declared ability into the resolver's move
+    // shape. null when undeclared (the common case) → resolve.js falls back to
+    // statForApproach, byte-identical to pre-DECL-STAT-1.
+    statTag: i.stat || null,
     stakeTag: i.stake,
     targetId: i.target,
     toolTag: i.with || null

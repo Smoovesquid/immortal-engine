@@ -19,6 +19,65 @@
 
 import { makeIntent, defaultApproachForVerb } from './intentSchema.js';
 
+// DECL-STAT-1 — D&D ability name (or engine-stat name) → the engine's five-stat
+// vocabulary. Identical mapping to engine/grace/gracefulAdjudication.js
+// STAT_SYNONYMS (one contract enum, not a parallel table): str→MIGHT,
+// dexterity→AGILITY, intelligence/wisdom→WITS, constitution→GRIT, charisma→CHARM.
+// The engine stat names map to themselves so "I'll roll WITS" resolves directly.
+const STAT_SYNONYMS = {
+  str: 'MIGHT', strength: 'MIGHT', might: 'MIGHT',
+  dex: 'AGILITY', dexterity: 'AGILITY', agility: 'AGILITY',
+  int: 'WITS', intelligence: 'WITS', wis: 'WITS', wisdom: 'WITS', wits: 'WITS',
+  con: 'GRIT', constitution: 'GRIT', grit: 'GRIT',
+  cha: 'CHARM', charisma: 'CHARM', charm: 'CHARM'
+};
+const STAT_WORD = '(str|strength|might|dex|dexterity|agility|int|intelligence|wis|wisdom|wits|con|constitution|grit|cha|charisma|charm)';
+
+// The shapes a player uses to DECLARE which ability the die keys off — the ones
+// that slip past grace's META_EXPLICIT_CHECK_* patterns and reach the generic
+// resolver. Grace intercepts the DC-PROMPT case ("what do I roll?"); this reads
+// the STAT out of a committed action ("Set the DC and I'll roll Strength",
+// "using my WITS", "a Dexterity check", "roll against GRIT", "with my Might").
+// Each anchors the stat word to a roll/check/save/ability cue so a bare mention
+// of "strength" as flavor ("I strain with all my strength to…") never fires —
+// only an explicit CHECK declaration does.
+const DECL_STAT_PATTERNS = [
+  // "roll Strength", "I'll roll STR", "rolling my Dexterity"
+  new RegExp(`\\broll(?:ing)?\\s+(?:a\\s+|my\\s+|with\\s+|using\\s+)?${STAT_WORD}\\b`, 'i'),
+  // "roll against/vs/for/on GRIT", "d20 against WITS"
+  new RegExp(`\\b(?:vs\\.?|versus|against|for|on)\\s+(?:a\\s+|my\\s+)?${STAT_WORD}\\b`, 'i'),
+  // "a WITS check", "Strength save", "GRIT test"
+  new RegExp(`\\b${STAT_WORD}\\s+(?:check|save|test)\\b`, 'i'),
+  // "using my Might", "with my Strength", "use my WITS" — the ability declared as
+  // the instrument of the action; the "my <stat>" possessive is the anchor.
+  new RegExp(`\\b(?:using|use|with)\\s+my\\s+${STAT_WORD}\\b`, 'i')
+];
+
+/**
+ * declaredStat(text) -> engine stat name | null
+ *
+ * Reads an EXPLICITLY declared ability out of a player's utterance. Returns the
+ * canonical engine stat (MIGHT/AGILITY/GRIT/CHARM/WITS) when the text declares a
+ * check on a named ability, else null. PURE + DETERMINISTIC. First matching
+ * pattern wins; ambiguity (two different stats named) resolves to the FIRST so
+ * the reading is stable. This is the STRUCTURED-intent detector house law INT-1..4
+ * asks for — the LLM translator (llmIntent.js) proposes the same `stat` field on
+ * the typed path; this is the LLM-off floor that guarantees a declaration is
+ * honored even with no model in the loop.
+ */
+export function declaredStat(text) {
+  const t = norm(text);
+  if (!t) return null;
+  for (const re of DECL_STAT_PATTERNS) {
+    const m = t.match(re);
+    if (m && m[1]) {
+      const key = STAT_SYNONYMS[m[1].toLowerCase()];
+      if (key) return key;
+    }
+  }
+  return null;
+}
+
 // Verb synonyms → canonical verb. First match wins; order matters (specific first).
 // Exported (INT-2R) so engine/intent/groundPacket.js can normalize an
 // LLM-proposed verb token ("stab") to the canonical schema verb ("attack")
@@ -109,10 +168,14 @@ export function parseIntent(text, ctx = {}) {
   const instrument = matchInstrument(t, ctx);
   const target = matchTarget(t, ctx.entities);
   const hintedApproach = matchApproach(t);
+  // DECL-STAT-1: a player-declared ability rides on the intent regardless of
+  // whether a mechanical verb was recognized ("Set the DC and I'll roll
+  // Strength" resolves no verb but MUST carry stat:MIGHT to the resolver).
+  const stat = declaredStat(raw);
 
   // No recognized verb → free narration for the AI DM.
   if (!verb) {
-    return makeIntent({ verb: 'ask', target, with: instrument, text: raw, source: 'text', confidence: 0.4 });
+    return makeIntent({ verb: 'ask', target, with: instrument, stat, text: raw, source: 'text', confidence: 0.4 });
   }
 
   // If they said "cast" but named no spell, leave `with` null — the resolver/UI
@@ -128,5 +191,5 @@ export function parseIntent(text, ctx = {}) {
   if (hintedApproach) confidence += 0.1;
   confidence = Math.min(1, confidence);
 
-  return makeIntent({ verb, target, with: withTool, approach, text: raw, source: 'text', confidence });
+  return makeIntent({ verb, target, with: withTool, approach, stat, text: raw, source: 'text', confidence });
 }

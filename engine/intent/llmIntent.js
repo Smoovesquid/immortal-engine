@@ -22,7 +22,7 @@
 import { chatCompletion } from '../../server/llmProvider.js';
 import { queryLocal } from '../../server/localLlmProvider.js';
 import { buildParseCtx } from './assemblePacket.js';
-import { VERBS, APPROACHES, STAKES } from './intentSchema.js';
+import { VERBS, APPROACHES, STAKES, STATS } from './intentSchema.js';
 
 // Below this confidence, the deterministic floor (parseIntent, via
 // assemblePacket) is considered unclassified/low-confidence and worth asking
@@ -76,6 +76,7 @@ function schemaHint() {
     objects: 'string[] — subset of candidateObjects (abilities/spells/items/entities)',
     with: 'string|null — an instrument from candidateObjects, or null',
     approach: APPROACHES,
+    stat: [...STATS, null],
     stake: STAKES,
     ambiguity: ['target', 'object', 'goal', 'referent', null],
     kind: ['npc-addressed', 'rules', 'referent-followup', 'place', null]
@@ -106,7 +107,8 @@ const FEW_SHOT = [
   { text: 'who lit that lantern, Elske?', out: { verb: 'talk', target: 'Elske', with: null, kind: 'npc-addressed' } },
   { text: 'I look around the room', out: { verb: 'search', target: null, with: null, kind: null } },
   { text: 'I light the torch', out: { verb: 'use', target: 'torch', with: null, kind: null } },
-  { text: 'I run from the fight', out: { verb: 'flee', target: null, with: null, kind: null } }
+  { text: 'I run from the fight', out: { verb: 'flee', target: null, with: null, kind: null } },
+  { text: 'I pry the hatch open — set the DC and I\'ll roll Strength', out: { verb: 'use', target: null, with: null, stat: 'MIGHT', kind: null } }
 ];
 
 function buildPrompt(text, bundle) {
@@ -127,6 +129,7 @@ function buildPrompt(text, bundle) {
     `The "verb" field MUST be exactly one of these ${VERBS.length} strings — never a synonym, never a variant: ${JSON.stringify(VERBS)}.`,
     '"talk" is for ANY address to a person present — greeting, questioning, persuading, demanding, even a sentence that literally contains the English word "ask" or "asked". "ask" (the verb value) means something different: NO mechanical verb applies at all — pure free narration with no action and no addressee (e.g. "I admire the sunset", "what do I smell?"). Do not pick "ask" just because the player\'s SENTENCE contains that word.',
     '"kind" is null unless the player is ASKING A QUESTION; a question gets exactly one of: npc-addressed | rules | referent-followup | place. An action ("Smash the window", "go outside") is always kind:null.',
+    '"stat" is null UNLESS the player explicitly names an ability to roll ("I\'ll roll Strength", "a Dexterity check", "using my WITS") — then set it to that ability as one of MIGHT | AGILITY | GRIT | CHARM | WITS (Strength=MIGHT, Dexterity=AGILITY, Constitution=GRIT, Intelligence/Wisdom=WITS, Charisma=CHARM). Never guess a stat from the action alone; a plain action leaves stat:null.',
     'You NEVER invent an id — only use ids/names that appear in the candidate lists below.',
     'If nothing in the scene matches, use null / an empty array rather than guessing.',
     'Reply with ONLY strict JSON matching the schema — no prose, no markdown fences, no acknowledgement. Your ENTIRE reply is the one JSON object for the final "Player said" line.',

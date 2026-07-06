@@ -128,6 +128,11 @@ export function groundPacket(proposed, bundle) {
       with: withTool,
       at: proposed.at,
       approach: proposed.approach,
+      // DECL-STAT-1: a declared ability is a RULES token, not a scene referent —
+      // it needs no candidate-set grounding. makeIntent validates it against the
+      // five-stat enum (an invented/garbage stat coerces to null there), so a
+      // hallucinated value can never reach the resolver.
+      stat: proposed.stat,
       stake: proposed.stake,
       text: proposed.text,
       compoundParts: Array.isArray(proposed.compoundParts) ? proposed.compoundParts : [],

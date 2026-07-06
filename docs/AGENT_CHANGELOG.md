@@ -2870,3 +2870,14 @@ other agents. (none active)
   honored constitution-over-brief on the mintClaim conflict (flagged for the design window's errata
   pass). This window's ledger closes: b083→b101, nineteen releases in two days. Successor owns:
   VIS-ORACLE integration (flip U553, capture wake golden, wire when green) → MP-2 cut → the queue.
+
+## 2026-07-06 — Basecamp (successor) — desk taken; b101 retro-verified; MP-2 cut + dispatched
+
+- Booted from git truth. Retro-verified the outgoing window's fast release with a full ladder:
+  10431/0 · convergence 131/131 · position probe clean · 0 unpushed — v0.30.3 b101 stands confirmed.
+- MP-2 (the escalation module) cut per MORAL_PHYSICS §4/§8 → `briefs/MP-2-escalation-module.md`;
+  U558–U560 claimed; engine-serial lane (playloop routing). Brief carries the ruling-over-doc note:
+  T2 = `rumorsReaching` sole sink — §4's mintClaim cell is superseded by REPUTATION_UNIFICATION.
+- VIS-ORACLE lane still in flight (worktree watcher armed). Integration owed at its landing: flip the
+  U553 expected-fail (REND-TRUTH-1 landed), capture the wake golden, wire into `npm run check` only
+  when all scenes green.

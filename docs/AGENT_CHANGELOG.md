@@ -3006,3 +3006,19 @@ other agents. (none active)
 - MP-5a returned green while this ladder ran (omen line; T4-shares-hunted-register BY DESIGN — the
   gift's own arrival beat is T4's surfacing; eco-number prompt notes near its edits verified
   PRE-EXISTING, outside its fence — noted as a future hide-the-math sweep candidate). Its pick is next.
+
+## 2026-07-06 — Basecamp (successor) — MP-5a integrated → v0.30.11 build 109 "the DM hears the omen"; MP-5b dispatched
+
+- MP-5a landed: `70ab8f74` → `51bc92e8` (amended); ladder 10566/0 · 131/131 · screen truth 7/7.
+  The hide-the-math moment: one omen line in the DM prompt (tier→sign-vocabulary, seven vice-axes,
+  T0 silent, zero numerics ever). Live LLM-on receipt: a witnessed killing shifted Claude's prose to
+  wary atmosphere with no mechanical leakage. U578's wall caught the worker's own first draft
+  spelling the forbidden words INTO the line — the invariant tests earn their keep.
+- Third canary lesson institutionalized: the worker's U579-01 duplicated U454-E's anchor literal
+  (stale on integration after MP-4's re-pin) → rewritten at integration to assert what the packet
+  OWNS (surfacing is pure: hash before == after derivation). New briefs now say: never duplicate
+  another test's pin.
+- MP-5b (the Cassandra) cut + dispatched (U583–U585): fires ONCE in the approach band below
+  HUNT_HEAT (CASSANDRA_MARGIN≈8 — heeding can still matter), spoken by a real present NPC, quiet
+  register, waveable; LLM-off fallback included. In flight: WILD-SCALE-1 · OCC-STORY-2 · MP-5b.
+  After they land: CG-2 paid-gate rehearsal on the stable build, then MP-6 — the Carl Witness Test.

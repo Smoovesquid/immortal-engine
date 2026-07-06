@@ -30,7 +30,11 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import { execFileSync } from 'node:child_process';
+// INTEGRATION NOTE (Basecamp, 2026-07-06): three 'zero diff from this packet' subtests removed.
+// They asserted `git diff HEAD -- <path>` is EMPTY — meaningful only inside the worker's own dirty
+// worktree at review time; on the mainline they merely assert 'no uncommitted work exists right now'
+// and tripped on every in-progress engine change (FURN-1 hit this). The commit history is the
+// permanent scope record; the REAL fog-edge/regression tests below are untouched.
 
 const __dirname = path.dirname(new URL(import.meta.url).pathname);
 const REPO_ROOT = path.join(__dirname, '..');
@@ -166,26 +170,5 @@ test('U541: U494/U495 (TT-OCC no-foreign-ink law) test files still exist, unchan
   }
 });
 
-test('U541: placeFromNode.js (the file U494/U495 actually guard) shows zero diff from this packet — MR-3b never touches settlement npc-scatter placement', () => {
-  let diff = '';
-  try {
-    diff = execFileSync('git', ['diff', '--stat', 'HEAD', '--', 'public/map/placeFromNode.js'], { encoding: 'utf8', cwd: REPO_ROOT });
-  } catch { diff = ''; }
-  assert.equal(diff.trim(), '', `placeFromNode.js must show zero diff from this MR-3b packet (this lane owns figures3d.js/render3d.js only); got:\n${diff}`);
-});
 
-test('U541: engine/** shows zero diff from this packet — MR-3b is a render-only lane, wildFeatures.js is consumed READ-ONLY', () => {
-  let diff = '';
-  try {
-    diff = execFileSync('git', ['diff', '--stat', 'HEAD', '--', 'engine/'], { encoding: 'utf8', cwd: REPO_ROOT });
-  } catch { diff = ''; }
-  assert.equal(diff.trim(), '', `engine/** must show zero diff — MR-3b's brief forbids touching engine/**; got:\n${diff}`);
-});
 
-test('U541: miniLibrary.js shows zero diff from this packet (this packet adds wild-mini entries to figures3d.js\'s OWN palette, not miniLibrary.js — the brief scopes miniLibrary.js edits to ADDING wild-kind entries only if genuinely needed, and this packet found buildWildMini in figures3d.js sufficient)', () => {
-  let diff = '';
-  try {
-    diff = execFileSync('git', ['diff', '--stat', 'HEAD', '--', 'public/map/miniLibrary.js'], { encoding: 'utf8', cwd: REPO_ROOT });
-  } catch { diff = ''; }
-  assert.equal(diff.trim(), '', `miniLibrary.js must show zero diff from this MR-3b packet; got:\n${diff}`);
-});

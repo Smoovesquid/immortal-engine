@@ -768,6 +768,16 @@ export function ensureCombat(c) {
     const traits = Array.isArray(eRaw.traits)
       ? eRaw.traits.filter(t => typeof t === 'string' && t).slice(0, 24)
       : [];
+    // ENSURE-STATS-1: the enemy's ability-score block + level. mintEnemyFromNpc
+    // (combatLifecycle.js) emits BOTH, but they were absent from the literal below
+    // and evaporated on every ensureWorld — amputating the enemy's identity between
+    // turns (savingThrows.js reads e.stats/e.level; deathFact.js reads e.stats.WITS
+    // for the DOWNED capability gate). Same whitelist-trap class as traits (DX-2d-i).
+    // Combat-scoped: absent → {} / level 1 (a foe may lack a full sheet — see
+    // normalizeEnemyStats), so a trait-less/statless enemy normalizes as before and
+    // the boot world (no combat enemies) is byte-identical → boot worldHash unmoved.
+    const stats = normalizeEnemyStats(eRaw.stats);
+    const level = clampInt(eRaw.level ?? 1, 1, 20);
     const hasCell = hasExplicitCombatCell(eRaw);
     const fallbackCell = firstOpenCellNear(defaultEnemyCell(enemies.length, grid), grid, occupiedFallbackCells);
     let cell = hasCell
@@ -779,7 +789,7 @@ export function ensureCombat(c) {
     occupiedFallbackCells.add(combatCellKey(cell));
     // The one-shot onDeath-revive flag (Undead Fortitude / Rejuvenation…) must
     // persist across turns so a foe refuses to fall ONCE per fight, not per death.
-    const enemy = { id, name, hp, maxHp, damage, ac, cr, damageType, resistances, conditionImmunities, conditions, actions, multiattack, saveProficiencies, canParley, defeated, downed, dyingClock, woundLog, begged, spared, betrayed, sourceNpcId, lootTableRef, initMod, legendaryActions, reactions, lairActions, senses, tactical, traits, cx: cell.cx, cy: cell.cy };
+    const enemy = { id, name, hp, maxHp, damage, ac, cr, damageType, resistances, conditionImmunities, conditions, actions, multiattack, saveProficiencies, canParley, defeated, downed, dyingClock, woundLog, begged, spared, betrayed, sourceNpcId, lootTableRef, initMod, legendaryActions, reactions, lairActions, senses, tactical, traits, stats, level, cx: cell.cx, cy: cell.cy };
     // DEATH-1: carry an explicit capability only when set (otherwise derived at read).
     if (canCommunicate !== undefined) enemy.canCommunicate = canCommunicate;
     if (eRaw._traitRevived) enemy._traitRevived = true;
@@ -909,6 +919,30 @@ function normalizeWoundLog(raw) {
     });
   }
   return out.length > 12 ? out.slice(out.length - 12) : out;
+}
+
+// ENSURE-STATS-1: normalize a combat enemy's ability-score block. mintEnemyFromNpc
+// emits `stats` (bestiary?.stats ?? profile.stats ?? {}) — an object of ability
+// scores keyed MIGHT/AGILITY/WITS/GRIT/CHARM (and defensively INT, which
+// deathFact.canCommunicate reads as a WITS fallback). It MUST survive the
+// ensureCombat whitelist or every downstream read (savingThrows.js enemy saves,
+// deathFact.js's mindless-foe intelligence gate) silently sees a default.
+//
+// Coercion is FAITHFUL, not rigid: keep only numeric-valued keys, clamp each to a
+// sane ability range, and — critically — do NOT inject defaults for missing keys.
+// An enemy that mints with `stats:{}` (no bestiary, no profile stats) stays `{}`,
+// because absence is load-bearing: deathFact's WITS<=3 mindless gate only fires on
+// a FINITE WITS, so fabricating WITS:10 would flip a name-heuristic beast's
+// canCommunicate. This differs deliberately from ensureEntity's party statBlock,
+// which defaults every stat to 10 (a PC always has a full sheet; a foe may not).
+function normalizeEnemyStats(raw) {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return {};
+  const out = {};
+  for (const [k, v] of Object.entries(raw)) {
+    if (typeof v !== 'number' || !Number.isFinite(v)) continue;
+    out[k] = clampInt(v, 1, 30);
+  }
+  return out;
 }
 
 // ── Pass R1 — rumor normalizer ──────────────────────────────────────────

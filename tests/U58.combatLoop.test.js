@@ -76,6 +76,8 @@ function mkEnemy(over = {}) {
     downed: false,        // DEATH-1: the DOWNED/dying state (required enemy invariant)
     dyingClock: 0,        // DEATH-1: engine-owned dying countdown (0..20)
     woundLog: [],         // DEATH-1: accumulated woundPath (required enemy invariant)
+    stats: {},            // ENSURE-STATS-1: ability-score block (required enemy invariant)
+    level: 1,             // ENSURE-STATS-1: enemy level 1..20 (required enemy invariant)
     sourceNpcId: 'npc_test_0',
     lootTableRef: null,
     initMod: 0,

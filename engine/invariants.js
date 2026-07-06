@@ -590,6 +590,23 @@ export function assertWorldInvariants(world) {
     if (e.senses && typeof e.senses !== 'object') {
       throw new Error(`Invariant: combat enemy ${e.id} senses must be object`);
     }
+    // ENSURE-STATS-1: the enemy's ability-score block + level (preserved through
+    // the ensureCombat whitelist so savingThrows.js / deathFact.js read the real
+    // values, not defaults). `stats` is a plain object of finite ability scores
+    // (may be empty — a foe need not carry a full sheet); every value must be a
+    // finite number. `level` is a finite integer in 1..20 (mirrors the party's
+    // level clamp in ensureEntity).
+    if (!e.stats || typeof e.stats !== 'object' || Array.isArray(e.stats)) {
+      throw new Error(`Invariant: combat enemy ${e.id} stats must be object`);
+    }
+    for (const [k, v] of Object.entries(e.stats)) {
+      if (typeof v !== 'number' || !Number.isFinite(v)) {
+        throw new Error(`Invariant: combat enemy ${e.id} stats.${k} must be a finite number`);
+      }
+    }
+    if (!Number.isInteger(e.level) || e.level < 1 || e.level > 20) {
+      throw new Error(`Invariant: combat enemy ${e.id} level out of range 1..20`);
+    }
   }
   // CM6: initiativeOrder must be an array.
   if (!Array.isArray(combat.initiativeOrder)) {

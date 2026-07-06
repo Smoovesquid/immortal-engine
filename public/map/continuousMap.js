@@ -69,12 +69,15 @@ const TILT_DEFAULTS = {
   pitchTopDeg: 4,                // camera pitch from straight-down at `start` (≈flat plan).
   pitchDeg:    58,               // camera pitch (deg from top-down) at `full` — the diorama vantage.
   easing:      'smoothstep',     // 'smoothstep' | 'linear' — how tilt/opacity ramp across the band.
-  dioramaScale: 0.72,            // MAP-VIEW-1 (Tim, 2026-07-06 "a bit too close"): how far the
-                                 // diorama camera hangs BACK at full tilt, as a scale on the
-                                 // sheet-locked zoom (1 = nose-to-nose old behavior; 0.72 ≈ 28%
-                                 // wider view). Rides tiltFrac — exactly 1 at `start`, so the
-                                 // crossfade moment still matches the 2D ink 1:1 (no size pop
-                                 // mid-dissolve; U477's no-jump law holds at the boundary).
+  dioramaScale: 0.66,            // MAP-VIEW-2 (Tim, 2026-07-06 — supersedes MAP-VIEW-1's deep-end
+                                 // pull): the camera pull at the diorama's ENTRY. The curve is
+                                 // INVERTED from V1: the 3D view OPENS at dioramaScale (0.66 ≈
+                                 // 50% further out than the sheet-locked view — "keep the start
+                                 // further away") and eases back to 1 by `full`, so wheeling
+                                 // deep reaches the TRUE closest framing — the deep end is
+                                 // never capped ("allow me to zoom all the way in"). The dolly
+                                 // is continuous in z, so the dissolve reads as the camera
+                                 // lifting off the page, not a pop. 1 = no pull anywhere.
 };
 
 // Live knob resolution: defaults ← localStorage('ie.tilt') ← window.__tilt.
@@ -119,12 +122,14 @@ export function tiltStateForZoom(z, knobs) {
   const phiFull = (k.pitchDeg ?? TILT_DEFAULTS.pitchDeg) * DEG;
   const phi = phiTop + (phiFull - phiTop) * tiltFrac;
   const blend = MAP_3D_ENABLED ? ramp(k, k.start, k.cross, z) : 0;
-  // MAP-VIEW-1 — the diorama's camera pull-back, riding the SAME tilt ramp as
-  // the pitch: exactly 1 (sheet-locked, no divergence) at/below `start`, easing
-  // to `dioramaScale` at `full`. Applied by applyFromCam as a factor on the
-  // sheet-locked pxPerTile — smaller scale = the camera hangs further back.
+  // MAP-VIEW-2 — the diorama's camera pull, riding the SAME tilt ramp as the
+  // pitch, ENTRY-far → DEEP-close: `dioramaScale` at the moment the diorama
+  // opens (the view starts pulled back), easing to 1 at `full` (max wheel-in
+  // reaches the true sheet-locked closeness — never capped). Applied by
+  // applyFromCam as a factor on pxPerTile; continuous in z, so the whole move
+  // is one smooth dolly the wheel drives.
   const ds = (k.dioramaScale ?? TILT_DEFAULTS.dioramaScale);
-  const dioramaPull = 1 + (ds - 1) * tiltFrac;
+  const dioramaPull = ds + (1 - ds) * tiltFrac;
   return { tiltFrac, phi, blend, dioramaPull };
 }
 export { TILT_DEFAULTS };
@@ -292,6 +297,24 @@ export function renderContinuousMap(world, opts = {}) {
   const endOrbit = () => { orbiting = false; if (_live && _live.ctrl.setOrbiting) _live.ctrl.setOrbiting(false); };
   layer3d.addEventListener('pointerup', endOrbit);
   layer3d.addEventListener('pointercancel', endOrbit);
+  // MAP-VIEW-2 (Tim's report: "once zoomed in, I can't zoom back out") — the
+  // overlay claims pointer events for the orbit drag once the tilt engages, but
+  // it never had a WHEEL handler, so the wheel went DEAD past ~15% tilt: zoom
+  // was one-way. The overlay owns DRAGS only; wheel is FORWARDED to the 2D
+  // map's canvas (the single zoom authority), so zoom works identically at
+  // every tilt. Synthetic re-dispatch targets the canvas directly — no loop
+  // (the canvas is in the sibling twoD subtree; bubbling never re-enters here).
+  layer3d.addEventListener('wheel', (e) => {
+    const cv2 = twoD.querySelector('canvas');
+    if (!cv2) return;
+    e.preventDefault();
+    e.stopPropagation();
+    cv2.dispatchEvent(new WheelEvent('wheel', {
+      clientX: e.clientX, clientY: e.clientY,
+      deltaY: e.deltaY, deltaX: e.deltaX, deltaMode: e.deltaMode,
+      ctrlKey: e.ctrlKey, bubbles: true, cancelable: true,
+    }));
+  }, { passive: false });
 
   function ensureMounted() {
     if (_failed || _live || mounting) return;
@@ -327,9 +350,9 @@ export function renderContinuousMap(world, opts = {}) {
     _live.ctrl.setCamera({
       phi, az: 0, // north-up base, matching the 2D plan (orbit adds an offset on top)
       target: { tx: cam.cx / NODE_WU, ty: cam.cy / NODE_WU },
-      // Lock 3D scale to the 2D map's scale, eased back by the MAP-VIEW-1
-      // pull (1 at the crossfade boundary — no size pop against the fading
-      // ink — easing to dioramaScale at full tilt: "a bit further away").
+      // Lock 3D scale to the 2D map's scale, shaped by the MAP-VIEW-2 pull:
+      // the diorama OPENS at dioramaScale (entry pulled back ~50%) and eases
+      // to 1:1 by full tilt — max wheel-in reaches the true closest framing.
       pxPerTile: NODE_WU * cam.z * dioramaPull,
     });
     // Keep the player mini pinned to the 2D marker's exact point (no morph jump).

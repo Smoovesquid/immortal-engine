@@ -57,6 +57,9 @@ import { resolveCombatTurn } from './combat/combatResolve.js';
 import { makeBleed } from './combat/bleed.js';
 import { beginCombat, endCombat, mintEnemyFromNpc } from './combat/combatLifecycle.js';
 import { resolveCompanionTurn } from './combat/companionTurn.js';
+// DEATH-2 — the four verbs on a DOWNED foe (mercy · worse · spare · walk away).
+// The fight ends over a DOWNED foe (DEATH-1); the verbs resolve out of combat here.
+import { classifyDownedVerb, resolveDownedVerb, begPleaLine } from './combat/downedResolve.js';
 import { castSpell } from './spell/castSpell.js';
 import { classifyOffensiveCast, castConsequence } from './magic/castConsequence.js';
 import { evaluateEncounter, selectCreatures, spawnEncounter } from './combat/encounterSpawn.js';
@@ -1027,6 +1030,15 @@ function playerMoveCore(world, packsById, text, dqIntent) {
 
   const dyingGate = outOfCombatDyingGate(w, text);
   if (dyingGate) return dyingGate;
+
+  // DEATH-2 — a foe lies DOWNED at your feet (the fight is won; DEATH-1 left it
+  // dying and begging). The player's input is the answer: one of the four verbs
+  // (mercy · worse · spare · walk away). Resolved here, out of combat, through the
+  // landed moral organs. Checked AFTER the player-dying gate (a downed PLAYER is
+  // handled first) and before any other routing so the verb can't be misread as a
+  // fresh action.
+  const downedGate = downedFoeVerbGate(w, text, actorId);
+  if (downedGate) return downedGate;
 
   if (w.combat?.active && w.meta?.mode === 'escape' && (Number(w.meta?.escapeHp) || 0) <= 0) {
     const { world: wAfter, result } = resolveEscapeCombatTurn(w, String(text || ''));
@@ -8836,6 +8848,11 @@ function applyDeedCharges(world, text, output) {
   // A coerced build (P-73) already records its own cruelty deed (the construction
   // IS the atrocity); skip the text pass so it's never counted twice.
   if (/\bcoerced\b/.test(mech)) return world;
+  // DEATH-2: a downed-foe verb (mercy/worse/spare/walk) ALREADY minted its honest
+  // deed through the landed organs (downedFoeVerbGate → recordDeed). Skip the
+  // typed-text pass so the verb's cruelty/mercy/abandonment is never DOUBLE-counted
+  // (without this, "torture him" would record cruelty twice and double the heat).
+  if (/\[downed:/.test(mech)) return world;
   const charges = tryDarkDeed(world, t);
   if (!charges.length) return world;
   const node = (world?.map?.nodes || []).find(n => n && n.id === world?.map?.currentNodeId) || null;
@@ -9650,6 +9667,89 @@ function outOfCombatDyingGate(world, text) {
     output: {
       narration: 'Wizard: You are at 0 HP — down and dying. You cannot act. Healing or stabilization is the only way back.',
       mechanics: '[combat:dying | no-action]'
+    }
+  };
+}
+
+// DEATH-2 — the four verbs on a DOWNED foe (docs/DEATH_CONTRACT.md §3). After the
+// fight is won over a still-breathing foe (DEATH-1 leaves it DOWNED and begging),
+// the player's next input is the answer. This gate fires ONLY when combat is
+// inactive, the mode is escape, and a DOWNED foe (dying, not yet finished, not yet
+// spared) waits in the ended combat. It classifies the verb from typed free text
+// (the SAME intent-first approach the combat parser uses — the LLM interprets, the
+// engine commits; here the classifier is number-free regex over the four verbs),
+// resolves it through the landed moral organs (recordDeed / the death-fact atom /
+// the rumor sink), applies the returned deltas, mutates the foe's record, and
+// returns the beats. Returns null when no DOWNED foe waits (the turn proceeds
+// normally). A non-verb input while a foe lies dying RE-SURFACES the moment (the
+// DM does not bounce it to a menu; it restates the still-dying foe and its plea).
+function downedFoeVerbGate(world, text, actorId) {
+  const w = world;
+  if (w?.combat?.active || w?.meta?.mode !== 'escape') return null;
+  const enemies = Array.isArray(w?.combat?.enemies) ? w.combat.enemies : [];
+  // A DOWNED foe still awaiting an answer: dying (downed), not finished (!defeated),
+  // not already spared. The FIRST such foe is the one at your feet.
+  const idx = enemies.findIndex(e => e && e.downed && !e.defeated && !e.spared);
+  if (idx < 0) return null;
+  const enemy = enemies[idx];
+
+  const verb = classifyDownedVerb(text);
+  if (!verb) {
+    // Not a verb aimed at the dying foe. Do NOT swing a phantom blade and do NOT
+    // bounce a menu — restate the moment honestly (the plea still hangs in the air).
+    const plea = begPleaLine(enemy.begged, enemy.name);
+    return {
+      world: w,
+      output: {
+        narration: `Wizard: ${enemy.name} still lies at your feet, down but not dead — dying, past fighting. ${plea}`,
+        mechanics: '[downed:pending]'
+      }
+    };
+  }
+
+  const pc = w.party?.[0] || null;
+  const res = resolveDownedVerb(w, enemy, verb, text, { pc });
+  let wOut = res.world;
+  // Apply the moral/xp deltas the verb minted (recordDeed, trust shifts, gainXp).
+  if (Array.isArray(res.deltas) && res.deltas.length) wOut = applyDeltas(wOut, res.deltas);
+
+  // Mutate the foe's combat record to its resolved terminal state, via the canonical
+  // combatState delta. A killed foe → defeated (a corpse; downed cleared). A spared
+  // foe → spared + betrayed disposition, downed cleared, still alive (a living witness).
+  const nextEnemies = (Array.isArray(wOut.combat?.enemies) ? wOut.combat.enemies : []).map(e => {
+    if (!e || e.id !== enemy.id) return e;
+    if (res.killed) return { ...e, defeated: true, downed: false, dyingClock: 0 };
+    // spared
+    return { ...e, spared: true, betrayed: Boolean(res.betrayed), downed: false, dyingClock: 0, hp: Math.max(1, Number(e.hp) || 1) };
+  });
+  wOut = applyDeltas(wOut, [{ op: 'combatState', set: { enemies: nextEnemies } }]);
+
+  // A spared foe's SOURCE NPC survives as a living witness — flip its persisted
+  // combat record to alive (the opposite of endCombat's `down` stamp) so a
+  // re-encounter finds it breathing, remembering, owing or grudging.
+  if (res.spared && enemy.sourceNpcId) {
+    const npcCombatHp = { ...(wOut.meta?.npcCombatHp || {}) };
+    npcCombatHp[String(enemy.sourceNpcId)] = { hp: Math.max(1, Number(enemy.hp) || 1), down: false };
+    wOut = { ...wOut, meta: { ...wOut.meta, npcCombatHp } };
+  }
+
+  const beats = Array.isArray(res.beats) ? res.beats : [];
+  // One replayable resolution event (mirrors the escape-combat turn shape) so the
+  // deed/verb is canon and a replay re-runs identically.
+  wOut = pushEvent(wOut, {
+    kind: 'resolution',
+    data: {
+      actorId: actorId || 'party', intent: String(text || ''), text: String(text || ''),
+      roll: 0, dc: 0, outcome: 'success', updateKind: 'downed-verb',
+      combatSummary: beats.join(' ')
+    }
+  });
+  return {
+    world: wOut,
+    output: {
+      narration: `Wizard: ${beats.join(' ')}`,
+      mechanics: res.mechanicsLine,
+      beats
     }
   };
 }

@@ -101,7 +101,10 @@ test('U198: lethal improvised natural strike defeats and emits victory', () => {
   assert.match(mech, /\[strike:Headbutt \| atk:\d+ vs AC:1 → hit \| \d+ dmg\] \[combat:victory\]/, `lethal headbutt must keep damage + victory: ${mech}`);
   assert.ok(Number.isFinite(dmg) && dmg >= 3, `damage should meet or exceed target HP: ${mech}`);
   assert.equal(enemy?.hp, 0, `Corwin HP should be zero: ${JSON.stringify(enemy)}`);
-  assert.equal(enemy?.defeated, true, `Corwin should be marked defeated: ${JSON.stringify(enemy)}`);
+  // DEATH-2: the live path flips dyingEnabled ON — a felled COMMUNICATOR (Corwin) enters
+  // DOWNED (dying, begging) rather than dying outright. The blow still zeroes him and ends
+  // combat in victory; he is downed-or-defeated (the four verbs finish him).
+  assert.ok(enemy?.downed || enemy?.defeated, `Corwin should be dropped (downed or defeated): ${JSON.stringify(enemy)}`);
   assert.equal(result.world.combat?.active, false, 'victory should end active combat');
 });
 

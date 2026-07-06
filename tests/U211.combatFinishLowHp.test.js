@@ -61,7 +61,12 @@ function assertFinishingStrike(input, opts = {}) {
   assert.ok(after, 'enemy remains inspectable in combat state after the turn');
   assert.ok(Number(after.hp) < Number(before.hp), `enemy HP should drop: ${before.hp} -> ${after.hp}`);
   assert.equal(after.hp, 0, `lethal finishing blow should zero enemy HP: ${JSON.stringify(after)}`);
-  assert.equal(after.defeated, true, `lethal finishing blow should mark defeated: ${JSON.stringify(after)}`);
+  // DEATH-2: the finishing blow still DROPS the foe out of the fight and ends combat in
+  // victory — but a COMMUNICATOR now enters DOWNED (dying, begging) instead of dying
+  // outright (the beg + the four verbs finish it). The lethality intent is unchanged
+  // (0 HP, out of the fight, victory); the foe is downed-OR-defeated. (This IS the
+  // DEATH-2 behavior change — the old outright-kill is now a two-beat mercy moment.)
+  assert.ok(after.downed || after.defeated, `lethal finishing blow drops the foe (downed or defeated): ${JSON.stringify(after)}`);
   assert.match(mech, /combat:victory/, `lethal finishing blow should end combat: ${mech}`);
 }
 

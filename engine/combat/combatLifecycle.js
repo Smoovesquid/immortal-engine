@@ -160,6 +160,15 @@ export function beginCombat(world, { enemies, reason } = {}) {
     rng: makeRng(placementSeed)
   });
 
+  // DEATH-2 (docs/DEATH_CONTRACT.md §3): flip the DOWNED/dying gate ON for escape-mode
+  // fights — this is where mercy becomes possible. A felled COMMUNICATOR now enters
+  // DOWNED (dying, begging) instead of dying outright; the player answers with one of
+  // the four verbs (playloop's downed-foe gate). Combat-scoped (spent with the fight,
+  // like `surprised`), so it never touches the boot world. Only escape mode (the live
+  // shippable loop); the legacy wound/stress engine is unaffected. Speechless foes
+  // (beasts/mindless) still die outright — the capability gate (canCommunicate) holds.
+  const dyingEnabled = w.meta?.mode === 'escape';
+
   // Then apply the state mutation through the canonical delta op.
   w = applyDeltas(w, [{
     op: 'combatState',
@@ -172,6 +181,9 @@ export function beginCombat(world, { enemies, reason } = {}) {
       reason: reasonStr,
       playerGuard: false,
       companionGuard: false,
+      // DEATH-2: the DOWNED gate, on for escape fights (omitted/false otherwise so
+      // ensureCombat drops it and non-escape combat is byte-identical to before).
+      ...(dyingEnabled ? { dyingEnabled: true } : {}),
       // JR-1: a fresh fight starts on even footing; the journey (fast-travel) path
       // flips this true right after spawn when the ambush opens on the enemy's terms.
       surprised: false,

@@ -40,6 +40,25 @@ const DECISIONS = {
     'Say only, in effect: you saw it too. One sentence. No stage directions. No names.',
   ].join('\n'),
 
+  // DEATH-2 (docs/DEATH_CONTRACT.md §3): the BEG. A DOWNED foe pleads — the ENGINE
+  // has already CHOSEN which plea (for life / for a quick death / defiance — invariant
+  // III, V11: the model never picks the plea, it only VOICES the one it is handed).
+  // The second arg carries the plea via claim.begType. One line, in-character, gory-
+  // honest but number-free. Defiance is a refusal, not a plea. The engine's template
+  // (engine/combat/downedResolve.begPleaLine) is the LLM-off fallback for this same type.
+  beg: (_factPhrase, claim) => {
+    const type = String(claim?.begType || 'life');
+    const common = 'You are beaten — down, bleeding, past fighting, at this person\'s mercy. Speak ONE raw line, in your own voice, no stage directions, no numbers.';
+    if (type === 'quick') {
+      return `You know you are dying and there is no saving you. You do not beg for your life — you have none left to beg for. Ask only for a QUICK, clean end, not to be left to bleed out slow. ${common}`;
+    }
+    if (type === 'defiant') {
+      return `You will NOT beg. Wounded and beaten as you are, you meet their eye and refuse to grovel — spit defiance, or dare them to finish it. Pride over pleading. ${common}`;
+    }
+    // 'life'
+    return `You are terrified and you want to LIVE. Beg for your life — yield, promise, plead, bargain, whatever it takes to make them stay their hand. ${common}`;
+  },
+
   claim_recall: (_factPhrase, claim) => {
     const base = claim?.eventDescription
       ? `What is actually known about the event: "${claim.eventDescription}"`

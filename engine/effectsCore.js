@@ -210,7 +210,12 @@ export function applyDeltas(world, deltas = []) {
     }
 
     if (kind === 'recordDeed') {
-      const VALID = new Set(['cruelty', 'forbidden', 'mercy', 'aid', 'atonement']);
+      // DEATH-2: 'abandonment' — leaving a dying foe to the clock. Its OWN deed kind
+      // (§3: abandonment ≠ mercy ≠ cruelty). It is NOT in escalation's HEAT_KINDS
+      // (cruelty/forbidden only), so it accrues ZERO heat — a cold act the gods note
+      // but do not hunt; witnesses read it as exactly what it is (no trust swing —
+      // see applyDeedCharges' bright/dark classification, which excludes it from both).
+      const VALID = new Set(['cruelty', 'forbidden', 'mercy', 'aid', 'atonement', 'abandonment']);
       const deedKind = VALID.has(String(op.deedKind)) ? String(op.deedKind) : '';
       if (!deedKind) continue;
       const t = toInt(op.t ?? (Array.isArray(w.timeline) ? w.timeline.length : 0));
@@ -639,6 +644,12 @@ export function applyDeltas(world, deltas = []) {
         companionGuard: set && 'companionGuard' in set ? Boolean(set.companionGuard) : cur.companionGuard,
         // JR-1: surprise flag (a journey/fast-travel ambush opened on the enemy's terms).
         surprised: set && 'surprised' in set ? Boolean(set.surprised) : cur.surprised,
+        // DEATH-2: the DOWNED/dying gate (combat-scoped). Must be carried through the
+        // merge or a `combatState` delta that sets it (beginCombat flips it on for
+        // escape) is silently dropped before ensureCombat — the combatState-merge
+        // counterpart of the ensureCombat whitelist. Preserved from the current combat
+        // when not in the set, so a mid-fight combatState update never clears it.
+        ...(((set && 'dyingEnabled' in set) ? Boolean(set.dyingEnabled) : Boolean(cur.dyingEnabled)) ? { dyingEnabled: true } : {}),
         // CM6: initiativeOrder
         initiativeOrder: set && 'initiativeOrder' in set ? set.initiativeOrder : (cur.initiativeOrder || []),
         // MX-1: engine-owned tactical grid and player cell.

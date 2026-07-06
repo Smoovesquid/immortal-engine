@@ -27,7 +27,14 @@ import { findDeathFacts, assembleDeathFact } from '../engine/combat/deathFact.js
 function twoRoundKill({ seed = 'b', name = undefined, cantrip = false } = {}) {
   const base = activeCombatWorld();
   const enemies = base.combat.enemies.map(e => ({ ...e, hp: 8, ac: 1, maxHp: 20, ...(name ? { name } : {}) }));
-  let w = ensureWorld({ ...base, meta: { ...base.meta, seed }, combat: { ...base.combat, enemies } });
+  // DEATH-1's atom is tested on the OUTRIGHT-KILL path (a real kill mints its fact
+  // immediately). The activeCombatWorld fixture now flips dyingEnabled ON (DEATH-2's
+  // live default), which would send a communicator to DOWNED instead of dying — so this
+  // fixture explicitly turns the gate OFF to exercise the direct-kill atom. (DEATH-2's
+  // U600 covers the DOWNED→verb→fact path; U596 owns the outright-kill atom.)
+  const combat = { ...base.combat, enemies };
+  delete combat.dyingEnabled;
+  let w = ensureWorld({ ...base, meta: { ...base.meta, seed }, combat });
   const verb = cantrip ? 'fire bolt' : 'strike';
   w = resolveEscapeCombatTurn(w, verb).world;
   w = resolveEscapeCombatTurn(w, verb).world;

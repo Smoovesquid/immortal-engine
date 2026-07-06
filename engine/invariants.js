@@ -187,7 +187,9 @@ export function assertWorldInvariants(world) {
   if (deeds.length > 64) {
     throw new Error(`Invariant: world.deeds.length ${deeds.length} exceeds cap 64`);
   }
-  const VALID_DEED_KINDS = new Set(['cruelty', 'forbidden', 'mercy', 'aid', 'atonement']);
+  // DEATH-2: 'abandonment' — leaving a dying foe to the clock (§3). Must match
+  // ensureDeeds' DEED_KINDS (state.js) and recordDeed's VALID (effectsCore.js).
+  const VALID_DEED_KINDS = new Set(['cruelty', 'forbidden', 'mercy', 'aid', 'atonement', 'abandonment']);
   for (let i = 0; i < deeds.length; i++) {
     const d = deeds[i];
     if (!d || typeof d !== 'object') {
@@ -493,6 +495,28 @@ export function assertWorldInvariants(world) {
     }
     if (e.canCommunicate !== undefined && typeof e.canCommunicate !== 'boolean') {
       throw new Error(`Invariant: combat enemy ${e.id} canCommunicate must be boolean when present`);
+    }
+    // DEATH-2: the beg + the sparing outcome (combat-scoped). `begged` is one of the
+    // three plea types or null; `spared`/`betrayed` are booleans. Tolerant of the
+    // ABSENT case (undefined ⇒ the ensureCombat default: null/false) so a hand-built
+    // enemy that predates these fields still validates — the mirror of canCommunicate
+    // above. When PRESENT they must carry a legal value. A SPARED foe is a living
+    // witness — it can never be `defeated` (terminal death), and a living foe is not
+    // `downed` (it was pulled back from the edge).
+    if (e.begged !== undefined && !(e.begged === null || e.begged === 'life' || e.begged === 'quick' || e.begged === 'defiant')) {
+      throw new Error(`Invariant: combat enemy ${e.id} begged must be null|'life'|'quick'|'defiant' when present`);
+    }
+    if (e.spared !== undefined && typeof e.spared !== 'boolean') {
+      throw new Error(`Invariant: combat enemy ${e.id} spared must be boolean when present`);
+    }
+    if (e.betrayed !== undefined && typeof e.betrayed !== 'boolean') {
+      throw new Error(`Invariant: combat enemy ${e.id} betrayed must be boolean when present`);
+    }
+    if (e.spared && e.defeated) {
+      throw new Error(`Invariant: combat enemy ${e.id} cannot be both spared and defeated`);
+    }
+    if (e.spared && e.downed) {
+      throw new Error(`Invariant: combat enemy ${e.id} cannot be both spared and downed (spared = pulled back)`);
     }
     if (typeof e.sourceNpcId !== 'string') {
       throw new Error(`Invariant: combat enemy ${e.id} sourceNpcId must be string`);

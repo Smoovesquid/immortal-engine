@@ -56,7 +56,11 @@ test('U598-02: full replay determinism on the fight→fact chain — world hash 
   function runFight(dyingEnabled) {
     const base = activeCombatWorld();
     const enemies = base.combat.enemies.map(e => ({ ...e, hp: 8, ac: 1, maxHp: 20 }));
-    let w = ensureWorld({ ...base, meta: { ...base.meta, seed: 'b' }, combat: { ...base.combat, enemies, ...(dyingEnabled ? { dyingEnabled: true } : {}) } });
+    // DEATH-2: set the gate authoritatively from the param (activeCombatWorld now
+    // defaults it ON) so runFight(false) is a genuine gate-OFF determinism run.
+    const combat = { ...base.combat, enemies };
+    if (dyingEnabled) combat.dyingEnabled = true; else delete combat.dyingEnabled;
+    let w = ensureWorld({ ...base, meta: { ...base.meta, seed: 'b' }, combat });
     w = resolveEscapeCombatTurn(w, 'strike').world;
     w = resolveEscapeCombatTurn(w, 'strike').world;
     return w;
@@ -91,8 +95,12 @@ test('U598-03: no numeric appears in any player-facing string this packet adds (
   assert.ok(standaloneDowned, 'the standalone DOWNED beat was produced');
   assert.doesNotMatch(standaloneDowned, /\d/, `the DEATH-1 DOWNED beat must carry no number: "${standaloneDowned}"`);
 
-  // The death fact's human-readable fields carry no digits.
-  const wKill = ensureWorld({ ...base, meta: { ...base.meta, seed: 'b' }, combat: { ...base.combat, enemies } });
+  // The death fact's human-readable fields carry no digits. DEATH-2: activeCombatWorld now
+  // flips the gate ON by default, so explicitly clear it for the OUTRIGHT-KILL case (a real
+  // kill mints its fact immediately — the DOWNED path is exercised above).
+  const killCombat = { ...base.combat, enemies };
+  delete killCombat.dyingEnabled;
+  const wKill = ensureWorld({ ...base, meta: { ...base.meta, seed: 'b' }, combat: killCombat });
   const rKill = resolveEscapeCombatTurn(wKill, 'strike');
   const f = findDeathFacts(rKill.world)[0];
   assert.ok(f, 'a kill minted a fact');

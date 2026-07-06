@@ -67,6 +67,10 @@ import {
   recordDeathFactEvent,
   routeKillerIntent
 } from './deathFact.js';
+// DEATH-2 — the beg (the plea the engine chooses for a DOWNED foe). The four
+// verbs resolve OUT of combat (playloop's downed-foe gate); the BEG fires here,
+// the moment the fight is won over a still-breathing foe.
+import { chooseBeg, begPleaLine } from './downedResolve.js';
 
 // ── Player build (level-1 hedge-caster escapee) ──────────────────────────────
 const PLAYER_BASE_HP = 14;   // + GRIT mod
@@ -2326,11 +2330,34 @@ function resolveEscapeCombatTurnCore(world, actionText = '') {
     if (downedFoes.length) {
       // The fight is won but a foe lies dying at your feet — DEATH-1's DOWNED
       // moment. No "the way is clear" over a still-breathing body. What you DO
-      // about it (mercy, worse, spare, walk away) is DEATH-2's four verbs.
+      // about it (mercy, worse, spare, walk away) is DEATH-2's four verbs — they
+      // resolve on the player's NEXT input (playloop's downed-foe gate).
+      //
+      // DEATH-2 — THE BEG. The engine CHOOSES each DOWNED foe's plea now (seeded,
+      // personality-driven: for life, for a quick death, or defiance — the proud
+      // never beg). The choice is stored on the enemy (`begged`) so the verb gate
+      // reads it, and voiced here with the LLM-off template line (the server's
+      // npc-voice 'beg' mode renders it richer, but never overrides WHICH plea —
+      // V11: the engine sets the plea, the LLM only voices it). Invariant III:
+      // no number in the beg. The DOWNED foes were persisted through endCombat;
+      // stamp `begged` back onto them via the canonical combatState delta.
+      const beggedById = new Map();
+      for (const f of downedFoes) beggedById.set(f.id, chooseBeg(w, f));
+      const stamped = (Array.isArray(w.combat?.enemies) ? w.combat.enemies : []).map(e =>
+        (e && beggedById.has(e.id)) ? { ...e, begged: beggedById.get(e.id) } : e
+      );
+      w = applyDeltas(w, [{ op: 'combatState', set: { enemies: stamped } }]);
+
       const one = downedFoes.length === 1;
       beats.push(one
         ? `The last ${downedFoes[0].name} is down but not dead — sprawled, breathing in wet gasps, past fighting. Its life is in your hands.`
         : `The fight is out of them — ${downedFoes.length} lie down but not dead, breathing, past fighting. Their lives are in your hands.`);
+      // Voice each foe's plea (or its defiance). One line per DOWNED foe; the beg
+      // reads as character, not a menu — the four verbs are named nowhere (the DM
+      // does not prompt; the player answers as they would at a real table).
+      for (const f of downedFoes) {
+        beats.push(begPleaLine(beggedById.get(f.id), f.name));
+      }
     } else {
       beats.push(lootResults.length ? 'The way is clear. You search the fallen and pocket what they carried.' : 'The way is clear.');
     }

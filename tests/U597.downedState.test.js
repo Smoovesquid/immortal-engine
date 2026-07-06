@@ -24,11 +24,16 @@ import { activeCombatWorld } from '../scripts/convergence/fixtures.mjs';
 import { resolveEscapeCombatTurn } from '../engine/combat/escapeCombat.js';
 import { findDeathFacts, canCommunicate } from '../engine/combat/deathFact.js';
 
-// The dying gate is combat-scoped (default off). A fixture opts in via combat.dyingEnabled.
+// The dying gate is combat-scoped. NOTE (DEATH-2): activeCombatWorld now flips it ON
+// via beginCombat (the live default), so this helper sets it AUTHORITATIVELY from the
+// param — deleting it for the gate-OFF cases so DEATH-1's "gate off = die outright"
+// contract is still exercised (U600/U601 own the gate-ON live path).
 function fight({ seed = 'b', name = undefined, hp = 4, dyingEnabled = false } = {}) {
   const base = activeCombatWorld();
   const enemies = base.combat.enemies.map(e => ({ ...e, hp, ac: 1, maxHp: 20, ...(name ? { name } : {}) }));
-  return ensureWorld({ ...base, meta: { ...base.meta, seed }, combat: { ...base.combat, enemies, ...(dyingEnabled ? { dyingEnabled: true } : {}) } });
+  const combat = { ...base.combat, enemies };
+  if (dyingEnabled) combat.dyingEnabled = true; else delete combat.dyingEnabled;
+  return ensureWorld({ ...base, meta: { ...base.meta, seed }, combat });
 }
 const foe = (w) => w.combat?.enemies?.[0];
 
@@ -81,8 +86,12 @@ test('U597-03: THE WHITELIST TRAP — the new enemy fields survive an ensureComb
   const activeBase = activeCombatWorld();
   const active = ensureWorld({ ...activeBase, combat: { ...activeBase.combat, active: true, dyingEnabled: true } });
   assert.equal(Boolean(active.combat.dyingEnabled), true, 'the combat-level dyingEnabled flag survives ensureCombat during an active fight');
-  // And it is OMITTED from an inactive combat object (so the boot worldHash cannot move — U598).
-  const inactive = ensureWorld({ ...activeBase, combat: { ...activeBase.combat, active: false } });
+  // And it is OMITTED when OFF (so the boot worldHash cannot move — U598). DEATH-2:
+  // activeCombatWorld now defaults the gate ON, so clear it explicitly to build the
+  // genuinely-off case — a gate-off combat object serializes without dyingEnabled.
+  const offCombat = { ...activeBase.combat, active: false };
+  delete offCombat.dyingEnabled;
+  const inactive = ensureWorld({ ...activeBase, combat: offCombat });
   assert.equal(Object.prototype.hasOwnProperty.call(inactive.combat, 'dyingEnabled'), false, 'dyingEnabled is omitted when off — boot combat stays byte-identical');
 });
 

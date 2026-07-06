@@ -124,8 +124,13 @@ test('U298-06: thinning the pack down to one lifts the flank (surround is contes
     { name: 'Cur', hp: 1, maxHp: 1, damage: 1, ac: 1, canParley: false }
   ]);
   const after = resolveEscapeCombatTurn(w, 'I strike the cur').world;
-  assert.equal(after.combat.enemies.find(e => e.name === 'Cur').defeated, true, 'the straggler drops');
-  assert.equal(after.combat.playerTactical.flanked, false, 'down to one foe — no longer flanked');
+  // DEATH-2: beginCombat now flips dyingEnabled ON, so the felled straggler (a communicator)
+  // enters DOWNED (dying) rather than dying outright. Either way it is OUT of the fight — a
+  // DOWNED foe is inert (it never counts as a live combatant), so the flank lifts exactly the
+  // same. Assert it dropped (downed or defeated); the flanking consequence is what matters.
+  const cur = after.combat.enemies.find(e => e.name === 'Cur');
+  assert.ok(cur.downed || cur.defeated, 'the straggler drops (downed or defeated)');
+  assert.equal(after.combat.playerTactical.flanked, false, 'down to one live foe — no longer flanked');
 });
 
 // ── 5: contest — positions break (one each way) ───────────────────────────────

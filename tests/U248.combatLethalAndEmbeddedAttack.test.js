@@ -31,9 +31,12 @@ test('U248: a lethal strike (dmg >= remaining HP) marks the foe defeated and end
   assert.match(r.result.mechanicsLine, /\bhit\b/, `strike should land: ${r.result.mechanicsLine}`);
   assert.match(r.result.mechanicsLine, /combat:victory/, `lethal blow should end the thread: ${r.result.mechanicsLine}`);
   assert.equal(r.world.combat?.active, false, 'combat thread must be ended');
-  // foe list is cleared on victory; if present it must read defeated.
+  // DEATH-2: the fixture (activeCombatWorld) now flips dyingEnabled ON (the live default),
+  // so a felled COMMUNICATOR enters DOWNED (dying, begging) instead of dying outright — the
+  // thread still ENDS (victory), but the foe is downed-or-defeated (the beg + the four verbs
+  // finish it). The lethality intent (out of the fight, victory) is unchanged.
   const e = foe(r.world);
-  if (e) assert.equal(e.defeated, true, 'lethal foe must be marked defeated');
+  if (e) assert.ok(e.downed || e.defeated, `lethal foe must be dropped (downed or defeated): ${JSON.stringify({downed:e.downed, defeated:e.defeated})}`);
 });
 
 test('U248: a non-lethal strike leaves the foe upright (no over-claim)', () => {

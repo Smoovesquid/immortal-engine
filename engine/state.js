@@ -702,6 +702,19 @@ export function ensureCombat(c) {
     // else derived at read-time by engine/combat/deathFact.canCommunicate). Stored
     // only when explicitly provided, so a re-mint doesn't fabricate a capability.
     const canCommunicate = typeof eRaw.canCommunicate === 'boolean' ? eRaw.canCommunicate : undefined;
+    // DEATH-2 (docs/DEATH_CONTRACT.md §3): the beg + the sparing outcome. All
+    // COMBAT-SCOPED (like downed/dyingClock — absent from the boot world, so no
+    // WORLD_VERSION bump, no boot-hash movement). THE WHITELIST TRAP applies: these
+    // MUST be normalized here AND in the enemy literal below or they are stripped on
+    // the next ensureWorld.
+    //   begged   — the plea the engine chose for a DOWNED foe: 'life'|'quick'|
+    //              'defiant'|null (persists so the verb gate reads it next turn).
+    //   spared   — the foe was spared (a LIVING WITNESS; stays !defeated, !downed).
+    //   betrayed — a spared foe's engine-rolled disposition (owes vs. will turn).
+    const BEG_TYPES = new Set(['life', 'quick', 'defiant']);
+    const begged = BEG_TYPES.has(eRaw.begged) ? eRaw.begged : null;
+    const spared = Boolean(eRaw.spared ?? false);
+    const betrayed = Boolean(eRaw.betrayed ?? false);
     // `defeated` default respects DOWNED: a DOWNED foe sits at 0 HP but is NOT
     // defeated (it's dying, still a live mini). Only default to defeated at 0 HP
     // when it is NOT explicitly downed. An explicit eRaw.defeated always wins, and
@@ -758,7 +771,7 @@ export function ensureCombat(c) {
     occupiedFallbackCells.add(combatCellKey(cell));
     // The one-shot onDeath-revive flag (Undead Fortitude / Rejuvenation…) must
     // persist across turns so a foe refuses to fall ONCE per fight, not per death.
-    const enemy = { id, name, hp, maxHp, damage, ac, cr, damageType, resistances, conditionImmunities, conditions, actions, multiattack, saveProficiencies, canParley, defeated, downed, dyingClock, woundLog, sourceNpcId, lootTableRef, initMod, legendaryActions, reactions, lairActions, senses, tactical, traits, cx: cell.cx, cy: cell.cy };
+    const enemy = { id, name, hp, maxHp, damage, ac, cr, damageType, resistances, conditionImmunities, conditions, actions, multiattack, saveProficiencies, canParley, defeated, downed, dyingClock, woundLog, begged, spared, betrayed, sourceNpcId, lootTableRef, initMod, legendaryActions, reactions, lairActions, senses, tactical, traits, cx: cell.cx, cy: cell.cy };
     // DEATH-1: carry an explicit capability only when set (otherwise derived at read).
     if (canCommunicate !== undefined) enemy.canCommunicate = canCommunicate;
     if (eRaw._traitRevived) enemy._traitRevived = true;
@@ -1249,7 +1262,11 @@ export function ensureNpcMorality(m) {
 // record-time. Additive field with a safe default (0) — old saves (no tier) normalize
 // to 0 cleanly, so no WORLD_VERSION bump is needed.
 const DEEDS_CAP = 64;
-const DEED_KINDS = new Set(['cruelty', 'forbidden', 'mercy', 'aid', 'atonement']);
+// DEATH-2: 'abandonment' — leaving a dying foe to the clock (§3, its own deed kind).
+// Must be in BOTH this deeds-INDEX whitelist AND effectsCore.recordDeed's VALID set,
+// or the deed records once then evaporates on the next ensureWorld (the deeds-index
+// counterpart of the ensureCombat whitelist trap). Additive; old saves normalize clean.
+const DEED_KINDS = new Set(['cruelty', 'forbidden', 'mercy', 'aid', 'atonement', 'abandonment']);
 function ensureDeeds(d) {
   const arr = Array.isArray(d) ? d : [];
   const out = [];

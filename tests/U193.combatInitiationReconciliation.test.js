@@ -122,8 +122,12 @@ test('U193: strike damage in mechanics equals narration and lethal hit defeats b
 
   assert.match(lethalMech, /strike:.*\|\s*\d+\s*dmg.*combat:victory/, `lethal strike keeps damage and victory: ${lethalMech}`);
   assert.equal(enemy?.hp, 0, `enemy hp should be zero: ${JSON.stringify(enemy)}`);
-  assert.equal(enemy?.defeated, true, `enemy should be defeated: ${JSON.stringify(enemy)}`);
-  assert.doesNotMatch(lethal.output.narration, /The Corwin hits you/, 'defeated enemy must not counterattack');
+  // DEATH-2: the live combat path now flips dyingEnabled ON, so a felled COMMUNICATOR
+  // (Corwin) enters DOWNED (dying, begging) instead of dying outright — the blow still
+  // drops him to 0, victory still ends the fight, and he does NOT counterattack (dying,
+  // not fighting). He is downed-or-defeated. (The beg + the four verbs finish him.)
+  assert.ok(enemy?.downed || enemy?.defeated, `enemy should be dropped (downed or defeated): ${JSON.stringify(enemy)}`);
+  assert.doesNotMatch(lethal.output.narration, /The Corwin hits you/, 'a dropped enemy must not counterattack');
 });
 
 test('U193: true non-action in active combat remains table-talk', () => {

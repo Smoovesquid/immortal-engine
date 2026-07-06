@@ -2991,3 +2991,18 @@ other agents. (none active)
 - OCC-STORY-2 cut + dispatched into the freed engine lane (U580–U582; thread-driven placement +
   live reasons; boot placement pinned unchanged). In flight now: JR-HUNT-1 · WILD-SCALE-1 · MP-5a ·
   OCC-STORY-2.
+
+## 2026-07-06 — Basecamp (successor) — JR-HUNT-1 integrated → v0.30.10 build 108 "hunters meet the road"
+
+- Worker `1ce7b196` → integrated `311f6847`; ladder 10548/0 · 131/131 · screen truth 7/7. The
+  diagnosis was bigger than the packet: fast-travel turns never ticked the world AT ALL (journey
+  branches return before playloop's one worldTick at line 3980) — threads, heat, factions, ecology
+  all skipped on every journey. Now each journey branch runs the turn's ONE tick (U574: exactly-once
+  wall; U568's age-1-per-turn law held). The hunt composes with JR-1 road encounters — live receipt:
+  heat-52 save fast-traveled into a brigand toll AND two hunters at arrival, same turn.
+- deep_wild_fog_edge golden legitimately regenerated (+0.42%: the scene fast-travels; its world now
+  ticks) — worker verified hunt-free; Basecamp re-verified 7/7 on the integrated tree where the
+  journey tick also runs MP-4's tickPact (no-op at corruption 0).
+- MP-5a returned green while this ladder ran (omen line; T4-shares-hunted-register BY DESIGN — the
+  gift's own arrival beat is T4's surfacing; eco-number prompt notes near its edits verified
+  PRE-EXISTING, outside its fence — noted as a future hide-the-math sweep candidate). Its pick is next.

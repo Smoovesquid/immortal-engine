@@ -1008,8 +1008,8 @@ function renderInvoke() {
     el('div', { class: 'panel' },
       el('div', { class: 'header' },
         el('div', {},
-          el('div', { class: 'title' }, 'Immortal Engine — v0.30.9'),
-          el('div', { class: 'sub' }, 'build 107 · 2026-07-06 · the gift unbidden')
+          el('div', { class: 'title' }, 'Immortal Engine — v0.30.10'),
+          el('div', { class: 'sub' }, 'build 108 · 2026-07-06 · hunters meet the road')
         )
       ),
       // ── One-click front door: start (or resume) the Escape game ──────

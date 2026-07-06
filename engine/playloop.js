@@ -51,6 +51,7 @@ import { mintThing, revealTrueEdge } from './things.js';
 import { mintClaim } from './claims.js';
 import { generateSubstrate, ensureNodeSubstrate, substrateEventsFor, npcSubstrateContext } from './substrate.js';
 import { classifyPlaceQuery, resolvePlaceFact } from './world/placeQuery.js';
+import { resolveCommonLore } from './world/commonKnowledge.js';
 import { classifyPersonQuery, resolvePersonFact } from './world/personQuery.js';
 import { resolveArc } from './npc/npcArc.js';
 import { companionPass } from './npc/companionVoice.js';
@@ -2442,6 +2443,18 @@ function playerMoveCore(world, packsById, text, dqIntent) {
       const placeFact = resolvePlaceFact(w, placeQuery);
       return placeFact ? renderPlaceFactDM(w, placeFact) : renderPlaceDeclineDM(w, text);
     }
+    // (PW-5 re-open, U622) NAMED-place lore, cold — the reachability seam. A "tell me
+    // about / what do you know about / how was <named node> founded" that names a REAL
+    // map node (the here-anchored classifier above never claims those) answers with the
+    // SAME grounded fact the NPC voices in dialogue (resolveCommonLore — one fact, two
+    // voices, read-only, deterministic). Sits BEFORE the explore floor and BEFORE both
+    // person-clarify sinks, so a known place name routes to lore ahead of person
+    // disambiguation (the routing law). resolveCommonLore's own guards keep secret /
+    // motive / agent-count asks unclassified → they fall through to their existing
+    // decline paths untouched; an unmodelled place name resolves nothing → falls
+    // through likewise (honest decline, never invention).
+    const namedLore = resolveCommonLore(w, { text, hereId: String(w.map?.currentNodeId || '') });
+    if (namedLore) return renderCommonLoreDM(w, namedLore);
   }
 
   // (P-2) Person-knowledge query → identity of a RESOLVABLE present NPC (the World-Query Resolver,
@@ -6376,11 +6389,37 @@ function isNpcProperReferentStopword(name) {
 // discovered node's name contains this token. A generic word like "Outpost"
 // alone still needs a real discovered settlement name to confirm it's a place
 // fragment, so this is a no-op without `world`.
+//
+// PW-5 re-open (the routing law, 2026-07-06 — U622): a candidate that IS a full
+// node name ("Crowfoot Camp", "The Greenwood") is a PLACE whether or not the
+// player has walked there — full node names over ALL map nodes are exactly the
+// set the region-common-knowledge bank (resolveCommonLore) can answer about, so
+// they must route to the place/lore path, never into the person disambiguator
+// ("I haven't introduced anyone named Crowfoot Camp…"). Single-token FRAGMENTS
+// keep the original discovered-only rule (a bare "Outpost" still needs a real
+// discovered settlement to confirm it's a place fragment). AMBIGUITY RULE: a
+// candidate that also names a person PRESENT at this scene stays a PERSON —
+// person wins when present, else the place. (Absent person + full place name →
+// place; a person-named ask with nobody by that name still clarifies as before.)
 function isKnownPlaceNameFragment(world, name) {
   const n = String(name || '').trim().toLowerCase();
   if (n.length < 3) return false;
+  const nodes = (world?.map?.nodes || []);
+  // Ambiguity: the PERSON wins while present — never treat a present NPC's name
+  // (full or token) as a place fragment. Roster = node settlement + present pool.
+  const present = [...nodeRosterNpcs(world), ...presentPeoplePool(world)];
+  const namesPresentPerson = present.some(npc => {
+    const npcName = String(npc?.name || '').trim().toLowerCase();
+    if (!npcName) return false;
+    if (npcName === n) return true;
+    return npcName.split(/\s+/).some(tok => tok.replace(/[^a-z]/g, '') === n);
+  });
+  if (namesPresentPerson) return false;
+  // FULL node-name match → a place, discovered or not (the bank's answerable set).
+  if (nodes.some(node => String(node?.name || '').trim().toLowerCase() === n)) return true;
+  // Token FRAGMENT match → discovered-only (the original C7 rule, unchanged).
   const discoveredIds = new Set((Array.isArray(world?.map?.discovered) ? world.map.discovered : []).map(String));
-  return (world?.map?.nodes || []).some(node => {
+  return nodes.some(node => {
     if (!node || !discoveredIds.has(String(node.id))) return false;
     const nodeName = String(node.name || '').toLowerCase();
     if (!nodeName) return false;
@@ -8616,6 +8655,19 @@ function renderPlaceFactDM(world, fact) {
 }
 function renderPlaceDeclineDM(world, text) {
   return { world, output: { narration: declineInfoSeek(world, text, socialTarget(world, text)), mechanics: '[place-history → no-record | nothing grounded to deliver, no roll]' } };
+}
+// (PW-5 re-open, U622) DM-narrator renderer over a NAMED other place's resolved lore —
+// the cold-gesture sibling of dialogue's renderCommonLoreNpc (one fact, two voices).
+// `lore.body` is the grounded founding/events/history label; `lore.nodeName` the place
+// it's about. Names the place, states the canon, adds nothing. §0-safe by construction
+// (the resolver only surfaces founding/events/history labels). No roll, no mutation.
+function renderCommonLoreDM(world, lore) {
+  const lab = String(lore?.body || '');
+  const where = String(lore?.nodeName || 'that place');
+  const detail = lore?.type === 'events' ? `events at ${where}`
+    : lore?.type === 'history' ? `history around ${where}`
+    : `founding of ${where}`;
+  return { world, output: { narration: `Wizard: ${where} — the story goes: ${lab}.`, mechanics: `[place-lore → grounded | ${detail}, no roll]` } };
 }
 // (P-2) DM-narrator renderer over a resolved person-identity fact. Mirrors grace's META_NPC_OBSERVER
 // phrasing ("<name>, a <role> — one of the folk here") so the two narrator surfaces read alike. §0-safe.

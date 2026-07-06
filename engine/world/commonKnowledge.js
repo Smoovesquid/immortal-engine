@@ -70,17 +70,29 @@ const ABOUT_INTENT_RE    = /\b(?:tell\s+me\s+about|what\s+about|know\s+about|hea
  * The named settlement/place in the ask that is NOT the node you stand on. Longest
  * name wins (so "Crowfoot Camp" beats a stray "Camp"). Deterministic: name-length
  * desc, then id asc for ties. Only real nodes in world.map.nodes qualify — an
- * unmodelled place name matches nothing and the caller deflects (Tier 2).
+ * unmodelled place name matches nothing and the caller deflects (Tier 2). A node
+ * whose name also names a person PRESENT at the player's node is skipped — the
+ * AMBIGUITY RULE (U622-06): the person wins while present, else the place. This
+ * binds in the DERIVER so BOTH voices (dialogue NPC + cold narrator) obey it.
  */
 export function findNamedOtherNode(world, text, hereId) {
   const t = String(text || '').toLowerCase();
   if (!t.trim()) return null;
   const nodes = Array.isArray(world?.map?.nodes) ? world.map.nodes : [];
   const here = String(hereId || world?.map?.currentNodeId || '');
+  // Present-person names at the player's node (Purity #8 scene roster) — a shared
+  // name means the ask is about THEM, not the far place. Pure read, no mutation.
+  const hereNode = nodes.find(x => x && String(x.id) === String(world?.map?.currentNodeId || ''));
+  const presentNames = new Set(
+    (Array.isArray(hereNode?.settlement?.npcs) ? hereNode.settlement.npcs : [])
+      .map(npc => String(npc?.name || '').trim().toLowerCase())
+      .filter(Boolean)
+  );
   const matches = nodes.filter(n => {
     if (!n || String(n.id) === here) return false;
     const name = String(n.name || '').trim().toLowerCase();
     if (!name) return false;
+    if (presentNames.has(name)) return false; // person wins while present
     // Word-boundary match so "Greenwood" isn't matched inside an unrelated token.
     const re = new RegExp(`\\b${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i');
     return re.test(t);

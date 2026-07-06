@@ -2841,3 +2841,12 @@ other agents. (none active)
   U551–U554; RED-first against the live wake-scene projection bug; check-rung when green. FURN-1
   PACKETS row flipped to LANDED (deferred while the constitution window held the file — its
   consequence-contract stack landed `c3faa87e`, noted with respect).
+
+## 2026-07-06 — Basecamp — MORAL PHYSICS BLESSED (Tim: constitution + unification + F1 play-change) · MP-1 dispatched
+
+- Tim blessed all three distilled calls. Division of labor per his takeover directive: the design
+  window writes law (prose-to-world next); BASECAMP conducts the MP arc (dispatch → integrate →
+  release). Design window: do NOT double-dispatch MP packets — the queue rows track Basecamp's lanes.
+- MP-1 (witness→rumor bridge; F1 dead-gate fix rides it; F6 fair-combat guard mandatory) dispatched
+  to the free engine serial slot (Opus; U555–U557). Parallel lanes untouched: REND-TRUTH-1 (renderer)
+  · VIS-ORACLE (harness). Next free numbers U558+.

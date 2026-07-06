@@ -1008,8 +1008,8 @@ function renderInvoke() {
     el('div', { class: 'panel' },
       el('div', { class: 'header' },
         el('div', {},
-          el('div', { class: 'title' }, 'Immortal Engine — v0.30.3'),
-          el('div', { class: 'sub' }, 'build 101 · 2026-07-06 · word travels')
+          el('div', { class: 'title' }, 'Immortal Engine — v0.30.4'),
+          el('div', { class: 'sub' }, 'build 102 · 2026-07-06 · the screen has an alarm')
         )
       ),
       // ── One-click front door: start (or resume) the Escape game ──────

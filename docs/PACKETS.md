@@ -235,7 +235,17 @@ done_when · rollback`.
   **MAP-REAL STAGE 1 (position truth) COMPLETE** — engine writes the doorstep, every reader consumes
   `pos`, the probe stands guard in `npm run check`.
 
-### VIS-ORACLE — the Screen-Truth Oracle (MR-ORACLE for pixels)  ·  Phase 1/2 (the missing gate)  ·  **CUT + DISPATCHED 2026-07-06 (Opus; brief `docs/briefs/VIS-ORACLE.md`; U551–U554; Tim's word: "cut the screen oracle")**
+### VIS-ORACLE — the Screen-Truth Oracle (MR-ORACLE for pixels)  ·  Phase 1/2  ·  **✅ LANDED v0.30.4 b102 (worker `a1f6a8fd`; U551–U554 29/29+1 todo; suite 10460/0; canvas-free — asserts the renderer's own pure rails; 6 goldens committed; deliberate-accept ritual). FIRST CATCH ON DAY ONE → PLAN-SPLIT-1 (below). Wire into `npm run check` when PLAN-SPLIT-1 flips the last RED.**
+
+### PLAN-SPLIT-1 — one building, two geometries (the oracle's first catch)  ·  Phase 1/2 (MAP-REAL falsifier #3)  ·  **QUEUED — successor's first cut alongside MP-2**
+- The oracle's expected-RED SURVIVED b100's projection fix — it is a DISTINCT bug: the wake building's
+  walls are DRAWN from the catalog `getPlan()` ("Wattle Cottage") while the figure is SEATED from the
+  engine's real `floorPlan(structure)` — two different-scale plans for one building; the token sits
+  measurably off its own walls (place-unit(1.179,−0.305) vs rect [1.739,−0.445..3.619,1.035]).
+- Fix direction per MAP-REAL's one-law: the ENGINE plan is the single geometry; the drawn ink must
+  derive from it (kill the catalog-plan read at the draw site or map it through the engine plan).
+  Done-when: the oracle's wake scene goes GREEN → flip U553's todo → capture the wake golden
+  (`screen-goldens:accept`) → wire `playtest:screen` into `npm run check` (all scenes green).
 - The morning's lesson made law: engine truth had a standing gate and never broke; the screen had none
   and broke twice in one night. Headless canonical scenes → drawn model asserted against engine truth
   (PROJECTION_EQUALITY · PHANTOM · MISSING · LAYER_ORIGIN · INK_EXCLUSION) + golden-image beauty lock

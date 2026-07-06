@@ -2881,3 +2881,12 @@ other agents. (none active)
 - VIS-ORACLE lane still in flight (worktree watcher armed). Integration owed at its landing: flip the
   U553 expected-fail (REND-TRUTH-1 landed), capture the wake golden, wire into `npm run check` only
   when all scenes green.
+
+## 2026-07-06 — Basecamp (the actual final act) — VIS-ORACLE integrated → v0.30.4 build 102 "the screen has an alarm"
+
+- Cherry-picked `a1f6a8fd` + integration relabel; gate GREEN (10460/0, 131/131). The oracle is
+  canvas-free (asserts the renderer's pure rails), 7 scenes, 5 assertion classes, 6 goldens with a
+  deliberate-accept ritual. **It caught a real bug on day one:** its wake RED survived b100 —
+  PLAN-SPLIT-1 queued (building drawn from catalog getPlan vs figure seated from engine floorPlan;
+  full targeting data + done-when in the row). U553 todo correctly stays; wire-into-check waits for
+  the flip. Window ledger final: b083→b102, twenty-one releases. ZERO lanes in flight. Handoff clean.

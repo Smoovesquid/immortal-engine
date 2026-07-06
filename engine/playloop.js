@@ -2379,6 +2379,18 @@ function playerMoveCore(world, packsById, text, dqIntent) {
     // of the phantom "You pocket it" free-action floor (WB-Q4/T-Q2).
     const tookRevealed = tryTakeRevealedContainerItem(w, text);
     if (tookRevealed) return tookRevealed;
+    // PW-2: a take/pocket naming a noun canon does NOT hold (not a revealed remaining item, not a
+    // present piece, not inventory) stops narrating acquisition — an in-voice honest line, or the
+    // search pivot where the intent reads as reaching into a present container. Placed after PW-1's
+    // acquire gate (so grounded takes still mint) and before physics/trivial (so the ungrounded take
+    // never reaches the phantom "You do so without difficulty." floor). Yields null for grounded /
+    // bulk-loot / compound takes, leaving their paths untouched. Guarded by !declaredNpcViolence so a
+    // "grab <NPC> by the throat" / "seize him" assault still starts combat (the take verb there is a
+    // grip on a PERSON, not acquisition of an object). (WB-Q4 / T-Q2)
+    if (!declaredNpcViolence) {
+      const declinedTake = tryDeclineUngroundedTake(w, text);
+      if (declinedTake) return declinedTake;
+    }
     // SL-5 — a real DM never treats a DECLARED commitment ("I'll look into it",
     // "I'll examine it") as a literal peek at a physical thing: INSPECT_VERB's
     // "look into/at/over" overlaps the idiomatic "investigate a matter" sense,
@@ -7506,6 +7518,148 @@ function tryTakeRevealedContainerItem(w, text) {
     `${hit.item.charAt(0).toUpperCase() + hit.item.slice(1)} — out of the ${hit.piece.name} and into your keeping.`,
   ], w, `take:revealed:${compact}`);
   return { world: w1, output: { narration: `Wizard: ${lead}`, mechanics: '[take:revealed-item | grounded object, no roll]' } };
+}
+
+// PW-2 (docs/briefs/PROSE_TO_WORLD_CONTRACT.md §1e) — the honest floor for UNGROUNDED takes,
+// the suppression-side pair of PW-1's mint. A take/pocket naming a noun that canon does not hold
+// in ANY of the four legitimate sources — a revealed remaining container item (PW-1 owns those),
+// a present furniture piece or an inventory item (the physics detector grounds both), or a
+// combat-loot target (this gate lives in the !combat block, so those are out of scope) — must
+// STOP narrating acquisition. Before PW-2 the phantom "I pocket the letter" (no letter in canon)
+// slid to the trivial free-action floor and narrated "You do so without difficulty." while the
+// engine added nothing: narration != canon (WB-Q4 / T-Q2, twice-confirmed by the harness). This
+// gate, placed right after PW-1's acquire gate and BEFORE physics/trivial, delivers instead:
+//   - the SEARCH PIVOT — when the intent reads as searching a present container ("grab a letter
+//     from the chest"), delegate to the existing container-reveal path (V7: interpret richly,
+//     commit narrowly — a real DM reads the reach-into-the-chest and shows what is actually there),
+//   - else the HONEST LINE — an in-fiction "there's nothing like that here to take" (THE_DM_TEST:
+//     a DM redirect within the fiction, never "invalid target" / a parser bounce).
+// The grounding check is ENGINE-side at commit time (detectPhysicalInteraction + PW-1's revealed
+// scan) — never a regex pre-filter on raw text; the intent translator stays LLM-primary (INT law).
+// Yields null for every grounded / bulk-loot / compound take so those keep their existing paths.
+//
+// "from <target>" — a reach that names a source object to take FROM. Captures the container noun
+// so the pivot can route the reveal at it.
+const TAKE_FROM_SOURCE_RE = /\bfrom\s+(?:the\s+|a\s+|an\s+|my\s+)?([a-z][a-z' -]*?)\s*$/i;
+// COLLECTIVE / abstract loot grabs ("take everything", "loot the room", "loot the bodies") name no
+// single takeable noun to redirect — they keep their own handlers (in-dungeon: the dungeon-loot gate
+// at :1609, which runs BEFORE this one; elsewhere: physics/resolve). This gate only speaks to a
+// concrete singular noun, so it must not swallow the collectives. (Deliberately does NOT list
+// concrete singulars like "the gold"/"the coin" — an ungrounded concrete noun is exactly what PW-2
+// declines honestly; the dungeon-treasure phrasing is already intercepted upstream when in-dungeon.)
+const BULK_TAKE_RE = /\b(?:everything|it all|all of it|the lot|the whole lot|whatever(?:'?s| is)?(?:\s+here)?|anything(?:\s+(?:here|useful|of value))?|what(?:'?s| is)\s+here)\b|\bloot\s+the\s+(?:room|place|chamber|vault|hoard|stash|bod(?:y|ies)|corpses?|dead)\b/i;
+// FIGURES OF SPEECH — "take/grab" in an idiom or a non-acquisition sense names NO physical object to
+// decline. A DM would never answer "there's no 'a look around' to take." These keep their own
+// handlers (consume/rest/observe/cover/movement) or resolve as the mundane action they are; this gate
+// must yield. Covers: idiomatic "take a <abstract>" (a look/drink/step/breath/moment/seat/nap/bath/
+// break/rest/turn/knee/bow/stock/aim/note/heed/care/hold/stand/chance/dive/peek/whiff/sniff/gander/
+// swig/sip/bite/gulp), "take/grab <possessive> <abstract>" (my time/leave/turn/chances/pick/rest/
+// aim/seat), status idioms (take cover/charge/pride/offense/heart/flight/root/shape/part/place/sides/
+// stock/comfort/refuge/shelter/notice/pity/effect/precedence), and reflexives (take/collect/pull
+// myself/yourself/ourselves/himself/herself/themselves together). Also bail on a bare pronoun object
+// (take it / grab that) — the pronoun paths (PW-1's single-revealed, physics) own those.
+const TAKE_IDIOM_RE = new RegExp(
+  '\\b(?:take|grab|snatch|collect|pull)\\s+' +
+  '(?:' +
+    '(?:a|an)\\s+(?:look|drink|step|breath|moment|seat|nap|bath|break|rest|turn|knee|bow|whiff|sniff|gander|swig|sip|bite|gulp|dive|peek|chance|stab|crack|shot|gamble|guess|stroll|walk|rest)\\b' +
+    '|(?:my|your|our|his|her|their)\\s+(?:time|leave|turn|chances?|pick|rest|aim|seat|breath|bearings|leave|revenge|chances)\\b' +
+    '|(?:cover|charge|aim|stock|note|heed|care|hold|stand|pride|offense|offence|heart|flight|root|shape|shelter|shelter|refuge|comfort|notice|pity|effect|precedence|sides?|part|place|control|command|the lead|a knee|the plunge|the reins|the initiative|the hint|the bait|the fall|the blame|the credit|the stage|the floor|the L|the win|the loss)\\b' +
+  ')' +
+  '|\\b(?:take|grab|snatch|pull|collect)\\s+(?:it|that|this|them|myself|yourself|ourselves|himself|herself|themselves|oneself)\\b',
+  'i'
+);
+function tryDeclineUngroundedTake(w, text) {
+  const t = String(text || '');
+  if (!TAKE_ITEM_VERB_RE.test(t)) return null;
+  // A read/peek-at-a-text-object or a take-then-action compound is owned by its gate (mirrors PW-1).
+  if (OBJ_READ_VERB_RE.test(t) || OBJ_CONTENT_PEEK_RE.test(t)) return null;
+  if (TAKE_THEN_ACTION_RE.test(t)) return null;
+  // Bulk / abstract loot grabs keep their own resolvers (dungeon-loot, treasure, physics).
+  if (BULK_TAKE_RE.test(t)) return null;
+  // Figures of speech — "take a look / take cover / take my time / collect myself" name no physical
+  // object; yield so their real handlers (observe/consume/rest/cover/movement) answer.
+  if (TAKE_IDIOM_RE.test(t)) return null;
+
+  // A COMPOUND take — a second clause after the grab ("pick up a rock AND put it in my pocket", "I
+  // take the gold and run") — is not the clean phantom-acquisition shape; its real intent is the
+  // follow-on action, which the downstream resolvers (physics/roll) own. Yield so those answer, and
+  // so the honest line never garbles a multi-clause "noun". (Same spirit as PW-1's TAKE_THEN_ACTION.)
+  if (/\band\b|[,;]/.test(t)) return null;
+
+  // The "from <source>" reach names its own object; strip it so the head noun is what's being taken.
+  const fromM = t.match(TAKE_FROM_SOURCE_RE);
+  const fromTarget = fromM ? String(fromM[1]).replace(/[.!?,]+$/, '').trim() : '';
+  const takeText = fromTarget ? t.replace(TAKE_FROM_SOURCE_RE, '').trim() : t;
+  let noun = takeTargetOf(takeText);
+  // A bare "take it / grab that" with no concrete noun is not this gate's business — the pronoun
+  // paths (PW-1's revealed-single, physics) resolve those; declining a bare pronoun would be noise.
+  if (!noun) return null;
+  noun = noun.replace(/[.!?,]+$/, '').trim();
+  if (!noun) return null;
+  // A multi-word residue (>3 words) is almost never a plain object name — it is captured verb-phrase
+  // spill (the takeTargetOf regex is end-anchored and greedy). Decline only crisp, nameable nouns.
+  if (noun.split(/\s+/).length > 3) return null;
+
+  const node = (w.map?.nodes || []).find(n => n && n.id === w.map?.currentNodeId) || null;
+  if (!node) return null;
+
+  // GROUNDING CHECK — the four legitimate sources. If the noun is grounded, YIELD so the owning
+  // gate (PW-1 mint / physics / trivial-furniture) resolves it byte-identically to today.
+  //
+  // 1) A revealed, not-yet-taken container item here → PW-1's gate owns the acquisition.
+  const scoped = objectsHere(w);
+  for (const o of scoped) {
+    const f = o.piece;
+    if (!isContainerPiece(f)) continue;
+    const st = String(f.state || 'intact');
+    if (!OPENED_STATES.has(st) && !DAMAGED_STATES.has(st)) continue;
+    for (const it of remainingContainerContents(w, node, f)) {
+      if (itemContentWords(it).some(wd => new RegExp(`\\b${wd}\\b`, 'i').test(noun))) return null;
+    }
+  }
+  // 2) A present furniture piece or a carried inventory item → the physics detector grounds both.
+  //    A name/part match is the physics gate's own bar for "this is a real object here"; a fuzzy
+  //    notes-only match is not enough to claim the noun is present (it grabbed the wrong piece).
+  const det = detectPhysicalInteraction(w, noun);
+  const groundedHere = (det.matches || []).some(m => m.match === 'name' || m.match === 'part');
+  if (groundedHere) return null;
+
+  // UNGROUNDED. The noun names nothing canon holds.
+  //
+  // SEARCH PIVOT — the reach was INTO a present container ("grab a letter from the chest"). A real
+  // DM reads that as looking inside, not as a phantom find: route to the existing reveal path, which
+  // states the container's actual contents (or that it is empty). Honest, and it fixes the physics
+  // detector's old mis-grab of an unrelated piece.
+  if (fromTarget) {
+    const container = findReferencedContainer(fromTarget, scoped.map(o => o.piece));
+    if (container) {
+      const revealed = tryContainerReveal(w, `search the ${container.name}`);
+      if (revealed) return revealed;
+    }
+  }
+
+  // HONEST LINE — nothing like that is here to take (in-voice; a DM redirect, not a parser bounce).
+  // Two shapes so the article never mis-agrees: a countable singular gets "a/an <noun>"; a plural or
+  // mass noun ("crown jewels", "gold") drops the article. "There's no <noun> here" reads for both.
+  const art = takeNounPhrase(noun);
+  const line = pickVariant([
+    `You look for ${art} to take, but there's nothing like that here.`,
+    `There's no ${noun} here to take.`,
+    `You cast about, but there's no ${noun} within reach.`,
+  ], w, `take:ungrounded:${noun}`);
+  return { world: w, output: { narration: `Wizard: ${line}`, mechanics: '[take:nothing-here | ungrounded noun, no acquisition]' } };
+}
+
+// A takeable-noun phrase for the honest-take line. A plural/mass noun ("crown jewels", "gold",
+// "coins") drops the article; a countable singular gets "a/an". Never emits "a crown jewels".
+function takeNounPhrase(noun) {
+  const n = String(noun || '').trim();
+  if (!n) return 'anything';
+  const head = n.split(/\s+/).pop();
+  const mass = /^(?:gold|silver|coin|money|treasure|loot|food|water|wood|cloth|rope|ale|wine|bread|jewels?|riches|valuables|supplies|gear|coins)$/i.test(head)
+    || /s$/i.test(head) && !/(?:ss|us|is)$/i.test(head); // rough plural: ends in s, not "brass/status/basis"
+  if (mass) return n;
+  return /^[aeiou]/i.test(n) ? `an ${n}` : `a ${n}`;
 }
 
 function tryFurnitureStateChange(w, text) {

@@ -129,7 +129,8 @@ test('U57: FIFO trim — 8 mainline turns leaves last 6 beats', () => {
     'I climb the wall',
     'I pry the door',
     'I shove the gate',
-    'I lift the beam',
+    'I heave the beam',  // 'lift' is a take-verb → PW-2 honest-floor diverts it in this bare
+                         // (furniture-less) harness; 'heave' stays on the adjudicated roll path
     'I kick the chair',  // physics verb 'kick' may divert; choose carefully
     'I throw the rope',
     'I haul the chest'

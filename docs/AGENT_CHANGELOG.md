@@ -3097,3 +3097,18 @@ other agents. (none active)
   in the LOSS LEDGER (≥3 open-world facts — loss is specificity); a player's death runs the same
   moral physics (killer accrues heat; the world can avenge YOU). Successor conducts; this window
   wrote law only.
+
+## 2026-07-06 — Basecamp (successor) — MP-6 LANDED → v0.31.0 build 113 "the constitution is law" — THE ARC CLOSES
+
+- MP-6: `01594485` → `a925c22d`; ladder 10682/0 · 131/131 · screen truth 7/7. The hunt reaches NPC
+  actors; U594 (Arc A) proves the deepest claim — an IDLE player watches a legible cosmos answer a
+  vile man: attributed deeds, word two towns over, heat past the threshold, hunters at HIS door,
+  the player's record untouched. U595 (Arc B) proves §7 (a)–(e) whole, zero numerics run-wide,
+  byte-identical replay. Live: "You see Carl the failed sculptor… and 3 strangers keeping to the
+  edges, watching."
+- MINOR bump to v0.31.0 — arc completion is a milestone (the 0.30.0 MAP-REAL precedent).
+- **THE MORAL-PHYSICS CONSTITUTION: BLESSED at dawn, LAW by mid-morning.** MP-1..6 + CONSEQ-1 +
+  NPC-DEED-1 + JR-HUNT-1, b101→b113, thirteen builds, one day, every landing ladder-green.
+- Tim's dials await his live eyeball: Carl's cadence (worldTick.js). Tim's next commission is
+  already on the mainline: THE DEATH CONTRACT (DEATH-1..5) — DEATH-1 (death-fact atom + DOWNED
+  state, audit-first) is the next cut.

@@ -2960,3 +2960,20 @@ other agents. (none active)
   U570–U572 claimed; the gift unbidden via the existing forbiddenGates organ, MP-3's latch
   precedent. JR-HUNT-1 queued (fast-travel one-turn hunt deferral — MP-3 worker's flagged finding).
   OCC-STORY-2 unblocked (cut after MP-4). MP-5 (surfacing) then MP-6 (the Carl Witness Test) LAST.
+
+## 2026-07-06 — Basecamp (successor) — max-parallel directive: three more lanes dispatched (four in flight)
+
+- Tim: "If you can run more work in parallel, please do. And work autonomously." Lane algebra over
+  the free slots → three cuts, zero file overlap with MP-4 (forbiddenGates/escalation/worldTick) or
+  each other:
+  - **JR-HUNT-1** (opus, the serial playloop slot): hunt fires ON the fast-travel turn — hunters
+    meet the road; diagnose-first; the no-double-tick wall (thread age exactly 1/turn, U568 law).
+    U573–U574.
+  - **WILD-SCALE-1** (sonnet, renderer): the one-size-law reaches the wild — a mini's footprint
+    matches its OWN ink footprint through the sheet transform; taste guard = smallest reversible
+    cap + screenshot flag, never silent. U575–U576.
+  - **MP-5a** (sonnet, the one narration lane): the tier→sign-vocabulary omen line in the DM prompt
+    (doors/terrain line idiom); T0 silent; invariant-I wall (no numerics ever); LLM-off byte-identical.
+    Cassandra beat sliced OUT to MP-5b (needs MP-4's tick lane). U577–U579.
+- Held deliberately: OCC-STORY-2 (cut after MP-4 — worldTick adjacency), MP-5b (after MP-4),
+  CG-2 paid gate (needs a stable integrated build), MP-6 the Carl Witness Test LAST (Tim's order).

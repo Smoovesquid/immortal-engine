@@ -3211,3 +3211,10 @@ other agents. (none active)
   one more step before the shrug. dialogue.js serial slot (free).
 - In flight: SP-2 (WORLD_VERSION packet) · CORPUS-KILL-1 (micro) · PW-5 build. PW-6 = the arc's
   last row after this wave.
+
+## 2026-07-06 — Basecamp (successor) — CORPUS-KILL-1 landed (no bump — the net grew: 135/135)
+
+- The kill lines joined the convergence corpus: downed-foe fixture + four locked rows with diverge
+  negatives; U617 tripwires the fixture. The one-command check now gates 135 locked behaviors
+  (was 131) and 10,794 tests. Pushed without a version bump — test-net only, nothing
+  player-visible. In flight: SP-2 (WORLD_VERSION packet) · PW-5 build (common knowledge).

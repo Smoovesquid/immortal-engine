@@ -237,7 +237,7 @@ done_when · rollback`.
 
 ### VIS-ORACLE — the Screen-Truth Oracle (MR-ORACLE for pixels)  ·  Phase 1/2  ·  **✅ LANDED v0.30.4 b102 (worker `a1f6a8fd`; U551–U554 29/29+1 todo; suite 10460/0; canvas-free — asserts the renderer's own pure rails; 6 goldens committed; deliberate-accept ritual). FIRST CATCH ON DAY ONE → PLAN-SPLIT-1 (below). Wire into `npm run check` when PLAN-SPLIT-1 flips the last RED.**
 
-### PLAN-SPLIT-1 — one building, two geometries (the oracle's first catch)  ·  Phase 1/2 (MAP-REAL falsifier #3)  ·  **QUEUED — successor's first cut alongside MP-2**
+### PLAN-SPLIT-1 — one building, two geometries (the oracle's first catch)  ·  Phase 1/2 (MAP-REAL falsifier #3)  ·  **CUT + DISPATCHED 2026-07-06 (Basecamp; brief `briefs/PLAN-SPLIT-1-one-geometry.md`; U561–U562 claimed; renderer lane, parallel to MP-2; draw sites located: `public/map/placeFromNode.js:296` + `generatePlace.js:53`)**
 - The oracle's expected-RED SURVIVED b100's projection fix — it is a DISTINCT bug: the wake building's
   walls are DRAWN from the catalog `getPlan()` ("Wattle Cottage") while the figure is SEATED from the
   engine's real `floorPlan(structure)` — two different-scale plans for one building; the token sits

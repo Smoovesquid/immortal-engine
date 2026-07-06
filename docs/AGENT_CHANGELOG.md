@@ -2890,3 +2890,12 @@ other agents. (none active)
   PLAN-SPLIT-1 queued (building drawn from catalog getPlan vs figure seated from engine floorPlan;
   full targeting data + done-when in the row). U553 todo correctly stays; wire-into-check waits for
   the flip. Window ledger final: b083→b102, twenty-one releases. ZERO lanes in flight. Handoff clean.
+
+## 2026-07-06 — Basecamp (successor) — b102 retro-verified; PLAN-SPLIT-1 cut + dispatched
+
+- Retro-ladder over the outgoing window's b102 release: 10460/0 · 131/131 · probe clean · 0 unpushed.
+  Both zombie-window releases (b101, b102) now stand on a full verified ladder.
+- PLAN-SPLIT-1 cut → `briefs/PLAN-SPLIT-1-one-geometry.md`; U561–U562 claimed; renderer lane parallel
+  to MP-2 (zero file overlap). Draw sites pre-located for the worker (placeFromNode.js:296,
+  generatePlace.js:53 — the file's own comments admit the split). Done-when chain ends with wiring
+  `playtest:screen` into `npm run check` (all scenes green precondition).

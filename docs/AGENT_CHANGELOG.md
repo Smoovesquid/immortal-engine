@@ -3085,3 +3085,15 @@ other agents. (none active)
 - **MP-6 is now cuttable.** Its brief must fold in: the hunt organ iterating NPC actors (tickHunt
   is player-only — the "hunt reaches Carl" beat), the §7 a–e assertions, and the optional
   faction-toward-NPC scalar decision. Carl's pacing dials await Tim's live eyeball.
+
+## 2026-07-06 — Fable design window (the closed conductor, design-only) — THE DEATH CONTRACT written
+
+- Tim's direct commission (his taste verbatim in the doc header): death as the final delivery of
+  consequence — gory, kill-tailored prose both directions; the cornered who can speak may beg for
+  life or a quick death; mercy/worse/spare-at-peril/abandon as first-class witnessed deeds; man and
+  the gods watch. `docs/DEATH_CONTRACT.md` + DEATH row queued (DEATH-1..5, farm-buildable).
+- Recon confirmed the fork was pre-ruled: permadeath locked (DND_XCOM), Underworld = DX-3's second
+  act (v1 ships the sealed seam), IG-3 rewind stays the Ref's tool. The four-beat player elegy ends
+  in the LOSS LEDGER (≥3 open-world facts — loss is specificity); a player's death runs the same
+  moral physics (killer accrues heat; the world can avenge YOU). Successor conducts; this window
+  wrote law only.

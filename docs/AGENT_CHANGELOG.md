@@ -2794,3 +2794,15 @@ other agents. (none active)
   assertion aborted the bump script mid-run and the commit chain proceeded). This commit completes
   v0.29.10 b097 for real (package.json + v1.js + PACKETS row). Lesson encoded: bump scripts now fail
   the WHOLE chain (&&-join python with the commit, never newline-join).
+
+## 2026-07-06 — Basecamp — MR-3b integrated → **v0.30.0 build 098 "the map is the world" — MAP-REAL COMMISSION COMPLETE**
+
+- Cherry-picked `637e8f1e`; final gate GREEN (10382/0, 131/131, probe clean). Wild minis live in a
+  12-cell bubble (two walks' worth of woods — pinned to THE MOVEMENT LAW's own unit); fog edge fades
+  to the paper's parchment, never darkness. Integration fix folded: U539's BEFORE-doc subtests read
+  `git show HEAD:` (pass only pre-commit — a new failure class: the time-bomb reproduce-doc); pinned
+  to immutable base `fc9019df`. Worker's stale-preview-server catch noted with respect.
+- **The commission (2026-07-05 → 06, 17 builds b083→b098):** position truth → functional ink (doors/
+  walls/windows/DM-grounding/authored plans) → story placement → the fog-procgen wild, drawn and
+  narrated. Six promises: live or machine-guarded. Standing guards: position probe, GEOMETRY_BREACH,
+  FEATURE_BLOCK, CG-ARCH, no-foreign-ink, no-soft-lock. Next: Tim plays it.

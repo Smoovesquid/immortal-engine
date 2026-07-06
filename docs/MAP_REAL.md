@@ -6,6 +6,11 @@ functionally real." This doc is the arc contract. Siblings: `POSITION_AS_CANON.m
 MR-1 executes its rollout), `MAP_PATH.md` (phases 1–2 fold into this arc), `TABLETOP_MAP.md` (the TT
 render layers this binds to truth), `MINIS_WISHLIST.md` (Tim's standing asset ledger).*
 
+## STATUS: ✅ COMMISSION COMPLETE — v0.30.0 build 098 (2026-07-06)
+All six promises live or machine-guarded (position probe + GEOMETRY_BREACH + FEATURE_BLOCK + CG-ARCH
+standing in `npm run check`). Falsifier list below remains ACTIVE law — any reproducible violation
+reopens the arc.
+
 ## The ruling
 The map is not a picture OF the world; it is a view INTO the one real world. Ink is law: anything
 drawn is simulated, anything simulated is drawn. Symptoms retired by this arc, named at cut time:

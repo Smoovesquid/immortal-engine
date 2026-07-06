@@ -200,7 +200,7 @@ done_when · rollback`.
   haunts the chapel path *because the chapel thread is hot*; a hostile indoors is a burglary IN PROGRESS
   with consequences, not an accident. Still derived + deterministic. Scope on cut.
 
-### MAP-REAL — the drawn world IS the simulated world (Tim's commission)  ·  Phase 1/2 arc  ·  **CUT 2026-07-05-pm — contract `docs/MAP_REAL.md`; six promises + interview rulings (fog-procgen wild · mix-by-role minis · ALWAYS-OPEN plans · full-crunch doors)**
+### MAP-REAL — the drawn world IS the simulated world (Tim's commission)  ·  Phase 1/2 arc  ·  **✅ COMMISSION COMPLETE v0.30.0 b098 (2026-07-06; cut 2026-07-05-pm) — all six promises live or machine-guarded; 17 builds b083→b098; contract `docs/MAP_REAL.md` (completion stamp inside); arc-level live receipt = Tim's next play session (standing)**
 - Symptoms retired by the arc: go-outside 1 km teleport · ghost-Galen · strangers-in-cottage ·
   DM-invented geography. Stages: MR-ORACLE (dispatched) → MR-1 position truth (queued behind SL-5's
   serial slot; brief to Tim at cut) → MR-2 functional ink (walls/doors/windows real; house-builder
@@ -233,7 +233,7 @@ done_when · rollback`.
   **MAP-REAL STAGE 1 (position truth) COMPLETE** — engine writes the doorstep, every reader consumes
   `pos`, the probe stands guard in `npm run check`.
 
-### MR-3 — THE FOG-PROCGEN WILD (stage 3, designed + slicing)  ·  Phase 1/2  ·  **3a ✅ LANDED v0.29.9 b096 (worker `62b0adaf` → integrated; U533–U536 24/24 + U496 class-string; suite 10347/0; ~9% forest blocking density; FEATURE_BLOCK tripwire armed; deadfall=non-blocking flagged reversible) — 3c ✅ LANDED v0.29.10 b097 (worker `8692c3f8`; U542–U544 9/9; wildFacts + survey + TERRAIN prompt line; journey interruptions land in real places) · 3b in flight (renderer U539–U541)**
+### MR-3 — THE FOG-PROCGEN WILD (stage 3, designed + slicing)  ·  Phase 1/2  ·  **3a ✅ LANDED v0.29.9 b096 (worker `62b0adaf` → integrated; U533–U536 24/24 + U496 class-string; suite 10347/0; ~9% forest blocking density; FEATURE_BLOCK tripwire armed; deadfall=non-blocking flagged reversible) — 3c ✅ LANDED v0.29.10 b097 (worker `8692c3f8`; U542–U544 9/9; wildFacts + survey + TERRAIN prompt line; journey interruptions land in real places) · 3b ✅ LANDED v0.30.0 b098 (worker `637e8f1e`; U539–U541 26/26; WILD_BUBBLE_CELLS=12 — two walks' worth of woods; parchment fog edge; integration fix: U539 BEFORE-docs pinned to base fc9019df). **MR-3 COMPLETE.**
 - The law: wild features = pure f(worldSeed, cell); fog hides a world that was always there; unpainted
   parchment, never darkness; roads stay clear; blocking trees stop walks honestly; settlements own
   their ink. Falsifiers + non-goals in the brief.

@@ -69,6 +69,12 @@ const TILT_DEFAULTS = {
   pitchTopDeg: 4,                // camera pitch from straight-down at `start` (≈flat plan).
   pitchDeg:    58,               // camera pitch (deg from top-down) at `full` — the diorama vantage.
   easing:      'smoothstep',     // 'smoothstep' | 'linear' — how tilt/opacity ramp across the band.
+  dioramaScale: 0.72,            // MAP-VIEW-1 (Tim, 2026-07-06 "a bit too close"): how far the
+                                 // diorama camera hangs BACK at full tilt, as a scale on the
+                                 // sheet-locked zoom (1 = nose-to-nose old behavior; 0.72 ≈ 28%
+                                 // wider view). Rides tiltFrac — exactly 1 at `start`, so the
+                                 // crossfade moment still matches the 2D ink 1:1 (no size pop
+                                 // mid-dissolve; U477's no-jump law holds at the boundary).
 };
 
 // Live knob resolution: defaults ← localStorage('ie.tilt') ← window.__tilt.
@@ -85,6 +91,9 @@ function tiltKnobs() {
   k.start = Number.isFinite(+k.start) ? +k.start : TILT_DEFAULTS.start;
   k.full = Math.max(k.start + 1e-6, Number.isFinite(+k.full) ? +k.full : TILT_DEFAULTS.full);
   k.cross = Math.min(k.full, Math.max(k.start, Number.isFinite(+k.cross) ? +k.cross : TILT_DEFAULTS.cross));
+  // MAP-VIEW-1: clamp the pull-back to sane bounds (0.4 = very far, 1 = none) so
+  // a console typo can't invert the zoom or fling the camera to the horizon.
+  k.dioramaScale = Math.min(1, Math.max(0.4, Number.isFinite(+k.dioramaScale) ? +k.dioramaScale : TILT_DEFAULTS.dioramaScale));
   return k;
 }
 // Expose a live handle so Tim can read/set knobs from the console without a reload.
@@ -110,7 +119,13 @@ export function tiltStateForZoom(z, knobs) {
   const phiFull = (k.pitchDeg ?? TILT_DEFAULTS.pitchDeg) * DEG;
   const phi = phiTop + (phiFull - phiTop) * tiltFrac;
   const blend = MAP_3D_ENABLED ? ramp(k, k.start, k.cross, z) : 0;
-  return { tiltFrac, phi, blend };
+  // MAP-VIEW-1 — the diorama's camera pull-back, riding the SAME tilt ramp as
+  // the pitch: exactly 1 (sheet-locked, no divergence) at/below `start`, easing
+  // to `dioramaScale` at `full`. Applied by applyFromCam as a factor on the
+  // sheet-locked pxPerTile — smaller scale = the camera hangs further back.
+  const ds = (k.dioramaScale ?? TILT_DEFAULTS.dioramaScale);
+  const dioramaPull = 1 + (ds - 1) * tiltFrac;
+  return { tiltFrac, phi, blend, dioramaPull };
 }
 export { TILT_DEFAULTS };
 
@@ -307,12 +322,15 @@ export function renderContinuousMap(world, opts = {}) {
 
   function applyFromCam(cam) {
     if (!_live || !cam) return;
-    const { tiltFrac, phi } = tiltStateForZoom(cam.z, tiltKnobs());
+    const { tiltFrac, phi, dioramaPull } = tiltStateForZoom(cam.z, tiltKnobs());
     _lastTiltFrac = tiltFrac;
     _live.ctrl.setCamera({
       phi, az: 0, // north-up base, matching the 2D plan (orbit adds an offset on top)
       target: { tx: cam.cx / NODE_WU, ty: cam.cy / NODE_WU },
-      pxPerTile: NODE_WU * cam.z, // lock 3D scale to the 2D map's scale
+      // Lock 3D scale to the 2D map's scale, eased back by the MAP-VIEW-1
+      // pull (1 at the crossfade boundary — no size pop against the fading
+      // ink — easing to dioramaScale at full tilt: "a bit further away").
+      pxPerTile: NODE_WU * cam.z * dioramaPull,
     });
     // Keep the player mini pinned to the 2D marker's exact point (no morph jump).
     const pf = playerTileFocus(_persist ? _persist.world : world);

@@ -3067,3 +3067,21 @@ other agents. (none active)
   declared ability must win over inference; engine lane, U586–U587) · **WIN-EGRESS-1** (the
   which-window menu bounce — resolve the egress in fiction on the applyEgressRepair precedent;
   playloop slot, U588–U589).
+
+## 2026-07-06 — Basecamp (successor) — gate clusters + the MP-6 prerequisite → v0.30.14 build 112 "the world keeps score"
+
+- **DECL-STAT-1** landed in two honest halves: the worker built the full mechanism in-lane, STOPPED
+  at the one-line playloop wire (WIN-EGRESS-1's live slot), declined to fake a live screenshot —
+  then the SAME worker, resumed warm, added the wire once the slot freed. playerMove-level proof:
+  declared→MIGHT, undeclared control→WITS unchanged. Declaration-gated, zero relocks.
+- **WIN-EGRESS-1** landed: the door-egress answerability pattern extended to windows (named side →
+  goal-directed → deterministic first, always narrated); the P10 "tentative asks which" carve-out
+  REMOVED. Live: "You shoulder through the east-facing window…"
+- **NPC-DEED-1 build** landed: the world now keeps score on NPCs. Honest attribution (the
+  blame-the-player fallback is dead), lazy NPC morality (boot anchor untouched — no re-pin),
+  world-scope consequence, Carl's flagged cadence dials, third-person reputation. Live: Senna warns
+  about Carl unprompted while the player just stands there.
+- Combined ladder: 10667/0 · 131/131 · screen truth 7/7. ONE release for the four-commit stack.
+- **MP-6 is now cuttable.** Its brief must fold in: the hunt organ iterating NPC actors (tickHunt
+  is player-only — the "hunt reaches Carl" beat), the §7 a–e assertions, and the optional
+  faction-toward-NPC scalar decision. Carl's pacing dials await Tim's live eyeball.

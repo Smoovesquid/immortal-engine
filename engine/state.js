@@ -651,6 +651,11 @@ export function defaultCombat() {
     // JR-1: transient — true when this fight opened on the enemy's terms (a
     // fast-travel/journey ambush the party couldn't see coming). Combat-scoped only.
     surprised: false
+    // DEATH-1: `dyingEnabled` (the DOWNED/dying gate) is intentionally OMITTED here
+    // and from ensureCombat's default output. It rides the combat object ONLY when
+    // truthy (DEATH-2 sets it during a fight), so the inactive boot combat object
+    // serializes byte-identically to pre-DEATH-1 → the boot worldHash does NOT move
+    // and U454-E's pinned anchor is untouched. Read via Boolean(c.dyingEnabled).
   };
 }
 
@@ -678,7 +683,33 @@ export function ensureCombat(c) {
     const ac = clampInt(eRaw.ac ?? 10, 0, 30);
     const cr = typeof eRaw.cr === 'number' ? Math.max(0, eRaw.cr) : 0;
     const canParley = Boolean(eRaw.canParley ?? true);
-    const defeated = Boolean(eRaw.defeated ?? (hp === 0));
+    // DEATH-1 (docs/DEATH_CONTRACT.md §3): the DOWNED/dying state. A communicator
+    // at 0 HP does not evaporate — it lies DOWNED (dying clock running) so mercy is
+    // possible. These are COMBAT-SCOPED fields (like `surprised`/JR-1) — they exist
+    // only during an active fight and are ABSENT from the boot world, so they take
+    // NO WORLD_VERSION bump and do not move the boot worldHash. THE WHITELIST TRAP:
+    // they MUST be normalized here AND appear in the enemy literal below (state.js
+    // rebuilds each enemy from a fixed field list; any field not in it is silently
+    // stripped on the next ensureWorld — bit DX-2d-i). `defeated` stays the corpse
+    // boolean; `downed` is orthogonal (a DOWNED foe is a live mini, drawn as ENEMY).
+    const downedRaw = Boolean(eRaw.downed ?? false);
+    const dyingClock = clampInt(eRaw.dyingClock ?? 0, 0, 20);
+    // DEATH-1: the fight's accumulated woundPath (number-free wound entries). Lives
+    // ON the enemy so it persists across rounds; capped at 12. Each entry is
+    // { means, type, region, round, killing } (see engine/combat/deathFact.js).
+    const woundLog = normalizeWoundLog(eRaw.woundLog);
+    // canCommunicate: the capability gate for DOWNED (bestiary/profile may set it;
+    // else derived at read-time by engine/combat/deathFact.canCommunicate). Stored
+    // only when explicitly provided, so a re-mint doesn't fabricate a capability.
+    const canCommunicate = typeof eRaw.canCommunicate === 'boolean' ? eRaw.canCommunicate : undefined;
+    // `defeated` default respects DOWNED: a DOWNED foe sits at 0 HP but is NOT
+    // defeated (it's dying, still a live mini). Only default to defeated at 0 HP
+    // when it is NOT explicitly downed. An explicit eRaw.defeated always wins, and
+    // defeated+downed cannot coexist (defeated is terminal, downed is not).
+    const defeated = eRaw.defeated != null
+      ? Boolean(eRaw.defeated)
+      : (hp === 0 && !downedRaw);
+    const downed = downedRaw && !defeated;
     const resistances = normalizeResistances(eRaw.resistances);
     const conditionImmunities = Array.isArray(eRaw.conditionImmunities)
       ? eRaw.conditionImmunities.filter(s => typeof s === 'string' && s)
@@ -727,7 +758,9 @@ export function ensureCombat(c) {
     occupiedFallbackCells.add(combatCellKey(cell));
     // The one-shot onDeath-revive flag (Undead Fortitude / Rejuvenation…) must
     // persist across turns so a foe refuses to fall ONCE per fight, not per death.
-    const enemy = { id, name, hp, maxHp, damage, ac, cr, damageType, resistances, conditionImmunities, conditions, actions, multiattack, saveProficiencies, canParley, defeated, sourceNpcId, lootTableRef, initMod, legendaryActions, reactions, lairActions, senses, tactical, traits, cx: cell.cx, cy: cell.cy };
+    const enemy = { id, name, hp, maxHp, damage, ac, cr, damageType, resistances, conditionImmunities, conditions, actions, multiattack, saveProficiencies, canParley, defeated, downed, dyingClock, woundLog, sourceNpcId, lootTableRef, initMod, legendaryActions, reactions, lairActions, senses, tactical, traits, cx: cell.cx, cy: cell.cy };
+    // DEATH-1: carry an explicit capability only when set (otherwise derived at read).
+    if (canCommunicate !== undefined) enemy.canCommunicate = canCommunicate;
     if (eRaw._traitRevived) enemy._traitRevived = true;
     enemies.push(enemy);
     if (enemies.length >= COMBAT_ENEMY_CAP) break;
@@ -744,6 +777,10 @@ export function ensureCombat(c) {
   // JR-1: transient surprise flag — a journey (fast-travel) ambush opens on the
   // enemy's terms. Combat-scoped (no WORLD_VERSION bump): cleared with the fight.
   const surprised = Boolean(c.surprised);
+  // DEATH-1: the DOWNED/dying gate (combat-scoped, default false; no WORLD_VERSION
+  // bump — mirrors `surprised`). When true, a felled communicator enters DOWNED
+  // instead of dying outright. DEATH-2 flips it on with the beg + the four verbs.
+  const dyingEnabled = Boolean(c.dyingEnabled);
   // DX-2a: the player's tactical position (cover/flank/high-ground).
   const playerTactical = normalizeTactical(c.playerTactical);
 
@@ -759,7 +796,11 @@ export function ensureCombat(c) {
     }))
     .slice(0, 12); // cap at party + enemy cap
 
-  return { active, round, turnIndex, enemies, beganAt, reason, playerGuard, companionGuard, surprised, initiativeOrder, grid, playerCell, playerTactical };
+  const out = { active, round, turnIndex, enemies, beganAt, reason, playerGuard, companionGuard, surprised, initiativeOrder, grid, playerCell, playerTactical };
+  // DEATH-1: include the DOWNED/dying gate ONLY when set, so an inactive/boot combat
+  // object stays byte-identical to pre-DEATH-1 (boot worldHash unmoved; U454-E safe).
+  if (dyingEnabled) out.dyingEnabled = true;
+  return out;
 }
 
 // ── CM7 — legendary actions & reactions normalizers ─────────────────────
@@ -828,6 +869,25 @@ function normalizeSenses(raw) {
     tremorsense: typeof raw.tremorsense === 'number' ? clampInt(raw.tremorsense, 0, 300) : null,
     truesight: typeof raw.truesight === 'number' ? clampInt(raw.truesight, 0, 300) : null
   };
+}
+
+// DEATH-1: normalize the enemy woundLog — the fight's accumulated woundPath. Each
+// entry is a number-free wound { means, type, region, round, killing }. Capped at
+// 12 (keep the latest). Malformed entries are dropped. Defaults to [].
+function normalizeWoundLog(raw) {
+  if (!Array.isArray(raw)) return [];
+  const out = [];
+  for (const w of raw) {
+    if (!w || typeof w !== 'object') continue;
+    out.push({
+      means: String(w.means ?? 'a strike').slice(0, 64),
+      type: String(w.type ?? 'physical').slice(0, 32),
+      region: String(w.region ?? 'the body').slice(0, 32),
+      round: clampInt(w.round ?? 1, 1, 99),
+      killing: Boolean(w.killing)
+    });
+  }
+  return out.length > 12 ? out.slice(out.length - 12) : out;
 }
 
 // ── Pass R1 — rumor normalizer ──────────────────────────────────────────

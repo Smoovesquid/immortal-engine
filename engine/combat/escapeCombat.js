@@ -58,6 +58,15 @@ import {
   applyACTraits,
   applyDeathTraits
 } from './traitHooks.js';
+// DEATH-1 — the death fact atom + the DYING/DOWNED capability gate (docs/DEATH_CONTRACT.md).
+import {
+  canCommunicate,
+  DYING_CLOCK_ROUNDS,
+  woundEntry,
+  assembleDeathFact,
+  recordDeathFactEvent,
+  routeKillerIntent
+} from './deathFact.js';
 
 // ── Player build (level-1 hedge-caster escapee) ──────────────────────────────
 const PLAYER_BASE_HP = 14;   // + GRIT mod
@@ -1263,19 +1272,51 @@ export function applySurpriseRound(world, rng) {
 //   dmg        — damage after trait DR (what actually came off the foe)
 //   hp         — enemy hp after (surviving hp, revived hp, or 0)
 //   dropped    — the blow took it to 0 (the prose says "it drops")
-//   defeated   — truly down (dropped and did NOT revive)
+//   defeated   — truly down (dropped, did NOT revive, and did NOT enter DOWNED)
+//   downed     — DEATH-1: dropped, no revive, but a COMMUNICATOR → enters DOWNED
+//                (dying, not dead; can still plead — DEATH-2's beg fires from it)
 //   revived    — clawed back this hit
 //   reviveBeat — fiction line for the comeback (no number/label — THE LAW)
-function applyEnemyDamage(enemy, rawDmg, dmgType, world) {
+//
+// DEATH-1 (docs/DEATH_CONTRACT.md §3): the 0-HP boundary is the single seam where
+// DOWNED is decided, so EVERY attack branch (melee/cantrip/breath/missiles/rays/
+// fireball) gets it uniformly. A communicator that drops and cannot revive enters
+// DOWNED instead of `defeated` — `defeated` stays FALSE (it is still a live
+// combatant, drawn as an ENEMY not a corpse; the combat_one_defeated golden ties
+// the corpse mini to `defeated`, so DOWNED MUST keep it false). The speechless die
+// outright exactly as before. When ctx passes a real `means` (the player-attack
+// branches), each blow is appended to the enemy's persistent `woundLog` (the
+// fight's woundPath for the DEATH FACT) so the killing blow can finish through an
+// earlier round's wound (§2). All pure — no rng drawn here (the determinism guard:
+// a trait-less foe stays byte-identical).
+function applyEnemyDamage(enemy, rawDmg, dmgType, world, ctx = {}) {
   const base = Math.max(0, Number(rawDmg) || 0);
   if (base <= 0) {
-    return { dmg: 0, hp: Math.max(0, Number(enemy.hp) || 0), dropped: false, defeated: false, revived: false, reviveBeat: '' };
+    return { dmg: 0, hp: Math.max(0, Number(enemy.hp) || 0), dropped: false, defeated: false, downed: false, revived: false, reviveBeat: '' };
   }
   const dmg = applyDamageTakenTraits(enemy, base, dmgType);
   let hp = Math.max(0, (Number(enemy.hp) || 0) - dmg);
   enemy.hp = hp;
   const dropped = hp <= 0;
-  let defeated = false, revived = false, reviveBeat = '';
+  let defeated = false, downed = false, revived = false, reviveBeat = '';
+  // DEATH-1: accumulate this blow onto the enemy's persistent woundLog (the fight's
+  // woundPath for the DEATH FACT — number-free). It lives ON the enemy (whitelisted,
+  // capped) so it survives across rounds/turns via the combatState delta; the
+  // killing blow can then "finish through" an earlier round's wound (§2). Logs only
+  // when the caller passes a real `means` (the player-attack branches) — enemy-side
+  // and exotic un-named damage doesn't pollute the path; those kills still get a
+  // synthesized killing wound in mintDeathFactForKill.
+  if (ctx.means && enemy.id) {
+    const list = Array.isArray(enemy.woundLog) ? enemy.woundLog : (enemy.woundLog = []);
+    list.push(woundEntry({
+      means: ctx.means,
+      type: dmgType || enemy.damageType || 'physical',
+      round: ctx.round || 1,
+      seedIndex: list.length,
+      killing: dropped
+    }));
+    if (list.length > 12) list.splice(0, list.length - 12); // cap; keep the latest
+  }
   if (dropped) {
     const death = (!enemy._traitRevived) ? applyDeathTraits(enemy, world) : { revive: false };
     if (death.revive) {
@@ -1284,12 +1325,65 @@ function applyEnemyDamage(enemy, rawDmg, dmgType, world) {
       enemy._traitRevived = true;
       revived = true;
       reviveBeat = `The ${enemy.name} drops — then will not stay down, dragging itself back upright.`;
+    } else if (ctx.dyingEnabled && canCommunicate(enemy) && !enemy.downed) {
+      // DEATH-1: a communicator does not evaporate — it enters DOWNED (dying).
+      // `defeated` stays false (still a live mini). The dying clock + the beg +
+      // the four verbs are DEATH-2; here the STATE is entered deterministically.
+      //
+      // GATED behind ctx.dyingEnabled (default OFF). DEATH-1 ships the STATE fully
+      // built, entered, persisted, invariant-checked, and tested (U597), but does
+      // NOT route the LIVE kill path through it yet — because the finishing verbs
+      // that resolve a DOWNED foe (mercy/worse/spare/walk) are DEATH-2. With the
+      // flag off, a lethal blow kills cleanly as it always has (the shippable loop
+      // and every lethal-kill test stay unchanged); DEATH-2 flips this on alongside
+      // the verbs. The DEATH FACT (invariant I) mints on a real kill either way.
+      enemy.downed = true;
+      enemy.dyingClock = DYING_CLOCK_ROUNDS;
+      downed = true;
     } else {
+      // Speechless (beast/mindless), an already-DOWNED foe finished off, or the
+      // DEATH-1 default (dying not yet live): dies outright, exactly as before.
       enemy.defeated = true;
+      enemy.downed = false;
       defeated = true;
     }
   }
-  return { dmg, hp, dropped, defeated, revived, reviveBeat };
+  return { dmg, hp, dropped, defeated, downed, revived, reviveBeat };
+}
+
+// DEATH-1 — mint the DEATH FACT at the killing moment (invariant I: the fact
+// precedes the prose). Called by the turn resolver the moment a foe TRULY dies
+// (`defeated` newly true — the speechless dying outright, or a DOWNED foe
+// finished off in DEATH-2). NOT called when a foe merely enters DOWNED (it isn't
+// dead yet). Pure: assembles f(world, combat log) and appends the fact as a
+// timeline event; draws NO rng. `enemy.woundLog` is this fight's accumulated
+// woundPath; if empty (an exotic branch that didn't log), a single killing-blow
+// wound is synthesized from `means` so the woundPath is never empty for a death.
+function mintDeathFactForKill(world, enemy, { pc, means, round, actionText, fleeing = false, cameFromDowned = false }) {
+  const wounds = (Array.isArray(enemy.woundLog) && enemy.woundLog.length)
+    ? enemy.woundLog
+    : [woundEntry({ means: means?.name || 'a strike', type: means?.type || enemy.damageType || 'physical', round, seedIndex: 0, killing: true })];
+  const fact = assembleDeathFact({
+    world,
+    victim: enemy,
+    victimIsPlayer: false,
+    killer: { name: playerName(pc), kind: 'player' },
+    means: means || { name: 'a blow', type: enemy.damageType || 'physical' },
+    woundPath: wounds,
+    round,
+    fleeing,
+    downed: cameFromDowned,
+    begged: null,                        // DEATH-2 populates the beg
+    intent: routeKillerIntent(actionText, { onBeggingFoe: Boolean(enemy.downed) || cameFromDowned }),
+    t: Array.isArray(world?.timeline) ? world.timeline.length : 0
+  });
+  return recordDeathFactEvent(world, fact);
+}
+
+// The player's name for the killer field (falls back to a stable sentinel).
+function playerName(pc) {
+  const p = pc && typeof pc === 'object' ? pc : {};
+  return String(p.name ?? p.id ?? 'the wanderer');
 }
 
 function stripFoeArticles(result, properNames) {
@@ -1323,6 +1417,10 @@ function resolveEscapeCombatTurnCore(world, actionText = '') {
   const round = Number(w.combat.round) || 1;
   const rng = makeRng(seedFromString(`${w.meta?.seed || ''}|escapeCombat|${w.timeline.length}|r${round}`));
   const beats = [];
+  // DEATH-1: the DOWNED/dying gate. Combat-scoped flag (default OFF) — when true, a
+  // felled communicator enters DOWNED instead of dying outright. DEATH-2 flips it on
+  // with the beg + the four verbs; DEATH-1 keeps it off so the live loop is unchanged.
+  const dyingEnabled = Boolean(w.combat?.dyingEnabled);
   let actionMech = ''; // a grapple action surfaces its own mechanics line
   const { verb: rawVerb, mode } = parseEscapeAction(actionText);
   let verb = rawVerb;
@@ -1979,8 +2077,12 @@ function resolveEscapeCombatTurnCore(world, actionText = '') {
         // Agonizing Blast (warlock 2): CHA mod rides the eldritch blast.
         if (cantrip.ref === 'eldritch_blast' && hasFeature(pc, 'agonizingBlast')) raw += Math.max(0, pc.dnd.mods.CHA);
         raw = Math.max(1, raw);
-        const hit = applyEnemyDamage(target, raw, cantrip.type, w);
-        beats.push(`Your ${cname} sears the ${target.name} for ${hit.dmg} ${cantrip.type}${crit ? ' (critical!)' : ''}${hit.dropped ? ' — it drops.' : `. (${hit.hp} HP left)`}`);
+        const cantripMeans = { name: cname, type: cantrip.type };
+        const hit = applyEnemyDamage(target, raw, cantrip.type, w, { round, means: cname, dyingEnabled });
+        if (hit.defeated) w = mintDeathFactForKill(w, target, { pc, means: cantripMeans, round, actionText });
+        const cantripDrop = hit.downed ? ' — it goes down, and does not get up. It still breathes.'
+          : hit.dropped ? ' — it drops.' : `. (${hit.hp} HP left)`;
+        beats.push(`Your ${cname} sears the ${target.name} for ${hit.dmg} ${cantrip.type}${crit ? ' (critical!)' : ''}${cantripDrop}`);
         if (hit.revived) beats.push(hit.reviveBeat);
         actionMech = `[cantrip:${cantrip.name} | atk:${total} vs AC:${ac} → hit | ${hit.dmg} ${cantrip.type}${crit ? ' crit' : ''}]`;
       } else {
@@ -2096,8 +2198,13 @@ function resolveEscapeCombatTurnCore(world, actionText = '') {
           }
           dmg = Math.max(1, dmg);
           anyHit = true; swingHits++;
-          const hit = applyEnemyDamage(tgt, dmg, melee.damageType || 'physical', w);
+          const meleeMeans = { name: wname, type: melee.damageType || 'physical' };
+          const hit = applyEnemyDamage(tgt, dmg, melee.damageType || 'physical', w, { round, means: wname, dyingEnabled });
           swingDmg += hit.dmg;
+          // DEATH-1: a speechless foe finished by this blow mints its DEATH FACT
+          // now (invariant I). A communicator enters DOWNED here (hit.downed) and
+          // its fact waits for the finishing verb/clock (DEATH-2).
+          if (hit.defeated) w = mintDeathFactForKill(w, tgt, { pc, means: meleeMeans, round, actionText });
           const tags = [
             crit ? 'critical!' : '',
             sneak ? `sneak attack +${sneak}` : '',
@@ -2105,7 +2212,9 @@ function resolveEscapeCombatTurnCore(world, actionText = '') {
             smite ? `divine smite +${smite}` : '',
             rageDmg ? 'raging' : ''
           ].filter(Boolean).join(', ');
-          beats.push(`Your ${wname} ${smite ? 'falls like judgment on' : 'hits'} the ${tgt.name} for ${hit.dmg}${tags ? ` (${tags})` : ''}${hit.dropped ? ' — it drops.' : `. (${hit.hp} HP left)`}`);
+          const dropTail = hit.downed ? ' — it goes down, and does not get up. It still breathes.'
+            : hit.dropped ? ' — it drops.' : `. (${hit.hp} HP left)`;
+          beats.push(`Your ${wname} ${smite ? 'falls like judgment on' : 'hits'} the ${tgt.name} for ${hit.dmg}${tags ? ` (${tags})` : ''}${dropTail}`);
           if (hit.revived) beats.push(hit.reviveBeat);
         } else {
           beats.push(`You swing your ${wname} at the ${tgt.name} and miss.`);
@@ -2158,19 +2267,27 @@ function resolveEscapeCombatTurnCore(world, actionText = '') {
   }
 
   // ── Victory check ──────────────────────────────────────────────────────────
+  // A DOWNED foe (DEATH-1) is at 0 HP but NOT defeated — it fails `hp>0` so it
+  // never counts as "alive/fighting" here, and it is inert to every enemy-turn
+  // loop (all of which gate on `!defeated && hp>0`). So the fight is WON the
+  // moment only DOWNED/defeated foes remain. But a DOWNED foe is dying, not dead:
+  // it must NOT be looted or credited with kill-XP yet (that is DEATH-2's
+  // finishing verb). We loot/credit only the truly `defeated`, and persist DOWNED
+  // foes (with their downed/dyingClock intact) into the ended combat for DEATH-2.
   const anyAlive = enemies.some(e => e && !e.defeated && (Number(e.hp) || 0) > 0);
   if (!anyAlive) {
-    // Roll CR-scaled loot for the cleared foes BEFORE endCombat clears the enemy
-    // list. Tamed ambushers carry no lootTableRef, so this falls back to the CR
-    // band table (cr_0_4) — modest drops fitting their tamed difficulty. Mirrors
-    // the loot path in combatResolve.js so the existing loot popup just works.
+    const downedFoes = enemies.filter(e => e && e.downed && !e.defeated);
+    const deadFoes = enemies.filter(e => e && e.defeated);
+    // Roll CR-scaled loot for the DEAD foes BEFORE endCombat. Tamed ambushers
+    // carry no lootTableRef, so this falls back to the CR band table (cr_0_4).
+    // Mirrors the loot path in combatResolve.js so the existing loot popup works.
     // Deterministic: the rng is seeded from world seed + timeline length + round,
     // so a replay yields identical drops (worldHash stays stable).
     const lootRng = makeRng(seedFromString(`${w.meta?.seed || ''}|escapeLoot|${w.timeline.length}|r${round}`));
     const lootResults = [];
     const lootDeltas = [];
     let lootCounter = 0;
-    for (const e of enemies) {
+    for (const e of deadFoes) {
       const drops = rollLootForCR(e.cr ?? 0, lootRng, e.lootTableRef || null);
       for (const drop of drops) {
         if (!drop) continue;
@@ -2192,10 +2309,11 @@ function resolveEscapeCombatTurnCore(world, actionText = '') {
     }
     if (lootDeltas.length > 0) w = applyDeltas(w, lootDeltas);
 
-    // XP for the cleared encounter, level-ups at the moment of triumph.
-    w = awardXpAndLevel(w, enemies, beats);
+    // XP for the DEAD foes only — a DOWNED foe's kill-credit waits for the
+    // finishing verb (DEATH-2). Level-ups at the moment of triumph.
+    w = awardXpAndLevel(w, deadFoes, beats);
 
-    w = endCombat(w, { reason: 'enemies-defeated' });
+    w = endCombat(w, { reason: downedFoes.length ? 'enemies-down' : 'enemies-defeated' });
 
     // Emit a combat-end event carrying the loot list so the UI loot popup fires.
     // The UI scans the timeline for a combat-end with a `loot` field, so only
@@ -2205,7 +2323,17 @@ function resolveEscapeCombatTurnCore(world, actionText = '') {
       w = { ...w, timeline: [...tl, { t: tl.length, kind: 'combat-end', data: { reason: 'combat-victory', loot: lootResults } }] };
     }
 
-    beats.push(lootResults.length ? 'The way is clear. You search the fallen and pocket what they carried.' : 'The way is clear.');
+    if (downedFoes.length) {
+      // The fight is won but a foe lies dying at your feet — DEATH-1's DOWNED
+      // moment. No "the way is clear" over a still-breathing body. What you DO
+      // about it (mercy, worse, spare, walk away) is DEATH-2's four verbs.
+      const one = downedFoes.length === 1;
+      beats.push(one
+        ? `The last ${downedFoes[0].name} is down but not dead — sprawled, breathing in wet gasps, past fighting. Its life is in your hands.`
+        : `The fight is out of them — ${downedFoes.length} lie down but not dead, breathing, past fighting. Their lives are in your hands.`);
+    } else {
+      beats.push(lootResults.length ? 'The way is clear. You search the fallen and pocket what they carried.' : 'The way is clear.');
+    }
     return {
       world: w,
       result: {

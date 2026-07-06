@@ -475,6 +475,25 @@ export function assertWorldInvariants(world) {
     if (typeof e.defeated !== 'boolean') {
       throw new Error(`Invariant: combat enemy ${e.id} defeated must be boolean`);
     }
+    // DEATH-1: the DOWNED/dying state (combat-scoped). `downed` is orthogonal to
+    // `defeated` — a DOWNED foe is dying but still a live mini, so the two can
+    // never both be true (defeated is terminal, downed is not). dyingClock is the
+    // engine-owned dying countdown (0..20); no numeric ever reaches a player string.
+    if (typeof e.downed !== 'boolean') {
+      throw new Error(`Invariant: combat enemy ${e.id} downed must be boolean`);
+    }
+    if (e.downed && e.defeated) {
+      throw new Error(`Invariant: combat enemy ${e.id} cannot be both downed and defeated`);
+    }
+    if (!Number.isInteger(e.dyingClock) || e.dyingClock < 0 || e.dyingClock > 20) {
+      throw new Error(`Invariant: combat enemy ${e.id} dyingClock out of range 0..20`);
+    }
+    if (!Array.isArray(e.woundLog)) {
+      throw new Error(`Invariant: combat enemy ${e.id} woundLog must be array`);
+    }
+    if (e.canCommunicate !== undefined && typeof e.canCommunicate !== 'boolean') {
+      throw new Error(`Invariant: combat enemy ${e.id} canCommunicate must be boolean when present`);
+    }
     if (typeof e.sourceNpcId !== 'string') {
       throw new Error(`Invariant: combat enemy ${e.id} sourceNpcId must be string`);
     }

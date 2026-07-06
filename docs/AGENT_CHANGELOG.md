@@ -3054,3 +3054,16 @@ other agents. (none active)
   Remaining: NPC-DEED-1 audit → MP-6 (the Carl Witness Test). Next: CG-2 live-flip gate rehearsal
   on this stable build (the queued paid gate; server restart first so the gate measures b111's
   engine, not the boot-time code).
+
+## 2026-07-06 — Basecamp (successor) — CG-2 rehearsal PASSED → validator LIVE; gate 4/48; two clusters cut
+
+- Gate v0.30.13 b111: 48 turns, $0.94 (balance $14.30), **4/48** (best-ever 3/48; 8 releases between
+  measures; within variance). Modes: 0 NEW, Chao1 saturated at 5 — the failure space stayed charted
+  through the whole MP arc + map wave. One self-flagged [JUDGE ERROR] (known class).
+- **THE FLIP: COHERENCE_VALIDATE=on** (was shadow-compare since the 07-05 ruling). Earned by the
+  rehearsal: 119 validated turns today, zero would-blocks, zero detections any tier, labels live.
+  CG-2b's landed rules govern the first real detection; rollback = one .env line. Server restarted.
+- Clusters → packets, both dispatched: **DECL-STAT-1** (declared Strength resolves as WITS-2 — the
+  declared ability must win over inference; engine lane, U586–U587) · **WIN-EGRESS-1** (the
+  which-window menu bounce — resolve the egress in fiction on the applyEgressRepair precedent;
+  playloop slot, U588–U589).

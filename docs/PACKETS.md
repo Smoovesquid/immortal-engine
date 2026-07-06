@@ -404,6 +404,20 @@ done_when · rollback`.
   packet; touching this before the pre-ship pass without a new Tim ruling.
 - **rollback:** content-only; revert the commit.
 
+### GATE 2026-07-06 — CG-2 rehearsal + post-MP-arc measure (v0.30.13 b111 · **4/48** · `opus-gate-2026-07-06.md` · $0.94, balance $14.30)
+- **The rehearsal PASSED and the validator is LIVE:** 119 shadow-validated turns today (48 adversarial), ZERO would-blocks, zero detections any tier — no false positives under hostile load; labels live (persona/turn threaded). Per the 2026-07-05 fix-first-watch-meanwhile ruling the flip is earned: `.env COHERENCE_VALIDATE=on`, server restarted, rollback = one line. CG-2b's swap rules (cosmetic never blocks; strictly-better only) govern the first real detection.
+- **4/48 (vs 3/48 best-ever, within run variance; 8 releases landed between measures).** Modes: 2 this run, **0 NEW** vs ledger; Chao1 saturated (5 observed, ~0 remaining) — the failure-mode space is statistically charted. One [JUDGE ERROR] self-flagged (known judge-bias class, turn passed).
+- **Cluster 1 → DECL-STAT-1 (cut below):** 3× CRUNCH_INCONSISTENCY — a player-declared check resolves on a DIFFERENT stat (declared Strength lever → mech `stat:WITS-2`).
+- **Cluster 2 → WIN-EGRESS-1 (cut below):** 1× DM_TEST_DEADEND — multi-window egress bounced as a menu ("Which do you go out?") instead of resolving in fiction; the egress-door pattern's window sibling.
+
+### DECL-STAT-1 — a declared check resolves on the DECLARED stat  ·  Phase 0 (crunch honesty)  ·  **CUT + DISPATCHED 2026-07-06 (gate cluster; U586–U587 claimed; engine lane resolve/intent — OFF playloop, flag if the fix demands it)**
+- Evidence: gate 2026-07-06 Rules-Lawyer turn — "I jam the Worn Blade under the hasp and lever with my full weight. Set the DC and I'll roll Strength." → mech `[… approach:focus … stat:WITS-2]`. The narration honored the roll; the STAT contradicted the declared action (med severity, ×3 this run).
+- Diagnose-first: where does a declared ability enter the intent record, and where does resolve pick the stat? The fix: an explicitly declared ability WINS over inference (interpret-richly/commit-narrowly — V7); absent a declaration, today's inference stands. Determinism + corpus relocks documented if prompts shift.
+
+### WIN-EGRESS-1 — multi-window egress resolves in fiction, never as a menu  ·  Phase 0 (THE DM TEST)  ·  **CUT + DISPATCHED 2026-07-06 (gate cluster; U588–U589 claimed; playloop/egress serial slot — the egress-door pattern's window sibling)**
+- Evidence: gate 2026-07-06 Chaos-griefer turn — "I climb out through the broken window and run torch-first at the nearest cottage's wall." → DM: "There's more than one window — one to the east or one to the north. Which do you go out?" (high; the cardinal menu-bounce THE_DM_TEST.md forbids).
+- Diagnose-first: find the which-window prompt source; fix on the applyEgressRepair precedent — pick the fiction-obvious window deterministically (toward the stated goal, else nearest), NARRATE the pick ("You shoulder through the east window…"), never ask. AG-arc recall-bias law applies at the ONE egress chosen.
+
 ### GATE 2026-07-05 — morning fresh measure (v0.28.29 · **3/48** · `opus-gate-2026-07-05.md`)
 **The honest read:** 14/48 → 8/48 → **3/48 (6%) on the same Ref-off config** — the best score the gate has
 ever recorded. All eight of 07-04-3's fixes HELD (CBT-AGENCY, INT-4-HELD, ANS-2, INFO-HONESTY all silent),

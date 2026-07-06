@@ -30,7 +30,7 @@ const TILE_WU = 40; // world units per node tile — keeps the 3D geography to s
 // MR-3b's wild-feature mini builder (trees/boulders/brush/deadfall/stumps).
 // Pure helpers; they receive the lazily-imported THREE, so this stays a
 // zero-cost static import.
-import { buildArchetypeFigure, buildPropMini, buildWildMini, buildCorpseMini, breatheMinis, phaseFromKey } from './figures3d.js';
+import { buildArchetypeFigure, buildPropMini, buildWildMini, buildCorpseMini, breatheMinis, phaseFromKey, miniSheetScale, figureHeightWu, propTrueSize, measureAuthoredSize } from './figures3d.js';
 
 // World-asset builders (terrain, dirt roads, settlements, woods, the chapel ruin) —
 // the SAME pure-view module the standalone asset lab (map-proto/asset-lab.html) uses,
@@ -71,7 +71,7 @@ import {
 //      multiple so panning/orbiting never runs off the edge before the next
 //      zoom-drift redraw catches up.
 import { renderOneMap, playerFocusWu } from './oneMap.js';
-import { NODE_WU, regionCellToWu, entityScenePosOnSheet } from './worldSpace.js';
+import { NODE_WU, regionCellToWu, entityScenePosOnSheet, sheetScenePerWu } from './worldSpace.js';
 // TT-PROPS — placedTokenModel(world, nodeId) is the pure engine-position read
 // (people/trees/props/livestock, all {wx,wy} world units) the 2-D sheet
 // already draws minis from; the tilt view reuses the SAME model, never a
@@ -454,16 +454,45 @@ export async function mountSlice3D(container, sceneData, opts = {}) {
   // Reproject every engine-occupancy mini onto the sheet's current ink. Called at
   // mount (below, once the entities exist) and on every setCamera after the sheet
   // re-centres/re-zooms, so people/props never drift off their own drawn footprint.
-  // Only touches x/z (+ the flat ground y) — figure geometry, scale, and breathe
-  // baseY offsets are untouched (beauty locked; positions only).
+  // Touches x/z (+ the flat ground y) AND — REND-SCALE-1 — the mini's SIZE: a
+  // figure whose true height is `heightWu · scenePerWu` scene units is exactly as
+  // tall against the ink's 5-ft squares as the real thing (a 6-ft man spans 1.2
+  // squares, a 3½-ft hobbit 0.7 — the "foot-tall Hobbit" falsifier, Tim
+  // 2026-07-06). `wuPerAuthored` is stamped at each build site; the breathe loop
+  // re-applies `baseScale` every frame, so writing it here is the whole change.
+  // Floored at each rec's `floorScale` (default 1 = the authored token look) so
+  // region-zoom tokens stay legible where no squares are drawn. Figure geometry
+  // itself stays untouched (beauty locked).
   function repositionEntities() {
+    const spw = sheetScenePerWu(worldSheet.mesh.scale.x, worldSheet.currentZ(), SHEET_PX);
     for (const m of entityMinis) {
       if (!m || !m.group) continue;
       const p = entityScenePos(m.wx, m.wy);
       const y = heightAt(p.x, p.z) + (Number(m.yOff) || 0);
       m.group.position.set(p.x, y, p.z);
       m.baseY = y; // the breathe loop bobs around this
+      if (Number.isFinite(m.wuPerAuthored) && m.wuPerAuthored > 0) {
+        m.baseScale = miniSheetScale(m.wuPerAuthored, spw, m.floorScale || 1);
+      }
     }
+    // The player token keeps its own placement (it sits AT the sheet focus) but
+    // rides the SAME size law — it was the reported falsifier's own figure.
+    if (playerMini && Number.isFinite(playerMini.wuPerAuthored) && playerMini.wuPerAuthored > 0) {
+      playerMini.baseScale = miniSheetScale(playerMini.wuPerAuthored, spw, playerMini.floorScale || 1);
+    }
+    // Debug/verification hook (window.__map3d idiom): exact live numbers —
+    // drawnWu must equal heightWu wherever the true law is above the floor.
+    try {
+      const audit = (m, who) => m && Number.isFinite(m.wuPerAuthored) ? {
+        who, heightWu: m.heightWu, baseScale: +m.baseScale.toFixed(4),
+        drawnWu: +((m.baseScale * (m.authoredSize || 0)) / (spw || 1)).toFixed(3),
+        floored: m.baseScale === (m.floorScale || 1) && m.wuPerAuthored * spw < (m.floorScale || 1)
+      } : null;
+      window.__rendScaleAudit = {
+        spw: +spw.toFixed(5), cellScene: +(5 * spw).toFixed(4),
+        entries: [audit(playerMini, 'player'), ...entityMinis.slice(0, 6).map(m => audit(m, m.group?.userData?.kind || 'entity'))].filter(Boolean)
+      };
+    } catch { /* headless-safe: the audit is never load-bearing */ }
   }
 
   // MR-3b — the fog-edge overlay disc, mounted just above the ground sheet
@@ -676,7 +705,19 @@ export async function mountSlice3D(container, sceneData, opts = {}) {
     token.position.set(px, py + 0.06, pz);
     scene.add(token);
     playerToken = token;
-    playerMini = { group: token, baseY: py + 0.06, baseScale: 1, rate: 1.4, phase: 0, bob: 0.05, defeated: false };
+    // REND-SCALE-1 — the player's TRUE height from the character sheet's own
+    // species (SRD size; 'Hobbit'/'Halfling' → 3½ ft), over the figure's
+    // measured authored height. repositionEntities pushes it through the
+    // sheet's live transform so the figure is real-sized against the squares.
+    // Two historical spellings of the sheet field: chargen writes `dnd`
+    // (createCharacter5e), some paths carry `sheet` — same record, read both.
+    const p0 = opts.world?.party?.[0] || null;
+    const pHeightWu = figureHeightWu(p0?.dnd?.species || p0?.sheet?.species || null);
+    const pAuthored = measureAuthoredSize(THREE, token, 'y');
+    playerMini = {
+      group: token, baseY: py + 0.06, baseScale: 1, rate: 1.4, phase: 0, bob: 0.05, defeated: false,
+      wuPerAuthored: pHeightWu / pAuthored, heightWu: pHeightWu, authoredSize: pAuthored, floorScale: 1
+    };
     sliceMinis.push(playerMini);
   }
 
@@ -713,7 +754,14 @@ export async function mountSlice3D(container, sceneData, opts = {}) {
         const fig = buildArchetypeFigure(THREE, 'humanoid', {});
         fig.position.set(p.x, y + 0.02, p.z);
         scene.add(fig);
-        const rec = { group: fig, baseY: y + 0.02, baseScale: 1, rate: 1.3, phase: phaseFromKey(npc.id || npc.name), bob: 0.04, defeated: false, wx: npc.wx, wy: npc.wy, yOff: 0.02 };
+        // REND-SCALE-1 — villagers default to a 6-ft medium person (their map
+        // records carry no species); the sheet transform does the rest.
+        const nHeightWu = figureHeightWu(null);
+        const nAuthored = measureAuthoredSize(THREE, fig, 'y');
+        const rec = {
+          group: fig, baseY: y + 0.02, baseScale: 1, rate: 1.3, phase: phaseFromKey(npc.id || npc.name), bob: 0.04, defeated: false, wx: npc.wx, wy: npc.wy, yOff: 0.02,
+          wuPerAuthored: nHeightWu / nAuthored, heightWu: nHeightWu, authoredSize: nAuthored, floorScale: 1
+        };
         sliceMinis.push(rec); entityMinis.push(rec);
       }
       for (const prop of (tok.props || [])) {
@@ -727,7 +775,14 @@ export async function mountSlice3D(container, sceneData, opts = {}) {
         // alive; the tiny bob is only enough to avoid a perfectly static scene
         // reading as a screenshot (Dejarik-alive per the brief, kept honest —
         // furniture doesn't have a pulse).
-        const rec = { group: mini, baseY: y, baseScale: 1, rate: 0.6, phase: phaseFromKey(prop.kind + prop.wx + prop.wy), bob: 0.008, defeated: false, wx: prop.wx, wy: prop.wy, yOff: 0 };
+        // REND-SCALE-1 — a prop's true size per kind (a bed is LENGTH-true: 7 ft
+        // along its long axis; casks/chests/dressers height-true).
+        const trueSize = propTrueSize(prop.kind);
+        const pAuth = measureAuthoredSize(THREE, mini, trueSize.axis);
+        const rec = {
+          group: mini, baseY: y, baseScale: 1, rate: 0.6, phase: phaseFromKey(prop.kind + prop.wx + prop.wy), bob: 0.008, defeated: false, wx: prop.wx, wy: prop.wy, yOff: 0,
+          wuPerAuthored: trueSize.wu / pAuth, heightWu: trueSize.wu, authoredSize: pAuth, floorScale: 1
+        };
         sliceMinis.push(rec); entityMinis.push(rec);
       }
     }

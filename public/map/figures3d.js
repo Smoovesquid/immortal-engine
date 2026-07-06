@@ -478,3 +478,86 @@ export function phaseFromKey(key) {
   for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); }
   return ((h >>> 0) % 1000) / 1000 * Math.PI * 2;
 }
+
+// ── REND-SCALE-1 — minis are SIZED by the sheet, exactly as REND-TRUTH-1 made
+// them POSITIONED by it (the sizing half of docs/MAP_REAL.md promise 3).
+//
+// The ground ink's 5-ft squares span `5 · scenePerWu` scene units at the sheet's
+// live zoom (worldSpace.js sheetScenePerWu — 1 wu = 1 ft at tactical scale, the
+// U450 sizing-truth law). A figure whose size is AUTHORED-fixed therefore reads
+// smaller and smaller as the squares grow — the "foot-tall Hobbit on a 5-ft
+// square" falsifier (Tim, 2026-07-06). The law: a mini's drawn height must be
+// its TRUE height in feet pushed through the SAME transform the squares use.
+//
+// `miniSheetScale` has a FLOOR (default 1 = today's authored token look): far
+// zoomed out, true scale would shrink a person to a sub-pixel dot, and a region
+// map wants legible tokens, not truth-sized specks — the floor keeps the
+// pre-REND-SCALE-1 behavior everywhere the squares aren't visible, and the true
+// law takes over exactly where they are (street/plan bands). Pure + THREE-free
+// so tests run hermetic in node.
+export const FIGURE_HEIGHT_WU = { small: 3.5, medium: 6 }; // feet; 1 wu = 1 ft at tactical scale
+
+/**
+ * figureHeightWu(speciesLike) -> feet. `speciesLike` is a chargen sheet species
+ * ({ id, name, size } — engine/chargen/srd/sheet.js), a bare string, or null.
+ * SRD `size` is the honest source ('Small' → hobbit/halfling/gnome stock);
+ * name/id matching covers pack-native spellings ("Hobbit") and the one Medium
+ * species that reads wrong at 6 ft (dwarves are Medium but ~4½ ft). Default: a
+ * 6-ft medium person — NPCs carry no species on their map records (drawModel
+ * people rows are {id,name,role}), so the default is most of the village.
+ */
+export function figureHeightWu(speciesLike) {
+  const sp = speciesLike && typeof speciesLike === 'object' ? speciesLike : { name: speciesLike };
+  const text = `${sp?.id || ''} ${sp?.name || ''} ${sp?.subrace || ''}`.toLowerCase();
+  if (/dwarf/.test(text)) return 4.5;
+  if (String(sp?.size || '').toLowerCase() === 'small') return FIGURE_HEIGHT_WU.small;
+  if (/hobbit|halfling|gnome/.test(text)) return FIGURE_HEIGHT_WU.small;
+  return FIGURE_HEIGHT_WU.medium;
+}
+
+// True prop sizes in feet, keyed by buildPropMini kind. `axis` names the authored
+// dimension the true size measures (beds are LENGTH-true — height-scaling a low
+// wide frame would draw a ten-foot bed). Unknown kinds default to a 3-ft 'y'.
+export const PROP_TRUE_SIZE = {
+  barrel:  { axis: 'y', wu: 3.2 },
+  chest:   { axis: 'y', wu: 2.2 },
+  dresser: { axis: 'y', wu: 4.2 },
+  bed:     { axis: 'z', wu: 7 },
+};
+export function propTrueSize(kind) {
+  return PROP_TRUE_SIZE[String(kind || '')] || { axis: 'y', wu: 3 };
+}
+
+/**
+ * miniSheetScale(wuPerAuthored, scenePerWu, floorScale) -> group scale factor.
+ * `wuPerAuthored` = the mini's true size in wu ÷ its authored size in scene
+ * units (stamped once at build); `scenePerWu` = the sheet's live transform
+ * (worldSpace.js sheetScenePerWu). At `wuPerAuthored·scenePerWu` the mini's
+ * drawn size EQUALS its true size on the sheet's own ink — the same factor the
+ * 5-ft squares are drawn with. Floored (never below `floorScale`, default 1)
+ * for zoomed-out token legibility.
+ */
+export function miniSheetScale(wuPerAuthored, scenePerWu, floorScale = 1) {
+  const t = (Number(wuPerAuthored) || 0) * (Number(scenePerWu) || 0);
+  const f = Number(floorScale) || 1;
+  return Math.max(f, t);
+}
+
+/**
+ * measureAuthoredSize(THREE, group, axis) -> the group's authored extent in
+ * scene units along 'x'|'y'|'z', measured at its build transform (Box3 over the
+ * whole group — GLB sculpts and procedural rigs alike, no per-archetype
+ * constants to drift). Guarded: a degenerate measure (empty GLB placeholder,
+ * zero box) falls back to the procedural humanoid's ~2.2 so a bad asset can
+ * never divide by zero or draw a skyscraper.
+ */
+export function measureAuthoredSize(THREE, group, axis = 'y') {
+  try {
+    const box = new THREE.Box3().setFromObject(group);
+    const size = new THREE.Vector3();
+    box.getSize(size);
+    const v = Number(size[axis === 'x' ? 'x' : axis === 'z' ? 'z' : 'y']);
+    if (Number.isFinite(v) && v > 0.05 && v < 50) return v;
+  } catch { /* fall through to the guard value */ }
+  return 2.2;
+}

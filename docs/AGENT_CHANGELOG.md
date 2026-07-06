@@ -2912,3 +2912,18 @@ other agents. (none active)
   engine-serial lane, now free. Heat accrual f(severity, witnessReach, concealment), wild
   asymmetry as a NAMED feature, deterministic decay, hunt via existing spawnEncounter at
   HUNT_HEAT. PLAN-SPLIT-1 (renderer) still in flight in parallel.
+
+## 2026-07-06 — Basecamp (successor) — REND-SCALE-1 landed → v0.30.6 build 104 "true-size minis"; CONSEQ-1 dispatched
+
+- Tim's live report ("my Hobbit figurine looks about a foot tall vs the 5-ft squares") = MAP-REAL
+  falsifier #4, REAL. Root: b100 gave minis sheet-transform POSITIONS but left SIZE authored-fixed.
+  Fix `381fdde2`: drawn size = true feet × the same sheetScenePerWu the squares use, token-look floor
+  zoomed out; species truth from the sheet (Halfling 3.5 ft), props per kind (bed length-true 7 ft).
+  U566–U567 (7/7, incl. "a hobbit must never read foot-tall"); live A/B receipt Halfling vs Human
+  (drawn 3.5 vs 6.0 wu exactly, 1.7× on screen); ladder 10486/0. Wild-mini scale = queued taste call.
+- CONSEQ-1 (thread aging) dispatched mid-freeze with the PACKETS row as inline brief (U568–U569) —
+  fourth parallel lane; file-disjoint from MP-3/PLAN-SPLIT-1. PLAN-SPLIT-1 returned green (its
+  integration is next, behind this release).
+- Ops: PLAN-SPLIT-1's worker held :5179 serving its worktree during its live playtest (and its
+  cleanup killed my :5181 verify server) → standing brief rule now: workers playtest on non-default
+  ports. Main :5179 server restarted from the main checkout.

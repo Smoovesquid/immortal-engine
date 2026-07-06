@@ -40,11 +40,14 @@ contract).
 - T4 stays computed-not-acted (MP-4's packet). Do not touch the pact/darkGift path.
 - Fair combat never accrues heat (U556's law: helplessness is the gate).
 - Serial engine lane: `effectsCore.js`, `worldTick.js`, `escalation.js` are yours;
-  stay OFF `playloop.js`, `public/map/**` + `scripts/screenTruth*` (PLAN-SPLIT-1's live lane),
-  `server.js` fixtures. `worldHash` replay-stable; default-seed hash unchanged unless a §4-defined
-  behavior change forces a documented re-pin (heat on a no-deed default run should be zero →
-  hash likely unchanged; prove it).
+  stay OFF `playloop.js`, `public/map/**` + `scripts/screenTruth*` + `scripts/check.mjs` +
+  `package.json` (PLAN-SPLIT-1's live lane wires those), `server.js` fixtures. `worldHash`
+  replay-stable; default-seed hash unchanged unless a §4-defined behavior change forces a
+  documented re-pin (heat on a no-deed default run should be zero → hash likely unchanged; prove it).
 - The six screen goldens are law — your changes must not drift them.
+- **Live-playtest server: use a NON-default port** (`PORT=5183 npm run dev` or similar) — 5179 is
+  the shared live-verify port; another lane's playtest server may hold it; never fight for or kill it.
+  *(Standing rule as of b103 — a worker's playtest server on 5179 masked a release verify.)*
 
 ## Tests — U563–U565 (your assigned numbers; use ONLY these — ignore the allocator script, it
 re-offers unmerged claims)

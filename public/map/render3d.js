@@ -30,7 +30,7 @@ const TILE_WU = 40; // world units per node tile — keeps the 3D geography to s
 // MR-3b's wild-feature mini builder (trees/boulders/brush/deadfall/stumps).
 // Pure helpers; they receive the lazily-imported THREE, so this stays a
 // zero-cost static import.
-import { buildArchetypeFigure, buildPropMini, buildWildMini, buildCorpseMini, breatheMinis, phaseFromKey, miniSheetScale, figureHeightWu, propTrueSize, measureAuthoredSize } from './figures3d.js';
+import { buildArchetypeFigure, buildPropMini, buildWildMini, buildCorpseMini, breatheMinis, phaseFromKey, miniSheetScale, figureHeightWu, propTrueSize, measureAuthoredSize, wildTrueSize, measureAuthoredFootprint } from './figures3d.js';
 
 // World-asset builders (terrain, dirt roads, settlements, woods, the chapel ruin) —
 // the SAME pure-view module the standalone asset lab (map-proto/asset-lab.html) uses,
@@ -77,7 +77,7 @@ import { NODE_WU, regionCellToWu, entityScenePosOnSheet, sheetScenePerWu } from 
 // already draws minis from; the tilt view reuses the SAME model, never a
 // second derivation, so 2-D and 3-D can never disagree on where a barrel or
 // an NPC actually stands.
-import { placedTokenModel } from './drawModel.js';
+import { placedTokenModel, INK_PARAMS } from './drawModel.js';
 // MR-3b (docs/briefs/MR-3-FOG-PROCGEN.md §MR-3b) — wildFeaturesAround is the
 // SAME pure engine derivation MR-3a's tacticalPos.js walkable-mask reads
 // through (engine/world/wildFeatures.js): a function of (world.meta.seed, the
@@ -480,6 +480,20 @@ export async function mountSlice3D(container, sceneData, opts = {}) {
     if (playerMini && Number.isFinite(playerMini.wuPerAuthored) && playerMini.wuPerAuthored > 0) {
       playerMini.baseScale = miniSheetScale(playerMini.wuPerAuthored, spw, playerMini.floorScale || 1);
     }
+    // WILD-SCALE-1 — the wild bubble's own SCALE-ONLY pass: a wild mini's
+    // POSITION is a separate, region-frame-only contract (worldPosFromWu,
+    // untouched here — MR-3b's own placement law, out of this packet's
+    // scope), but its FOOTPRINT must still track the sheet's live zoom
+    // exactly like people/props do, so a tree read against the 5-ft squares
+    // never drifts wrong as the sheet zooms — the brief's "build-time scale +
+    // reproject-on-zoom must both hold". wildMinis is declared further below
+    // in this function (MR-3b); referencing it here is safe — this closure is
+    // only ever CALLED after that declaration runs (mount, then every
+    // setCamera), never before.
+    for (const m of wildMinis) {
+      if (!m || !m.group || !Number.isFinite(m.wuPerAuthored) || m.wuPerAuthored <= 0) continue;
+      m.baseScale = miniSheetScale(m.wuPerAuthored, spw, m.floorScale || 1);
+    }
     // Debug/verification hook (window.__map3d idiom): exact live numbers —
     // drawnWu must equal heightWu wherever the true law is above the floor.
     try {
@@ -490,7 +504,11 @@ export async function mountSlice3D(container, sceneData, opts = {}) {
       } : null;
       window.__rendScaleAudit = {
         spw: +spw.toFixed(5), cellScene: +(5 * spw).toFixed(4),
-        entries: [audit(playerMini, 'player'), ...entityMinis.slice(0, 6).map(m => audit(m, m.group?.userData?.kind || 'entity'))].filter(Boolean)
+        entries: [
+          audit(playerMini, 'player'),
+          ...entityMinis.slice(0, 6).map(m => audit(m, m.group?.userData?.kind || 'entity')),
+          ...wildMinis.slice(0, 6).map(m => audit(m, m.group?.userData?.kind || 'wild')),
+        ].filter(Boolean)
       };
     } catch { /* headless-safe: the audit is never load-bearing */ }
   }
@@ -787,11 +805,6 @@ export async function mountSlice3D(container, sceneData, opts = {}) {
       }
     }
   }
-  // REND-TRUTH-1 — settle the entities onto the sheet's mount-time projection.
-  // (setCamera, called by the host right after mount, reprojects them onto the
-  // live zoom; this guarantees a correct placement even before that first call.)
-  repositionEntities();
-
   // MR-3b (docs/briefs/MR-3-FOG-PROCGEN.md §MR-3b) — THE WILD DRAWN. The wild
   // stands wherever the engine says it stands (MR-3a's wildFeaturesAround) —
   // this loop only DRAWS it, never invents a feature the derivation didn't
@@ -806,9 +819,20 @@ export async function mountSlice3D(container, sceneData, opts = {}) {
   // bubble), and correctness-simple: the group's children are ALWAYS exactly
   // what the current bubble derives, by construction, matching this file's
   // "renderer never invents a position" discipline just like TT-PROPS above.
+  //
+  // WILD-SCALE-1 — declared BEFORE the mount-time repositionEntities() call
+  // just below (moved up from after it): that function's wild-mini pass reads
+  // `wildMinis` by closure, and a `let` binding is in the temporal dead zone
+  // until ITS OWN declaration executes — calling repositionEntities() before
+  // this line ran would throw, not just see an empty array.
   const wildGroup = new THREE.Group();
   scene.add(wildGroup);
   let wildMinis = []; // this bubble's { group, baseY, baseScale, rate, phase, bob, defeated } entries — folded into sliceMinis for breathe, but tracked separately so a rebuild can splice out exactly last bubble's set.
+
+  // REND-TRUTH-1 — settle the entities onto the sheet's mount-time projection.
+  // (setCamera, called by the host right after mount, reprojects them onto the
+  // live zoom; this guarantees a correct placement even before that first call.)
+  repositionEntities();
 
   // The current node the player's region-frame pos projects to (regionCellToWu
   // needs a node with real x/y — the SAME node the pos invariant already keeps
@@ -873,6 +897,24 @@ export async function mountSlice3D(container, sceneData, opts = {}) {
       // slower + smaller bob than even the inert-prop rate above, so a whole
       // stand of trees reads as gently alive without looking animated.
       const entry = { group: mini, baseY: y, baseScale: 1, rate: 0.4, phase: phaseFromKey(`${f.cell.gx},${f.cell.gy},${f.kind}`), bob: f.blocking ? 0.012 : 0.006, defeated: false };
+      // WILD-SCALE-1 — the mini's FOOTPRINT rides the same sheet-scale law
+      // REND-SCALE-1 gave people/props: true wu size (wildTrueSize; trees
+      // anchor to the settlement-band ink's own tree diameter,
+      // INK_PARAMS.treeRadiusWu·2) over the actual built instance's measured
+      // authored size (its own sizeClass jitter already baked in — the ratio
+      // self-corrects). repositionEntities' wild pass (below) reapplies
+      // baseScale on every camera zoom; the breathe loop re-applies it every
+      // frame, so stamping these four fields is the whole change.
+      const trueSize = wildTrueSize(f.kind, INK_PARAMS.treeRadiusWu * 2);
+      if (trueSize) {
+        const authored = trueSize.axis === 'footprint'
+          ? measureAuthoredFootprint(THREE, mini)
+          : measureAuthoredSize(THREE, mini, trueSize.axis);
+        entry.wuPerAuthored = trueSize.wu / authored;
+        entry.heightWu = trueSize.wu;
+        entry.authoredSize = authored;
+        entry.floorScale = 1;
+      }
       wildMinis.push(entry);
       sliceMinis.push(entry);
     }

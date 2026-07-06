@@ -561,3 +561,87 @@ export function measureAuthoredSize(THREE, group, axis = 'y') {
   } catch { /* fall through to the guard value */ }
   return 2.2;
 }
+
+/**
+ * measureAuthoredFootprint(THREE, group) -> the group's authored HORIZONTAL
+ * extent (Box3 XZ diagonal, hypot(sizeX, sizeZ)), at its build transform.
+ * Unlike measureAuthoredSize's single fixed axis, this is invariant to a
+ * random YAW baked into the build (rotation around Y only) — needed because
+ * wildDeadfall lays a long cylinder down and then spins it `rng()·2π` around
+ * Y before this module ever sees it (buildPropMini's bed, by contrast, is
+ * built axis-aligned with no baked rotation, so measureAuthoredSize's single
+ * 'z' axis is exact for it — deadfall genuinely needs the diagonal). A
+ * length-true log at any yaw has X²+Z² extents summing to the same true
+ * diagonal, so this is exact, not an approximation, for a Y-only rotation.
+ * Same degenerate guard as measureAuthoredSize (a bad/empty box never divides
+ * by zero or reads as a football-field log).
+ */
+export function measureAuthoredFootprint(THREE, group) {
+  try {
+    const box = new THREE.Box3().setFromObject(group);
+    const size = new THREE.Vector3();
+    box.getSize(size);
+    const v = Math.hypot(Number(size.x) || 0, Number(size.z) || 0);
+    if (Number.isFinite(v) && v > 0.05 && v < 50) return v;
+  } catch { /* fall through to the guard value */ }
+  return 2.2;
+}
+
+// ── WILD-SCALE-1 — wild minis join the same sheet-scale law REND-SCALE-1 gave
+// people/props (figureHeightWu/propTrueSize/miniSheetScale above): a wild
+// feature's drawn FOOTPRINT must equal the 2-D ink's own footprint for that
+// feature, through the identical sheetScenePerWu transform the 5-ft squares
+// use — never a second, authored-fixed look drifting further wrong the deeper
+// the squares zoom in.
+//
+// wildFeaturesAround (engine/world/wildFeatures.js) hands the renderer
+// { kind, sizeClass, blocking } — no per-feature wu size (the brief's
+// "or the feature's own wu size where the derivation provides one" clause:
+// it doesn't, for any of the five kinds). The one wu-truth that DOES exist is
+// the settlement-band ink's own tree token size (drawModel.js's
+// INK_PARAMS.treeRadiusWu, the SAME grove ink oneMap.js draws) — trees anchor
+// to that (see wildTrueSize below). The other four kinds carry no ink
+// counterpart today (only trees are drawn as settlement-band grove tokens),
+// so their true sizes below are reasoned taste constants — same footing
+// PROP_TRUE_SIZE already stands on for barrel/chest/dresser (no engine field
+// backs those either) — grounded in each builder's own authored geometry (a
+// boulder is a substantial trail obstruction; a fallen log is length-true;
+// brush/stumps are ground clutter a few feet across).
+//
+// `sizeClass` (SIZE_CLASS in wildFeatures.js) is a FIXED per-KIND tag — every
+// tree is 'large', every brush 'small' — not per-instance variance; the
+// per-instance jitter each wild builder already rolls (WILD_SIZE_SCALE times
+// rng()-driven proportions) is captured by measuring the ACTUAL built
+// instance's authored size below, so the ratio law self-corrects for it
+// exactly as it already does for props (no separate sizeClass multiplier
+// needed here — measuring the real instance IS the correction).
+// `tree` deliberately has no wu constant here: its true size is DERIVED
+// (2 · caller-supplied treeDiameterWu, see wildTrueSize below) rather than a
+// second literal copy of drawModel.js's INK_PARAMS.treeRadiusWu that could
+// silently drift from it — this module stays THREE-free AND engine/drawModel
+// -free (its whole point, per this file's header), so the live ink value is
+// threaded in as a parameter by render3d.js (which already imports
+// INK_PARAMS for the settlement-band tree ink) rather than imported here.
+export const WILD_TRUE_SIZE = {
+  boulder:  { axis: 'y',        wu: 3.5 },  // height-true: a real trail boulder, big enough to block a body (isBlockingKind)
+  deadfall: { axis: 'footprint', wu: 6.5 }, // length-true fallen log; 'footprint' = measureAuthoredFootprint (yaw-invariant — see above)
+  brush:    { axis: 'x',        wu: 2.5 },  // a low scrub clump a stride across
+  stump:    { axis: 'y',        wu: 2.0 },  // a cut-off trunk stub, knee-to-waist high
+};
+/**
+ * wildTrueSize(kind, treeDiameterWu = 5.6) -> { axis, wu } | null. Returns
+ * null for an unrecognized kind (never invent a size for data outside the
+ * five kinds this stage covers — same discipline as buildWildMini/
+ * propTrueSize's own guards). `treeDiameterWu` is 2·treeRadiusWu — the caller
+ * (render3d.js) passes the LIVE drawModel.js INK_PARAMS.treeRadiusWu·2 so the
+ * wild tree's footprint can never drift from the settlement-band ink's own
+ * tree size; the default here only fires if a caller omits it (e.g. a bare
+ * unit test), matching today's INK_PARAMS.treeRadiusWu (2.8) · 2.
+ */
+export function wildTrueSize(kind, treeDiameterWu = 5.6) {
+  if (String(kind || '') === 'tree') {
+    const wu = Number(treeDiameterWu) > 0 ? Number(treeDiameterWu) : 5.6;
+    return { axis: 'x', wu };
+  }
+  return WILD_TRUE_SIZE[String(kind || '')] || null;
+}

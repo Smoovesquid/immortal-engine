@@ -3261,3 +3261,16 @@ other agents. (none active)
 - Worker ops finding institutionalized to memory: preview_start serves the MAIN checkout — a
   worker's browser self-check silently tests the wrong code; worktree-rooted servers only.
 - THE DAY'S SLATE IS FULLY INTEGRATED: every dispatched lane home, nothing dark, nothing unpushed.
+
+## 2026-07-06 — Basecamp — PW-6 → v0.32.3 build 123 "prose-to-world closes" — THE ARC IS DONE
+
+- PW-6 landed (worker `9523b725` → integrated `f1e3891b`): the two dead CANON_CREATE prototypes
+  (`engine/csl/latent.js`, `engine/world/resolveSurfaceContact.js`) QUARANTINED with loud
+  do-not-build-on headers — not deleted, because the import graph is load-bearing (minimalWorld
+  sandbox + its determinism tests; deleting = the CM11 ERR_MODULE_NOT_FOUND cascade). Engine diff
+  is comment-only, worldHash untouched. WB-Q4 + contract pointers aligned; RUMOR_LAYER.md:144
+  verified already-aligned (PW-3 did it), recorded in the contract row.
+- Ladder on the integrated tree: suite 10849/0 · corpus 135/135 · screen truth 7/7 · determinism
+  green. U628 (PW-6's spare) unused — released back to the pool.
+- **THE PROSE-TO-WORLD ARC CLOSES: PW-1 → PW-6 all landed.** SP-3 (starting trust reads standing)
+  still in flight on its own lane (Opus worktree, U625–U627); ENSURE-STATS-1 cuts when it lands.

@@ -3174,3 +3174,17 @@ other agents. (none active)
   hash seam aligned in passing. The built-but-dark layer finally fires in real play.
 - Queue: PW-4..6 behind · SP-2 (Opus) cuts when lanes allow · DEATH-3's one-line corpus fixture
   follow-up now unblocked (the fixtures file freed with PW-2's landing).
+
+## 2026-07-06 — Basecamp (successor) — PW-3 → v0.31.5 build 118 "rumors live"; PW-4 dispatched
+
+- **THE RUMOR LAYER IS LIVE** — months built-but-dark, zero call sites, now firing in real play:
+  ask a villager beyond their knowledge and the county's hearsay arrives in their voice, garbled
+  by worldliness. Galen, live: "Only what's come down the road, mind… Brogan walked out of a
+  burned hamlet in the south with nothing." S2/S3 wall proven (engine facts immutable; the LLM
+  dresses prose only; fabrication rejected → the plain version stands). Ladder 10780/0.
+- Worker discipline notes: the eager first-draft trigger broke 9 corpus rows → tuned to topic-only
+  matching, all restored; the doc-to-code seam alignment (no hash movement) pinned by U610; one
+  flagged additive v1.js payload line + the dialogue.js seam accepted at integration review.
+- PW-4 dispatched (Opus, narration lane): derived room dressing — license-to-invent becomes
+  license-to-RENDER; pure deriver, authored micro-detail bank, pre-authorized derived canon,
+  S1 nothing stored. PW-5 stays audit-first per the contract's own instruction.

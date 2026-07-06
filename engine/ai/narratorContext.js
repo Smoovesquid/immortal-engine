@@ -12,6 +12,7 @@
 
 import { ensureWorld, VICE_AXES } from '../state.js';
 import { ensureInstrumentLayer } from '../instrument.js';
+import { findDeathFacts } from '../combat/deathFact.js';
 import { seedFromString, makeRng } from '../rng.js';
 import { fateBand } from '../rulesets.js';
 import { filterContext, applyMoodOverlay } from '../npc/perspectiveFilter.js';
@@ -139,7 +140,77 @@ export function buildNarratorContext(world, outcome = {}) {
     // just delivered the one-time warning (see cassandraOmen's own comment for the exact
     // freshness + speaker-selection rules); { name, role } when she has just spoken —
     // llmAdapter.js renders this as ONE quiet, waveable line, never a mechanic name.
-    cassandraOmen: cassandraOmen(w, roomOccupants)
+    cassandraOmen: cassandraOmen(w, roomOccupants),
+    // DEATH-3 (docs/DEATH_CONTRACT.md §3 final bullet) — the enemy KILLING BLOW. null on
+    // every non-kill turn; on the turn a foe dies, the death fact's FICTION-FACING fields
+    // ONLY (means, stance, intent, wound region, beg state — zero numerics, zero mechanic
+    // names, invariant III). READ-ONLY re-derivation off the timeline (the fact is already
+    // the committed atom) gated on a per-turn kill signal in outcome.mechanics — never
+    // stored, byte-stable. llmAdapter.js's killingBlowFact renders it; composer's
+    // composeKillingBlowLine is the LLM-off floor that voices the same fact.
+    killingBlow: killingBlowFor(w, outcome)
+  };
+}
+
+// DEATH-3 — killingBlowFor(world, outcome) → the fiction-facing death-fact bundle | null.
+//
+// READ-ONLY, derived, never stored — the SAME discipline as moralOmen/cassandraOmen. The
+// death fact (engine/combat/deathFact.js) is already the deterministic atom recorded on
+// the timeline at the killing moment (invariant I: the fact precedes the prose); this
+// lifts ONLY its fiction-facing fields for the prompt. It fires for ONE turn — the turn
+// the kill resolves — gated on BOTH a kill signal in outcome.mechanics AND the fact being
+// fresh on the timeline tail (mirrors the Cassandra's "most-recent tick" freshness so a
+// stale fact from an earlier fight never re-surfaces on a later, quiet turn). Returns null
+// on every non-kill turn (the common case) — nothing owed reads the same as the omens'
+// own silence. NEVER a number, NEVER a mechanic name (invariant III / U578's wall). Never
+// throws.
+//
+// The mechanics tags that mean "a foe died THIS turn": the DEATH-2 verbs that finish a
+// DOWNED foe ([downed:mercy|worse|walk]) and an escape-combat victory that felled a foe
+// ([combat:victory]). [downed:spare] is EXCLUDED — a spared foe lives, mints no death
+// fact, and must never read as a kill. [downed:pending] (the foe still awaiting the verb)
+// is likewise not a kill.
+const KILL_MECH_RE = /\[downed:(?:mercy|worse|walk)\]|\[combat:victory\]/i;
+const FRESH_FACT_TAIL = 4; // how many timeline entries back still count as "this turn"
+
+function killingBlowFor(w, outcome) {
+  const mech = String(outcome?.mechanics ?? '');
+  if (!KILL_MECH_RE.test(mech)) return null; // no kill resolved this turn
+
+  const facts = findDeathFacts(w);
+  if (!facts.length) return null;
+  const fact = facts[facts.length - 1]; // the most recent kill
+  if (!fact || typeof fact !== 'object') return null;
+  // Fresh only: the fact must sit on the timeline TAIL (it minted this turn), else a
+  // [combat:victory] on a later turn where nobody actually died could resurface an old
+  // fact. The fact rode in as a `death-fact` timeline event; require it among the last
+  // FRESH_FACT_TAIL entries.
+  const tl = Array.isArray(w?.timeline) ? w.timeline : [];
+  const tail = tl.slice(-FRESH_FACT_TAIL);
+  const freshOnTail = tail.some(e => e && e.kind === 'death-fact');
+  if (!freshOnTail) return null;
+
+  // The PLAYER's own death is DEATH-4's set-piece ('death' beat), not an enemy killing
+  // blow — never surface the enemy-kill prompt for it.
+  if (fact.victim?.isPlayer) return null;
+
+  // Fiction-facing fields ONLY. woundPath → the killing wound's REGION as a plain noun
+  // (the prose layer renders "through the throat"); the light BAND (never the raw value);
+  // the beg state as a boolean+type so the prompt can honor "no plea for the un-begged".
+  const wounds = Array.isArray(fact.woundPath) ? fact.woundPath : [];
+  const killingWound = wounds.find(x => x && x.killing) || wounds[wounds.length - 1] || null;
+  const stance = String(fact.victimStance ?? 'fighting');
+  return {
+    victimName: String(fact.victim?.name ?? 'the foe'),
+    canCommunicate: fact.victim?.canCommunicate !== false,
+    means: String(fact.means?.name ?? 'a blow'),
+    meansType: String(fact.means?.type ?? 'physical'),
+    woundRegion: killingWound && killingWound.region ? String(killingWound.region) : '',
+    stance,                                   // fighting|fleeing|begging|helpless|defiant
+    intent: String(fact.killerIntent ?? 'clean'),   // clean|brutal|mercy|worse
+    begged: stance === 'begging',             // a plea was made (life or quick) — §6 gate
+    lightBand: String(fact.light?.band ?? ''),      // dark|dim|lit — never the number
+    finalWords: typeof fact.finalWords === 'string' && fact.finalWords ? fact.finalWords : null
   };
 }
 

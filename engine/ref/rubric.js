@@ -16,6 +16,7 @@ import { getItemDef, findDefByName } from '../ruleset/core/items/index.js';
 import { getRoomState } from '../structures/roomState.js';
 import { normalizeTopology, interiorExitsFrom } from '../structures/topology.js';
 import { roomDetail, buildingTypeFor } from '../structures/roomDetail.js';
+import { findDeathFacts } from '../combat/deathFact.js';
 
 // ── Canon ground-truth bundle (the RAG-faithfulness oracle) ───────────────────
 // The PC's consumables with their REAL resolved effects, from both inventory
@@ -126,6 +127,34 @@ function timeOfDayGroundTruth(world) {
   return { hours, day, segment };
 }
 
+// DEATH-3 (docs/DEATH_CONTRACT.md §3, CG DEATH class): the MOST RECENT death fact
+// (engine/combat/deathFact.js), projected into the bundle as fiction-facing ground truth
+// so the CG-DEATH comparator can diff the DM's killing-blow prose against what actually
+// happened — the means, the victim, the stance, the intent, whether the foe could even
+// speak. Same graceful-degradation contract as roomExits/clock: null when no death fact
+// exists (a world that has seen no kill), so the comparator stays DORMANT. Pure read of
+// the committed timeline; no mutation, no RNG, no new state field. Only fiction-facing
+// fields (no numerics) — the comparator never needs a magnitude. try/catch at the call
+// site matches this module's defensive posture.
+function deathFactGroundTruth(world) {
+  const facts = findDeathFacts(world);
+  if (!facts.length) return null;
+  const f = facts[facts.length - 1];
+  if (!f || typeof f !== 'object') return null;
+  const wounds = Array.isArray(f.woundPath) ? f.woundPath : [];
+  const killing = wounds.find(x => x && x.killing) || wounds[wounds.length - 1] || null;
+  return {
+    victim: String(f.victim?.name ?? 'the foe'),
+    isPlayer: Boolean(f.victim?.isPlayer),
+    canCommunicate: f.victim?.canCommunicate !== false,
+    means: String(f.means?.name ?? 'a blow'),
+    meansType: String(f.means?.type ?? 'physical'),
+    woundRegion: killing && killing.region ? String(killing.region) : '',
+    stance: String(f.victimStance ?? 'fighting'),   // fighting|fleeing|begging|helpless|defiant
+    intent: String(f.killerIntent ?? 'clean'),      // clean|brutal|mercy|worse
+  };
+}
+
 // Compact, judge-readable view of what IS true, so the judge can flag any DM/NPC
 // claim that isn't supported by it. (Extracted verbatim from the gate's
 // canonGroundTruth — the gate now imports this so there is one oracle.)
@@ -170,6 +199,8 @@ export function buildCanonGroundTruth(world) {
   try { roomPlan = roomPlanGroundTruth(world, room); } catch { roomPlan = null; }
   let clock;
   try { clock = timeOfDayGroundTruth(world); } catch { clock = null; }
+  let deathFact;
+  try { deathFact = deathFactGroundTruth(world); } catch { deathFact = null; }
   return {
     location: node ? { name: node.name, kind: node.kind } : null,
     nearbyPlaces,
@@ -204,6 +235,10 @@ export function buildCanonGroundTruth(world) {
     inCombat: Boolean(world.combat?.active),
     combatRound: world.combat?.round,
     enemies: (world.combat?.enemies || []).map(e => ({ name: e.name, hp: e.hp, maxHp: e.maxHp, defeated: !!e.defeated })),
+    // DEATH-3 CG-DEATH: the most recent kill's fiction-facing death fact (means/victim/
+    // stance/intent), so the killing-blow-prose comparator can check prose⇄fact agreement.
+    // null when no kill has happened (graceful degradation — comparator stays dormant).
+    deathFact,
     ledgerFacts: (led.facts || []).map(f => (typeof f === 'string' ? f : f?.text)).filter(Boolean).slice(0, 8),
     recentCanon: recentCanon.map(e => ({ kind: e?.kind || e?.type, ref: e?.id, data: e?.data })).slice(0, 8),
     consumables: consumablesGroundTruth(pc),

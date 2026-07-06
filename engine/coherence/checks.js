@@ -42,6 +42,11 @@
 //                                 no-roll)
 //   CG-4   combat/health mirror — narrated hit/miss/death vs enemies[]/pc.hp/
 //                                 inCombat
+//   CG-DEATH killing-blow ⇄ death fact — the DM's kill prose vs canon.deathFact
+//                                 (means / victim / stance / intent): a swapped
+//                                 weapon, a plea the foe never made (or could never
+//                                 make), a "clean mercy" read as torture (DEATH-3,
+//                                 docs/DEATH_CONTRACT.md §3/§6)
 //   CG-5   addressee desync    — player addresses NPC X; mechanics dialogue-bind
 //                                 names Y and/or the DM voices Y
 //   CG-7   ungrounded quantity — a cited headcount that contradicts the roster
@@ -716,6 +721,145 @@ export function detectCombatDesync(sessionTurns) {
 }
 
 // ═════════════════════════════════════════════════════════════════════════════
+// CG-DEATH — the killing-blow prose ⇄ death-fact mirror (DEATH-3,
+// docs/DEATH_CONTRACT.md §3 final bullet + §6 falsifiers).
+//
+// Every kill first assembles a deterministic DEATH FACT (engine/combat/deathFact.js,
+// invariant I: "the fact precedes the prose"); the killing-blow prose is voiced FROM it
+// and MAY NOT contradict it. This comparator diffs the DM's kill line against that same
+// turn's fact (canon.deathFact, projected by buildCanonGroundTruth). The §6 falsifiers it
+// makes measurable — each a STRUCTURAL contradiction (a table-breaking lie about how the
+// foe actually died, not an atmospheric slip):
+//   (A) MEANS contradiction — the prose narrates a killing means from a DIFFERENT weapon
+//       family than the fact records (an arrow/piercing fact read as an axe/cutting kill,
+//       a fire fact read as a blade). "an arrow fact never reads as an axe" (the brief).
+//   (B) BEG FROM THE SPEECHLESS — the prose puts a plea in the mouth of a foe the fact
+//       marks canCommunicate:false (a beast/mindless thing). "a beg from a non-communicator
+//       = red" (§6). DEATH-2 gates the STATE; the prose layer must not conjure the plea.
+//   (C) BEG FROM THE UN-BEGGED — the prose narrates the foe begging/pleading for life while
+//       the fact's stance is NOT 'begging' (a plea the fact does not hold — §6).
+//   (D) MERCY READ AS TORTURE — intent:'mercy' (a clean, quick end) narrated as torture /
+//       mutilation / a drawn-out cruel death. "a 'clean mercy' fact never reads as torture"
+//       (the brief).
+//   (E) WORSE READ AS GENTLE — intent:'worse' (the example-making) narrated as a painless /
+//       gentle / merciful end (the inverse of D).
+//
+// DORMANT (no false flag) when canon.deathFact is absent/null (no kill this world, or a
+// pre-DEATH-3 bundle) — the graceful-degradation contract every comparator here honors.
+// PRECISION OVER RECALL: each branch requires clear lexical evidence in the prose and
+// fires only on a genuine cross-family / cross-intent contradiction — never on ambiguity.
+// ═════════════════════════════════════════════════════════════════════════════
+
+// Means families → words that UNAMBIGUOUSLY belong to ONE family. A prose hit in a family
+// OTHER than the fact's is the (A) contradiction. Only DISAMBIGUATING vocabulary is listed:
+//   • the three physical families carry their distinct weapon NOUNS + signature verbs
+//     (axe/sword vs arrow/spear vs mace/hammer) — a weapon-noun swap is the archetypal
+//     contradiction the brief names ("an arrow fact never reads as an axe").
+//   • the elemental families carry ONLY tokens unique to them. Shared imagery — "burn",
+//     "sear", "scorch", "arc" read as BOTH fire and lightning; "freeze" ↔ cold's own set —
+//     is DELIBERATELY excluded, so an honest lightning line ("burns through... a scorched
+//     path") is never mis-read as a fire kill (precision over recall — a genuinely
+//     ambiguous elemental verb is not a cross-family lie).
+const MEANS_FAMILY_WORDS = Object.freeze({
+  slashing:    /\b(?:axe|ax|sword|blade|sabre|saber|scimitar|cleaver|slash(?:es|ed|ing)?|hack(?:s|ed|ing)?|sever(?:s|ed|ing)?|cut(?:s|ting)?\s+(?:open|through|down)|beheads?|decapitat\w+)\b/i,
+  piercing:    /\b(?:arrow|bolt|spear|lance|rapier|dagger|dirk|stiletto|javelin|pike|impale(?:s|d)?|skewer(?:s|ed)?|run\s+through|pierc(?:es|ed|ing)?)\b/i,
+  bludgeoning: /\b(?:mace|hammer|maul|club|cudgel|flail|bludgeon(?:s|ed|ing)?|crush(?:es|ed|ing)?|smash(?:es|ed|ing)?|caves?\s+in|shatter(?:s|ed|ing)?\s+(?:bone|skull))\b/i,
+  fire:        /\b(?:flame|flames|immolat\w+|inferno)\b/i,
+  cold:        /\b(?:ice|frost|frozen|glaci\w+|rime)\b/i,
+  lightning:   /\b(?:lightning|thunderbolt|electrocut\w+)\b/i,
+});
+// A means word from ANY of these families present in the prose (so (A) only fires when the
+// prose actually commits to some named family, and only if it's the WRONG one).
+const ANY_MEANS_WORD = Object.freeze(Object.entries(MEANS_FAMILY_WORDS));
+
+// (B)/(C) — the foe pleading in the prose. Precision: an ACTUAL beg/plea claim, not a mere
+// mention of the word "mercy" by the narrator (the player showing mercy is not the foe
+// begging). Requires the foe as the one asking/pleading/yielding.
+const FOE_PLEADS_RE = /\b(?:begs?|begg(?:ed|ing)|pleads?|plead(?:ed|ing)|implor(?:es|ed|ing)|beseech(?:es|ed|ing)|(?:cries|cried|whimpers?|whispers?)\s+for\s+(?:mercy|life|its?\s+life|his\s+life|her\s+life|their\s+life)|yields?|yielded|yielding|(?:asks?|asked|begs?)\s+(?:you\s+)?(?:for\s+)?(?:mercy|to\s+be\s+spared|for\s+(?:its?|his|her|their)\s+life))\b/i;
+
+// (D) — torture/mutilation/drawn-out cruelty in the prose (a mercy fact must never read
+// like this). Deliberate-cruelty vocabulary; a plain gory wound is NOT torture (precision).
+const TORTURE_RE = /\b(?:tortur(?:es|ed|ing|e)|mutilat\w+|maim(?:s|ed|ing)?|dismember\w+|flay(?:s|ed|ing)?|disembowel\w+|slow(?:ly)?\s+(?:and\s+)?(?:cruel|painful|agoni\w+)|draw(?:s|n)?\s+(?:it|this|the\s+\w+)\s+out|make(?:s)?\s+(?:it|him|her|them)\s+(?:suffer|scream)|piece\s+by\s+piece|savag(?:es|ed|ely)|butcher(?:s|ed|ing)?)\b/i;
+
+// (E) — a painless/gentle/merciful end in the prose (a "worse" fact must never read like
+// this). Precision: language that AFFIRMS gentleness/painlessness, not a bare "quick".
+const GENTLE_END_RE = /\b(?:painless(?:ly)?|without\s+(?:pain|suffering|malice|cruelty)|mercifully|a\s+(?:merciful|gentle|kind)\s+(?:death|end|blow|stroke)|gently|no\s+cruelty(?:\s+in\s+it)?|spared\s+(?:it|him|her|them)\s+the\s+pain|peaceful(?:ly)?)\b/i;
+
+export function detectKillingBlowDesync(sessionTurns) {
+  const flags = [];
+  for (const t of sessionTurns) {
+    const canon = t.canon || {};
+    const df = canon.deathFact;
+    if (!df || typeof df !== 'object') continue; // no kill / pre-DEATH-3 bundle → dormant
+    const dm = String(t.dm || '');
+    if (!dm.trim()) continue;
+
+    // (A) MEANS contradiction — the prose commits to a named weapon family OTHER than the
+    // fact's. Only fires when the fact's own family is one we can name AND the prose names
+    // a DIFFERENT one; a family-neutral kill line (no named means) never triggers.
+    const factFamily = String(df.meansType || '').toLowerCase();
+    if (MEANS_FAMILY_WORDS[factFamily]) {
+      for (const [fam, re] of ANY_MEANS_WORD) {
+        if (fam === factFamily) continue;
+        // Guard: don't flag a fact-family word that also appears (e.g. prose names BOTH the
+        // real means and, incidentally, another) — only fire when the prose names a wrong
+        // family and does NOT name the right one (it truly swapped the weapon).
+        if (re.test(dm) && !MEANS_FAMILY_WORDS[factFamily].test(dm)) {
+          flags.push(pointer({
+            cls: 'CG-DEATH', seed: t.seed, persona: t.persona, turn: t.i, span: dm,
+            canonField: 'deathFact.meansType', expected: `a ${factFamily} killing means (fact: "${df.means}")`,
+            narrated: `prose narrates a ${fam} means instead`,
+            severity: SEVERITY.FAIL,
+          }));
+          break; // one means contradiction per turn is enough
+        }
+      }
+    }
+
+    // (B) BEG FROM THE SPEECHLESS — the fact marks the foe unable to communicate, yet the
+    // prose has it pleading. A beast/mindless thing dies without speech (§6).
+    if (df.canCommunicate === false && FOE_PLEADS_RE.test(dm)) {
+      flags.push(pointer({
+        cls: 'CG-DEATH', seed: t.seed, persona: t.persona, turn: t.i, span: dm,
+        canonField: 'deathFact.canCommunicate', expected: 'no plea — the foe cannot speak',
+        narrated: 'prose has a speechless foe begging/pleading',
+        severity: SEVERITY.FAIL,
+      }));
+    }
+    // (C) BEG FROM THE UN-BEGGED — the foe COULD speak but the fact records no beg (stance
+    // is not 'begging'), yet the prose narrates it begging for life (a plea the fact lacks).
+    else if (df.stance !== 'begging' && FOE_PLEADS_RE.test(dm)) {
+      flags.push(pointer({
+        cls: 'CG-DEATH', seed: t.seed, persona: t.persona, turn: t.i, span: dm,
+        canonField: 'deathFact.victimStance', expected: `stance "${df.stance}" — the foe made no plea`,
+        narrated: 'prose narrates the foe begging/pleading it never did',
+        severity: SEVERITY.FAIL,
+      }));
+    }
+
+    // (D) MERCY READ AS TORTURE — a clean, merciful end narrated as deliberate cruelty.
+    if (df.intent === 'mercy' && TORTURE_RE.test(dm)) {
+      flags.push(pointer({
+        cls: 'CG-DEATH', seed: t.seed, persona: t.persona, turn: t.i, span: dm,
+        canonField: 'deathFact.killerIntent', expected: 'a clean, merciful death (intent: mercy)',
+        narrated: 'prose narrates torture/mutilation/a drawn-out cruel end',
+        severity: SEVERITY.FAIL,
+      }));
+    }
+    // (E) WORSE READ AS GENTLE — the example-making narrated as a painless/merciful end.
+    else if (df.intent === 'worse' && GENTLE_END_RE.test(dm)) {
+      flags.push(pointer({
+        cls: 'CG-DEATH', seed: t.seed, persona: t.persona, turn: t.i, span: dm,
+        canonField: 'deathFact.killerIntent', expected: 'the slow/savage example-making (intent: worse)',
+        narrated: 'prose narrates a painless/gentle/merciful end',
+        severity: SEVERITY.FAIL,
+      }));
+    }
+  }
+  return flags;
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
 // CG-5 — identity/addressee desync
 //
 // Player addresses NPC X by name or role-reference; mechanics dialogue-bind
@@ -922,8 +1066,8 @@ export function detectForbiddenTokens(sessionTurns) {
 // exports this so runCoherenceGate walks the same list).
 export const DETECTORS = [
   detectPresenceDesync, detectPlaceDesync, detectExitDesync, detectArchitectureDesync,
-  detectObjectPhantomCommit, detectCombatDesync, detectAddresseeDesync, detectQuantityDesync,
-  detectTemporalDesync, detectForbiddenTokens,
+  detectObjectPhantomCommit, detectCombatDesync, detectKillingBlowDesync, detectAddresseeDesync,
+  detectQuantityDesync, detectTemporalDesync, detectForbiddenTokens,
 ];
 
 // The subset of comparators that need only ONE turn's record ({player, dm,
@@ -941,6 +1085,7 @@ export const SINGLE_TURN_DETECTORS = [
   detectArchitectureDesync,   // CG-ARCH (invented rooms/stairs/floors — MR-2b)
   detectObjectPhantomCommit,  // CG-3a
   detectCombatDesync,         // CG-4
+  detectKillingBlowDesync,    // CG-DEATH (killing-blow prose ⇄ death fact — DEATH-3)
   detectAddresseeDesync,      // CG-5
   detectQuantityDesync,       // CG-7
   detectTemporalDesync,       // CG-6
@@ -966,6 +1111,7 @@ export const CLASS_LABELS = {
   'CG-2a': 'place-noun desync', 'CG-2b': 'invented exit/stair/door', 'CG-2c': 'unnarrated relocation',
   'CG-ARCH': 'invented architecture',
   'CG-3a': 'object phantom-commit', 'CG-4': 'combat/health mirror',
+  'CG-DEATH': 'killing-blow ⇄ death-fact desync',
   'CG-5': 'addressee desync', 'CG-7': 'ungrounded quantity', 'CG-6': 'temporal desync',
   'CG-0': '§0 forbidden-token scan',
 };
@@ -1023,6 +1169,18 @@ export const CLASS_LABELS = {
 //         lie about the building's shape, not atmosphere. Blocks.
 //   CG-7  structural — WARN-severity already (never blocks); listed for
 //         completeness only.
+//   CG-DEATH structural (DEATH-3) — killing-blow prose contradicting its death
+//         fact is a lie about HOW THE FOE ACTUALLY DIED: the wrong weapon, a plea
+//         the foe never made (or could never make), a "clean mercy" read as
+//         torture. The DEATH CONTRACT §1 (invariant I) makes the fact authoritative
+//         over the prose, and §6 marks each of these RED; this is the final delivery
+//         of consequence, so a false telling of it breaks the moment the way a
+//         phantom NPC or an invented staircase does — not atmosphere. Blocks. (A
+//         merely LOOSER-but-honest kill line — gorier phrasing, a different true
+//         detail — is NOT a contradiction and the comparator never fires on it; the
+//         cosmetic/WARN tier is reserved for wording looseness, which this class,
+//         firing only on genuine cross-family/cross-intent contradictions, does not
+//         emit.)
 //
 // Unlisted classes default to 'structural' (current blocking behavior) — the
 // map only needs an entry when a class is DEMOTED below its severity's default.
@@ -1043,6 +1201,7 @@ export const CLASS_TIERS = Object.freeze({
   'CG-ARCH': TIER.STRUCTURAL,
   'CG-3a': TIER.STRUCTURAL,
   'CG-4': TIER.STRUCTURAL,
+  'CG-DEATH': TIER.STRUCTURAL,
   'CG-5': TIER.STRUCTURAL,
   'CG-6': TIER.COSMETIC,
   'CG-7': TIER.STRUCTURAL,

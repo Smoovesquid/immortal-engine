@@ -611,3 +611,139 @@ export function buildRecap(world, { getItemDef } = {}) {
   const hookLine = hook ? ` And one thing has not finished happening: ${String(hook).replace(/[.?!]\s*$/, '')}.` : '';
   return `${opener} ${deeds.join(' ')}${hookLine}`;
 }
+
+// ── DEATH-3: the killing-blow base line (docs/DEATH_CONTRACT.md §3 final bullet) ─────
+//
+// The LLM-OFF fallback prose for a foe's killing blow, composed PURELY from the
+// DEATH FACT's fiction-facing fields (engine/combat/deathFact.js). The silent-
+// fallback law (CLAUDE.md — "the LLM layer never throws; the game continues with
+// base narration") means a real, means-true, stance-true kill must read WITHOUT the
+// API — a byte-stable sentence the player sees when there is no key, a dead key, a
+// network failure, or the validator swapping back to base. The LLM path (llmAdapter
+// buildSystemPrompt's killingBlowFact) restyles THIS same grounded moment at full
+// craft; this is the floor it never drops below.
+//
+// LAW (all four load-bearing):
+//   • ZERO numerics, zero mechanic names (invariant III / U578's wall) — the fact's
+//     raw light value and every magnitude stay in the engine; only fiction words out.
+//   • MEANS-TAILORED — an axe death (slashing) is not an arrow death (piercing) is not
+//     a fire death; the wound image is selected from means.type's family.
+//   • STANCE-AWARE — a beggar's / helpless death reads differently from a duelist's
+//     (fighting) or a proud one's (defiant); the framing tracks victimStance.
+//   • GORY-HONEST, NEVER GORY-EMBELLISHED — the prose does not flinch, and it invents
+//     NOTHING the fact does not hold. In particular: NO plea / mercy-asked language
+//     unless victimStance === 'begging' (§6 falsifier — no beg for the speechless or
+//     the un-begged; DEATH-2 gates the STATE, this layer must not conjure a plea).
+//
+// PURE + DETERMINISTIC: f(fact) only. No rng, no Date, no world read — the fact is
+// already the deterministic atom, so the same fact yields a byte-identical line on
+// replay (the §6 determinism floor). Never throws; a malformed fact degrades to a
+// plain, honest, still-number-free kill sentence.
+
+// Means → a wound-image family. Keyed off the fact's damage type (deathFact means.type
+// = slashing/piercing/bludgeoning/fire/cold/lightning/poison/acid/necrotic/physical…).
+// Each entry is a small, fixed vocabulary the composer threads into the blow — never a
+// number, never a die. The `open` verb is the finishing stroke; `close` is the body
+// failing. Deterministic single-choice (index 0) so the line is byte-stable; the LLM
+// path adds the variety, the base line only needs to be TRUE.
+const MEANS_IMAGE = Object.freeze({
+  slashing:    { stroke: 'opens', wound: 'a long, deep wound', close: 'and the blood comes fast and does not slow' },
+  piercing:    { stroke: 'punches through', wound: 'a small, certain hole', close: 'and something vital gives way inside' },
+  bludgeoning: { stroke: 'caves in', wound: 'bone that will not hold', close: 'and what breaks under the blow does not mend' },
+  fire:        { stroke: 'sears through', wound: 'flesh gone black at the edges', close: 'and the smell of it stays after the screaming stops' },
+  cold:        { stroke: 'stops', wound: 'skin gone grey and hard', close: 'and the cold finishes what it started' },
+  lightning:   { stroke: 'burns through', wound: 'a scorched path', close: 'and the body locks, then lets go all at once' },
+  poison:      { stroke: 'works through', wound: 'veins gone dark', close: 'and the poison does the rest, slower than a blade' },
+  acid:        { stroke: 'eats through', wound: 'flesh that will not close', close: 'and it keeps working after the blow is done' },
+  necrotic:    { stroke: 'withers', wound: 'flesh gone slack and lifeless', close: 'and whatever left them does not come back' },
+});
+const MEANS_IMAGE_DEFAULT = Object.freeze({ stroke: 'goes through', wound: 'a killing wound', close: 'and the body fails where it lies' });
+
+function meansImage(type) {
+  const key = String(type ?? '').toLowerCase();
+  return MEANS_IMAGE[key] || MEANS_IMAGE_DEFAULT;
+}
+
+// The killing wound's region, if the woundPath recorded one, as the BARE region noun
+// ("the throat"/"the gut"/etc. — deathFact BODY_REGIONS already read this way). The
+// preposition is the caller's job (composeVia), so a stroke verb that already ends in
+// "through" doesn't double it. '' when no wound region exists.
+function killingRegion(fact) {
+  const wounds = Array.isArray(fact?.woundPath) ? fact.woundPath : [];
+  const killing = wounds.find(x => x && x.killing) || wounds[wounds.length - 1] || null;
+  return killing && killing.region ? String(killing.region).trim() : '';
+}
+
+// Join a stroke verb to its wound region without doubling the preposition. A stroke
+// that already ends in "through" (punches through / sears through / …) takes the bare
+// region (" the throat"); every other stroke takes "through the throat". '' when there
+// is no region. Returns a leading-space clause ready to append after the stroke verb.
+function composeVia(stroke, region) {
+  if (!region) return '';
+  return /through$/i.test(String(stroke).trim()) ? ` ${region}` : ` through ${region}`;
+}
+
+export function composeKillingBlowLine(fact) {
+  const f = fact && typeof fact === 'object' ? fact : {};
+  const name = String(f.victim?.name ?? 'the foe').trim() || 'the foe';
+  const meansName = String(f.means?.name ?? 'the blow').trim() || 'the blow';
+  const img = meansImage(f.means?.type);
+  const stance = String(f.victimStance ?? 'fighting');
+  const intent = String(f.killerIntent ?? 'clean');
+  const region = killingRegion(f);
+  // `via` follows a stroke VERB (…opens|punches through|sears through…) — no doubled
+  // "through". `bareVia` follows a noun ("one stroke of the axe THROUGH the throat").
+  const via = composeVia(img.stroke, region);
+  const bareVia = region ? ` through ${region}` : '';
+
+  // WALK AWAY (abandonment) — the means field is 'the dying clock'; there is no
+  // finishing stroke to narrate, so the line is the cold turning-away made honest.
+  // (DEATH-2 sets means.name to 'the dying clock' for the walk verb.)
+  if (/dying clock/i.test(meansName)) {
+    return `You turn from ${name} and go. Behind you the breathing drags, then thins, then stops — the wounds finish what you would not, and no one closes ${name}'s eyes.`;
+  }
+
+  // MERCY — quick, clean, no cruelty; the blow lands true and does not linger.
+  // Only when the foe begged do we name the plea (the §6 falsifier: no beg language
+  // for a fact that holds none). A mercy-kill of a NON-begging foe is still clean,
+  // just not answered-a-plea.
+  if (intent === 'mercy') {
+    if (stance === 'begging') {
+      return `You give ${name} what was asked. One stroke of ${meansName}${bareVia}, ${img.wound} and no cruelty in it — ${img.close.replace(/^and /, '')}, and it is over quickly. A clean death, and a kind one.`;
+    }
+    return `You make it quick. ${cap(meansName)} ${img.stroke}${via} — ${img.wound}, ${img.close} — and ${name} is gone before the pain can take hold. Clean, and without malice.`;
+  }
+
+  // WORSE — the example-making; the prose does not flinch, and neither does the fact.
+  // A begging foe answered with cruelty reads as the betrayal of the plea it is.
+  if (intent === 'worse') {
+    const beggedClause = stance === 'begging'
+      ? `${cap(name)} begged, and you answered otherwise. `
+      : '';
+    return `${beggedClause}You do not make it quick. ${cap(meansName)} ${img.stroke}${via}, and you let it be seen — ${img.wound}, ${img.close}. When it is finished there is a message left in the doing, and everyone here has read it.`;
+  }
+
+  // DEFIANT — a proud foe who would not beg; the blow answers the defiance plainly.
+  if (stance === 'defiant') {
+    return `${cap(name)} does not look away, and you do not make them. ${cap(meansName)} ${img.stroke}${via} — ${img.wound}, ${img.close} — and the defiance goes out with the breath. They meant to die on their feet, and near enough they do.`;
+  }
+
+  // HELPLESS / a foe finished where they lay (downed, not begging, not defiant).
+  if (stance === 'helpless') {
+    return `${cap(name)} cannot rise, and does not. ${cap(meansName)} ${img.stroke}${via} — ${img.wound}, ${img.close}. It is finished the way such things are finished: quickly, and close.`;
+  }
+
+  // FLEEING — cut down mid-flight (morale-broken), the blow taking them from behind.
+  if (stance === 'fleeing') {
+    return `${cap(name)} is already turning to run when ${meansName} ${img.stroke}${via} — ${img.wound}, ${img.close}. They go down mid-stride and do not get up.`;
+  }
+
+  // FIGHTING (the duelist) — the default: a foe felled in the trade of blows, the
+  // wound path completing through what the fight already opened.
+  return `${cap(meansName)} ${img.stroke}${via} and ${name} drops where they stood — ${img.wound}, ${img.close}. The fight goes out of them between one breath and the one that never comes.`;
+}
+
+function cap(s) {
+  const str = String(s ?? '');
+  return str ? str.charAt(0).toUpperCase() + str.slice(1) : str;
+}

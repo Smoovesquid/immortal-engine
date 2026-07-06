@@ -4,6 +4,7 @@
 
 import { ensureWorld } from './state.js';
 import { buildNarratorContext, buildDMContext } from './ai/narratorContext.js';
+import { composeKillingBlowLine } from './composer.js';
 import { renderAsciiMapBlock } from './ai/asciiMap.js';
 import { buildAiHashTrace } from './ai/aiHashTrace.js';
 import { reviewNarration } from './ref/index.js';
@@ -256,6 +257,72 @@ function cassandraFact(cassandra) {
   return `A MOMENT (canon, happens ONCE — the base narration you were given already states this plainly; render the SAME single moment with more craft, then move on — do NOT add a second version of it, never repeat it, never turn it into a scene or a lecture, never attach any demand or consequence to it beyond the words themselves): ${who} looks at the player for a long moment and says the hard thing plainly, once — quietly, not as a threat or a judgment, just as something true they needed to say. The player may take it to heart or shrug it off; either is fine, and nothing more is asked of them for it.`;
 }
 
+// DEATH-3 — THE KILLING BLOW (docs/DEATH_CONTRACT.md §3 final bullet, the TABLE TEST:
+// "what a great DM gives a kill"). ctx.killingBlow is null on every non-kill turn (the
+// common case) and, on the turn a foe dies, carries the death fact's FICTION-FACING
+// fields ONLY (narratorContext.js's killingBlowFor — means, stance, intent, wound region,
+// beg state; zero numerics, zero mechanic names, invariant III). This function renders
+// them as a CANON block the DM voices AT FULL CRAFT: gory as the fact HONESTLY supports,
+// means-tailored (an axe death is not an arrow death is not a fire death), stance-aware (a
+// beggar's death is not a duelist's). Two hard rails carried into the instruction itself:
+//   • GORY-HONEST, NEVER GORY-EMBELLISHED — voice the wound the fact records; invent no
+//     wound, weapon, or victim the fact does not hold (the §6 falsifier: prose that
+//     contradicts its fact is red — the CG DEATH class enforces this after the fact).
+//   • NO PLEA FOR THE UN-BEGGED — mercy/plea language ONLY when begged===true (§6: a beg
+//     from a fact that holds none is red; DEATH-2 gates the STATE, this must not conjure
+//     one). The tone tracks the FICTION, never a verdict on the player (the McCarthy
+//     correction — the prose does not moralize the kill).
+// HIDE-THE-MATH, same discipline as moralOmenFact/cassandraFact: a finished instruction,
+// fiction words only, never a number or a mechanic's name. The engine's base narration
+// ALREADY states this kill plainly (composer.composeKillingBlowLine, the LLM-off floor
+// folded into the base by augmentNarration) — the model RESTYLES that one moment with
+// craft; it never renders a second telling. Returns '' when there's no kill this turn.
+// Never throws.
+const MEANS_TEXTURE = {
+  slashing:    'a cutting edge — it opens, it lets blood',
+  piercing:    'a thrusting point — it punches through, it finds what is vital',
+  bludgeoning: 'crushing force — it breaks and caves, it does not cut',
+  fire:        'fire — it sears and blackens; the burning outlasts the blow',
+  cold:        'killing cold — it stops and stiffens',
+  lightning:   'a scorching bolt — it burns a path and locks the body',
+  poison:      'poison — it works slower than a blade, from the inside',
+  acid:        'acid — it eats and keeps eating after the blow lands',
+  necrotic:    'a withering — flesh going slack and lifeless',
+};
+
+function killingBlowFact(kb) {
+  if (!kb || typeof kb !== 'object') return '';
+  const name = String(kb.victimName || 'the foe').trim() || 'the foe';
+  const means = String(kb.means || 'the blow').trim() || 'the blow';
+  const meansTexture = MEANS_TEXTURE[String(kb.meansType || '').toLowerCase()] || 'the killing means as the fact records it';
+  const region = String(kb.woundRegion || '').trim();
+  const regionClause = region ? ` The killing wound is through ${region}.` : '';
+  const stance = String(kb.stance || 'fighting');
+  // Stance → how the death READS (never a label the DM recites).
+  const stanceClause = ({
+    begging:  `${name} had begged for their life or a quick end before this blow — the death answers that plea (whether kept or broken depends on the intent below).`,
+    defiant:  `${name} would not beg — they meet the end on their feet, defiant.`,
+    helpless: `${name} was down and could not rise — this is a foe finished where they lay, not a fair exchange.`,
+    fleeing:  `${name} was breaking to run when this fell — cut down mid-flight.`,
+    fighting: `${name} fell in the trade of blows, still fighting.`,
+  })[stance] || `${name} fell.`;
+  // Intent → the CHARACTER of the kill (mercy reads merciful; worse does not flinch).
+  const intent = String(kb.intent || 'clean');
+  const intentClause = ({
+    mercy: `This is a MERCIFUL blow — quick, clean, no cruelty in it; render the mercy so it reads as mercy${kb.begged ? ', the plea for a quick end granted' : ''}.`,
+    worse: `This is the WORSE answer — the example-making, the slow or savage end; do not flinch from it${kb.begged ? ', and it betrays the plea that was made' : ''}.`,
+    brutal: `This is a BRUTAL kill — hard and without ceremony, but not the deliberate cruelty of the "worse" answer.`,
+    clean: `This is a CLEAN kill — a soldier's finish, neither drawn-out nor gentled.`,
+  })[intent] || `A clean finish.`;
+  const pleaRail = kb.begged
+    ? ''
+    : ` ${name} did NOT beg — put NO plea, no "mercy", no "please", no yielding words in their mouth; they made no such appeal.`;
+  const speechlessRail = kb.canCommunicate === false
+    ? ` ${name} cannot speak — give it no words, no plea, no last line; a beast or mindless thing dies without speech.`
+    : '';
+  return `THE KILLING BLOW (canon — the foe dies THIS beat; render it gravely and without flinching, as gory as this fact honestly supports, and move on — this is the final delivery of consequence, so give it weight, never spectacle for its own sake). The base narration you were given already states this kill plainly; RESTYLE that same single moment with craft — do NOT invent a second telling, a second wound, a different weapon, or a different victim. The means is ${means} (${meansTexture}).${regionClause} ${stanceClause} ${intentClause} Voice ONLY the wound this fact records; invent no injury, weapon, or outcome beyond it. The tone tracks the fiction of the death, never a verdict passed on the player.${pleaRail}${speechlessRail}`;
+}
+
 // ROM-2 — the PEOPLE HERE display list. Reads ctx.settlement.npcs (already
 // earned-name-filtered by buildNarratorContext — a name only appears once the
 // player has met that NPC or is home) and keeps only those NOT marked
@@ -346,6 +413,11 @@ export function buildSystemPrompt(ctx) {
   // player is when she speaks); '' unless narratorContext.js just delivered a fresh beat
   // (ctx.cassandraOmen null on every other turn — the common case).
   const cassandraMomentFact = cassandraFact(ctx.cassandraOmen);
+  // DEATH-3: the killing blow — '' on every non-kill turn (ctx.killingBlow null); on a
+  // kill turn, the fiction-facing death fact rendered as a CANON block the DM voices at
+  // full craft (means-tailored, stance-aware, gory-honest). Location-agnostic (a kill can
+  // land anywhere), so not gated on ctx.interior.
+  const killingBlowMomentFact = killingBlowFact(ctx.killingBlow);
   const presenceLawFact = ctx.interior
     ? `Anyone else at this settlement is elsewhere — never place, voice, or have them act in this room; never state a wall/floor material other than the one above.`
     : '';
@@ -369,6 +441,7 @@ export function buildSystemPrompt(ctx) {
     ...(terrainFact ? [`- ${terrainFact}`] : []),
     ...(omenFact ? [`- ${omenFact}`] : []),
     ...(cassandraMomentFact ? [`- ${cassandraMomentFact}`] : []),
+    ...(killingBlowMomentFact ? [`- ${killingBlowMomentFact}`] : []),
     ...(presenceLawFact ? [`- ${presenceLawFact}`] : []),
     ``
   ];
@@ -1719,6 +1792,32 @@ export async function augmentNarration({
       base = baseTrimmed ? `${baseTrimmed} ${line}` : line;
     }
   } catch { /* never let the fallback line break a turn — degrade to base untouched */ }
+
+  // DEATH-3 (docs/DEATH_CONTRACT.md §3) — THE KILLING BLOW, LLM-OFF FALLBACK. Same
+  // silent-fallback law as the Cassandra above: a foe's death must read as a death
+  // WITHOUT the API — no key, dead key, network failure, or a validator swap-back. On a
+  // kill turn (ctx.killingBlow non-null, already gated on this-turn kill mechanics + a
+  // fresh death fact), the fact-composed line (composer.composeKillingBlowLine, pure +
+  // byte-stable f(fact)) BECOMES the base: it is the single fact-true telling of the kill,
+  // means-tailored and stance-aware, and it strips nothing owed (the beg/defiance happened
+  // on the PRIOR downed beat, not this finishing one). On the LLM path this same line is
+  // handed to callLLM as the base to RESTYLE, so the model polishes the fact-true kill, not
+  // a generic beat. buildNarratorContext is cheap/read-only; recomputing killingBlow here
+  // (rather than threading it) keeps this fallback self-contained and matches the
+  // Cassandra's own pattern. Degrades to base untouched on any failure.
+  try {
+    const kb = buildNarratorContext(world, outcome)?.killingBlow;
+    if (kb) {
+      const killLine = composeKillingBlowLine({
+        victim: { name: kb.victimName, canCommunicate: kb.canCommunicate },
+        means: { name: kb.means, type: kb.meansType },
+        woundPath: kb.woundRegion ? [{ region: kb.woundRegion, killing: true }] : [],
+        victimStance: kb.stance,
+        killerIntent: kb.intent
+      });
+      if (killLine) base = killLine;
+    }
+  } catch { /* never let the kill line break a turn — degrade to base untouched */ }
 
   // ── the finalize() choke point (CG-2 / CG-LIVE-2 §3 Candidate A) ───────────
   // EVERY delivery path out of augmentNarration exits through finalize(text):

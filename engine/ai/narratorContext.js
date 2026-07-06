@@ -25,6 +25,7 @@ import { describeInteriorLayout } from '../structures/interiors.js';
 import { escalationTier } from '../morality/escalation.js';
 import { pickOmenPhrase } from '../morality/omenVocabulary.js';
 import { getRoomState } from '../structures/roomState.js';
+import { roomDressing } from '../structures/roomDressing.js';
 import { occupantsOfRoom, outdoorOccupants, visibleThroughWindows } from '../structures/roomOccupancy.js';
 import { roomWindows, roomWindowFacings } from '../structures/roomWindows.js';
 import { doorsOf } from '../structures/doors.js';
@@ -787,6 +788,16 @@ function buildScene(w, outcome) {
           objects: rs.objects,
           room: rs.room,
           material: rs.material,
+          // PW-4: 1–2 seed-derived micro-details (a cobwebbed corner, a water-stained
+          // beam …) so the DM renders stable atmosphere instead of per-turn improv. Pure
+          // f(seed, structure, room) — nothing stored, worldHash untouched (S1). The
+          // room's role/dark hint shapes the pool so a crypt and a bedchamber differ.
+          dressing: roomDressing(
+            String(w.meta?.seed ?? ''),
+            String(w.scene.interior.structureKey ?? ''),
+            String(w.scene.interior.roomId ?? ''),
+            rs.room ? { role: rs.room.role, dark: rs.room.dark } : null
+          ),
           // MR-2b: the door canon rendered as perceivable texture (front door +
           // any SECURED interior door), so the DM describes THE house's real
           // doors and states — never invents them. Pure f(world); capped; stable.

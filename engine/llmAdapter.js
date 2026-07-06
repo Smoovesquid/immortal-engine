@@ -88,7 +88,15 @@ function interiorLayoutFact(interior) {
   const objectsFact = objects.length
     ? ` In this room: ${objects.map(o => (o.state ? `${o.name} (${o.state})` : o.name)).join(', ')}. These are the room's furnishings — do not invent others you expect the player to act on.`
     : '';
-  return `The player is inside ${rooms}. From this room there is ${doors}.${wayOut} There are NO other rooms, floors, or stairs than these.${label}${objectsFact}`;
+  // PW-4: the room's derived dressing — 1–2 stable micro-details (a cobwebbed corner,
+  // a water-stained beam …). Unlike objects, these are PERMISSION, not a whitelist: the
+  // DM may weave them in for texture but need not list them, and they are the same on
+  // every re-visit (pre-authorized derived canon, not per-turn improv). Nothing to act on.
+  const dressing = Array.isArray(interior.dressing) ? interior.dressing : [];
+  const dressingFact = dressing.length
+    ? ` Small true details of this room, the same each visit: ${dressing.join('; ')}. Weave in what fits as texture — never as a thing the player must act on.`
+    : '';
+  return `The player is inside ${rooms}. From this room there is ${doors}.${wayOut} There are NO other rooms, floors, or stairs than these.${label}${objectsFact}${dressingFact}`;
 }
 
 // MR-2b — the DOOR-STATE fact line. The door canon (MR-2a) reaches the DM as
@@ -698,6 +706,9 @@ export function collectGroundedNouns({ world = null, ctx = null, base = '' } = {
     if (ctx.combat?.enemies) for (const e of ctx.combat.enemies) add(e?.name);
     if (ctx.speaker?.name) add(ctx.speaker.name);
     if (Array.isArray(ctx.placeChunks)) for (const c of ctx.placeChunks) add(c?.text);
+    // PW-4 (law 6): the room's derived dressing nouns are PRE-AUTHORIZED — texture the
+    // engine put in the prompt must never be rejected as invented by the narration guard.
+    if (ctx.interior && Array.isArray(ctx.interior.dressing)) for (const d of ctx.interior.dressing) add(d);
   }
   if (Array.isArray(world?.ledger?.facts)) for (const f of world.ledger.facts) add(f?.text);
   if (Array.isArray(world?.map?.nodes)) for (const n of world.map.nodes) add(n?.name);

@@ -2790,3 +2790,7 @@ other agents. (none active)
   reads the derivation ("a stand of trees north… the road runs west"); DM prompt gains the TERRAIN
   line; JR-1 interruptions look around at real features. Worker's lockstep discipline noted (bump
   left to integration — correct). MR-3b (renderer) is the LAST lane of the commission.
+- **Integration honesty note:** `7b3086de` shipped as a hollow release (changelog only — a doc-anchor
+  assertion aborted the bump script mid-run and the commit chain proceeded). This commit completes
+  v0.29.10 b097 for real (package.json + v1.js + PACKETS row). Lesson encoded: bump scripts now fail
+  the WHOLE chain (&&-join python with the commit, never newline-join).

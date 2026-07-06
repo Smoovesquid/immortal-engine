@@ -1,8 +1,11 @@
 #!/usr/bin/env node
 // One-command verification ladder (free + deterministic). See docs/PROMPT_ARCHITECTURE.md §5.
 //   npm run check
-// Runs the convergence corpus + full suite/determinism, then prints git sync state.
-// Exit 0 only when convergence is 100% AND the suite has 0 failures.
+// Runs the convergence corpus + full suite/determinism + position probe + the
+// screen-truth oracle, then prints git sync state.
+// Exit 0 only when convergence is 100%, the suite has 0 failures, the position
+// probe has no findings, AND the screen-truth oracle has no unexpected findings
+// or golden drift.
 import { execSync } from 'node:child_process';
 
 function sh(cmd) {
@@ -35,12 +38,29 @@ const posFindings = (posProbe.out.match(/(\d+) finding\(s\)/) || [])[1];
 const posGreen = posProbe.ok && posFindings === undefined; // exit 0 AND no findings line
 console.log(`${posGreen ? '✓' : '✗'} position probe: ${posGreen ? 'no findings (doorstep egress honest)' : `${posFindings || '?'} finding(s) — the body desyncs on a transition`}`);
 
+// PLAN-SPLIT-1 — the screen-truth oracle (VIS-ORACLE), the position-probe's
+// sibling for PIXELS: seven canonical scenes (wake/exterior/square/wild/combat)
+// boot headless and the drawn model is asserted against engine truth + a golden-
+// image beauty lock. All seven ran green the day PLAN-SPLIT-1 landed (the wake
+// scene's projection split was the oracle's first catch); this rung is the
+// all-scenes-green precondition the position-probe rung set precedent for.
+// screenTruth.mjs's own exit code IS the verdict (0 = zero unexpected findings
+// AND no golden drift/missing) — parsed straight off its SUMMARY block so a
+// future EXPECTED_RED entry surfaces its reason without this script drifting.
+const screenTruth = sh('npm run playtest:screen');
+const screenGreen = screenTruth.ok;
+const screenUnexpected = (screenTruth.out.match(/(\d+) UNEXPECTED finding\(s\)/) || [])[1];
+const screenGoldens = (screenTruth.out.match(/goldens: (\d+) ok · (\d+) drift · (\d+) missing · (\d+) pending/) || []);
+console.log(`${screenGreen ? '✓' : '✗'} screen truth: ${screenGreen
+  ? `${screenGoldens[1] || '?'} scenes green, goldens locked`
+  : `${screenUnexpected || '?'} unexpected finding(s) / ${screenGoldens[2] || '?'} golden drift — the drawn model desynced from engine truth`}`);
+
 const branch = (sh('git rev-parse --abbrev-ref HEAD').out || '').trim() || '?';
 const dirty = (sh('git status --porcelain').out || '').trim();
 const dirtyN = dirty ? dirty.split('\n').length : 0;
 const ahead = ((sh('git rev-list --count @{u}..HEAD').out || '0').trim()) || '0';
 console.log(`• git: ${branch} · ${dirtyN ? `${dirtyN} uncommitted` : 'clean'} · ${ahead} unpushed`);
 
-const green = convGreen && testGreen && posGreen;
+const green = convGreen && testGreen && posGreen && screenGreen;
 console.log(green ? '\nGREEN — free ladder passes.' : '\n✗ NOT GREEN — fix before committing.');
 process.exit(green ? 0 : 1);

@@ -1,22 +1,24 @@
-// U553 — VIS-ORACLE: the live wake RED (the independent repro of REND-TRUTH-1).
+// U553 — VIS-ORACLE: the wake scene, before and after PLAN-SPLIT-1.
 //
-// The oracle must INDEPENDENTLY rediscover the live wake-scene bug as a RED
-// PROJECTION_EQUALITY finding — the reproduce-first proof that the screen-truth
-// gate can see the class of bug that broke twice in one night. At the wake scene
-// the player token in the walkable-place drawn model is seated from the engine
-// floorPlan, but the building it stands in is DRAWN from getPlan's catalog plan,
-// so the token renders OFF its own building: a figure drawn indoors-but-wrong,
-// REND-TRUTH-1's exact target class.
+// The oracle independently rediscovered a live bug as a RED PROJECTION_EQUALITY
+// finding: at the wake scene, the player token in the walkable-place drawn model
+// was seated from the engine floorPlan, but the building it stood in was DRAWN
+// from getPlan's catalog plan — two different-scale plans for one building, so
+// the token rendered OFF its own drawn walls. REND-TRUTH-1 (b100) fixed the
+// wu-space (3-D people) split; this RED survived it — a DISTINCT split in
+// place-unit space (the walkable-place view), closed by PLAN-SPLIT-1: real
+// structures now draw from engineBackedPlan(st) (placeFromNode.js), the same
+// floorPlan the token already read, so the two layers finally share one
+// geometry.
 //
-// This is the U497-todo pattern for pixels:
-//   • the currently-TRUE facts are asserted for real (LIVE, green): the wake scene
-//     emits exactly one finding, and it is the PROJECTION_EQUALITY red; no OTHER
-//     scene is red; and the run is deterministic;
-//   • the DESIRED post-fix state — the wake scene runs clean — is an EXPECTED-FAIL
-//     (`todo`) that REND-TRUTH-1's landing flips ON (delete the `todo` option, the
-//     assertion already reads the right thing).
+// This was the U497-todo pattern for pixels: the pre-fix RED was asserted for
+// real (LIVE, green against the THEN-true bug), and the desired post-fix state
+// (the wake scene runs clean) was a `todo` that PLAN-SPLIT-1's landing flips ON.
+// It is now ON: the wake scene runs clean, tests 1–2 (which used to assert the
+// RED) now assert the GREEN, and wake_interior is dropped from EXPECTED_RED.
 //
-// docs/briefs/VIS-ORACLE.md · docs/MAP_REAL.md promise 2. Sibling: U551/U552.
+// docs/briefs/PLAN-SPLIT-1-one-geometry.md · docs/MAP_REAL.md promise 2 & 3.
+// Sibling: U551/U552.
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -25,30 +27,26 @@ import { runScreenTruth, EXPECTED_RED } from '../scripts/screenTruth.mjs';
 import { buildScenes, drawnModel, engineTruth } from '../scripts/screenTruth.scenes.mjs';
 import { runAllAssertions } from '../scripts/screenTruth.assertions.mjs';
 
-// ── LIVE (currently TRUE): the wake scene surfaces the projection RED ──────────
-test('U553: the wake scene emits a PROJECTION_EQUALITY finding (the live figure-off-its-building bug)', () => {
+// ── POST-FIX: the wake scene emits NO PROJECTION_EQUALITY finding ──────────────
+test('U553: the wake scene emits no PROJECTION_EQUALITY finding (PLAN-SPLIT-1: one plan drives building ink + figure)', () => {
   const r = runScreenTruth();
   const wake = r.scenes.find(s => s.id === 'wake_interior');
   assert.ok(wake, 'the wake scene is present');
   const proj = wake.findings.filter(f => f.class === 'PROJECTION_EQUALITY');
-  assert.equal(proj.length, 1, `exactly one projection finding on wake; got ${JSON.stringify(wake.findings)}`);
-  assert.match(proj[0].detail, /OUTSIDE its own structure/, 'the finding names the figure drawn off its own building');
+  assert.equal(proj.length, 0, `wake must run clean of projection findings now the figure and its building share one plan; got ${JSON.stringify(wake.findings)}`);
 });
 
-// ── LIVE: it is marked EXPECTED-RED, so the run stays legibly non-regressed ────
-test('U553: the wake red is registered as EXPECTED (REND-TRUTH-1 flips it), and no other scene is red', () => {
+// ── POST-FIX: wake_interior is no longer a registered expected-red, and the run
+//    has zero findings anywhere (fully green) ──────────────────────────────────
+test('U553: wake_interior is no longer EXPECTED_RED, and no scene carries any finding', () => {
   const r = runScreenTruth();
-  assert.ok(EXPECTED_RED.has('wake_interior'), 'wake_interior is a registered expected-red');
-  const unexpected = r.findings.filter(f => !f.expected);
-  assert.equal(unexpected.length, 0, `only the wake red is expected; any other finding is a regression. got: ${JSON.stringify(unexpected)}`);
-  // The wake finding is tagged expected:
-  const wakeFindings = r.findings.filter(f => f.step === 'wake_interior');
-  assert.ok(wakeFindings.length >= 1 && wakeFindings.every(f => f.expected), 'the wake finding is tagged expected');
+  assert.ok(!EXPECTED_RED.has('wake_interior'), 'wake_interior must be dropped from EXPECTED_RED once fixed');
+  assert.equal(r.findings.length, 0, `the run must be fully green — any finding here is a regression. got: ${JSON.stringify(r.findings)}`);
 });
 
-// ── LIVE: the diagnosis is precise — engine cell IS a real room cell, the DRAWN
-//    token is the liar (this is the layer-diagnosis the fix targets). ──────────
-test('U553: the engine says the body is inside a real room; the DRAWN token is the one off the building', () => {
+// ── POST-FIX: the diagnosis inverts — the engine says the body is inside a real
+//    room, and the DRAWN token now agrees (inside the SAME rect). ─────────────
+test('U553: the engine says the body is inside a real room; the DRAWN token now agrees (inside its own building)', () => {
   const wake = buildScenes().find(s => s.id === 'wake_interior');
   const truth = engineTruth(wake.world, wake.nodeId);
   const model = drawnModel(wake.world, wake.nodeId); model.__world = wake.world;
@@ -58,35 +56,32 @@ test('U553: the engine says the body is inside a real room; the DRAWN token is t
   assert.ok(truth.playerCell && String(truth.playerCell.frame).startsWith('struct:'), 'engine: player has a struct-frame cell');
   assert.ok(truth.playerPlaceUnitRect, 'engine: the interior structure has a place-unit floorPlan rect');
 
-  // The drawn token exists and sits OUTSIDE that engine-plan rect (the bug).
+  // The drawn token exists and now sits INSIDE that engine-plan rect.
   const tok = model.placeUnit?.tokens?.find(t => t.type === 'player');
   assert.ok(tok, 'a player token is drawn in the walkable place');
   const R = truth.playerPlaceUnitRect;
   const inside = tok.ux >= R.minX && tok.ux <= R.maxX && tok.uy >= R.minY && tok.uy <= R.maxY;
-  assert.equal(inside, false, 'the DRAWN token is off its own building (this is what REND-TRUTH-1 fixes)');
+  assert.equal(inside, true, 'the DRAWN token is inside its own building (PLAN-SPLIT-1: one plan, one geometry)');
 });
 
-// ── LIVE: the wu MARKER (playerFocusWu) is already honest (MR-1b landed) — the
-//    RED is specifically the walkable-place token, not the marker. ────────────
-test('U553: the wu player marker is already inside the wake structure (only the place-unit token is red)', () => {
+// ── The wu MARKER (playerFocusWu) was already honest (MR-1b/REND-TRUTH-1) and
+//    stays honest — both spaces now agree. ─────────────────────────────────────
+test('U553: the wu player marker is inside the wake structure (both the wu marker AND the place-unit token now agree)', () => {
   const wake = buildScenes().find(s => s.id === 'wake_interior');
   const truth = engineTruth(wake.world, wake.nodeId);
   const model = drawnModel(wake.world, wake.nodeId); model.__world = wake.world;
   assert.ok(model.wu.player && truth.playerRect, 'a wu marker + an engine rect exist');
   const R = truth.playerRect, p = model.wu.player;
   const inside = p.wx >= R.minX && p.wx <= R.maxX && p.wy >= R.minY && p.wy <= R.maxY;
-  assert.equal(inside, true, 'the wu marker is honest (MR-1b) — the projection RED is the place-unit token alone');
+  assert.equal(inside, true, 'the wu marker is honest (MR-1b/REND-TRUTH-1) — and now the place-unit token matches it (PLAN-SPLIT-1)');
 });
 
-// ── EXPECTED-FAIL (todo): the POST-FIX target — the wake scene runs clean. When
-//    REND-TRUTH-1 lands (one plan drives both the building ink and the figure),
-//    the wake token sits inside its own building and this passes; delete the
-//    `todo` option to flip it ON (and drop wake_interior from EXPECTED_RED, then
-//    capture its golden via `npm run screen-goldens:accept`).
-test('U553: (post-REND-TRUTH-1) the wake scene runs clean of projection findings', { todo: 'flips ON when REND-TRUTH-1 lands: one plan drives building ink + figure' }, () => {
+// ── POST-FIX (was the todo target): the wake scene runs fully clean of ANY
+//    finding class, not just PROJECTION_EQUALITY. ──────────────────────────────
+test('U553: the wake scene runs clean of every assertion class (PROJECTION_EQUALITY, PHANTOM, MISSING, LAYER_ORIGIN, INK_EXCLUSION)', () => {
   const wake = buildScenes().find(s => s.id === 'wake_interior');
   const truth = engineTruth(wake.world, wake.nodeId);
   const model = drawnModel(wake.world, wake.nodeId); model.__world = wake.world;
   const findings = runAllAssertions(model, truth, 'wake_interior');
-  assert.deepEqual(findings, [], `wake must run clean once the figure and its building share one plan; got: ${JSON.stringify(findings)}`);
+  assert.deepEqual(findings, [], `wake must run clean now the figure and its building share one plan; got: ${JSON.stringify(findings)}`);
 });

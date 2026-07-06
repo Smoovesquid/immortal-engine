@@ -86,8 +86,11 @@ test('U554: a single stray pixel does NOT trip the tolerance (perceptual, not ex
 });
 
 // ── checkGolden statuses are correct against the committed goldens ────────────
-test('U554: checkGolden reports "ok" for the committed goldens of the passing scenes', () => {
-  const passing = ['cottage_exterior', 'settlement_square_morning', 'settlement_square_evening', 'wild_road_walking', 'deep_wild_fog_edge', 'combat_one_defeated'];
+// PLAN-SPLIT-1 — all SEVEN canonical scenes are now passing (wake_interior
+// joined the set once the figure and its building shared one plan); this list
+// grew from six to seven at that landing.
+test('U554: checkGolden reports "ok" for the committed goldens of every passing scene', () => {
+  const passing = ['wake_interior', 'cottage_exterior', 'settlement_square_morning', 'settlement_square_evening', 'wild_road_walking', 'deep_wild_fog_edge', 'combat_one_defeated'];
   for (const sc of buildScenes()) {
     if (!passing.includes(sc.id)) continue;
     assert.ok(goldenExists(sc.id), `committed golden exists for ${sc.id}`);
@@ -97,9 +100,11 @@ test('U554: checkGolden reports "ok" for the committed goldens of the passing sc
   }
 });
 
-// ── The still-red wake scene has NO committed golden (it lands with the flip) ──
-test('U554: the wake scene (still red) has no committed golden yet', () => {
-  assert.equal(goldenExists('wake_interior'), false, 'the red scene\'s golden lands only when REND-TRUTH-1 flips it green');
+// ── PLAN-SPLIT-1 (LANDED): the wake scene now HAS a committed golden — it landed
+//    with the flip (one plan drives building ink + figure, so wake finally joined
+//    the passing/goldened set). ─────────────────────────────────────────────────
+test('U554: the wake scene (now green) HAS a committed golden', () => {
+  assert.equal(goldenExists('wake_interior'), true, 'the wake golden lands once PLAN-SPLIT-1 flips it green');
 });
 
 // ── A size-mismatched golden is caught (defensive: the raster dims are pinned) ─

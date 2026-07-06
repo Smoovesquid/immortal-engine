@@ -28,14 +28,15 @@ test('U552: two runs produce byte-identical scene summaries (counts, findings, e
   assert.equal(JSON.stringify(a.scenes), JSON.stringify(b.scenes), 'scene reports identical across runs');
 });
 
-test('U552: exactly one expected-red finding (the wake bug) and zero unexpected', () => {
+// PLAN-SPLIT-1 — the wake bug (place-unit token off its own building) is fixed;
+// EXPECTED_RED is now empty and the run carries zero findings of any kind.
+test('U552: zero expected-red findings and zero unexpected — the run is fully green', () => {
   const r = runScreenTruth();
   const expected = r.findings.filter(f => f.expected);
   const unexpected = r.findings.filter(f => !f.expected);
-  assert.equal(expected.length, 1, `exactly one expected-red finding; got ${JSON.stringify(expected)}`);
-  assert.equal(expected[0].class, 'PROJECTION_EQUALITY', 'the expected red is a projection-equality finding');
-  assert.equal(expected[0].step, 'wake_interior', 'the expected red is the wake scene');
+  assert.equal(expected.length, 0, `no expected-red findings remain (PLAN-SPLIT-1 fixed the wake bug); got ${JSON.stringify(expected)}`);
   assert.equal(unexpected.length, 0, `no UNEXPECTED findings (regressions); got ${JSON.stringify(unexpected)}`);
+  assert.equal(r.findings.length, 0, `the run is fully green; got ${JSON.stringify(r.findings)}`);
 });
 
 test('U552: every scene golden raster is stable across two renders (the golden-lock invariant)', () => {

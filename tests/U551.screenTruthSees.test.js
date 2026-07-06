@@ -3,8 +3,9 @@
 // Proves the oracle's five assertion classes (scripts/screenTruth.assertions.mjs)
 // each flag a synthetic scene that VIOLATES that class, and pass a clean one. This
 // is the "can the oracle see?" guarantee — it holds GREEN forever, independent of
-// the live renderer's current (buggy) wake projection. The known-red LIVE behaviour
-// is exercised by U553 + the runtime probe (npm run playtest:screen), not here.
+// whatever the live renderer's wake projection happens to be doing (it caught the
+// PLAN-SPLIT-1 bug when the wake projection WAS buggy; U553 + the runtime probe
+// (npm run playtest:screen) exercise the live renderer's actual current state).
 //
 // Each fixture is a hand-built { drawnModel, engineTruth } pair where the test
 // controls every position exactly (mirrors U496's synthetic-fixture discipline).

@@ -237,11 +237,23 @@ export function engineTruth(world, nodeId = null) {
         const frame = place ? placeFrame(place) : null;
         const anchor = buildingAnchorInPlace(place, interior.structureKey) || { ox: 0, oy: 0 };
         playerRect = structureWorldRect(node, frame, anchor, plan);
+        // PLAN-SPLIT-1 — this must use the SAME footprint-centered-at-anchor
+        // convention as structureWorldRect just above (its wu-space sibling):
+        // the building's ox/oy anchor is the footprint's CENTER (worldSpace.js's
+        // structCellToPlaceUnit/structureWorldRect docstring: "footprint centered
+        // at its anchor"; U400-C proves it), so the rect is anchor ± footprint/2 —
+        // NOT the room-bbox's own min/max offset by the anchor (planExtent(plan)
+        // here measures the WALL-inset room-ink bbox, which sits ~WALL/2 inside
+        // the footprint's true corners; for a catalog plan the two conventions
+        // coincided by the old seating math's own symmetry, which is exactly what
+        // masked this formula bug until the drawn plan became the real engine
+        // floorPlan). planExtent/ext kept only as the ok-precondition check.
         const ext = planExtent(plan);
         if (ext) {
+          const fw = Number(plan?.footprint?.w) || 1, fh = Number(plan?.footprint?.h) || 1;
           playerPlaceUnitRect = {
-            minX: ext.minX + anchor.ox, minY: ext.minY + anchor.oy,
-            maxX: ext.maxX + anchor.ox, maxY: ext.maxY + anchor.oy,
+            minX: anchor.ox - fw / 2, minY: anchor.oy - fh / 2,
+            maxX: anchor.ox + fw / 2, maxY: anchor.oy + fh / 2,
           };
         }
       }

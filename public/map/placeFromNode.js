@@ -33,8 +33,55 @@ const TIER_STEP = 5; // grid-distance per danger rung
 // DEC-1 — settlement building name → true footprint now lives in ONE place:
 // engine/structures/settlementFootprint.js (syntheticPlanForBuilding). The old
 // name→catalog-plan map here sized decorative buildings by an authored ROOM bbox
-// (a well became a whole cottage); it is retired. Real structures still resolve
-// their authored catalog plan via getPlan(buildingType) below.
+// (a well became a whole cottage); it is retired.
+//
+// PLAN-SPLIT-1 — a REAL structure (has a world.structures record) now resolves
+// its plan from the ENGINE's own floorPlan(st) (see engineBackedPlan below), not
+// getPlan(buildingType)'s catalog art — the catalog plan survives ONLY as the
+// no-topology fallback (a structure with no rooms yet, or a lookup failure).
+// This is the actual fix for the wake-token-off-its-building bug (the oracle's
+// PROJECTION_EQUALITY red): the building WALLS this file draws (handDrawnPlace.js
+// reads b.plan.rooms directly) and the player TOKEN (playerTokenPlaceUnit, above)
+// must come from the SAME plan, or the token measurably sits off its own ink.
+
+// engineBackedPlan(st) -> a plan-shaped object `{ rooms, footprint, furniture }`
+// wrapping floorPlan(st) for this module's building loop, or null if the
+// structure has no drawable topology (the caller falls back to the catalog).
+// `rooms` is floorPlan's own array — already `{ id, cx, cy, w, h, ... }`, the
+// EXACT shape planExtent()/handDrawnPlace.js expect from a catalog plan's rooms
+// (no `.r` radius field; engine/structures/floorPlan.js), so no reshape there.
+// `furniture` is synthesized (flattenRoomFurniture below): floorPlan's rooms
+// carry per-room, NORMALIZED (fx/fy in [0,1] of the room box) furniture — a
+// different shape/frame than the catalog's absolute ABSOLUTE-anchor
+// `{type,ux,uy,uw,uh}` array (TT-DRAW-2's catalogPlanBoundsInPlaceUnits /
+// fitCatalogPointToRect and oneMap.js's outdoor-silhouette furniture loop read
+// exactly that catalog shape) — flattening to the SAME absolute shape keeps
+// those call sites working unchanged, now sized/positioned from the real room
+// graph instead of an unrelated catalog cottage's fixtures.
+function flattenRoomFurniture(rooms) {
+  const out = [];
+  for (const r of (rooms || [])) {
+    for (const f of (r.furniture || [])) {
+      // A circular piece (barrel, pillar, sarcophagus, …) carries `r` (radius)
+      // instead of w/h — roomDetail.js's FURN table, same `.r ? .r*2 : w/h`
+      // convention this file's own planExtent()/generatePlace already use for
+      // room shapes. Without this, every circular item flattens to a w=0,h=0
+      // point (still a valid, if degenerate, AABB — but not its true footprint).
+      const w = Number(f.w) || (Number(f.r) ? Number(f.r) * 2 : 0);
+      const h = Number(f.h) || (Number(f.r) ? Number(f.r) * 2 : 0);
+      const fx = Number.isFinite(f.fx) ? f.fx : 0.5, fy = Number.isFinite(f.fy) ? f.fy : 0.5;
+      const cx = r.cx - r.w / 2 + fx * r.w, cy = r.cy - r.h / 2 + fy * r.h;
+      out.push({ type: String(f.kind || f.type || 'prop'), ux: cx - w / 2, uy: cy - h / 2, uw: w, uh: h });
+    }
+  }
+  return out;
+}
+
+function engineBackedPlan(st) {
+  let fp; try { fp = floorPlan(st); } catch { return null; }
+  if (!fp || !Array.isArray(fp.rooms) || !fp.rooms.length) return null;
+  return { rooms: fp.rooms, doors: fp.doors || [], footprint: fp.footprint, material: fp.shell, furniture: flattenRoomFurniture(fp.rooms) };
+}
 
 function planExtent(plan) {
   let minX = 1e9, minY = 1e9, maxX = -1e9, maxY = -1e9;
@@ -290,10 +337,14 @@ export function placeFromWorldNode(world, nodeId) {
   // Collect every building (the player's real structures first, then the
   // settlement's). Count varies by size tier now (M7-S3), so a hamlet is a couple
   // of roofs and the city seat is dozens.
+  //
+  // PLAN-SPLIT-1 — a real structure draws from engineBackedPlan(st) (the ENGINE's
+  // own floorPlan), never getPlan(type)'s catalog art. Falls back to the catalog
+  // ONLY when the structure has no drawable topology yet (never throws).
   const entries = [];
   for (const st of structs) {
     const type = st.buildingType || buildingTypeFor(String(st.id || ''));
-    const plan = getPlan(type) || getPlan('cottage');
+    const plan = engineBackedPlan(st) || getPlan(type) || getPlan('cottage');
     if (plan && plan.rooms) entries.push({ plan, meta: { structureKey: st.id, name: type } });
   }
   for (const b of sbld) {

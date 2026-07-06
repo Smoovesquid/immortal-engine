@@ -140,21 +140,23 @@ test('U538: breatheMinis already skips defeated minis — no separate no-breathe
 
 // -------------------- 4. TT-OCC no-foreign-ink law is unaffected (U494/U495 stay green) --------------------
 
-test('U538: U494/U495 test files still exist and are untouched by this packet (both pass verbatim under the standing `node --test` run — verified separately, see report)', () => {
+test('U538: U494/U495 test files still exist and still guard placeFromNode.js (both pass verbatim under the standing `node --test` run — verified separately, see report)', () => {
   // NOTE on method: spawning `node --test <file>` as a child process from
   // INSIDE a running `node --test` process trips Node's own recursive-runner
   // guard ("run() is being called recursively within a test file: skipping
   // running files") — the child prints ZERO output and the parent can't see
   // real pass/fail, a false-negative trap discovered while writing this exact
-  // test. So this suite proves the packet is safe STATICALLY instead: confirm
-  // both guard files still exist, still import placeFromNode.js (the module
-  // whose behavior they lock down), and — the actually load-bearing check —
-  // the next test proves placeFromNode.js has a byte-for-byte-identical diff
-  // against HEAD (this packet never touched it). U494/U495 running green is
-  // independently confirmed by direct standalone invocation as part of this
-  // packet's verification pass (`node --test tests/U494.*.test.js
-  // tests/U495.*.test.js` → 11/11), and again by the full-suite `npm run
-  // check` gate this packet's done-when requires.
+  // test. So this suite proves TT-OCC's no-foreign-ink law is still enforced
+  // STATICALLY instead: confirm both guard files still exist and still import
+  // placeFromNode.js (the module whose behavior they lock down). This packet
+  // (TT-MINIS, at landing) never touched placeFromNode.js, verified by a
+  // one-time `git diff --stat HEAD` check that has since been retired (it was
+  // a landing-time proof, not a standing invariant — see the retirement note
+  // below, PLAN-SPLIT-1). U494/U495 running green is independently confirmed
+  // by direct standalone invocation as part of this packet's verification pass
+  // (`node --test tests/U494.*.test.js tests/U495.*.test.js` → 11/11), and
+  // again by the full-suite `npm run check` gate this packet's done-when
+  // requires.
   for (const f of ['U494.noMiniInForeignInk.test.js', 'U495.buildingExclusionDeterminism.test.js']) {
     const p = path.join(__dirname, f);
     assert.ok(fs.existsSync(p), `${f} must still exist`);
@@ -163,10 +165,17 @@ test('U538: U494/U495 test files still exist and are untouched by this packet (b
   }
 });
 
-test('U538: placeFromNode.js (the file U494/U495 actually guard) was not touched by this packet — git diff is empty for it', () => {
-  let diff = '';
-  try {
-    diff = execFileSync('git', ['diff', '--stat', 'HEAD', '--', 'public/map/placeFromNode.js'], { encoding: 'utf8', cwd: path.join(__dirname, '..') });
-  } catch { diff = ''; } // if git isn't available in the sandbox, don't fail the test on that account — the subprocess run above is the primary proof
-  assert.equal(diff.trim(), '', `placeFromNode.js must show zero diff from this TT-MINIS packet (this lane owns figures3d.js/render3d.js/miniLibrary.js only); got:\n${diff}`);
-});
+// RETIRED (PLAN-SPLIT-1, 2026-07-06) — this test used `git diff --stat HEAD` to
+// prove the TT-MINIS packet's OWN changeset never touched placeFromNode.js (a
+// landing-time scope check, not a standing invariant: `HEAD` is a moving target,
+// so this assertion was structurally guaranteed to fail for the next COMMIT that
+// legitimately edits the file, whenever that happened — not a regression, just
+// this test's mechanism being unfit to outlive the packet it verified). That
+// packet landed clean; TT-MINIS's actual claim (figures3d.js/render3d.js/
+// miniLibrary.js-only) is history now, verifiable in that commit's own diff.
+// PLAN-SPLIT-1 is the expected next legitimate edit to placeFromNode.js (its
+// stated seam, docs/briefs/PLAN-SPLIT-1-one-geometry.md) — engineBackedPlan(st)
+// now resolves a real structure's plan from the engine's floorPlan instead of
+// getPlan()'s catalog art. The load-bearing, PERMANENT protection this test was
+// a sibling of — TT-OCC's no-foreign-ink law — lives in U494/U495 (verified
+// green above and standalone) and is untouched by this change.

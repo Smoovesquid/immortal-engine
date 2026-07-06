@@ -20,6 +20,8 @@ done_when · rollback`.
 > after it, **SL-5** (Phase 1 — "Aldermere wants something"), which is **not yet packetized here**
 > (packetize before starting).
 
+### MORAL-PHYSICS (MP-1..MP-6) — the deterministic moral-physics constitution  ·  Rung 4 (PATH_TO_SELLABLE) / morality pillar  ·  **CONSTITUTION WRITTEN 2026-07-06 (Fable day) → `docs/MORAL_PHYSICS.md`. QUEUED pending Tim's bless; engine-brief each MP at dispatch.** The deterministic algebra beneath `MORALITY_SYSTEM.md` (adds no cosmology, overturns no locked decision). Binds the LIVE organs — seven-axis morality, `tryDarkDeed`, `applyDeedCharges`, `mintClaim`/`propagateClaims`, `castConsequence`, `forbiddenGates` — into ONE engine-owned escalation ladder. Gaps it closes (confirmed vs code 2026-07-06): (1) **deed→claim bridge UNWIRED** — a witnessed deed crashes local trust but never mints a travelling rumor ("reputation precedes you" is dark); (2) no unified escalation ladder keyed on accumulated corruption/heat; (3) player-deed vs NPC-villain (`tickVillain`) tracks unmerged, two rumor stores; (4) no falsifier. Packets: **MP-1** witness→rumor bridge (smallest; both organs live) · **MP-2** `engine/morality/escalation.js` tier fn + named magnitudes · **MP-3** heat→hunt (T3) · **MP-4** corruption→pact-as-omen (T4) · **MP-5** tier→omen surfacing (hide-the-math) · **MP-6** the Carl Witness Test (`U###` determinism falsifier). Every magnitude engine-owned (Vol 11). **SEAM w/ PW-3** (prose-to-world rumor surfacing): verify ONE claim/rumor substrate, not two — the contradiction hunt's live lead.
+
 ### NODE-DESYNC-1 — a failed journey roll COMMITS the node move, and scene.interior survives it  ·  Phase 0  ·  **✅ DONE 2026-07-04-pm (Opus worktree, local commit; tests U403–U406; suite 9588/9588 · convergence 124/124 · live-verified v1.html).** Fix: (1) Living-Terrain `moveToNode` block gated `!scene.interior` — movement can't reach node travel while indoors; (2) `inferInteriorAction` named-room rule → "go to the hearth room" resolves interior-side ("You step through into the hearth room."); (3) `assertWorldInvariants` throws on interior-structure-node ≠ currentNodeId; (4) `ensureWorld` repairs a legacy desync by clearing the stale interior (never throws). Corpus relocks (interior_npc rebuilt on a real boot interior; dialogue_active honestly outdoors; C11 diverge swap; U14/U63 fixtures set node=structure) documented in AGENT_CHANGELOG. **JR-1 (risk premium) is the queued follow-up.** Contract: `docs/POSITION_AS_CANON.md` §3.
 - **✅ LANDED 2026-07-04-pm (`881c79b`, v0.28.10 b060) + LIVE RECEIPTS** (fresh Bryn boot on the pushed build):
   "go to the hearth room" → *"You step through into the hearth room."*, `currentNodeId` STAYS Aldermere;
@@ -232,6 +234,17 @@ done_when · rollback`.
   the wake room, then ON THE DOORSTEP after typing "go outside" through the real input box.
   **MAP-REAL STAGE 1 (position truth) COMPLETE** — engine writes the doorstep, every reader consumes
   `pos`, the probe stands guard in `npm run check`.
+
+### REND-TRUTH-1 — four NPCs drawn in the bedroom; their true positions are 60–300 ft away  ·  Phase 1/2 (MAP-REAL falsifier #2, live on Tim's screen)  ·  **CUT + DISPATCHED 2026-07-06-am (Opus renderer lane; U548–U550)**
+- **provenance:** Tim's v0.30.0 wake, interior zoom: four NPC figures render in/around the bedchamber.
+  Engine truth (live-save probe): Carl wu(-29.6,0.9), Galen (-12.6,-10.7), Lingerer (4.7,-14.0),
+  masked hostile (21.7,-8.4) — all outdoors, 12–60 wu from the cottage (~(-44,-45)). The DRAWING
+  places them indoors ⇒ people-layer projection/anchor bug. Suspect: MR-3b's render3d rework
+  (+209/−6) dragged the people-group anchor; b096 drew Galen correctly (TT-OCC pixel receipt).
+- **shape:** headless-screenshot BISECT b096 vs b098 wake-interior view FIRST (prove the regression
+  window) → find the anchor/transform divergence → fix → receipt = headless wake screenshot with zero
+  figures inside the plan + people at their true offsets; U548 reproduce · U549 projection-equality
+  property (people scene-pos == worldPosFromWu(their wu), all four) · U550 regression guard.
 
 ### FURN-1 — furniture is physical: you don't stand inside the bed  ·  Phase 1/2 (MAP-REAL falsifier, arc reopened)  ·  **CUT + DISPATCHED 2026-07-06-am (Opus engine lane; U545–U547)**
 - **provenance:** Tim's first v0.30.0 wake — the honest marker (MR-1b) draws the player INSIDE the bed

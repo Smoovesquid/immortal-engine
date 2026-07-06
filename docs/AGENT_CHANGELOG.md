@@ -2813,3 +2813,10 @@ other agents. (none active)
   pos = struct(2,3) ON the pallet (marker HONEST), bed prop co-located, furniture absent from every
   blocking mask. FURN-1 makes furniture physical + seeds spawns to free cells + extends the probe.
   U545–U547 claimed.
+
+## 2026-07-06 — Basecamp — REND-TRUTH-1 cut (falsifier #2: people drawn indoors, truth outdoors)
+
+- Tim's screen showed 4 NPCs in the bedchamber; probe shows all four outdoors 12–60 wu away. The
+  renderer lies; engine honest. Bisect-first lane dispatched (suspect MR-3b's render3d rework).
+  Basecamp lesson recorded: the screen outranks the probe — I initially answered with engine truth
+  against Tim's eyes; wrong order. U548–U550 claimed.

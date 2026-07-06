@@ -3314,3 +3314,19 @@ other agents. (none active)
   show a tabletop mini at the marker ring, bed bigger than the man. NOTE for combat-taste later:
   a tactical cell is 5 wu ≈ 5 m of ground; the "5-ft square" wording elsewhere is rules flavour,
   not a unit — flagged, not changed here.
+
+## 2026-07-06 — Basecamp — ENSURE-STATS-1 → v0.32.6 build 126 "enemies keep their stats" — the whitelist trap closed
+
+- ENSURE-STATS-1 landed (worker `f22c0854` diag + `6c872846` fix → integrated `f4ae3b76`+`f661d48a`;
+  U628 failing-first RED on HEAD preserved in history, then GREEN; U629 save/load round-trip;
+  9/9 new, suite 10875/0 on the integrated tree, playtest:quick 50/0 in-worktree).
+- The bug (DEATH-1's audit finding, live not dormant): mintEnemyFromNpc emits 25 fields;
+  ensureCombat's whitelist preserved 23 — `stats` and `level` were silently STRIPPED on every
+  re-normalization. Downstream: enemy saving throws degraded to all-average level-1 mooks
+  (savingThrows.js) and DEATH-2's beg-capability gate read an erased WITS (deathFact.js).
+  Both now read the real minted values. Sibling sweep: exactly those two fields; nothing else leaks.
+- invariants.js now shape-asserts stats/level in the enemy loop (throws on regression);
+  boot hash byte-identical (boot seeds enemies:[]; U454-E anchor unmoved); replay identity
+  proven; NO WORLD_VERSION bump (defensive coercion covers old saves).
+- U628–U629 committed — allocator current again; next free U630 (claimed by the in-progress
+  map double-vision fix, Homebase direct).

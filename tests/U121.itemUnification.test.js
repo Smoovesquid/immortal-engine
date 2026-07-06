@@ -33,8 +33,8 @@ function loadPacks() {
 const packs = loadPacks();
 const begin = (seed) => beginAdventure(newWorld({ seed, fate: 0.2, campaignId: `u121-${seed}`, pack: { primaryId: 'fantasy', mixerId: null }, mode: 'escape' }), packs).world;
 
-test('U121-01: WORLD_VERSION is 31 and party conditions survive ensureWorld', () => {
-  assert.equal(WORLD_VERSION, 31);
+test('U121-01: WORLD_VERSION is 32 and party conditions survive ensureWorld', () => {
+  assert.equal(WORLD_VERSION, 32);
   const w = begin('u121v');
   const dirty = ensureWorld({
     ...w,

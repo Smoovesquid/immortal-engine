@@ -31,6 +31,12 @@ export function loadSlot(storage, slotId = 'slot1') {
   // Pass R1 (v16 → v17): adds world.rumors[], npc.rumorIds[],
   // npc.sophistication. ensureWorld fills rumors: []; NPCs without
   // rumorIds/sophistication get defaults via ensureWorld normalization.
+  //
+  // SP-2 (v31 → v32): adds w.factions[].ethos ('lawful'|'outlaw'|'neutral').
+  // ensureFactions DERIVES it deterministically from each faction's id+goal
+  // (deriveFactionEthos), defaulting to 'neutral', so a pre-v32 save (no stored
+  // ethos) upgrades silently — the warning above fires once on the version delta,
+  // then loading proceeds. No data loss: existing faction fields are preserved.
   return ensureWorld(parsed);
 }
 

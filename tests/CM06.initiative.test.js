@@ -16,8 +16,8 @@ function mkRng(seed) {
 
 // ── WORLD_VERSION ───────────────────────────────────────────────────────────
 
-test('CM06-01: WORLD_VERSION is 31', () => {
-  assert.equal(WORLD_VERSION, 31);
+test('CM06-01: WORLD_VERSION is 32', () => {
+  assert.equal(WORLD_VERSION, 32);
 });
 
 // ── buildCombatants ─────────────────────────────────────────────────────────

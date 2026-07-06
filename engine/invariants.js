@@ -215,6 +215,20 @@ export function assertWorldInvariants(world) {
     }
   }
 
+  // SP-2 (v32) — faction ethos enum. Every faction carries a stance that selects the
+  // sign of its reaction to a witnessed deed (engine/social/reactionTable.js). It must
+  // be one of the three known values; ensureFactions derives it deterministically for
+  // old saves, so a stray value here means a mutation bypassed the front door.
+  if (Array.isArray(world.factions)) {
+    const ETHOS = new Set(['lawful', 'outlaw', 'neutral']);
+    for (let i = 0; i < world.factions.length; i++) {
+      const f = world.factions[i];
+      if (f && typeof f === 'object' && f.ethos !== undefined && !ETHOS.has(f.ethos)) {
+        throw new Error(`Invariant: factions[${i}].ethos must be one of [lawful, outlaw, neutral]`);
+      }
+    }
+  }
+
   // SP-1 — player↔faction reputation. Bounded standing keyed only by known factions
   // (ensureReputation rebuilds keys from world.factions; the factionRepDelta op
   // refuses unknown ids — a stray key here means a mutation bypassed both).

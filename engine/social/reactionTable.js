@@ -42,6 +42,24 @@ export const FACTION_REP = {
 const DARK_KINDS = new Set(['cruelty', 'forbidden']);
 const BRIGHT_KINDS = new Set(['mercy', 'aid', 'atonement']);
 
+// SP-2 (v32) — differential faction ETHOS. A `lawful` or `neutral` institution reacts
+// with the base table value (today's behavior). An `outlaw` faction — the thieves' den,
+// the cutthroat lodge — reads the SAME table but with the sign FLIPPED at HALF magnitude:
+// "the thieves' den warms when the watch curses your name." One witnessed grave atrocity
+// moves a civic faction −10 and the shadow den +5 in the same world. This selects only
+// the SIGN and HALVING; the base MAGNITUDE still comes wholly from FACTION_REP (Vol 11 —
+// the LLM never sets a number). Magnitude is taken from |base| so the ±half is symmetric
+// and does not inherit JS Math.round's toward-+∞ tie bias:
+//   dark grave −10 → outlaw +5 · dark moderate −5 → +3 · dark light −2 → +1
+//   bright grave +6 → outlaw −3 · bright moderate +3 → −2 · bright light +1 → −1
+// A missing/unknown ethos is treated as 'neutral' (identity) — old-save safety mirrors
+// ensureFactions' derivation default.
+function ethosAdjusted(base, ethos) {
+  if (ethos !== 'outlaw') return base;              // lawful | neutral | unknown → identity
+  const half = Math.round(Math.abs(base) / 2);      // magnitude from |base|, then flip sign
+  return -Math.sign(base) * half;
+}
+
 /**
  * deedFactionDeltas(world, deed) → Array<{ op:'factionRepDelta', factionId, by }>
  *
@@ -67,11 +85,15 @@ export function deedFactionDeltas(world, deed) {
   const npcs = Array.isArray(node?.settlement?.npcs) ? node.settlement.npcs : [];
   if (!npcs.length) return [];
 
-  const factionIds = new Set(
-    (Array.isArray(world?.factions) ? world.factions : [])
-      .map(f => String(f?.id || ''))
-      .filter(Boolean)
-  );
+  // SP-2: id set for witness gating + id→ethos map for the differential sign flip.
+  const factionIds = new Set();
+  const ethosById = new Map();
+  for (const f of (Array.isArray(world?.factions) ? world.factions : [])) {
+    const id = String(f?.id || '');
+    if (!id) continue;
+    factionIds.add(id);
+    ethosById.set(id, String(f?.ethos || 'neutral'));
+  }
 
   const witnessSet = new Set(witnesses);
   const informed = new Set();
@@ -83,8 +105,12 @@ export function deedFactionDeltas(world, deed) {
   }
   if (!informed.size) return [];
 
-  const by = table[severityBand(deed?.severity)];
+  const base = table[severityBand(deed?.severity)];
   return [...informed]
     .sort((a, b) => a.localeCompare(b))
-    .map(factionId => ({ op: 'factionRepDelta', factionId, by }));
+    .map(factionId => ({
+      op: 'factionRepDelta',
+      factionId,
+      by: ethosAdjusted(base, ethosById.get(factionId) || 'neutral')
+    }));
 }

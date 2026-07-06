@@ -186,12 +186,27 @@ test('U454-E: default fantasy/tallow boot (real normalizePack idiom) — post-PA
   // ahead of this at integration, Basecamp recomputes this anchor (it has happened twice already
   // today, per this file's own history).
   // (Anchor chain: … MP-3+CONSEQ-1 56d52255… → MP-4 db503a11… → MP-5b bbf2ef13….)
-  const HASH_AFTER_MP5B = 'bbf2ef13c375efce655042b15e3dc786794aeef3380ed5426ac3a91edb4a21ab';
-  assert.equal(worldHash(result.world), HASH_AFTER_MP5B,
-    'default fantasy/tallow boot worldHash re-pinned post-MP-5b (additive cassandraArmed/cassandraT morality fields)');
+  //
+  // RE-PINNED for SP-2 (2026-07-06, WORLD_VERSION 31 → 32): the default boot's worldHash shifts ONCE
+  // MORE (bbf2ef13… → 7fc17002…) because SP-2 adds ONE additive faction field — `ethos`
+  // ('lawful'|'outlaw'|'neutral', the differential-reaction sign selector) — to every entry of
+  // w.factions[]. worldHash projects w.factions WHOLESALE (worldHash.js:28 / .browser.js:26), so the
+  // new key on each of the 12 booted factions moves the fingerprint. ethos is DERIVED
+  // deterministically from each faction's id+goal (ensureFactions → deriveFactionEthos), defaulting to
+  // 'neutral'; on this boot civic=lawful, shadow=outlaw, the pack factions split by their authored
+  // agendas. This is a deliberate additive-state re-pin (the ONE named WORLD_VERSION bump in the
+  // Social Physics Contract), NOT a determinism break: the boot is byte-identical to itself under
+  // replay (asserted ×2 below; SP-2's own U615 pins the replay-equality of a scripted differential
+  // atrocity run, U616 the save-upgrade path). SOLE DELTA vs the MP-5b tree is the per-faction ethos
+  // key. NOTE: if another packet's fields land ahead of this at integration, Basecamp recomputes this
+  // anchor (it has happened repeatedly, per this file's own history).
+  // (Anchor chain: … MP-4 db503a11… → MP-5b bbf2ef13… → SP-2 7fc17002….)
+  const HASH_AFTER_SP2 = '7fc1700240febefb73e2081a3368d0f7aa32291f2ac55a89976d52a2a22181f1';
+  assert.equal(worldHash(result.world), HASH_AFTER_SP2,
+    'default fantasy/tallow boot worldHash re-pinned post-SP-2 (additive w.factions[].ethos, WORLD_VERSION 32)');
 
   // Same seed => identical world (the placement is deterministic).
   const w2 = newWorld({ seed: 'tallow', fate: 0.3, mode: 'escape', pack: { primaryId: 'fantasy', mixerId: null } });
-  assert.equal(worldHash(beginAdventure(w2, PACKS).world), HASH_AFTER_MP5B,
-    'default tallow boot must be deterministic ×2 after MP-5b');
+  assert.equal(worldHash(beginAdventure(w2, PACKS).world), HASH_AFTER_SP2,
+    'default tallow boot must be deterministic ×2 after SP-2');
 });

@@ -87,7 +87,15 @@ import { normalizeDoors } from './structures/doors.js';
 // deterministic backfill at ensureWorld's tail (backfillDoors) authors the full
 // list once the floorPlan geometry is assembled. All state changes go through
 // applyDeltas({op:'door', structId, doorId, to}). See engine/structures/doors.js.
-export const WORLD_VERSION = 31;
+//
+// v32 (SP-2, docs/briefs/SOCIAL_PHYSICS_CONTRACT.md): w.factions[] gains an `ethos`
+// field ('lawful'|'outlaw'|'neutral'). Outlaw factions read the dark reaction table
+// with the sign flipped at half magnitude — the same witnessed atrocity moves a civic
+// faction −10 and the shadow den +5. Old saves (pre-v32, no `ethos`) upgrade via
+// ensureFactions: the field is DERIVED deterministically from id+goal keywords
+// (deriveFactionEthos), defaulting to 'neutral' (today's uniform behavior). worldHash
+// projects w.factions wholesale, so the boot fingerprint shifts once (U454-E re-pin).
+export const WORLD_VERSION = 32;
 
 // Crunch caps (T1). Kept here so they're colocated with ensureEntity.
 const FOCI_CAP = 6;
@@ -1449,6 +1457,40 @@ function ensureAiMode(x) {
   return (s === 'off' || s === 'advisory' || s === 'conductor') ? s : 'off';
 }
 
+// SP-2 — the faction stance enum. `lawful` institutions curse a public atrocity;
+// `outlaw` ones (the thieves' den, the cutthroat lodge) WARM when the watch curses
+// your name; `neutral` reacts like a bystander (today's uniform behavior). The
+// DIFFERENTIAL magnitude lives in engine/social/reactionTable.js — this field is
+// only the DIRECTION/sign selector (Vol 11 §7.3: direction from classification,
+// magnitude from a table).
+const FACTION_ETHOS = new Set(['lawful', 'outlaw', 'neutral']);
+
+// Deterministic ethos derivation for OLD SAVES (pre-v32, no `ethos` field) and any
+// faction whose stored ethos is missing/invalid. A pure text classifier over the
+// authored id + goal — same posture as the deed detectors: it CLASSIFIES, it never
+// sets a number. Default is `neutral`; a faction only becomes lawful/outlaw when its
+// authored text clearly signals one. Outlaw is tested FIRST so a "shadow cutters'
+// guild that keeps its own order" resolves outlaw, not lawful.
+//
+// Signals were read off the real authored corpus (ensureFactions defaults +
+// packs/fantasy/**/pack.json faction agendas): civic "Maintain order" → lawful,
+// shadow "Exploit instability" → outlaw; crown-watch / order-long-watch / the-regency
+// → lawful; greyfen-cutters / crimson-brotherhood / hollow-guild / seil-compact →
+// outlaw. Idempotent: a value already in FACTION_ETHOS is passed through unchanged, so
+// re-normalizing an upgraded save never re-derives.
+const ETHOS_OUTLAW = /\b(?:outlaw|shadow|thie(?:f|ves|ving)|smuggl|cutter|cutthroat|contraband|bandit|brigand|pirate|exploit|instability|underworld|bribe|racket|black[- ]?market|crimson|hollow|compact|bypass)/;
+const ETHOS_LAWFUL = /\b(?:lawful|watch|warden|order|guard|garrison|regency|regent|crown|constab|magistrate|sheriff|marshal|sanctuary|vigil|maintain\s+order|keep(?:s|ing)?\s+(?:the\s+)?(?:peace|faith)|uphold|preserve|patrol)/;
+
+export function deriveFactionEthos(faction) {
+  const f = faction && typeof faction === 'object' ? faction : {};
+  const stored = String(f.ethos ?? '').trim().toLowerCase();
+  if (FACTION_ETHOS.has(stored)) return stored;
+  const text = `${String(f.id ?? '')} ${String(f.goal ?? '')}`.toLowerCase();
+  if (ETHOS_OUTLAW.test(text)) return 'outlaw';
+  if (ETHOS_LAWFUL.test(text)) return 'lawful';
+  return 'neutral';
+}
+
 export function ensureFactions(factions) {
   const list = Array.isArray(factions) ? factions : [];
   if (list.length) {
@@ -1458,14 +1500,19 @@ export function ensureFactions(factions) {
       pressure: clampInt(f.pressure ?? 0, 0, 100),
       assets: Array.isArray(f.assets) ? f.assets.map(String).slice(0, 8) : [],
       hostility: clampInt(f.hostility ?? 0, 0, 100),
-      lastMove: String(f.lastMove || '')
+      lastMove: String(f.lastMove || ''),
+      // SP-2 (v32): ethos is authored when present, else DERIVED deterministically
+      // from id+goal so pre-v32 saves upgrade without a stored value.
+      ethos: deriveFactionEthos(f)
     })).filter(f => f.id);
   }
-  // Minimal defaults so worldTick has something to move.
+  // Minimal defaults so worldTick has something to move. ethos derived so the
+  // demo pair reads civic=lawful / shadow=outlaw through the same classifier
+  // old saves use (no hand-set literal to drift out of sync).
   return [
-    { id: 'civic', goal: 'Maintain order', pressure: 10, assets: ['permits', 'guards'], hostility: 10, lastMove: '' },
-    { id: 'shadow', goal: 'Exploit instability', pressure: 10, assets: ['informants', 'bribes'], hostility: 15, lastMove: '' }
-  ];
+    { id: 'civic', goal: 'Maintain order', pressure: 10, assets: ['permits', 'guards'], hostility: 10, lastMove: '', ethos: 'lawful' },
+    { id: 'shadow', goal: 'Exploit instability', pressure: 10, assets: ['informants', 'bribes'], hostility: 15, lastMove: '', ethos: 'outlaw' }
+  ].map(f => ({ ...f, ethos: deriveFactionEthos(f) }));
 }
 
 function ensureLivingThreads(threads, map) {

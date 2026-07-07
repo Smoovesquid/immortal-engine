@@ -84,6 +84,17 @@
         "CRUNCH_INCONSISTENCY",
         "DM_TEST_DEADEND"
       ]
+    },
+    {
+      "runId": "gate-2026-07-07T17-03-36-030Z-v1",
+      "date": "2026-07-07",
+      "regime": "v1",
+      "modes": [
+        "CANON_HALLUCINATION",
+        "COMBAT_NOT_STARTED",
+        "DM_ARTIFACT_LEAK",
+        "DM_TEST_DEADEND"
+      ]
     }
   ]
 }

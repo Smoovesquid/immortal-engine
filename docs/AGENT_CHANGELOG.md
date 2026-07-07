@@ -3405,3 +3405,29 @@ other agents. (none active)
 - OPEN FINDING (MAP-WEDGE-1, queued): in-browser QUICKSTART world generation hard-wedges the
   renderer intermittently (2 of 4 boots on preview tabs; headless generation of the same seed is
   clean ~2 s; save-continue path never wedged). Needs a profiling packet; not shipped-on today.
+
+## 2026-07-07 — Basecamp — MAP-EGRESS-1 → v0.32.11 build 131 "land on your own doorstep" — Tim's cross-town teleport, engine-gated + fixed
+
+- Tim's report (gated OK): "go outside sent me across aldermere to a spot just east of the storehouse."
+  Opus worker (`c56dfe21`+`c4b8f20f` → integrated `a0d28de9`+`25171556`; U632–U635 15 tests).
+- ROOT: two independent computations of a building's settlement position. The MAP drew buildings
+  scattered along the P-81b curved road; the ENGINE egress (doorThresholdCells) computed "just outside
+  the door" as if every building sat at the NODE CENTRE. 77 m disagreement → the body landed by a
+  storehouse instead of home. The position probe stayed green because it validated the SAME centre-
+  anchored phantom (structFootprintRegionCells) — self-consistent, screen-blind.
+- FIX: extracted the P-81b scatter to engine/world/settlementLayout.js (engine-owned, one geometry —
+  the MAP-REAL law); renderer consumes it (−140 net lines in placeFromNode.js); doorThresholdCells +
+  the probe frame now anchor on the DRAWN footprint. The probe's cross-check was PROVEN to catch a
+  reverted centre-anchor as a POSITION_DESYNC finding — the missing falsifier is now armed.
+- BYTE-STABILITY (the prime constraint): full placeFromWorldNode output byte-identical before/after
+  across 4 seeds / 66 buildings / 4 settlements (69235 bytes, diff clean). No village moved. U633 pins it.
+- Rider `25171556`: bare "go out" now classifies as EXIT (was falling to the atmosphere d20 bank while
+  "go outside/leave/exit" worked); U235 compound-presence still green.
+- Determinism: boot hash unaffected; post-egress replay deterministic; U19/21/22/27/30 green; NO
+  WORLD_VERSION bump (layout derived, not stored). Suite 10902/0 · corpus 135/135 · position probe
+  (new cross-check) clean · screen truth 7/7.
+- 3 screen-truth goldens re-accepted (cottage_exterior, settlement_square_morning/evening) — all built
+  by `go outside`, scene content byte-identical, camera reframes to the CORRECTED doorstep (the old
+  cottage_exterior golden had the 77 m bug baked in). LIVE RECEIPT: marker lands ~5 m outside the
+  Bedchamber/Hearth-Room cottage Bryn wakes in, on his own save — not by the storehouse.
+- OPEN: MAP-WEDGE-1 (quickstart browser wedge) still queued — not seen this integration boot.

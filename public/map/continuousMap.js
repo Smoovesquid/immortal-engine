@@ -142,11 +142,18 @@ export { TILT_DEFAULTS };
 // the gesture that parked you there was almost always an inward zoom. The live
 // driver (scheduleBlendSettle in onCamera) debounces this so it only fires when
 // the wheel/pinch goes idle — a transition may dissolve, a resting view may not.
-export function settleZoomTarget(z, knobs) {
+export function settleZoomTarget(z, knobs, dir = null) {
   if (!MAP_3D_ENABLED) return null;
   const k = knobs || TILT_DEFAULTS;
   const b = ramp(k, k.start, k.cross, z);
   if (b <= 0.02 || b >= 0.98) return null;
+  // MAP-BLEND-2 (Tim's "the zoom was glitchy" report, 2026-07-06): the settle
+  // follows the GESTURE, never fights it. The b127 nearer-edge rule UNDID a
+  // zoom-in that landed low-mid-band (the map visibly gliding back out 250 ms
+  // after the wheel notch — reads as the zoom glitching). `dir` is the last
+  // zoom direction ('in' | 'out'); only when unknown fall back to nearer edge.
+  if (dir === 'in') return k.cross;
+  if (dir === 'out') return k.start;
   return b < 0.5 ? k.start : k.cross;
 }
 
@@ -373,11 +380,12 @@ export function renderContinuousMap(world, opts = {}) {
   // knobs at fire time; the glide itself re-enters onCamera and converges to a
   // no-op at the edge (settleZoomTarget returns null there).
   let settleTimer = 0;
+  let zoomDir = null; // MAP-BLEND-2: 'in' | 'out' — the last gesture direction, from the z trend
   function scheduleBlendSettle() {
     clearTimeout(settleTimer);
     settleTimer = setTimeout(() => {
       if (token !== _token || !lastCam || !_live) return;
-      const zt = settleZoomTarget(lastCam.z, tiltKnobs());
+      const zt = settleZoomTarget(lastCam.z, tiltKnobs(), zoomDir);
       if (zt == null || typeof twoD.__oneMapFocus !== 'function') return;
       twoD.__oneMapFocus(lastCam.cx, lastCam.cy, zt);
     }, 250);
@@ -385,6 +393,14 @@ export function renderContinuousMap(world, opts = {}) {
 
   function onCamera(cam) {
     if (token !== _token) return;
+    // MAP-BLEND-2 — track the zoom trend so the settle continues the player's
+    // own gesture (in → the diorama, out → the plan) instead of bouncing to the
+    // nearer edge against it. A pure pan (z unchanged) keeps the last known
+    // direction; our own settle glide re-enters here, but by construction it
+    // moves WITH zoomDir, so the trend it writes is the same one it followed.
+    if (lastCam && Number.isFinite(lastCam.z) && Number.isFinite(cam.z) && cam.z !== lastCam.z) {
+      zoomDir = cam.z > lastCam.z ? 'in' : 'out';
+    }
     lastCam = cam;
     // MAP_3D_ENABLED=false pins the blend at 0: the 3D layer is never even
     // lazy-mounted and the map is the 2D plan at every zoom.

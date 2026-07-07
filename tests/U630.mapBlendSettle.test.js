@@ -51,8 +51,7 @@ test('U630d settleZoomTarget — any mid-band rest resolves to an edge, and that
     assert.ok(zt === K.start || zt === K.cross, `mid-band z=${z.toFixed(2)} must settle to an edge (got ${zt})`);
     const bt = tiltStateForZoom(zt, K).blend;
     assert.ok(bt === 0 || bt === 1, `the settled state must be clean (z=${zt}, blend ${bt})`);
-    // Nearer edge by blend: below the midpoint falls back to the plan, at or
-    // above it commits to the diorama (the inward gesture wins the tie).
+    // Direction unknown → nearer edge by blend (the tie goes to the diorama).
     assert.equal(zt, b < 0.5 ? K.start : K.cross);
   }
 });
@@ -63,4 +62,20 @@ test('U630e the settle law converges — settling a settled camera is a no-op', 
   const zt = settleZoomTarget(zMid, K);
   assert.notEqual(zt, null);
   assert.equal(settleZoomTarget(zt, K), null, 'the glide target itself must need no further settling');
+});
+
+test('U630f MAP-BLEND-2 — the settle FOLLOWS the gesture, never undoes it (Tim\'s glitchy-zoom report)', () => {
+  if (!MAP_3D_ENABLED) return;
+  // A zoom-IN that parks low-mid-band must settle INTO the diorama (the b127
+  // nearer-edge rule glided it back out — the map visibly undoing the wheel).
+  const zLow = K.start + (K.cross - K.start) * 0.25;  // blend ≈ 0.16 — nearer edge is start
+  assert.equal(settleZoomTarget(zLow, K, 'in'), K.cross, 'zooming in must continue IN');
+  // A zoom-OUT that parks high-mid-band must settle OUT to the plan.
+  const zHigh = K.start + (K.cross - K.start) * 0.75; // blend ≈ 0.84 — nearer edge is cross
+  assert.equal(settleZoomTarget(zHigh, K, 'out'), K.start, 'zooming out must continue OUT');
+  // Clean rests stay null regardless of direction (never nudge a clean camera).
+  assert.equal(settleZoomTarget(K.start, K, 'in'), null);
+  assert.equal(settleZoomTarget(K.cross * 1.5, K, 'out'), null);
+  // Directional settles still converge (the target needs no further settling).
+  assert.equal(settleZoomTarget(settleZoomTarget(zLow, K, 'in'), K, 'in'), null);
 });

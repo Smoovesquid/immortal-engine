@@ -3383,3 +3383,25 @@ other agents. (none active)
   contract. 6/6 + tilt family green; ladder 10886/0 · 135/135 · screen truth 7/7.
 - Receipts: entry view = small mini, whole rooms in frame (~10% frame height, was ~28-40%);
   deep view = the close-up, opt-in at the wheel's end. dioramaScale stays live-tunable.
+
+## 2026-07-06 — Basecamp — MAP-BLEND-2 → v0.32.10 build 130 "the zoom obeys you" — half of Tim's glitchy-zoom report
+
+- Tim (evening, after b129 play): "go outside sent me across aldermere … the zoom was also pretty
+  glitchy after I went outside." TWO root causes found; this build ships the renderer half.
+- THE SETTLE FOUGHT THE GESTURE (b127 regression, fix `309f55bc`): the idle settle-snap chose the
+  NEARER band edge, so a zoom-IN that parked low-mid-band was visibly UNDONE 250 ms later (worst
+  on trackpads — small deltas park mid-band constantly). settleZoomTarget now takes the gesture
+  direction (z-trend tracked in onCamera): in → cross, out → start, unknown → nearer edge. U630f
+  pins it (a zoom-in must CONTINUE in; clean rests never nudged; converges). Live receipt on the
+  preview: parked z=33.57 on an IN gesture → settled to 35.84 (cross, fade 100%) — the old rule
+  went backward to 32. Also confirmed the async-mount replay path (ensureMounted → onCamera)
+  re-arms the settle after the first THREE import.
+- Ladder 10887/0 · 135/135 · screen truth 7/7.
+- THE OTHER HALF (the teleport) is ENGINE-side, diagnosed to the meter, brief pending Tim's gate:
+  doorThresholdCells anchors plans at the NODE CENTRE while the drawn village places buildings
+  via the P-81b layout — boot-home egress lands wu(45,20), 14 m east of a storehouse, 77 m from
+  the drawn home (Tim's sighting verbatim). The position probe validates the SAME phantom frame
+  (self-consistent, screen-blind) — that's why it stayed green. See MAP-EGRESS-1 brief.
+- OPEN FINDING (MAP-WEDGE-1, queued): in-browser QUICKSTART world generation hard-wedges the
+  renderer intermittently (2 of 4 boots on preview tabs; headless generation of the same seed is
+  clean ~2 s; save-continue path never wedged). Needs a profiling packet; not shipped-on today.

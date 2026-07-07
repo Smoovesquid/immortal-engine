@@ -1496,6 +1496,10 @@ function playerMoveCore(world, packsById, text, dqIntent) {
             mode: String(askMode || ''),
             mood: String(asked.outcome.brainMood || ''),
             manner: String(asked.outcome.manner || 'even'),
+            // SOAPBOX-1 — when mode==='evangelize', the cause the NPC is preaching,
+            // so the server voice layer can hold forth on it (grounded in the
+            // corpus). Empty on every non-soapbox turn.
+            soapboxCause: String(asked.outcome.soapboxCause || ''),
             // PW-3 — the picked-up rumor. Present ONLY on a pickup turn. The
             // server's async layer may rewrite `body` (S3 prose upgrade) for this
             // exact `rumorId`; it must never touch `tier` or mint a different one.
@@ -3081,9 +3085,15 @@ function playerMoveCore(world, packsById, text, dqIntent) {
         };
         const homeEvilOpener = ' A beat of silence. Then a small, weary exhale.';
         const manner = npcNow ? voiceManner(npcVoice(npcNow)) : 'even';
+        // SOAPBOX-1 — a zealot greets you already reaching for his cause.
+        const eagerSoapbox = Boolean(npcNow?.soapbox?.eager);
         let opener;
         if (atHome && isEvil) {
           opener = homeEvilOpener;
+        } else if (eagerSoapbox) {
+          // He brightens on sight and starts bending your ear, instead of the
+          // guarded "they don't ask your name." Deterministic (authored flag).
+          opener = ' They brighten the moment you are within earshot, already reaching for something they have plainly been aching to say.';
         } else {
           opener = npcNow ? (openerByManner[manner] || '') : '';
         }
@@ -5513,7 +5523,8 @@ function buildBeatFromTurn(world, text, move, result) {
 // Hard refusals and blank deflections are failures.
 function askBeatOutcome(mode) {
   const m = String(mode || '');
-  if (m === 'shared' || m === 'recruited') return 'success';
+  // SOAPBOX-1 — evangelizing the cause is an eager, engaged exchange (a win).
+  if (m === 'shared' || m === 'recruited' || m === 'evangelize') return 'success';
   // Common knowledge answered plainly is a successful exchange.
   if (['smalltalk', 'self', 'place', 'directions', 'services', 'news'].includes(m)) return 'success';
   if (m === 'refused-hard') return 'failure';
@@ -5773,6 +5784,21 @@ function dialogueAskNarration(outcome, world) {
         `"Alright." ${name} rolls their shoulders. "I'm with you. Lead on." They fall into step beside you.`,
         `${name} looks you over once more, then nods. "You'll do. Let's walk."`
       ]);
+    case 'evangelize': {
+      // SOAPBOX-1 — the zealot holds forth on his cause. He does NOT deflect and
+      // does NOT deny; he lights up, preaches, and tries to recruit you. His
+      // manifesto corpus supplies the live (server) content; this is the
+      // deterministic LLM-off fallback — eager, preachy, RALLYING (Tim: "he needs
+      // help rallying his fellow chicken-folk"). Cause-aware, so the same path
+      // serves future zealots (priests, cultists, cranks).
+      const cause = String(outcome?.soapboxCause || '').trim() || 'his cause';
+      return V(`evangelize:${cause}`, [
+        `${name}'s whole face opens — finally, someone who'll listen. "You want to know about ${cause}? Sit. It is the one thing in this town that truly matters."`,
+        `${name} leans in, eyes bright and urgent, the words already tumbling out — ${cause}, and why it changes everything, and how few will let themselves see it.`,
+        `"You ask the RIGHT question." ${name} is talking with both hands now. "${capFirst(cause)}. I have been trying to make them understand for years. You — you might actually hear me."`,
+        `${name} grips your sleeve, fervent. "I cannot do this alone. There are others who would follow — ${cause}, if someone would only rally them. Stand with me?"`
+      ]);
+    }
     // Common knowledge — name, village, roads, news. The body IS the answer
     // (composed deterministically from world data); speak it in their voice.
     case 'smalltalk':

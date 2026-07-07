@@ -125,6 +125,25 @@ export const DEMO_FIGURES = [
     role: 'failed sculptor; avian theorist',
     voiceCorpusId: 'carl_manifesto',
     personality: { trustOfOutsiders: 0.2, selfPreservation: 0.7, honesty: 0.9 },
+    // SOAPBOX-1 — Carl's cause. He EVANGELIZES avian supremacy to any stranger
+    // (share gate opens on-topic regardless of trust); `eager` makes him greet
+    // you already reaching for it. Personal secrets stay trust-gated. Topics are
+    // explicit surface forms (whole-word match, no stemming) — the manifesto's
+    // foils (duck, pigeon) included so a dismissive mention still lights him up.
+    soapbox: {
+      cause: 'avian supremacy',
+      eager: true,
+      topics: [
+        'chicken', 'chickens', 'avian', 'avians', 'bird', 'birds',
+        'feather', 'feathers', 'feathered', 'poultry',
+        'rooster', 'roosters', 'hen', 'hens', 'comb', 'combs',
+        'beak', 'beaks', 'fowl', 'fowls', 'wattle', 'plumage', 'plume',
+        'sculpt', 'sculptor', 'sculptors', 'sculpture', 'sculptures', 'sculpting', 'sculpted',
+        'art', 'arts', 'artist', 'form', 'forms', 'proportion', 'proportions',
+        'supremacy', 'supreme', 'hierarchy', 'hierarchies', 'skull', 'skulls',
+        'duck', 'ducks', 'pigeon', 'pigeons',
+      ],
+    },
     note: 'Aldermere (slice seed opening town). Obsessive pseudo-scholar. RAG corpus: 8k-word avian-supremacy manifesto.',
     nodeSelector: SELECTORS.aldermere,
   },
@@ -162,6 +181,10 @@ function buildFigureNpc(figure) {
     },
     description: '',
     factualDetail: '',
+    // SOAPBOX-1 — the authored cause rides onto the live NPC so buildNpcContext
+    // (and the eager opener) can see it. Absent on figures without one → the NPC
+    // behaves exactly as before. Frozen shape: { cause, eager, topics:[...] }.
+    ...(figure.soapbox ? { soapbox: figure.soapbox } : {}),
     // Mark provenance so a later pass / debug can tell authored figures apart from
     // minted NPCs without re-matching the table.
     authoredFigure: figure.key,

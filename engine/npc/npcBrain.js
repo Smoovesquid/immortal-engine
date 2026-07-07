@@ -14,8 +14,34 @@ import { decayMemories } from './npcMemory.js';
 
 // ── Mood + Approach enums ───────────────────────────────────────────────────
 
-const VALID_MOODS = new Set(['wary', 'warm', 'hostile', 'fearful', 'amused']);
-const VALID_APPROACHES = new Set(['volunteer', 'wait_to_be_asked', 'deflect', 'lie']);
+const VALID_MOODS = new Set(['wary', 'warm', 'hostile', 'fearful', 'amused', 'fervent']);
+const VALID_APPROACHES = new Set(['volunteer', 'wait_to_be_asked', 'deflect', 'lie', 'evangelize']);
+
+// ── Soapbox (SOAPBOX-1) ─────────────────────────────────────────────────────
+// A zealot preaches his cause to any stranger while staying guarded about
+// personal things. `soapbox` is an OPTIONAL per-NPC field: { topics:[...words],
+// cause:'...', eager:bool }. When the player's input names one of the topics,
+// the SHARE gate flips open on-topic REGARDLESS of trust (public facts + rumors,
+// never personal secrets). Off-topic, or no soapbox, the trust ladder is
+// byte-unchanged. Pure string match — deterministic, no rng, no LLM.
+//
+// Matching is WHOLE-WORD only. We tokenize on non-letters (so apostrophes SPLIT
+// words: "don't" → don, t) which sidesteps the known contraction pitfall in this
+// repo where \b(n|s|e|w)\b matches inside "don't"/"isn't". Topics are stored as
+// explicit surface forms (chicken + chickens) so there is no stemming ambiguity —
+// "combat" never matches the topic "comb", "artery" never matches "art".
+export function matchesSoapbox(soapbox, playerInput) {
+  if (!soapbox || !Array.isArray(soapbox.topics) || soapbox.topics.length === 0) return false;
+  const text = String(playerInput || '').toLowerCase();
+  if (!text) return false;
+  const tokens = new Set(text.split(/[^a-z]+/).filter(Boolean));
+  if (tokens.size === 0) return false;
+  for (const topic of soapbox.topics) {
+    const k = String(topic || '').toLowerCase().trim();
+    if (k && tokens.has(k)) return true;
+  }
+  return false;
+}
 
 // ── Faction standing helper ─────────────────────────────────────────────────
 
@@ -105,7 +131,10 @@ export function buildNpcContext(npc, world, playerInput) {
     turn: Number(world?.time?.turn ?? 0),
     secrets: new Set(Array.isArray(npc.secrets) ? npc.secrets.map(String) : []),
     factionId: String(npc.factionId || ''),
-    factionStanding: getFactionStanding(npc, world)
+    factionStanding: getFactionStanding(npc, world),
+    // SOAPBOX-1 — the NPC's cause, if any. Flows to fallbackRules so an on-topic
+    // ask flips the SHARE gate regardless of trust. Optional; null for most NPCs.
+    soapbox: (npc.soapbox && typeof npc.soapbox === 'object') ? npc.soapbox : null
   };
 }
 
@@ -173,9 +202,9 @@ Reply as JSON:
 // ── Prompt builder (compressed) ─────────────────────────────────────────────
 
 // Mood code map: single-char codes for prompt compression
-const MOOD_CODES = { wary: 'W', warm: 'H', hostile: 'X', fearful: 'F', amused: 'A' };
+const MOOD_CODES = { wary: 'W', warm: 'H', hostile: 'X', fearful: 'F', amused: 'A', fervent: 'E' };
 // Approach code map
-const APPROACH_CODES = { volunteer: 'V', wait_to_be_asked: 'Q', deflect: 'D', lie: 'L' };
+const APPROACH_CODES = { volunteer: 'V', wait_to_be_asked: 'Q', deflect: 'D', lie: 'L', evangelize: 'E' };
 
 function buildPromptCompressed(facts, rumors, ctx) {
   const traits = ctx.traits.length > 0 ? ctx.traits.join(', ') : 'unremarkable';
@@ -384,6 +413,26 @@ export function fallbackRules(context) {
   // Separate personal (secret) facts from public facts.
   const publicFacts = allFacts.filter(f => !secrets.has(f.id));
   const personalFacts = allFacts.filter(f => secrets.has(f.id));
+
+  // SOAPBOX-1 — the zealot's cause overrides the trust gate. If the player names
+  // one of this NPC's soapbox topics, he EVANGELIZES: public facts + rumors open
+  // REGARDLESS of trust, mood turns fervent, approach is 'evangelize'. Early
+  // return, so the whole trust ladder below is byte-unchanged for every off-topic
+  // ask and every NPC without a soapbox. Personal (secret) facts are NEVER added
+  // here — a zealot preaches the cause but still guards personal things.
+  // Deterministic: pure string match, no rng, no trust mutation.
+  const soapbox = context.soapbox || null;
+  if (soapbox && matchesSoapbox(soapbox, context.playerInput)) {
+    return {
+      share: [
+        ...publicFacts.map(f => f.id),
+        ...allRumors.map(r => r.id)
+      ],
+      mood: 'fervent',
+      approach: 'evangelize',
+      why: `Soapbox topic (${String(soapbox.cause || 'the cause')}) — evangelizing regardless of trust.`
+    };
+  }
 
   let share = [];
   let mood = 'wary';

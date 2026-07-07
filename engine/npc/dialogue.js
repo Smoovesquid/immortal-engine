@@ -8,7 +8,7 @@ import { addFact } from '../ledger.js';
 import { applyDeltas } from '../effectsCore.js';
 import { filterRumors } from './perspectiveFilter.js';
 import { appendCanonEvent } from '../csl/canonLog.js';
-import { buildNpcContext, fallbackRules, findCachedDecision } from './npcBrain.js';
+import { buildNpcContext, fallbackRules, findCachedDecision, matchesSoapbox } from './npcBrain.js';
 import { extractMemory } from './npcMemory.js';
 import { exitsFrom } from '../map/mapState.js';
 import { classifyPlaceQuery, resolvePlaceFact } from '../world/placeQuery.js';
@@ -838,7 +838,21 @@ export function askNpc(world, text) {
   let commonBody = '';
   let claimData = null;
 
-  if (!topic || !knownIds.has(topic)) {
+  // SOAPBOX-1 — the zealot holds forth on his cause. When the player names one of
+  // the NPC's soapbox topics AND the topic isn't a personal secret, he EVANGELIZES
+  // regardless of trust — even with NO matching knowledge-graph fact, because his
+  // cause lives in his voice corpus (e.g. Carl's manifesto), not in structured
+  // facts. A soapbox topic that happens to BE a secret falls through to the
+  // trust-gated branches below, so the personal vault stays shut. Deterministic:
+  // pure string match, no rng; the evangelize turn carries trustDelta 0 (see
+  // below), so preaching the cause can never ladder trust up to crack a secret.
+  const soapboxHit = Boolean(npc.soapbox) && matchesSoapbox(npc.soapbox, text) && !(topic && secrets.has(topic));
+
+  if (soapboxHit) {
+    // The cause is preached through the corpus/voice, not a discrete fact.
+    mode = 'evangelize';
+    factId = null;
+  } else if (!topic || !knownIds.has(topic)) {
     // Vision recognition — heretic NPC gate. Fires before trust check: if this
     // NPC is flagged heretic AND the player carries the vision mark AND the NPC
     // holds a claim about the subject, switch to recognition mode. The heretic
@@ -958,7 +972,7 @@ export function askNpc(world, text) {
   // Pass D2 — pass currentTurn for memory timestamping.
   // Common-knowledge pleasantries don't mint memories — an NPC remembers what
   // you traded in trust, not that you asked their name or about the weather.
-  const CLASSIC_MODES = new Set(['shared', 'lied', 'withheld', 'deflected', 'recruited', 'claim_recall']);
+  const CLASSIC_MODES = new Set(['shared', 'lied', 'withheld', 'deflected', 'recruited', 'claim_recall', 'evangelize']);
   const memoryEntry = CLASSIC_MODES.has(mode) ? extractMemory(npc, text, brainDecision, {
     mode,
     topic: factId || '',
@@ -995,7 +1009,16 @@ export function askNpc(world, text) {
       trustDelta,
       text: String(text || ''),
       brainDecision: brainDecision || null,
-      brainMood: brainDecision?.mood || null,
+      // SOAPBOX-1 — the per-turn decision cache is keyed by npc+turn, so once Carl
+      // evangelizes (mood 'fervent') a LATER off-topic ask on the same turn reuses
+      // that cached decision. The mode is recomputed correctly (it deflects), but a
+      // fervent mood must not color a non-evangelize line ("...fervent, and turns
+      // half away"). Surface fervent ONLY when we are actually evangelizing; else
+      // drop to the manner default. Presentation-only — the canonized decision is
+      // untouched, so replay/worldHash are unaffected.
+      brainMood: (brainDecision?.mood === 'fervent' && mode !== 'evangelize')
+        ? null
+        : (brainDecision?.mood || null),
       rumorBodies: rumorSurface.bodies,
       rumorMintHint: rumorSurface.mintHint,
       historicalFigureId: String(npc.historicalFigure || ''),
@@ -1003,6 +1026,10 @@ export function askNpc(world, text) {
       // maps). PURE derivation — no fs, no state write; the SERVER does the
       // existence-gated retrieval, so a stale id degrades to templates silently.
       voiceCorpusId: String(npcVoiceCorpusId(npc) || ''),
+      // SOAPBOX-1 — the cause the NPC is holding forth on, present when
+      // mode === 'evangelize'. Lets the (deterministic + server) voice layer
+      // preach the specific cause. Empty for every non-soapbox turn.
+      soapboxCause: mode === 'evangelize' ? String(npc.soapbox?.cause || '') : '',
       // Claim context — present only when mode === 'claim_recall'.
       // Contains the NPC's distorted belief about the subject; the voice layer
       // uses this to render their MAP of the event, not the engine's truth.

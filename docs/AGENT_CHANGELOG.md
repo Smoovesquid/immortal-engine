@@ -3431,3 +3431,27 @@ other agents. (none active)
   cottage_exterior golden had the 77 m bug baked in). LIVE RECEIPT: marker lands ~5 m outside the
   Bedchamber/Hearth-Room cottage Bryn wakes in, on his own save — not by the storehouse.
 - OPEN: MAP-WEDGE-1 (quickstart browser wedge) still queued — not seen this integration boot.
+
+## 2026-07-07 — Basecamp — MAP-WEDGE-1 → v0.32.12 build 132 "no more frozen front door" — the quickstart wedge was window.confirm
+
+- MAP-WEDGE-1 (Tim: "proceed with map wedge 1"): the intermittent brand-new-game browser freeze.
+  ROOT CAUSE (proven deterministic, not random): `confirmNewOverSave` (public/v1.js) used
+  `window.confirm` for the "new character over a save" prompt. A native confirm BLOCKS the JS main
+  thread until dismissed — freezes the whole page and hangs forever in any embedded/automated
+  browser that can't click it (exact "even 1+1 eval is dead" signature). The "2 of 4 boots" was
+  DETERMINISTIC on save-presence: first fresh boot has no save (skips confirm, clean), every boot
+  after has one (hits the block).
+- METHOD: stage-marker instrumentation of the boot path proved the hang is BEFORE beginFromPreRolled
+  even runs → localized to the click→confirm step. Deterministic proof: save cleared → instant clean
+  boot; save present → the identical click times out at 30s inside window.confirm. (Debugging trap
+  logged: preview_console_logs multiplied each log ~8× from stacked execution contexts — a capture
+  artifact, NOT 8 executions.)
+- FIX: non-blocking in-app modal — `ui.confirm` state + `renderConfirmModal()` (on-brand
+  "Keep my character" / "Start new"), rendered atop any screen. Renderer-only, no engine gate.
+- U636 (3 tests) guards the regression: no `window.confirm(`/`alert(` on the render path, and the
+  in-app modal must be wired. Ladder 10905/0 · 135/135 · screen truth 7/7 (the modal only renders
+  when ui.confirm is set, so boot-slice goldens are unmoved).
+- LIVE RECEIPTS: save-present click now returns instantly (thread alive) + shows the modal; "Start
+  new" boots clean; "Keep my character" dismisses; 3 back-to-back save-present boots all clean.
+- FLAGGED, out of scope: dev-only Export/Import JSON still uses `window.prompt` (v1.js:2497/2501) —
+  same blocking-modal class, NOT the boot path, not the reported wedge; left for a later dev-UI pass.

@@ -104,6 +104,14 @@ const ui = {
   packs: { manifest: null, byId: {} },
   screen: 'invoke',
 
+  // MAP-WEDGE-1 (2026-07-07): the "new character over a save" confirmation is an
+  // IN-APP modal, never window.confirm. The native modal blocks the main thread
+  // synchronously until dismissed — which hard-freezes the whole page (map rAF
+  // loops, everything) and, in any embedded/automated browser that can't click
+  // it, wedges forever. This was THE root cause of the intermittent quickstart
+  // "wedge" (deterministic on whether a save existed). { message, onYes } | null.
+  confirm: null,
+
   // 'aldermere' = THE SHIPPABLE SLICE (SLICE_SEED, engine/world/sliceRegion.js): one
   // authored ~100 km² region — Aldermere (town) · The Greenwood (woods, bandits) ·
   // Crowfoot Camp (the captain's stronghold) · The Hollowed Chapel (haunted dungeon).
@@ -958,8 +966,30 @@ function savedCharacterName() {
 }
 function confirmNewOverSave(startFn) {
   const nm = savedCharacterName();
-  if (nm && !window.confirm(`Start a NEW character? This replaces your saved character "${nm}" and all their progress. Use Continue to keep playing them instead.`)) return;
-  startFn();
+  if (!nm) { startFn(); return; }
+  // MAP-WEDGE-1: non-blocking in-app confirm (see ui.confirm note). The native
+  // window.confirm here blocked the whole page until answered — a hard wedge in
+  // any browser that couldn't surface/dismiss the modal.
+  ui.confirm = {
+    message: `Start a NEW character? This replaces your saved character "${nm}" and all their progress. Use Continue to keep playing them instead.`,
+    onYes: startFn
+  };
+  render();
+}
+
+function renderConfirmModal() {
+  const c = ui.confirm;
+  if (!c) return null;
+  const dismiss = () => { ui.confirm = null; render(); };
+  return el('div', { class: 'modal-backdrop', onClick: (e) => { if (e.target === e.currentTarget) dismiss(); } },
+    el('div', { class: 'modal panel', style: { maxWidth: '440px', padding: '20px' } },
+      el('div', { style: { marginBottom: '16px', lineHeight: '1.5' } }, c.message),
+      el('div', { style: { display: 'flex', gap: '10px', justifyContent: 'flex-end' } },
+        el('button', { class: 'btn', onClick: dismiss }, 'Keep my character'),
+        el('button', { class: 'btn primary', onClick: () => { const fn = c.onYes; ui.confirm = null; render(); if (typeof fn === 'function') fn(); } }, 'Start new')
+      )
+    )
+  );
 }
 
 function playAgain() {
@@ -1013,8 +1043,8 @@ function renderInvoke() {
     el('div', { class: 'panel' },
       el('div', { class: 'header' },
         el('div', {},
-          el('div', { class: 'title' }, 'Immortal Engine — v0.32.11'),
-          el('div', { class: 'sub' }, 'build 131 · 2026-07-07 · land on your own doorstep')
+          el('div', { class: 'title' }, 'Immortal Engine — v0.32.12'),
+          el('div', { class: 'sub' }, 'build 132 · 2026-07-07 · no more frozen front door')
         )
       ),
       // ── One-click front door: start (or resume) the Escape game ──────
@@ -3043,6 +3073,10 @@ function render() {
   else if (ui.screen === 'ai') app.append(renderAi());
   else if (ui.screen === 'auth') app.append(renderAuthScreen());
   else app.append(renderInvoke());
+
+  // MAP-WEDGE-1: the in-app "new over save" confirm draws on top of any screen.
+  const confirmModal = renderConfirmModal();
+  if (confirmModal) app.append(confirmModal);
 
   // Auto-scroll the recent-beats panel to bottom so newest beats are visible.
   const beatsScroll = document.querySelector('[data-beats-scroll]');

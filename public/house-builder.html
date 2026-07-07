@@ -237,7 +237,9 @@
     else if(tool==='furniture'){ const f={id:nextId('f'),type:'table',x:Math.min(cCol(c.gx),COLS-1),y:Math.min(cRow(c.gy),ROWS-1),w:1,h:1,rot:0}; scene.furniture.push(f); select('furn',f.id); drag={mode:'move-furn',id:f.id,offx:0,offy:0}; setTool('select'); }
     else if(FURN[tool]){ const def=FURN[tool]; const f={id:nextId('f'),type:tool,x:cCol(c.gx),y:cRow(c.gy),w:def.w,h:def.h,rot:0}; f.x=Math.min(f.x,COLS-f.w); f.y=Math.min(f.y,ROWS-f.h); scene.furniture.push(f); select('furn',f.id); drag={mode:'move-furn',id:f.id,offx:0,offy:0}; setTool('select'); }
     else {
-      if(sel&&sel.kind==='room'){ const r=roomById(sel.id); if(r&&r.shape!=='round'){ const H=wallHandles(r); for(const k in H){ const p=H[k]; if(Math.hypot(p[0]-c.px,p[1]-c.py)<9/cam.scale+4){ drag={mode:'curve-wall',id:r.id,edge:k}; return; } } } }
+      if(sel&&sel.kind==='room'){ const r=roomById(sel.id); if(r){
+        const CH=cornerHandles(r); for(const k in CH){ const p=CH[k]; if(Math.hypot(p[0]-c.px,p[1]-c.py)<9/cam.scale+5){ drag={mode:'resize-room',id:r.id,corner:k}; return; } }
+        if(r.shape!=='round'){ const H=wallHandles(r); for(const k in H){ const p=H[k]; if(Math.hypot(p[0]-c.px,p[1]-c.py)<9/cam.scale+4){ drag={mode:'curve-wall',id:r.id,edge:k}; return; } } } } }
       if(sel&&sel.kind==='wall'){ const w=scene.walls.find(x=>x.id===sel.id); if(w){ const es=[[w.x0*CELL,w.y0*CELL],[w.x1*CELL,w.y1*CELL]]; for(let i=0;i<2;i++){ if(Math.hypot(es[i][0]-c.px,es[i][1]-c.py)<9/cam.scale+4){ drag={mode:'wall-end',id:w.id,end:i}; return; } } const ap=wallBez(w).apex; if(Math.hypot(ap[0]-c.px,ap[1]-c.py)<9/cam.scale+4){ drag={mode:'wall-bend',id:w.id}; return; } } }
       if(sel&&sel.kind==='tunnel'){ const t=scene.tunnels.find(x=>x.id===sel.id); const b=t&&tunnelBez(t); if(b){ if(Math.hypot(b.apex[0]-c.px,b.apex[1]-c.py)<9/cam.scale+4){ drag={mode:'tunnel-bend',id:t.id}; return; } } }
       const sec=secretAt(c.px,c.py); if(sec){ select('secret',sec.id); drag={mode:'move-secret',id:sec.id,offx:c.px-sec.x*CELL,offy:c.py-sec.y*CELL}; return; }
@@ -259,6 +261,7 @@
     else if(drag.mode==='draw-wall'){ drag.x1=cCol(snap(c.px)); drag.y1=cRow(snap(c.py)); }
     else if(drag.mode==='move-furn'){ const f=scene.furniture.find(x=>x.id===drag.id); if(f){ f.x=Math.max(0,Math.min(COLS-f.w,c.gx-drag.offx)); f.y=Math.max(0,Math.min(ROWS-f.h,c.gy-drag.offy)); } }
     else if(drag.mode==='move-room'){ const r=roomById(drag.id); if(r){ const nx=Math.max(0,Math.min(COLS-r.w,c.gx-drag.offx)),ny=Math.max(0,Math.min(ROWS-r.h,c.gy-drag.offy)),dx=nx-r.x,dy=ny-r.y; r.x=nx; r.y=ny; scene.openings.filter(o=>o.room===r.id).forEach(o=>{o.x+=dx;o.y+=dy;}); } }
+    else if(drag.mode==='resize-room'){ const r=roomById(drag.id); if(r){ let x0=r.x,y0=r.y,x1=r.x+r.w,y1=r.y+r.h; const gx=Math.max(0,Math.min(COLS,Math.round(c.px/CELL))),gy=Math.max(0,Math.min(ROWS,Math.round(c.py/CELL))); if(drag.corner==='nw'){ x0=Math.min(gx,x1-2); y0=Math.min(gy,y1-2); } else if(drag.corner==='ne'){ x1=Math.max(gx,x0+2); y0=Math.min(gy,y1-2); } else if(drag.corner==='se'){ x1=Math.max(gx,x0+2); y1=Math.max(gy,y0+2); } else if(drag.corner==='sw'){ x0=Math.min(gx,x1-2); y1=Math.max(gy,y0+2); } r.x=x0; r.y=y0; r.w=x1-x0; r.h=y1-y0; select('room',r.id); } }
     else if(drag.mode==='curve-wall'){ const r=roomById(drag.id); if(r){ if(!r.curve) r.curve={top:0,right:0,bottom:0,left:0}; const x0=r.x*CELL,y0=r.y*CELL,x1=(r.x+r.w)*CELL,y1=(r.y+r.h)*CELL,cl=v=>Math.max(-5,Math.min(5,v)); if(drag.edge==='top')r.curve.top=cl((y0-c.py)/CELL); else if(drag.edge==='bottom')r.curve.bottom=cl((c.py-y1)/CELL); else if(drag.edge==='left')r.curve.left=cl((x0-c.px)/CELL); else if(drag.edge==='right')r.curve.right=cl((c.px-x1)/CELL); select('room',r.id); } }
     else if(drag.mode==='wall-end'){ const w=scene.walls.find(x=>x.id===drag.id); if(w){ if(drag.end===0){ w.x0=cCol(snap(c.px)); w.y0=cRow(snap(c.py)); } else { w.x1=cCol(snap(c.px)); w.y1=cRow(snap(c.py)); } } }
     else if(drag.mode==='move-wall'){ const w=scene.walls.find(x=>x.id===drag.id); if(w){ const dx=snap(c.px-drag.px0),dy=snap(c.py-drag.py0); if(dx||dy){ w.x0=cCol(w.x0+dx); w.y0=cRow(w.y0+dy); w.x1=cCol(w.x1+dx); w.y1=cRow(w.y1+dy); drag.px0+=dx*CELL; drag.py0+=dy*CELL; } } }
@@ -374,7 +377,8 @@
 
   function drawSelection(){ if(!sel) return; const dash=()=>{ctx.setLineDash([4,3]);}, undash=()=>{ctx.setLineDash([]);};
     if(sel.kind==='room'){ const r=roomById(sel.id); if(!r) return; ctx.strokeStyle=getCss('--sel'); ctx.lineWidth=2.5; dash(); ctx.strokeRect(r.x*CELL-2,r.y*CELL-2,r.w*CELL+4,r.h*CELL+4); undash();
-      if(tool==='select'&&r.shape!=='round'){ const H=wallHandles(r); for(const k in H){ const p=H[k]; ctx.fillStyle=getCss('--accent'); ctx.strokeStyle='#fff'; ctx.lineWidth=1.5; circle(p[0],p[1],5); ctx.fill(); ctx.stroke(); } } }
+      if(tool==='select'&&r.shape!=='round'){ const H=wallHandles(r); for(const k in H){ const p=H[k]; ctx.fillStyle=getCss('--accent'); ctx.strokeStyle='#fff'; ctx.lineWidth=1.5; circle(p[0],p[1],5); ctx.fill(); ctx.stroke(); } }
+      if(tool==='select'){ const CH=cornerHandles(r); for(const k in CH){ const p=CH[k]; ctx.fillStyle='#fff'; ctx.strokeStyle=getCss('--accent'); ctx.lineWidth=2; ctx.fillRect(p[0]-4,p[1]-4,8,8); ctx.strokeRect(p[0]-4,p[1]-4,8,8); } } }
     else if(sel.kind==='furn'){ const f=scene.furniture.find(x=>x.id===sel.id); if(f){ ctx.strokeStyle=getCss('--sel'); ctx.lineWidth=2.5; dash(); ctx.strokeRect(f.x*CELL-2,f.y*CELL-2,f.w*CELL+4,f.h*CELL+4); undash(); } }
     else if(sel.kind==='open'){ const o=scene.openings.find(x=>x.id===sel.id); if(o){ const half=CELL*(o.len||1)/2; ctx.save(); ctx.translate(o.x*CELL,o.y*CELL); ctx.rotate((o.angle||0)*Math.PI/180); ctx.strokeStyle=getCss('--sel'); ctx.lineWidth=2.5; dash(); ctx.strokeRect(-half-3,-9,half*2+6,18); undash(); ctx.restore(); } }
     else if(sel.kind==='wall'){ const w=scene.walls.find(x=>x.id===sel.id); if(w){ ctx.lineWidth=1.5; for(const p of [[w.x0*CELL,w.y0*CELL],[w.x1*CELL,w.y1*CELL]]){ ctx.fillStyle=getCss('--accent'); ctx.strokeStyle='#fff'; circle(p[0],p[1],5); ctx.fill(); ctx.stroke(); } const ap=wallBez(w).apex; ctx.fillStyle=getCss('--sel'); ctx.strokeStyle='#fff'; circle(ap[0],ap[1],5); ctx.fill(); ctx.stroke(); } }
@@ -389,6 +393,10 @@
     ctx.moveTo(x0,y0); ctx.quadraticCurveTo(mx,y0-2*c.top*CELL,x1,y0); ctx.quadraticCurveTo(x1+2*c.right*CELL,my,x1,y1); ctx.quadraticCurveTo(mx,y1+2*c.bottom*CELL,x0,y1); ctx.quadraticCurveTo(x0-2*c.left*CELL,my,x0,y0); ctx.closePath(); }
   function wallHandles(r){ const x0=r.x*CELL,y0=r.y*CELL,x1=(r.x+r.w)*CELL,y1=(r.y+r.h)*CELL,mx=(x0+x1)/2,my=(y0+y1)/2,c=r.curve||{top:0,right:0,bottom:0,left:0};
     return { top:[mx,y0-c.top*CELL], right:[x1+c.right*CELL,my], bottom:[mx,y1+c.bottom*CELL], left:[x0-c.left*CELL,my] }; }
+  // Corner handles — drag to RESIZE a room (edge midpoints bow the walls; corners
+  // resize). Both shapes. NW/NE/SE/SW in world px, on the plain (uncurved) rect.
+  function cornerHandles(r){ const x0=r.x*CELL,y0=r.y*CELL,x1=(r.x+r.w)*CELL,y1=(r.y+r.h)*CELL;
+    return { nw:[x0,y0], ne:[x1,y0], se:[x1,y1], sw:[x0,y1] }; }
 
   function drawRoom(r){ const m=MAT[r.material]||MAT.timber;
     ctx.save(); roomPath(r); ctx.fillStyle=getCss('--room-fill'); ctx.fill(); ctx.restore();

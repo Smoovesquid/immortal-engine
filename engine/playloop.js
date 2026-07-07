@@ -1296,7 +1296,12 @@ function playerMoveCore(world, packsById, text, dqIntent) {
   // META_LOCATION is excluded here — "look around" out of combat already has
   // a dedicated, tested explore-intent handler downstream (the "Exits:" path,
   // U37/U38); this gate would otherwise shadow it with a different format.
-  const declaredNpcViolence = !w.combat?.active && !w.scene?.dialogue
+  // DM-GATE-1a-R1 — a declared swing whose PRIMARY target is a present OBJECT (furniture) is
+  // object damage-state, not combat. Computed FIRST so NPC-violence routing yields to it: an NPC
+  // named only in a trailing clause ("attack the chest WHILE THE BANDIT watches", "…ignoring
+  // Ashblade") is incidental and must not steal the turn into combat.
+  const declaredObjectAttack = !w.combat?.active && !w.scene?.dialogue && detectObjectAttackIntent(w, text);
+  const declaredNpcViolence = !w.combat?.active && !w.scene?.dialogue && !declaredObjectAttack
     && (detectPhysicalAssault(w, text) || detectAttackBeginIntent(w, text) || detectAttackAnyIntent(w, text));
   // A declared self-cut must RESOLVE, not be shadowed by an HP-status / weapon-
   // damage meta answer when the two are bundled ("I cut my palm — what's my HP
@@ -1341,8 +1346,7 @@ function playerMoveCore(world, packsById, text, dqIntent) {
   const bareLookAround = META_LOCATION.test(String(text || '').toLowerCase()) && !isSheetStateAsk(text);
   // DM-GATE-1a — a declared swing at an OBJECT ("I attack the chest — what's my roll?")
   // must reach the object damage-state path, not be answered as raw attack-math. Mirrors
-  // declaredNpcViolence: a declared action beats a meta query.
-  const declaredObjectAttack = !w.combat?.active && !w.scene?.dialogue && detectObjectAttackIntent(w, text);
+  // declaredNpcViolence: a declared action beats a meta query. (declaredObjectAttack computed above.)
   if (!w.combat?.active && !w.scene?.dialogue && isMetaQuestion(text) && !declaredNpcViolence && !declaredObjectAttack && !declaredSelfHarm && !npcAddressedRecap && !bareLookAround) {
     const metaAnswer = handleMetaQuestion(text, w);
     if (metaAnswer) {
@@ -3213,7 +3217,7 @@ function playerMoveCore(world, packsById, text, dqIntent) {
   // violence fights while offensive SPELLS at innocents still recoil. (Opus gate #1.)
   if (!w.combat?.active && !w.ending?.locked) {
     const assault = detectPhysicalAssault(w, text);
-    if (assault) {
+    if (assault && !declaredObjectAttack) {   // R1: an object-primary swing beats an incidental NPC grab
       // ROM-1: a violent grab/grapple frame with no one present to lay hands on
       // (empty room / the target is elsewhere at the node). A real DM says so —
       // no dice, no trivial "you do so" floor, and never an out-of-room Elske.
@@ -3654,7 +3658,7 @@ function playerMoveCore(world, packsById, text, dqIntent) {
   // at the current node. No event-driven ambushes — Pass 5 scope is explicit.
   {
     const begin = detectAttackBeginIntent(w, text);
-    if (begin) {
+    if (begin && !declaredObjectAttack) {   // R1: object-primary swing isn't a combat-begin
       // ROM-1: if the hostile was named in another room of this building, walk
       // there first (canon-safe), then fight where they stand. Route through the
       // shared engager so the hostile fast-path applies persisted HP and (in
@@ -3667,7 +3671,7 @@ function playerMoveCore(world, packsById, text, dqIntent) {
   // --- CM11: Attack any NPC (makes them hostile, then starts combat) ---
   if (!w.combat?.active && !w.ending?.locked) {
     const anyIntent = detectAttackAnyIntent(w, text);
-    if (anyIntent) {
+    if (anyIntent && !declaredObjectAttack) {   // R1: object-primary swing isn't an NPC attack
       const seeked = engageWithSeek(w, anyIntent, text, pack, actorId, true);
       if (seeked) return seeked;
     }
@@ -10369,23 +10373,41 @@ const INANIMATE_STRIKE_TARGET_RE = /\b(?:post|pell|dummy|dummies|sack|sandbag|st
 // ANY_VIOLENCE set: these route to the object hardness/damage-state path, never combat.
 const OBJECT_ATTACK_VERB_RE = /\b(attack|hit|slash|stab|hack|chop|cut|swing)\b/i;
 
+// DM-GATE-1a-R1 — the PRIMARY target of the swing: the noun phrase right after the attack
+// verb, truncated at the first clause break (a comma/period, a subordinate conjunction, an
+// instrument "with …", or a positional preposition). This is what the swing is aimed AT — an
+// NPC named only in a trailing clause ("while the bandit watches", "ignoring Ashblade", "not
+// Ashblade") is INCIDENTAL and must not pull the turn into combat.
+const OBJECT_ATTACK_TARGET_RE = /\b(?:attack|hit|slash|stab|hack|chop|cut|swing)\s+(?:at\s+|into\s+|on\s+|upon\s+)?(.+)/i;
+const TARGET_CLAUSE_BREAK_RE = /\s*(?:[,;.!?]|\b(?:while|as|when|and|but|then|ignoring|not|near|beside|behind|before|after|with|without|over|under|by|for|instead)\b).*$/i;
+function objectAttackPrimaryTarget(text) {
+  const m = String(text || '').match(OBJECT_ATTACK_TARGET_RE);
+  if (!m) return '';
+  return String(m[1] || '').replace(TARGET_CLAUSE_BREAK_RE, '').trim();
+}
+
 // DM-GATE-1a — is this a weapon swing at a present OBJECT (a furniture piece)? Such a
 // swing is object DAMAGE-STATE resolution, not combat and not a meta answer: it must
 // reach the hardness/force path (engine/playloop.js ~3776), never be swallowed by the
-// meta gate, never mint an enemy. True iff an attack verb targets a real furniture piece
-// HERE (by name/part — not a mere room-notes echo, not the wielded weapon) AND no present
-// NPC is the target (a declared NPC attack is combat — detectAttack*/detectPhysicalAssault
-// own it). This packet adds NO persistent object HP/AC; that is DM-GATE-1b.
+// meta gate, never mint an enemy. True iff the swing's PRIMARY target is a real furniture
+// piece HERE (by name/part — not a mere room-notes echo, not the wielded weapon) and that
+// primary target is not itself a present NPC. Incidental NPC mentions in trailing clauses are
+// stripped by objectAttackPrimaryTarget, so they never flip this to combat. NO persistent HP/AC (1b).
 export function detectObjectAttackIntent(world, text) {
   const t = String(text || '').trim();
   if (!t) return false;
   if (world?.combat?.active || world?.scene?.dialogue) return false;
   if (!OBJECT_ATTACK_VERB_RE.test(t)) return false;
-  const det = detectPhysicalInteraction(world, t);
+  const target = objectAttackPrimaryTarget(t);
+  if (!target) return false;
+  // Scope the furniture match to the PRIMARY target phrase, so a trailing NPC clause can't
+  // supply the match and a mere room-notes echo can't qualify.
+  const det = detectPhysicalInteraction(world, target);
   const furnitureTarget = (det?.matches || []).some(m => m.type === 'furniture' && (m.match === 'name' || m.match === 'part'));
   if (!det?.detected || !furnitureTarget) return false;
-  // A declared attack on a PRESENT NPC is combat, never object-damage — defer to it.
-  if (detectPhysicalAssault(world, t) || detectAttackBeginIntent(world, t) || detectAttackAnyIntent(world, t)) return false;
+  // If the PRIMARY target itself resolves to a present NPC, that's combat, not object-damage.
+  const probe = `attack ${target}`;
+  if (detectPhysicalAssault(world, probe) || detectAttackBeginIntent(world, probe) || detectAttackAnyIntent(world, probe)) return false;
   return true;
 }
 

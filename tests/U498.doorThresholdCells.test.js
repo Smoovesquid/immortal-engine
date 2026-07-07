@@ -22,9 +22,6 @@ import {
   doorThresholdCells,
   roomOfStructCell,
   nearestNodeToRegionCell,
-  roomRectCells,
-  nodeGridToRegionCell,
-  PLACE_WU,
 } from '../engine/map/spatial/tacticalPos.js';
 import { floorPlan } from '../engine/structures/floorPlan.js';
 import { structFootprintRegionCells, EXIT_TELEPORT_CELLS } from '../scripts/positionProbe.mjs';
@@ -88,15 +85,18 @@ for (const [wantDir, f] of Object.entries(DIR_FIXTURES)) {
     const dist = Math.hypot(th.outside.gx - fp.cx, th.outside.gy - fp.cy);
     assert.ok(dist <= EXIT_TELEPORT_CELLS, `outside is within the doorstep threshold (${dist.toFixed(1)} ≤ ${EXIT_TELEPORT_CELLS})`);
 
-    // The outside cell sits on the OUTWARD side of the entry room (a real doorstep,
-    // not inside the building): one doorstep beyond the entry room's outer edge.
-    const entryRect = roomRectCells(plan.rooms.find(r => String(r.id) === f.entry));
-    const centre = nodeGridToRegionCell(0, 0);
-    // The entry room's outer edge in region cells along the outward axis.
-    if (wantDir === 'east') assert.ok(th.outside.gx > centre.gx + entryRect.cx, 'east doorstep is east of the room centre');
-    if (wantDir === 'west') assert.ok(th.outside.gx < centre.gx + entryRect.cx, 'west doorstep is west of the room centre');
-    if (wantDir === 'south') assert.ok(th.outside.gy > centre.gy + entryRect.cy, 'south doorstep is south of the room centre');
-    if (wantDir === 'north') assert.ok(th.outside.gy < centre.gy + entryRect.cy, 'north doorstep is north of the room centre');
+    // The outside cell sits on the OUTWARD side of the DRAWN footprint (a real
+    // doorstep, not inside the building): one doorstep beyond the entry room's outer
+    // edge. MAP-EGRESS-1 — the doorstep is anchored on the building's DRAWN position
+    // (settlementLayout), so "outward" is measured against the DRAWN footprint centre
+    // (fp.cx/fp.cy above), NOT the raw node-centre + room offset (the old centre-frame
+    // math that assumed every building sat at the node centre — the phantom this fix
+    // retired). fp comes from structFootprintRegionCells, which is now likewise
+    // drawn-anchored, so doorstep and footprint are compared in ONE frame (the screen's).
+    if (wantDir === 'east') assert.ok(th.outside.gx > fp.cx, 'east doorstep is east of the drawn footprint centre');
+    if (wantDir === 'west') assert.ok(th.outside.gx < fp.cx, 'west doorstep is west of the drawn footprint centre');
+    if (wantDir === 'south') assert.ok(th.outside.gy > fp.cy, 'south doorstep is south of the drawn footprint centre');
+    if (wantDir === 'north') assert.ok(th.outside.gy < fp.cy, 'north doorstep is north of the drawn footprint centre');
   });
 }
 

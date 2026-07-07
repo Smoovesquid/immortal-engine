@@ -33,6 +33,16 @@ import { floorPlan } from '../../structures/floorPlan.js';
 // header of engine/world/wildFeatures.js.)
 import { isRegionCellBlocked } from '../../world/wildFeatures.js';
 
+// MAP-EGRESS-1 — the DRAWN settlement layout is the ONE source of where a building
+// sits in its settlement (engine/world/settlementLayout.js). doorThresholdCells
+// consumes it so the doorstep lands beside the building the map actually draws, not
+// the phantom node-centre. This forms an import cycle with settlementLayout.js (which
+// reads NODE_CELLS from HERE) — SAFE by the same rule as the wildFeatures cycle above:
+// every binding below is used only INSIDE runtime functions, never at module
+// evaluation, so neither module observes the other half-initialised.
+
+import { settlementLayout, buildingAnchorFromLayout, placeUnitToRegionCell } from '../../world/settlementLayout.js';
+
 // ── Pinned constants (TAC-1) ────────────────────────────────────────────────
 // Mirror of the "Pinned constants (TAC-1)" block in docs/POSITION_AS_CANON.md.
 // Locked by tests/U415. Do NOT change a value without updating the contract block
@@ -472,15 +482,42 @@ export function doorThresholdCells(world, structId, doorId = null) {
   }
 
   // Outside cell: the region cell one doorstep beyond the doorway room's OUTER edge.
-  // The room's outer edge, in region cells, is nodeCentre + (roomCentre ± halfSpan)
-  // × PLACE_WU along the outward axis; +1 cell is the doorstep just past the wall.
-  const centre = nodeGridToRegionCell(node.x, node.y);
+  // The room's outer edge along the outward axis is (roomCentre ± halfSpan); +1 cell
+  // is the doorstep just past the wall.
   const halfWLayout = Math.max(0, (doorRoom.w || 0) / 2);
   const halfHLayout = Math.max(0, (doorRoom.h || 0) / 2);
   const edgeXLayout = doorRoom.cx + dx * halfWLayout;
   const edgeYLayout = doorRoom.cy + dy * halfHLayout;
-  const gx = Math.round(centre.gx + edgeXLayout * PLACE_WU) + dx;
-  const gy = Math.round(centre.gy + edgeYLayout * PLACE_WU) + dy;
+
+  // MAP-EGRESS-1 — ANCHOR ON THE DRAWN BUILDING, not the node centre. Where the
+  // building actually sits in its settlement comes from the engine's own layout
+  // (settlementLayout — the P-81b organic scatter the renderer draws from). The door's
+  // outer edge in the settlement's PLACE-UNIT space is (drawnAnchor + roomCentre ±
+  // halfSpan); placeUnitToRegionCell projects that into the region-cell frame through
+  // the SAME algebra the renderer's marker uses (worldSpace.placeUnitToWu → the region
+  // lattice), so the doorstep lands on the door the map drew. Was: nodeGridToRegionCell
+  // (the node CENTRE) — which teleported the body 77 m across the settlement, because
+  // the building is DRAWN scattered but the doorstep was COMPUTED centred (the
+  // self-consistent lie the position probe couldn't see; MAP-EGRESS-1).
+  //
+  // FALLBACK to the centre anchor when the drawn position can't be grounded: a lone
+  // structure at a node with no settlement layout, or a structure not drawn in this
+  // settlement's buildings[] (a far node). There the two frames coincide (a single
+  // building's frame centre IS the node centre), so the centre computation is correct.
+  let gx, gy;
+  const layout = settlementLayout(world, String(node.id));
+  const anchor = layout ? buildingAnchorFromLayout(layout, String(st.id)) : null;
+  if (layout && anchor) {
+    const edgeXPlace = anchor.ox + edgeXLayout;
+    const edgeYPlace = anchor.oy + edgeYLayout;
+    const cell = placeUnitToRegionCell(node, layout.frame, edgeXPlace, edgeYPlace);
+    gx = Math.round(cell.gx) + dx;
+    gy = Math.round(cell.gy) + dy;
+  } else {
+    const centre = nodeGridToRegionCell(node.x, node.y);
+    gx = Math.round(centre.gx + edgeXLayout * PLACE_WU) + dx;
+    gy = Math.round(centre.gy + edgeYLayout * PLACE_WU) + dy;
+  }
   const outside = { frame: 'region', gx, gy };
 
   return { inside, outside, dir };

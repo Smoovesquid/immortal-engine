@@ -58,6 +58,13 @@ import {
 import { floorPlan } from '../engine/structures/floorPlan.js';
 import { normalizeTopology, adjacentRooms } from '../engine/structures/topology.js';
 import { placeFromWorldNode } from '../public/map/placeFromNode.js';
+// MAP-EGRESS-1 — the DRAWN-footprint cross-check. structFootprintRegionCells now
+// anchors on the building's DRAWN position (the engine settlement layout the renderer
+// draws from), not the phantom node centre — so the doorstep assertion compares against
+// the footprint the SCREEN shows. This is the cross-check that was missing: the old
+// centre-anchored footprint agreed with the old centre-anchored doorstep (both wrong,
+// self-consistent), which is exactly why the 77 m teleport passed green.
+import { settlementLayout, buildingAnchorFromLayout, placeUnitToRegionCell } from '../engine/world/settlementLayout.js';
 
 // ── The one minimal pack the slice boot needs (mirrors scripts/playtest.js) ──
 const PACKS = {
@@ -141,15 +148,32 @@ export function structFootprintRegionCells(world, structureKey) {
     minY = Math.min(minY, r.cy - rh); maxY = Math.max(maxY, r.cy + rh);
   }
   if (!Number.isFinite(minX)) return null;
-  // floorPlan layout units → cells. The building's local origin maps to the
-  // node's region-cell centre (the frame anchor); layout offsets scale by PLACE_WU.
-  const centre = nodeGridToRegionCell(node.x, node.y);
   const midX = (minX + maxX) / 2, midY = (minY + maxY) / 2;
+  const halfWLayout = (maxX - minX) / 2, halfHLayout = (maxY - minY) / 2;
+
+  // MAP-EGRESS-1 — THE DRAWN-FOOTPRINT ANCHOR. Where the building sits in its
+  // settlement comes from the engine layout the renderer draws from (settlementLayout).
+  // The footprint centre in PLACE-UNIT space is (drawnAnchor + roomBboxMid); project it
+  // (and the half-spans) into region cells through placeUnitToRegionCell — the SAME
+  // algebra doorThresholdCells now uses, so the doorstep and the footprint it is
+  // measured against are in ONE frame (the screen's). FALLBACK to the node-centre frame
+  // for a structure not drawn in this settlement (a lone structure / far node) — there
+  // the two frames coincide.
+  const layout = settlementLayout(world, String(node.id));
+  const anchor = layout ? buildingAnchorFromLayout(layout, String(st.id)) : null;
+  if (layout && anchor) {
+    const c = placeUnitToRegionCell(node, layout.frame, anchor.ox + midX, anchor.oy + midY);
+    // halfW/halfH in region cells: layout half-span × (place-unit → region-cell factor).
+    const k = 4 / 5; // PLACE_WU_WU / REGION_WU_PER_CELL — one layout unit is 1 place-unit
+    return { cx: c.gx, cy: c.gy, halfW: halfWLayout * k, halfH: halfHLayout * k };
+  }
+  // Legacy centre-anchored frame (single building's frame centre IS the node centre).
+  const centre = nodeGridToRegionCell(node.x, node.y);
   return {
     cx: centre.gx + midX * PLACE_WU,
     cy: centre.gy + midY * PLACE_WU,
-    halfW: ((maxX - minX) / 2) * PLACE_WU,
-    halfH: ((maxY - minY) / 2) * PLACE_WU,
+    halfW: halfWLayout * PLACE_WU,
+    halfH: halfHLayout * PLACE_WU,
   };
 }
 

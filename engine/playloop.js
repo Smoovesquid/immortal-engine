@@ -5116,6 +5116,19 @@ function inferInteriorAction(text, interior, opts = {}) {
         && !/\bout\s+of\s+(?:line|turn|character|place|order|step|sync)\b/.test(t)) {
       return { kind: 'exit' };
     }
+    // MAP-EGRESS-1 rider — a WHOLE-INTENT bare "go out" / "get out" (no trailing
+    // clause) is a leave, same as the "get out" already claimed by the leave regex
+    // above and the "go outside" it mirrors. Historically it fell PAST every exit rule
+    // to the atmosphere bank ("...the still air tastes of dust"), stranding the player
+    // inside. TIGHT: the WHOLE message must be the gesture — optional lead-in
+    // ("i"/"i'd like to"/"let me"), the verb, "out", terminal punctuation only — so a
+    // trailing question ("go out, who's here?" — asksWho) still yields to the presence
+    // answer (this branch is inside the who-guard), and the "of line/turn/…/way"
+    // idioms ("go out of your way", "figure it out" — no leading verb match) never
+    // reach here. U235's "head outside … who do I see?" is the -side form on the
+    // who-guarded gesture branch above, untouched.
+    const bareOutTerminal = /^(?:i\s+|i'?d\s+like\s+to\s+|let\s+me\s+)?(?:go(?:es)?|get(?:s)?)\s+out[.!?]*$/.test(t);
+    if (bareOutTerminal && !asksWho) return { kind: 'exit' };
   }
   // "out the door", "to the open air", "into the open" — explicit egress phrasings
   // that name the threshold or the outside rather than the verb.

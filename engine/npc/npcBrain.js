@@ -43,6 +43,54 @@ export function matchesSoapbox(soapbox, playerInput) {
   return false;
 }
 
+// ── Self-identity (CARL-SELF-1) ─────────────────────────────────────────────
+// An identity question about the NPC's OWN nature — "are you a chicken?", "what
+// are you?", "are you a bird/fowl/hen?". Distinct from a soapbox TOPIC ask ("tell
+// me about chickens"): a creature that KNOWS what it is answers with pride. Gated
+// on an authored `species` (or a `selfConcept`) — absent → false, NPC unchanged.
+//
+// Two frames, both whole-word (letters collapsed to single spaces so contractions
+// split — "you're" → "you re", "isn't" → "isn t" — sidestepping the \b(n|s|e|w)
+// contraction bug documented in matchesSoapbox):
+//   OPEN   — "what are you" (end-anchored, so "what are you DOING/SELLING" is not
+//            an identity question); fires for any self-aware NPC.
+//   CLOSED — "are you a <kin>" / "you're a <kin>"; needs a species kin word, so a
+//            trade ask ("are you selling chickens") or a foil ("are you a duck")
+//            never affirms.
+const SPECIES_KIN = {
+  chicken: ['chicken', 'chickens', 'bird', 'birds', 'fowl', 'fowls', 'hen', 'hens',
+            'rooster', 'roosters', 'cockerel', 'cockerels', 'chook', 'chooks',
+            'avian', 'avians', 'poultry'],
+};
+
+export function matchesSelfIdentity(npc, playerInput) {
+  if (!npc) return false;
+  const species = String(npc.species || '').toLowerCase().trim();
+  const hasSelf = Boolean(species)
+    || (typeof npc.selfConcept === 'string' && npc.selfConcept.trim().length > 0);
+  if (!hasSelf) return false;
+
+  const clean = String(playerInput || '').toLowerCase().replace(/[^a-z]+/g, ' ').trim();
+  if (!clean) return false;
+
+  // OPEN identity question — "what are you", "what exactly/even/really are you",
+  // "what kind/sort/manner of thing/creature are you". End-anchored so a trailing
+  // verb ("what are you doing/selling/hiding") is NOT treated as identity.
+  if (/\bwhat\s+(?:the\s+\w+\s+|exactly\s+|even\s+|really\s+)?are\s+you\s*$/.test(clean)) return true;
+  if (/\bwhat\s+(?:sort|kind|manner|type|creature|thing|breed|species)\s+(?:of\s+\w+\s+)?are\s+you\b/.test(clean)) return true;
+
+  // CLOSED identity question / assertion — needs a species kin word right after the
+  // second-person frame ("are you a chicken", "you're a bird", "are you one of the fowl").
+  const kinList = SPECIES_KIN[species] || (species ? [species] : []);
+  if (kinList.length === 0) return false;
+  const kin = kinList.map(k => String(k).replace(/[^a-z]/g, '')).filter(Boolean).join('|');
+  if (!kin) return false;
+  const kinRe = new RegExp(
+    `\\b(?:are\\s+you|you\\s+are|you\\s+re)\\s+(?:a\\s+|an\\s+|the\\s+|some\\s+|one\\s+of\\s+the\\s+|really\\s+a\\s+|actually\\s+a\\s+|just\\s+a\\s+)?(?:${kin})\\b`
+  );
+  return kinRe.test(clean);
+}
+
 // ── Faction standing helper ─────────────────────────────────────────────────
 
 /**
@@ -134,7 +182,14 @@ export function buildNpcContext(npc, world, playerInput) {
     factionStanding: getFactionStanding(npc, world),
     // SOAPBOX-1 — the NPC's cause, if any. Flows to fallbackRules so an on-topic
     // ask flips the SHARE gate regardless of trust. Optional; null for most NPCs.
-    soapbox: (npc.soapbox && typeof npc.soapbox === 'object') ? npc.soapbox : null
+    soapbox: (npc.soapbox && typeof npc.soapbox === 'object') ? npc.soapbox : null,
+    // CARL-SELF-1 — the NPC's authored self-knowledge. `selfConcept` grounds the live
+    // LLM voice (surfaced in the prompt below); `species` is the machine-checkable
+    // nature. Both null for most NPCs → prompt + decision byte-unchanged.
+    selfConcept: (typeof npc.selfConcept === 'string' && npc.selfConcept.trim())
+      ? String(npc.selfConcept) : null,
+    species: (typeof npc.species === 'string' && npc.species.trim())
+      ? String(npc.species).toLowerCase() : null
   };
 }
 
@@ -179,7 +234,7 @@ function buildPromptVerbose(ctx) {
     ? `\nFaction: ${ctx.factionStanding.factionId} (player reputation: ${ctx.factionStanding.playerReputation}, faction hostility: ${ctx.factionStanding.hostility})`
     : '';
 
-  return `You are ${ctx.name}, a ${ctx.archetype}.
+  return `You are ${ctx.name}, a ${ctx.archetype}.${ctx.selfConcept ? `\nWho you are: ${ctx.selfConcept}` : ''}
 Personality: ${traits}.
 Trust toward this person: ${ctx.trust}/10.
 Mood: ${ctx.mood}.${factionInfo}
@@ -225,7 +280,7 @@ function buildPromptCompressed(facts, rumors, ctx) {
     relBlock = `\nRel:\n${relLines}\n`;
   }
 
-  return `${ctx.name},${ctx.archetype}.${traits}.T${ctx.trust}/10.${MOOD_CODES[ctx.mood] || ctx.mood}.${factionLine}
+  return `${ctx.name},${ctx.archetype}.${traits}.T${ctx.trust}/10.${MOOD_CODES[ctx.mood] || ctx.mood}.${factionLine}${ctx.selfConcept ? `\nSelf:"${ctx.selfConcept}"` : ''}
 K:
 ${knowledgeBlock || '-'}
 ${relBlock}P:"${ctx.playerInput}"

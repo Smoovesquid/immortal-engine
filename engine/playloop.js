@@ -5792,6 +5792,21 @@ function dialogueAskNarration(outcome, world) {
       // help rallying his fellow chicken-folk"). Cause-aware, so the same path
       // serves future zealots (priests, cultists, cranks).
       const cause = String(outcome?.soapboxCause || '').trim() || 'his cause';
+      // CARL-SELF-1 — an identity question ("are you a chicken?", "what are you?") to
+      // a creature that KNOWS what it is: it AFFIRMS with pride instead of the generic
+      // cause-preach. Still eager/preachy (he's a zealot) — but it says YES. species-
+      // parameterized, so the same seam serves any self-aware creature-NPC. When
+      // selfAffirm rides without a species (a selfConcept-only NPC), we fall through to
+      // the generic evangelize below rather than fabricate a nature we can't name.
+      const species = String(outcome?.selfSpecies || '').trim();
+      if (outcome?.selfAffirm && species) {
+        return V(`selfAffirm:${species}:${cause}`, [
+          `${name} draws himself up, absurd and magnificent. "Am I a ${species}? I am THE ${species} — the awakened one, living proof of everything I preach about ${cause}. The form the rest of you only aspire to."`,
+          `"You SEE it." ${name}'s eyes shine. "Yes — I am a ${species}. Not ashamed. Proud. I am what ${cause} makes of the worthy, and I mean to wake the rest of you to it."`,
+          `${name} spreads his arms as though showing off plumage. "A ${species}? I am a ${species}, and glad of it. Look at me and understand ${cause} — the thesis made flesh."`,
+          `"Ask it plainly, I answer plainly." ${name} lifts his chin. "I am a ${species}. The first to know it, the first to say it aloud — and I will not do it alone. Stand with me, and we will wake the others to ${cause}."`
+        ]);
+      }
       return V(`evangelize:${cause}`, [
         `${name}'s whole face opens — finally, someone who'll listen. "You want to know about ${cause}? Sit. It is the one thing in this town that truly matters."`,
         `${name} leans in, eyes bright and urgent, the words already tumbling out — ${cause}, and why it changes everything, and how few will let themselves see it.`,

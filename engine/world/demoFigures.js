@@ -144,6 +144,14 @@ export const DEMO_FIGURES = [
         'duck', 'ducks', 'pigeon', 'pigeons',
       ],
     },
+    // CARL-SELF-1 — Carl IS a chicken and KNOWS it (Tim canon 2026-07-07: "He's a
+    // chicken... Yes, he knows what he is"). `species` is the machine-checkable
+    // nature the identity matcher keys on (matchesSelfIdentity) and the deterministic
+    // proud affirmation is built from; `selfConcept` is the authored line that grounds
+    // the live LLM voice. Both OPTIONAL — an NPC without them is byte-unchanged (U642).
+    species: 'chicken',
+    selfConcept: 'He is himself a chicken — the awakened fowl, living proof of his own '
+      + 'thesis on avian supremacy — and he declares it with pride when asked what he is.',
     note: 'Aldermere (slice seed opening town). Obsessive pseudo-scholar. RAG corpus: 8k-word avian-supremacy manifesto.',
     nodeSelector: SELECTORS.aldermere,
   },
@@ -185,6 +193,12 @@ function buildFigureNpc(figure) {
     // (and the eager opener) can see it. Absent on figures without one → the NPC
     // behaves exactly as before. Frozen shape: { cause, eager, topics:[...] }.
     ...(figure.soapbox ? { soapbox: figure.soapbox } : {}),
+    // CARL-SELF-1 — the authored self-knowledge rides onto the live NPC. `species`
+    // feeds the identity matcher + the deterministic proud affirmation; `selfConcept`
+    // grounds the live LLM voice (buildNpcContext → prompt). Absent on figures without
+    // them → the NPC is byte-unchanged (U642).
+    ...(figure.species ? { species: figure.species } : {}),
+    ...(figure.selfConcept ? { selfConcept: figure.selfConcept } : {}),
     // Mark provenance so a later pass / debug can tell authored figures apart from
     // minted NPCs without re-matching the table.
     authoredFigure: figure.key,

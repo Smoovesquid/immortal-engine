@@ -8,7 +8,7 @@ import { addFact } from '../ledger.js';
 import { applyDeltas } from '../effectsCore.js';
 import { filterRumors } from './perspectiveFilter.js';
 import { appendCanonEvent } from '../csl/canonLog.js';
-import { buildNpcContext, fallbackRules, findCachedDecision, matchesSoapbox } from './npcBrain.js';
+import { buildNpcContext, fallbackRules, findCachedDecision, matchesSoapbox, matchesSelfIdentity } from './npcBrain.js';
 import { extractMemory } from './npcMemory.js';
 import { exitsFrom } from '../map/mapState.js';
 import { classifyPlaceQuery, resolvePlaceFact } from '../world/placeQuery.js';
@@ -846,9 +846,18 @@ export function askNpc(world, text) {
   // trust-gated branches below, so the personal vault stays shut. Deterministic:
   // pure string match, no rng; the evangelize turn carries trustDelta 0 (see
   // below), so preaching the cause can never ladder trust up to crack a secret.
+  // CARL-SELF-1 — an identity question about the NPC's OWN nature ("are you a
+  // chicken?", "what are you?"). Distinct from a soapbox TOPIC ask ("tell me about
+  // chickens"): a creature that KNOWS what it is answers with pride. It fires the
+  // SAME 'evangelize' mode (so SOAPBOX-1's mechanics — and U637b — are byte-unchanged)
+  // but flags selfAffirm so the voice layer swaps the generic cause-preach for a proud
+  // YES. Gated on authored species/selfConcept; absent → never fires (U642). The
+  // secret guard mirrors soapbox: an identity word that IS a personal secret falls
+  // through to the trust ladder, so the vault stays shut.
+  const identityHit = matchesSelfIdentity(npc, text) && !(topic && secrets.has(topic));
   const soapboxHit = Boolean(npc.soapbox) && matchesSoapbox(npc.soapbox, text) && !(topic && secrets.has(topic));
 
-  if (soapboxHit) {
+  if (soapboxHit || identityHit) {
     // The cause is preached through the corpus/voice, not a discrete fact.
     mode = 'evangelize';
     factId = null;
@@ -1030,6 +1039,13 @@ export function askNpc(world, text) {
       // mode === 'evangelize'. Lets the (deterministic + server) voice layer
       // preach the specific cause. Empty for every non-soapbox turn.
       soapboxCause: mode === 'evangelize' ? String(npc.soapbox?.cause || '') : '',
+      // CARL-SELF-1 — when the evangelize turn was triggered by an identity question
+      // ("are you a chicken?", "what are you?"), the voice layer affirms the NPC's
+      // nature with PRIDE instead of preaching the generic cause. selfSpecies carries
+      // the machine nature the affirmation is built from. Both empty/false on every
+      // non-identity turn — the generic evangelize (and every other mode) is unchanged.
+      selfAffirm: mode === 'evangelize' && identityHit === true,
+      selfSpecies: (mode === 'evangelize' && identityHit === true) ? String(npc.species || '') : '',
       // Claim context — present only when mode === 'claim_recall'.
       // Contains the NPC's distorted belief about the subject; the voice layer
       // uses this to render their MAP of the event, not the engine's truth.

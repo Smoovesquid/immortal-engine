@@ -68,3 +68,65 @@ Moved out of "untracked" above.
 **2026-07-05 · RECEIVED from Tim (GLB, dropped in `public/map/assets/`):** corpse_assemblage ·
 corpse_remains_red — death/aftermath set pieces (combat scenes, the Underworld someday). Wiring into
 the renderer = a TT lane packet (loader + scale/anchor pass); untracked until that lane claims them.
+
+## Interior furniture — the 39 engine types (Tim's ask 2026-07-07: real 3D minis, not placeholders) 🎯
+*The house-builder places these and the engine's room-detailer scatters them; today only barrel/chest/
+dresser/bed have (crude procedural) minis — the other 35 draw as 2D placeholder icons. Source of truth
+= `public/map/furniture.json` (the `type` id is the wiring key). **Wiring contract per mini:** author in
+FEET at real scale · **Y-up** · origin at the BASE CENTRE (feet on the ground plane) · export GLB named
+by `type`. I add each `type`'s true-size + true-axis to `PROP_TRUE_SIZE` (figures3d.js) and prefer the
+GLB in `buildPropMini` (the same graceful-fallback path `buildCorpseMini` already uses). "True axis" =
+the dimension the map scales to real size (height for uprights; LENGTH for long low pieces; FOOTPRINT
+diameter for round things). ✅ = already has a placeholder mini to replace.*
+
+| `type` | name | target true size (ft) | true axis |
+|---|---|---|---|
+| bed | bed ✅ | 7 long | length |
+| bedding | straw bedding | 6 long | length |
+| nightstand | nightstand | 2 tall | height |
+| wardrobe | wardrobe | 6.5 tall | height |
+| dresser | dresser ✅ | 4.2 tall | height |
+| shelf | shelves | 6 tall | height |
+| chair | chair | 3 tall | height |
+| bench | bench | 5 long | length |
+| stool (via chair) | — | — | — |
+| table | table | 4 across | footprint |
+| longtable | long table | 9 long | length |
+| counter | counter | 5 long | length |
+| chest | chest ✅ | 3.5 long (2.2 tall) | length |
+| crate | crate | 3 cube | height |
+| barrel | barrel ✅ | 3.2 tall | height |
+| sack (via crate) | — | — | — |
+| rug | rug | 6 long | length (flat) |
+| runner | aisle runner | 8 long | length (flat) |
+| hearth | hearth | 5 wide | width |
+| firepit | fire pit | 3.5 ring | footprint |
+| brazier | brazier | 3 tall | height |
+| cookpot | cooking pot | 1.5 tall | height |
+| candles | candles | 1 tall | height |
+| lantern | lantern | 1.5 tall | height |
+| loom | loom | 6 tall | height |
+| rack | weapon rack | 5 tall | height |
+| anvil | anvil | 2.5 tall | height |
+| altar | altar | 3.5 tall | height |
+| font | font | 3.5 tall | height |
+| fountain | fountain | 6 across | footprint |
+| basin | stone basin | 2.5 tall | height |
+| well | well | 4 across | footprint |
+| lectern | lectern | 4 tall | height |
+| pew | pew | 6 long | length |
+| statue | statue | 7 tall | height |
+| pillar | stone pillar | 10 tall | height |
+| throne | throne | 5 tall | height |
+| sarcoph | sarcophagus | 7 long | length |
+| stall | market stall | 7 tall (6×4 base) | height |
+| bones | bone pile | 3 across | footprint (low) |
+| rubble | rubble | 4 across | footprint (low) |
+| web | web mass | 5 span | footprint |
+| eggsac | egg sac | 2.5 tall | height |
+
+*Priority tiers if batching: (1) the domestic core a cottage always has — bed✅, table, chair, chest✅,
+hearth, shelf, barrel✅, crate, stool, dresser✅, rug. (2) tavern/hall — longtable, bench, counter,
+wardrobe, brazier. (3) chapel/temple — altar, font, pew, lectern, statue, pillar, candles. (4) dungeon/
+decay — sarcoph, bones, rubble, web, eggsac, anvil, loom, rack. Note `stall`/`well` overlap the
+Settlement/Architecture sections above; one mini serves both.*

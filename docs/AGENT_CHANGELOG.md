@@ -3497,3 +3497,24 @@ other agents. (none active)
 - Ladder GREEN: suite 10915/0, corpus 135/135, screen truth 7/7 (chicken is 3D-only — 2D goldens
   unmoved), determinism U19/21/22/27/30 green. LIVE receipt (aldermere, go outside, diorama zoom):
   __rendScaleAudit shows Carl's mini at heightWu 0.427 among 1.83 (6-ft) villagers — a chicken among men.
+
+## 2026-07-07 — Basecamp — CARL-SELF-1 → v0.33.2 build 135 "and glad of it" — Carl owns being a chicken
+
+- Tim canon ("Yes, he knows what he is"): Carl affirms he IS a chicken, proudly. Opus worker
+  (`80cb7ad2` diag + `5185eace` fix → integrated `093f556b`+`b8b31688`; U641–U642; suite 10914→10924/0).
+- BEFORE: "are you a chicken?" → preached the cause but never affirmed; "what are you?" → deflected.
+  AFTER: "A chicken? I am a chicken, and glad of it. Look at me and understand avian supremacy — the
+  thesis made flesh." (then recruits you, still the zealot).
+- HOW: Carl gains authored `species:'chicken'` + `selfConcept` (demoFigures, both optional → no-op for
+  other NPCs); `matchesSelfIdentity()` (npcBrain) precisely catches identity frames ("are you a
+  chicken/bird/hen", end-anchored "what are you") while EXCLUDING foils/trade ("are you a duck", "are
+  you selling chickens", "what are you doing"); selfConcept grounds BOTH LLM prompt builders; an
+  identity hit fires the SAME evangelize mode flagged selfAffirm → a proud species affirmation in the
+  playloop evangelize voice. fallbackRules untouched.
+- Scope flags (both sound): the affirmation WORDS live in playloop.js dialogueAskNarration (where
+  SOAPBOX-1 put the evangelize prose; not in the brief's do-not-touch, 15-line scoped edit) · corpus
+  touched per brief step 5 — ONE additive first-person chunk (`carl_self_awakened_1`) so the live LLM
+  grounds "yes I am one"; Tim's 8k-word manifesto otherwise untouched.
+- SOAPBOX-1 intact (U637–U640 green; "tell me about chickens" unchanged; secrets still gated).
+  Determinism: authored data + prompt + narration only, not in worldHash; U19/21/22/27/30 green;
+  NO WORLD_VERSION bump. playtest:quick 50/0.

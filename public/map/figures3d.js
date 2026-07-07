@@ -148,6 +148,43 @@ export function buildArchetypeFigure(THREE, archetype = 'humanoid', opts = {}) {
   return g;
 }
 
+// CARL-FOWL (Tim canon 2026-07-07: "he's a chicken"). A small procedural fowl
+// mini for creature-NPCs, in the same solid-primitive idiom as the figures — a
+// Rhode-Island-red hen: ovoid body, small head, red comb + wattle, a beak, a
+// fanned tail, two yellow legs. Feet at y≈0, facing +z (repositionEntities never
+// rotates minis, so a fixed forward is fine). Sized by the sheet-scale law like
+// any mini: CHICKEN_HEIGHT_WU is its TRUE height (authored in feet → wu). Built
+// at a natural LOCAL scale; measureAuthoredSize normalizes it, so proportions
+// are what matter here, not the absolute local size. (CHICKEN_HEIGHT_WU is
+// defined below, beside WU_PER_FT — it can't reference that constant up here.)
+export function buildChickenMini(THREE) {
+  const g = new THREE.Group();
+  g.add(baseRing(THREE, PALETTE.beast, false));
+  const feather = std(THREE, 0xa8542a, 0x2a1206, 0.06, { rough: 0.9 });   // hen reddish-brown
+  const red = std(THREE, 0xc0392b, 0x3a0f0a, 0.25, { rough: 0.6 });        // comb + wattle
+  const yellow = std(THREE, 0xe0a020, 0x4a3208, 0.2, { rough: 0.5 });      // beak + legs
+  const dark = std(THREE, 0x7a3d1e, 0x1f0d05, 0.05, { rough: 0.9 });       // tail feathers
+  // body — ovoid, leaning slightly forward
+  const body = new THREE.Mesh(new THREE.SphereGeometry(0.5, 16, 12), feather);
+  body.scale.set(0.9, 0.82, 1.15); body.position.set(0, 0.62, 0); body.castShadow = true; g.add(body);
+  // head
+  const head = new THREE.Mesh(new THREE.SphereGeometry(0.27, 14, 12), feather);
+  head.position.set(0, 1.02, 0.4); head.castShadow = true; g.add(head);
+  // comb — a little row of three red bumps on top of the head
+  for (let i = -1; i <= 1; i++) { const c = new THREE.Mesh(new THREE.SphereGeometry(0.09, 8, 6), red); c.position.set(0, 1.24, 0.4 + i * 0.11); g.add(c); }
+  // wattle — a small red drop under the beak
+  const wattle = new THREE.Mesh(new THREE.SphereGeometry(0.08, 8, 6), red); wattle.position.set(0, 0.86, 0.58); g.add(wattle);
+  // beak — a small cone pointing forward (+z)
+  const beak = new THREE.Mesh(new THREE.ConeGeometry(0.1, 0.24, 8), yellow);
+  beak.rotation.x = Math.PI / 2; beak.position.set(0, 1.0, 0.68); g.add(beak);
+  // tail — three flattened feathers fanned up and back (−z)
+  for (let i = -1; i <= 1; i++) { const t = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.5, 0.22), dark); t.position.set(i * 0.12, 0.78, -0.5); t.rotation.x = -0.7; t.rotation.z = i * 0.18; t.castShadow = true; g.add(t); }
+  // legs — two thin yellow shanks
+  for (const sx of [-0.16, 0.16]) { const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.045, 0.42, 6), yellow); leg.position.set(sx, 0.21, 0.06); g.add(leg); }
+  g.userData.archetype = 'chicken';
+  return g;
+}
+
 // TT-PROPS (docs/briefs/TT-WORLD-paper-world.md Stage 3) — palette + rough
 // proportions for the standing-prop minis. Kept intentionally plain: "simple
 // solid pieces" per the brief, not a fifth rigged figure — a prop is a single
@@ -506,6 +543,9 @@ export function phaseFromKey(key) {
 export const WU_PER_FT = 0.3048;
 const ftWu = (ft) => ft * WU_PER_FT;
 export const FIGURE_HEIGHT_WU = { small: ftWu(3.5), medium: ftWu(6) }; // authored ft → wu (metres)
+// CARL-FOWL — a standing hen's true height (~1.4 ft), the size Carl's chicken
+// mini draws at through the same sheet-scale law the villagers use.
+export const CHICKEN_HEIGHT_WU = ftWu(1.4);
 
 /**
  * figureHeightWu(speciesLike) -> wu (metres; authored in feet, see WU_PER_FT).

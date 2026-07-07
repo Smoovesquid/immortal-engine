@@ -3480,3 +3480,20 @@ other agents. (none active)
   whether Carl explicitly owns "their prophet" or is literally a fowl.
 - Also live this session (dev tool, separate commits): house-builder door/window select-on-place +
   live width readout (b— fix), room resize via corner handles (`f868c0ec`).
+
+## 2026-07-07 — Basecamp — CARL-FOWL → v0.33.1 build 134 "Carl is a chicken" — the canon call, rendered
+
+- Tim's canon call (after the SOAPBOX-1 lore flag): "He's a chicken. His mini should be a chicken and
+  appropriately sized." Renderer-only, no engine gate.
+- `buildChickenMini(THREE)` — a procedural Rhode-Island-red hen in the figures' solid-primitive idiom
+  (ovoid body, head, red comb + wattle, beak, fanned tail, two yellow legs), `figures3d.js`. True size
+  `CHICKEN_HEIGHT_WU = 1.4 ft → 0.42672 wu` (metric, through the UNIT-CLASH-1 WU_PER_FT seam).
+- Wiring: `render3d.js` NPC loop branches on `npcCreatureKind(npc)` — a renderer-side id table
+  (`{figure_carl:'chicken'}`) off the people-record id (drawModel carries npc.id), so Carl draws the
+  chicken mini at chicken height while every other villager stays the 6-ft humanoid. Extensible table;
+  promote to an engine `creatureKind` tag if the creature-NPC set grows.
+- Bug caught + fixed in the same change: `CHICKEN_HEIGHT_WU` was first placed ABOVE `WU_PER_FT`'s
+  definition (TDZ) → broke the whole figures3d import (U566/567 red); moved beside WU_PER_FT, 14/0.
+- Ladder GREEN: suite 10915/0, corpus 135/135, screen truth 7/7 (chicken is 3D-only — 2D goldens
+  unmoved), determinism U19/21/22/27/30 green. LIVE receipt (aldermere, go outside, diorama zoom):
+  __rendScaleAudit shows Carl's mini at heightWu 0.427 among 1.83 (6-ft) villagers — a chicken among men.

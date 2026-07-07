@@ -30,7 +30,19 @@ const TILE_WU = 40; // world units per node tile — keeps the 3D geography to s
 // MR-3b's wild-feature mini builder (trees/boulders/brush/deadfall/stumps).
 // Pure helpers; they receive the lazily-imported THREE, so this stays a
 // zero-cost static import.
-import { buildArchetypeFigure, buildPropMini, buildWildMini, buildCorpseMini, breatheMinis, phaseFromKey, miniSheetScale, figureHeightWu, propTrueSize, measureAuthoredSize, wildTrueSize, measureAuthoredFootprint } from './figures3d.js';
+import { buildArchetypeFigure, buildPropMini, buildWildMini, buildCorpseMini, breatheMinis, phaseFromKey, miniSheetScale, figureHeightWu, propTrueSize, measureAuthoredSize, wildTrueSize, measureAuthoredFootprint, buildChickenMini, CHICKEN_HEIGHT_WU } from './figures3d.js';
+
+// CARL-FOWL (Tim canon 2026-07-07): which settlement-NPCs render as a creature
+// mini instead of the humanoid figure, by their stable engine id. Carl is a
+// chicken (a failed sculptor turned avian-supremacy demagogue who IS one of his
+// beloved fowl). Renderer-only lookup off the people-record id (drawModel.js
+// carries npc.id) — no engine field to thread. Extend this table for future
+// creature-NPCs (or promote to an engine `creatureKind` tag if the set grows).
+const NPC_CREATURE_KIND = { figure_carl: 'chicken' };
+function npcCreatureKind(npc) {
+  const k = NPC_CREATURE_KIND[String(npc?.id || '')];
+  return k || null;
+}
 
 // World-asset builders (terrain, dirt roads, settlements, woods, the chapel ruin) —
 // the SAME pure-view module the standalone asset lab (map-proto/asset-lab.html) uses,
@@ -770,12 +782,16 @@ export async function mountSlice3D(container, sceneData, opts = {}) {
       for (const npc of (tok.people || [])) {
         const p = entityScenePos(npc.wx, npc.wy);
         const y = heightAt(p.x, p.z);
-        const fig = buildArchetypeFigure(THREE, 'humanoid', {});
+        // CARL-FOWL — a creature-NPC (Carl the chicken) draws its own mini at its
+        // own true size; everyone else is the 6-ft humanoid villager.
+        const creatureKind = npcCreatureKind(npc);
+        const fig = creatureKind === 'chicken' ? buildChickenMini(THREE) : buildArchetypeFigure(THREE, 'humanoid', {});
         fig.position.set(p.x, y + 0.02, p.z);
         scene.add(fig);
         // REND-SCALE-1 — villagers default to a 6-ft medium person (their map
-        // records carry no species); the sheet transform does the rest.
-        const nHeightWu = figureHeightWu(null);
+        // records carry no species); the sheet transform does the rest. A
+        // creature-NPC uses its own true height (a hen ≈ 1.4 ft, not 6).
+        const nHeightWu = creatureKind === 'chicken' ? CHICKEN_HEIGHT_WU : figureHeightWu(null);
         const nAuthored = measureAuthoredSize(THREE, fig, 'y');
         const rec = {
           group: fig, baseY: y + 0.02, baseScale: 1, rate: 1.3, phase: phaseFromKey(npc.id || npc.name), bob: 0.04, defeated: false, wx: npc.wx, wy: npc.wy, yOff: 0.02,

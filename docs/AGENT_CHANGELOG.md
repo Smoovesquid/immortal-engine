@@ -3455,3 +3455,28 @@ other agents. (none active)
   new" boots clean; "Keep my character" dismisses; 3 back-to-back save-present boots all clean.
 - FLAGGED, out of scope: dev-only Export/Import JSON still uses `window.prompt` (v1.js:2497/2501) —
   same blocking-modal class, NOT the boot path, not the reported wedge; left for a later dev-UI pass.
+
+## 2026-07-07 — Basecamp — SOAPBOX-1 → v0.33.0 build 133 "the zealot holds forth" — Carl preaches his cause (Tim's playtest)
+
+- Tim's Carl playtest (3 symptoms, one root): a zealot deflected his own obsession. Tim approved the
+  soapbox design over "just raise trust." Opus worker (`3fa1ca3d` diag + `54e76f35` fix → integrated
+  `7042a032`+`11595746`; U637–U640, 10 subtests; suite 10905→10915/0).
+- REFINED root cause (worker, during repro): Carl's conversationState.trustLevel is actually 5 — not
+  the <4 gate. His cause lives in the carl_manifesto CORPUS, not structured knowledgeGraph facts, so
+  every cause-ask fell through commonKnowledgeAnswer → null → deflected. So evangelize fires from
+  askNpc even with NO matching fact.
+- THE SOAPBOX: authored figures get `soapbox:{topics,cause,eager}`; when the player's input hits the
+  topics, npcBrain returns approach:'evangelize'/mood:'fervent' and opens PUBLIC sharing regardless of
+  trust — PERSONAL secrets stay trust-gated (U639). Off-topic → the trust ladder, unchanged (U638). The
+  opener reflects eagerness for a soapbox NPC (U640). Reusable for any future zealot (priest/cultist/crank).
+- Determinism: evangelize carries trustDelta 0 (never mutates trust); per-turn decision, not in worldHash;
+  U19/21/22/27/30 green; NO WORLD_VERSION bump. playtest:quick clean.
+- Worker honesty notes: (1) rendering the new mode needed sibling seams in playloop.js beyond
+  openerByManner (additive: one dialogueAskNarration case, one askBeatOutcome clause, a soapboxCause
+  field) — reviewed, sound. (2) fixed a PRE-EXISTING stale-mood cache quirk it exposed (a later same-turn
+  off-topic deflect wore a stale 'fervent' mood) — presentation-only in dialogue.js, canon/replay untouched.
+- LORE FLAG raised to Tim (open): "are you a chicken?" → Carl engages the cause eagerly WITHOUT claiming
+  or denying he's a chicken (manifesto frames him as a human PROPHET of avian supremacy). Tim's canon call
+  whether Carl explicitly owns "their prophet" or is literally a fowl.
+- Also live this session (dev tool, separate commits): house-builder door/window select-on-place +
+  live width readout (b— fix), room resize via corner handles (`f868c0ec`).

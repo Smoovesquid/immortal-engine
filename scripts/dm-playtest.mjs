@@ -63,7 +63,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { newWorld } from '../engine/state.js';
-import { beginAdventure, playerMove, carriesInteriorMovementIntent } from '../engine/playloop.js';
+import { beginAdventure, playerMove, carriesInteriorMovementIntent, detectObjectAttackIntent } from '../engine/playloop.js';
 import { isMetaQuestion, handleMetaQuestion } from '../engine/grace/gracefulAdjudication.js';
 import { normalizeManifest, normalizePack } from '../engine/rulesets.js';
 import { DEMO_SEED } from '../engine/world/demoRegion.js';
@@ -232,7 +232,7 @@ async function tryAiNarration(world, baseNarration, outcome) {
 async function playTurn(world, text) {
   const inCombat = Boolean(world.combat?.active);
   const inDialogue = Boolean(world.scene?.dialogue?.npcId);
-  if (!inCombat && !inDialogue && isMetaQuestion(text) && !carriesInteriorMovementIntent(world, text)) {
+  if (!inCombat && !inDialogue && isMetaQuestion(text) && !carriesInteriorMovementIntent(world, text) && !detectObjectAttackIntent(world, text)) {
     const answer = handleMetaQuestion(text, world);
     if (answer) return { world, dm: answer, mechanics: '', turn: false, route: 'meta' };
   }

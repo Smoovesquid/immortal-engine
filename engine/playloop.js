@@ -1339,7 +1339,11 @@ function playerMoveCore(world, packsById, text, dqIntent) {
   // handleMetaQuestion (which answers the sheet + folds a survey), not fall through
   // to the explore path where the sheet ask is dropped.
   const bareLookAround = META_LOCATION.test(String(text || '').toLowerCase()) && !isSheetStateAsk(text);
-  if (!w.combat?.active && !w.scene?.dialogue && isMetaQuestion(text) && !declaredNpcViolence && !declaredSelfHarm && !npcAddressedRecap && !bareLookAround) {
+  // DM-GATE-1a — a declared swing at an OBJECT ("I attack the chest — what's my roll?")
+  // must reach the object damage-state path, not be answered as raw attack-math. Mirrors
+  // declaredNpcViolence: a declared action beats a meta query.
+  const declaredObjectAttack = !w.combat?.active && !w.scene?.dialogue && detectObjectAttackIntent(w, text);
+  if (!w.combat?.active && !w.scene?.dialogue && isMetaQuestion(text) && !declaredNpcViolence && !declaredObjectAttack && !declaredSelfHarm && !npcAddressedRecap && !bareLookAround) {
     const metaAnswer = handleMetaQuestion(text, w);
     if (metaAnswer) {
       return { world: w, output: { narration: `Wizard: ${metaAnswer}`, mechanics: '' } };
@@ -1722,7 +1726,9 @@ function playerMoveCore(world, packsById, text, dqIntent) {
     // receives dqIntent (see the function signature comment), so it always
     // recomputes fresh here for its OWN (text, w).
     const earlyDqKind = dqIntent !== undefined ? dqIntent : directQuestionIntent(text, w);
-    if (earlyDqKind?.kind === 'rules') {
+    // DM-GATE-1a — a rules question RIDING a declared object attack ("I attack the pallet —
+    // does it take damage?") must resolve the swing, not get lectured on capabilities.
+    if (earlyDqKind?.kind === 'rules' && !declaredObjectAttack) {
       return { world: w, output: { narration: `Wizard: ${answerCapability(w)}`, mechanics: 'observe only — no roll, state unchanged' } };
     }
     const earlyUngroundedRef = ungroundedNpcReferentForText(w, text, { requirePersonSignal: true });
@@ -2505,7 +2511,8 @@ function playerMoveCore(world, packsById, text, dqIntent) {
       // receives dqIntent (see the function signature comment), so it always
       // recomputes fresh here for its OWN (text, w) — proven by U378.
       const dqKind = dqIntent !== undefined ? dqIntent : directQuestionIntent(text, w);
-      if (dqKind?.kind === 'rules') {
+      // DM-GATE-1a — a declared object attack beats a rules-capability answer here too.
+      if (dqKind?.kind === 'rules' && !declaredObjectAttack) {
         return { world: w, output: { narration: `Wizard: ${answerCapability(w)}`, mechanics: 'observe only — no roll, state unchanged' } };
       }
       if (dqKind?.kind === 'referent-followup') {
@@ -3773,13 +3780,21 @@ function playerMoveCore(world, packsById, text, dqIntent) {
   // fire?" does NOT trip arson. Mirrors the broadened FIRE_RE in llmPhysics.js.
   const PHYSICS_VERB_RE = /\b(examine|inspect|search|look at|check|rip|break|smash|tear|kick|punch|shatter|take|grab|pick up|steal|light|ignite|set fire|torch|kindle|burn|hide\s+behind|duck\s+behind|crouch\s+behind|brace\s+against|shelter\s+behind|press\s+against|take\s+cover)\b|\bset\b[^.!?]*\b(?:on fire|ablaze|alight|aflame|burning)\b/i;
   const FORCE_VERB_RE   = /\b(rip|break|smash|tear|kick|punch|shatter)\b/i;
-  if (PHYSICS_VERB_RE.test(String(text || ''))) {
+  // DM-GATE-1a — a weapon swing at a present OBJECT ("I attack the chest with my blade")
+  // routes through this same graded force resolver: hit/damage vs the object's material
+  // hardness → mutate its damage-state. Never combat, never an enemy, never a persistent
+  // HP number (that's DM-GATE-1b). Gated to a furniture target with no present NPC.
+  const objectAttack = !w.combat?.active && !w.scene?.dialogue && !declaredNpcViolence && detectObjectAttackIntent(w, text);
+  if (PHYSICS_VERB_RE.test(String(text || '')) || objectAttack) {
     const detection = detectPhysicalInteraction(w, text);
     const nameMatch = (detection.matches || []).some(m => m.match === 'name' || m.match === 'part');
     if (detection.detected && nameMatch) {
-      const physics = evaluatePhysicsSync(w, text);
+      // Attack verbs aren't recognized by the physics ruling as damaging; normalize to a
+      // force verb so the swing yields graded damage-state deltas against the material.
+      const physicsText = objectAttack ? String(text || '').replace(OBJECT_ATTACK_VERB_RE, 'break') : String(text || '');
+      const physics = evaluatePhysicsSync(w, physicsText);
       if (physics && physics.plausible) {
-        const isForce = FORCE_VERB_RE.test(String(text || ''));
+        const isForce = FORCE_VERB_RE.test(String(text || '')) || objectAttack;
         let appliedDeltas = physics.deltas ? [...physics.deltas] : [];
         let mechStr;
         let physicsDesc = physics.description;
@@ -3813,6 +3828,14 @@ function playerMoveCore(world, packsById, text, dqIntent) {
               `You swing hard. The ${targetName} shudders but doesn't give.`
             ];
             physicsDesc = FAILURE_LINES[check.rawDie % FAILURE_LINES.length];
+          }
+
+          // DM-GATE-1a — for a weapon swing, replace the generic/pry physics prose with a
+          // weapon- and material-aware line so a blade reads as a blade (damage-state, no numbers).
+          if (objectAttack) {
+            const targetName = detection.matches.find(m => m.type === 'furniture')?.name || detection.matches[0]?.name || 'object';
+            const weaponName = detection.matches.find(m => m.type === 'item')?.name || null;
+            physicsDesc = objectAttackLine(check.outcome, targetName, weaponName, physics.material);
           }
 
           // Noise: rulings library already computed noiseBy for this material;
@@ -7774,7 +7797,10 @@ const TAKE_BARE_PRONOUN_RE = /\b(?:take|grab|pocket|claim|stow|keep)\s+(?:it|tha
 // EXCLUDES take/pickup/pocket/read (those keep this gate) and talk/ask (a different
 // lane). "set … fire|ablaze|alight" is a two-word arson phrase, so a bare "set it down"
 // stays a pure take. GENUINE compound-arson/throw evidence (GATE 2026-07-04-2/-3).
-const TAKE_THEN_ACTION_RE = /\b(?:throw|hurl|fling|toss|lob|pitch|chuck|sling|smash|strike|swing|slam|bash|break|shatter|light|ignite|torch|kindle|burn|pour|douse|splash|drop|use)\b|\bset\b[^.!?]*\b(?:fire|ablaze|alight|aflame|burning)\b/i;
+// DM-GATE-1a — the object-attack verbs (attack/hit/slash/stab/hack/chop/cut) join this
+// action family: "attack the chest WITH my Worn Blade" means the blade-take is a
+// precondition and the swing is the resolution — yield so the object-damage path owns it.
+const TAKE_THEN_ACTION_RE = /\b(?:throw|hurl|fling|toss|lob|pitch|chuck|sling|smash|strike|swing|slam|bash|break|shatter|attack|hit|slash|stab|hack|chop|cut|light|ignite|torch|kindle|burn|pour|douse|splash|drop|use)\b|\bset\b[^.!?]*\b(?:fire|ablaze|alight|aflame|burning)\b/i;
 const TAKE_STOPWORDS = new Set(['the', 'and', 'its', 'his', 'her', 'with', 'for', 'from', 'of', 'a', 'an', 'pair', 'handful', 'length', 'coil', 'stub', 'nub']);
 
 // "a folded letter, its seal broken" → "folded letter" (display name for the pack).
@@ -10338,6 +10364,48 @@ const UNAMBIGUOUS_VIOLENCE = /\b(attack|kill|murder|assault|stab|slash|punch|kic
 
 // (H-92) Inanimate strike targets — a swing "at the post/dummy/wall" is not an NPC attack.
 const INANIMATE_STRIKE_TARGET_RE = /\b(?:post|pell|dummy|dummies|sack|sandbag|stake|beam|board|plank|log|stump|fence|crate|barrel|pole|tree|wall)\b/i;
+
+// DM-GATE-1a — weapon-attack verbs aimed at an OBJECT. Kept separate from the NPC
+// ANY_VIOLENCE set: these route to the object hardness/damage-state path, never combat.
+const OBJECT_ATTACK_VERB_RE = /\b(attack|hit|slash|stab|hack|chop|cut|swing)\b/i;
+
+// DM-GATE-1a — is this a weapon swing at a present OBJECT (a furniture piece)? Such a
+// swing is object DAMAGE-STATE resolution, not combat and not a meta answer: it must
+// reach the hardness/force path (engine/playloop.js ~3776), never be swallowed by the
+// meta gate, never mint an enemy. True iff an attack verb targets a real furniture piece
+// HERE (by name/part — not a mere room-notes echo, not the wielded weapon) AND no present
+// NPC is the target (a declared NPC attack is combat — detectAttack*/detectPhysicalAssault
+// own it). This packet adds NO persistent object HP/AC; that is DM-GATE-1b.
+export function detectObjectAttackIntent(world, text) {
+  const t = String(text || '').trim();
+  if (!t) return false;
+  if (world?.combat?.active || world?.scene?.dialogue) return false;
+  if (!OBJECT_ATTACK_VERB_RE.test(t)) return false;
+  const det = detectPhysicalInteraction(world, t);
+  const furnitureTarget = (det?.matches || []).some(m => m.type === 'furniture' && (m.match === 'name' || m.match === 'part'));
+  if (!det?.detected || !furnitureTarget) return false;
+  // A declared attack on a PRESENT NPC is combat, never object-damage — defer to it.
+  if (detectPhysicalAssault(world, t) || detectAttackBeginIntent(world, t) || detectAttackAnyIntent(world, t)) return false;
+  return true;
+}
+
+// DM-GATE-1a — weapon-aware, material+outcome-aware object-attack narration. Replaces the
+// generic physics "you interact with…"/pry line so a blade reads as a blade. DAMAGE-STATE
+// prose, never numbers, never "object HP".
+function objectAttackLine(outcome, objectName, weaponName, material) {
+  const obj = String(objectName || 'object').toLowerCase();
+  const wpn = weaponName ? `Your ${weaponName}` : 'Your blow';
+  const M = {
+    wood:  { hit: 'bites into the wood',   give: `the ${obj} splinters and gives way` },
+    iron:  { hit: 'rings off the iron',    give: `the ${obj} buckles and comes apart` },
+    glass: { hit: 'strikes the glass',     give: `the ${obj} shatters` },
+    cloth: { hit: 'catches the cloth',     give: `the ${obj} tears open` },
+    stone: { hit: 'glances off the stone', give: `the ${obj} cracks apart` },
+  }[material] || { hit: 'lands', give: `the ${obj} breaks open` };
+  if (outcome === 'success') return `${wpn} ${M.hit}, and ${M.give}.`;
+  if (outcome === 'mixed')   return `${wpn} ${M.hit}, but the ${obj} holds — battered, not broken.`;
+  return `${wpn} skids off the ${obj}; it holds fast, barely marked.`;
+}
 
 function detectAttackAnyIntent(world, text) {
   const t = String(text || '').trim();

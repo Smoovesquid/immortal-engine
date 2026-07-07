@@ -1,6 +1,6 @@
 import { normalizeManifest, normalizePack } from '../engine/rulesets.js';
 import { newWorld, ensureWorld } from '../engine/state.js';
-import { beginAdventure, playerMove, newScene, setPieceCooldownGate, carriesInteriorMovementIntent } from '../engine/playloop.js';
+import { beginAdventure, playerMove, newScene, setPieceCooldownGate, carriesInteriorMovementIntent, detectObjectAttackIntent } from '../engine/playloop.js';
 import { isMetaQuestion, handleMetaQuestion, looksMultiAction } from '../engine/grace/gracefulAdjudication.js';
 // INT-2R — buildParseCtx is browser-safe (no server-only deps; already in
 // this bundle's transitive graph via playloop.js -> assemblePacket.js). The
@@ -740,7 +740,9 @@ async function doSubmitMove() {
   // "What happened with the cold well?" is a question for the NPC, not the DM
   // ("what happened" was shadowing dialogue asks as a recap request).
   const inDialogue = Boolean(w.scene?.dialogue?.npcId);
-  if (!w.combat?.active && !inDialogue && isMetaQuestion(text) && !carriesInteriorMovementIntent(w, text)) {
+  // DM-GATE-1a — a declared swing at an OBJECT is resolved as damage-state by playerMove,
+  // never answered here as raw attack-math. Mirrors the carriesInteriorMovementIntent skip.
+  if (!w.combat?.active && !inDialogue && isMetaQuestion(text) && !carriesInteriorMovementIntent(w, text) && !detectObjectAttackIntent(w, text)) {
     const answer = handleMetaQuestion(text, w);
     if (answer) {
       ui.play.lines.push({ who: 'you', text, mech: '' });
@@ -1043,8 +1045,8 @@ function renderInvoke() {
     el('div', { class: 'panel' },
       el('div', { class: 'header' },
         el('div', {},
-          el('div', { class: 'title' }, 'Immortal Engine — v0.33.2'),
-          el('div', { class: 'sub' }, 'build 135 · 2026-07-07 · and glad of it')
+          el('div', { class: 'title' }, 'Immortal Engine — v0.33.3'),
+          el('div', { class: 'sub' }, 'build 136 · 2026-07-07 · objects take a hit')
         )
       ),
       // ── One-click front door: start (or resume) the Escape game ──────

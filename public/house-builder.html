@@ -57,6 +57,7 @@
     <button id="btnFit">Fit view</button>
     <button id="btnClear">New</button>
     <button id="btnImport">Import…</button>
+    <button id="btnFinalize">Validate &amp; Finalize</button>
     <button id="btnExport" class="primary">Export JSON</button>
     <input id="fileInput" type="file" accept="application/json" style="display:none"/>
   </header>
@@ -487,9 +488,11 @@
     cam.ox=-mnx*CELL*cam.scale+(cv.width-wpx*cam.scale)/2; cam.oy=-mny*CELL*cam.scale+(cv.height-hpx*cam.scale)/2; draw(); }
 
   // ── export / import ──
-  document.getElementById('btnExport').addEventListener('click',()=>{ scene.name=(document.getElementById('houseName').value||'house').trim();
+  // buildExportDoc() — the ONE draft-export shape, shared by Export JSON and
+  // Validate & Finalize (the finalize path must judge exactly what export would ship).
+  function buildExportDoc(){ scene.name=(document.getElementById('houseName').value||'house').trim();
     const orientOf=a=>{ const m=((a%180)+180)%180; return (m<22.5||m>157.5)?'h':(m>67.5&&m<112.5)?'v':'angled'; };
-    const out={ kind:'authored-structure', schema:'house-builder/v9', name:scene.name, grid:{cols:COLS,rows:ROWS,cell:CELL},
+    return { kind:'authored-structure', schema:'house-builder/v9', name:scene.name, grid:{cols:COLS,rows:ROWS,cell:CELL},
       rooms:scene.rooms.map(r=>{ const rec={id:r.id,name:r.name,shape:r.shape,material:r.material,x:r.x,y:r.y,w:r.w,h:r.h}; if(r.role) rec.role=r.role; if(r.dark) rec.dark=true;
         if(r.shape==='round'){ rec.cx=r.x+r.w/2; rec.cy=r.y+r.h/2; rec.r=+(Math.min(r.w,r.h)/2).toFixed(3); }
         const c=r.curve||{}; if(c.top||c.right||c.bottom||c.left) rec.curve={top:+(c.top||0).toFixed(3),right:+(c.right||0).toFixed(3),bottom:+(c.bottom||0).toFixed(3),left:+(c.left||0).toFixed(3)}; return rec; }),
@@ -499,8 +502,37 @@
       corridors:scene.tunnels.map(t=>{ const b=tunnelBez(t); if(!b) return null; const pts=quadPts(b.pa,b.ctrl,b.pb,t.bend?8:1).map(p=>[+(p[0]/CELL).toFixed(2),+(p[1]/CELL).toFixed(2)]); return {pts,w:1.3,material:'stone'}; }).filter(Boolean),
       furniture:scene.furniture.map(f=>{ const room=enclosingRoom(f); const rec={type:f.type,x:f.x,y:f.y,w:f.w,h:f.h,rot:f.rot||0}; if(room){ rec.room=room.id; rec.ux=+((f.x-room.x+f.w/2)/room.w).toFixed(4); rec.uy=+((f.y-room.y+f.h/2)/room.h).toFixed(4); } return rec; }),
       secrets:scene.secrets.map(s=>{ const room=scene.rooms.find(r=>s.x>=r.x&&s.x<=r.x+r.w&&s.y>=r.y&&s.y<=r.y+r.h); return { x:+s.x.toFixed(2), y:+s.y.toFixed(2), vessel:s.vessel||'', dc:s.dc||12, room:room?room.id:null, items:(s.items||[]).map(it=>({defRef:it.defRef,qty:it.qty||1})) }; }),
-      traps:scene.traps.map(t=>{ const room=scene.rooms.find(r=>t.x>=r.x&&t.x<=r.x+r.w&&t.y>=r.y&&t.y<=r.y+r.h); return { x:+t.x.toFixed(2), y:+t.y.toFixed(2), kind:t.kind||'', dc:t.dc||13, effect:t.effect||'', room:room?room.id:null }; }) };
-    const blob=new Blob([JSON.stringify(out,null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`${scene.name||'house'}.json`; a.click(); URL.revokeObjectURL(a.href); flash('exported '+a.download); });
+      traps:scene.traps.map(t=>{ const room=scene.rooms.find(r=>t.x>=r.x&&t.x<=r.x+r.w&&t.y>=r.y&&t.y<=r.y+r.h); return { x:+t.x.toFixed(2), y:+t.y.toFixed(2), kind:t.kind||'', dc:t.dc||13, effect:t.effect||'', room:room?room.id:null }; }) }; }
+  function downloadJson(obj,filename){ const blob=new Blob([JSON.stringify(obj,null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=filename; a.click(); URL.revokeObjectURL(a.href); }
+  document.getElementById('btnExport').addEventListener('click',()=>{ const out=buildExportDoc(); downloadJson(out,`${scene.name||'house'}.json`); flash('exported '+(scene.name||'house')+'.json'); });
+
+  // ── validate & finalize (BUILDING_CANON_CONTRACT §14) ──
+  // Runs the ENGINE's own loader-validator (one algorithm, imported — never a
+  // duplicated geometry pass) over the same draft the Export button would ship.
+  // Clean → downloads a *.finalized.json carrying provenance/validation metadata
+  // (what strict runtime loading will one day key on). Not clean → finalization is
+  // BLOCKED and the author is told which room is unreachable — the fix (add a
+  // doorway) happens here, at authoring time, never invented by runtime.
+  document.getElementById('btnFinalize').addEventListener('click',async()=>{
+    let mod;
+    try{ mod=await import('/engine/structures/authoredStructure.js'); }
+    catch(err){ alert('Validation needs the engine — open this page via the dev server (npm run dev → http://localhost:5179/house-builder.html).\n\n'+err.message); return; }
+    const doc=buildExportDoc();
+    const nameOf=id=>{ const r=(doc.rooms||[]).find(r=>r.id===id); return r&&r.name?`${r.name} (${id})`:String(id); };
+    const report=mod.validateAuthoredExport(doc);
+    if(!report.ok){
+      const lines=report.repaired.length
+        ? report.repaired.map(r=>`• ${nameOf(r.a)} is UNREACHABLE from the entrance — the engine would have to invent a connection to ${nameOf(r.b)} that you never drew.`)
+        : report.errors.map(e=>'• '+e);
+      alert('Cannot finalize — this draft is not clean:\n\n'+lines.join('\n')+'\n\nAdd a doorway to each unreachable room, then finalize again. (Finalized buildings are never repaired by the game at load.)');
+      flash('finalize blocked — '+(report.repaired.length||report.errors.length)+' problem(s)');
+      return;
+    }
+    const finalized=mod.finalizeAuthoredExport(doc);
+    downloadJson(finalized,`${scene.name||'house'}.finalized.json`);
+    const abutNote=report.abutted.length?` · ${report.abutted.length} shared-wall connection(s) inferred (no door drawn)`:'';
+    flash(`finalized clean — ${report.roomCount} rooms, ${report.edgeCount} connections${abutNote}`);
+  });
   function enclosingRoom(f){ const cx=f.x+f.w/2,cy=f.y+f.h/2; return scene.rooms.find(r=>cx>=r.x&&cx<=r.x+r.w&&cy>=r.y&&cy<=r.y+r.h)||null; }
 
   document.getElementById('btnImport').addEventListener('click',()=>document.getElementById('fileInput').click());

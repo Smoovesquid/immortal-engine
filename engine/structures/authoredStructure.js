@@ -704,6 +704,85 @@ export function loadAuthoredStructure(json, { nodeId, structureId, strictFinaliz
   return structure;
 }
 
+// ── BUILDER-SIDE VALIDATION / FINALIZATION (BUILDING_CANON_CONTRACT §13–§14) ─────────
+// The strict-finalized gate (above) is runtime's HALF of the contract: finalized canon
+// is never repaired at load. These two helpers are the AUTHORING half: the Builder runs
+// the SAME loader (the one algorithm — never a duplicated geometry pass) over a draft
+// export and surfaces the orphan-repair problem to the AUTHOR, before finalization.
+// Pure + deterministic: no rng, no I/O, no world mutation, no timestamps — same input,
+// byte-identical output, forever (finalized artifacts stay replay/worldHash-safe).
+
+/**
+ * validateAuthoredExport(json, { structureId }) -> a validation report the Builder can
+ * show the author. NEVER throws — malformed input becomes errors[], not an exception
+ * (this is the author-facing path; the report IS the interface).
+ *
+ *   ok        true ⇔ loadAuthoredStructure(json, { strictFinalized: true }) would load —
+ *             the report and the runtime gate agree by construction (same loader).
+ *   errors    author-facing blocking failures (malformed input, or one line per
+ *             orphan-repaired room naming the unreachable room + the invented
+ *             connection + the fix: add a doorway in the Builder).
+ *   repaired  the raw pass-3 repair list [{a,b,why}] in ORIGINAL room-id space.
+ *   abutted   pass-2 abutment fallbacks — TOLERATED at v0 (the author drew the rooms
+ *             touching; only the door glyph is missing) but reported so the author sees
+ *             which connections were inferred rather than drawn.
+ */
+export function validateAuthoredExport(json, { structureId = 'builder:validate' } = {}) {
+  let st;
+  try {
+    st = loadAuthoredStructure(json, { structureId: String(structureId) });
+  } catch (err) {
+    return { ok: false, errors: [String(err?.message || err)], repaired: [], abutted: [], roomCount: 0, edgeCount: 0 };
+  }
+  const info = st.__loaderInfo || {};
+  const repaired = info.repaired || [];
+  const errors = repaired.map(r =>
+    `room '${r.a}' is unreachable from the entrance — finalizing would require inventing a connection to '${r.b}' the plan never drew. Add a doorway to it in the Builder.`);
+  return {
+    ok: errors.length === 0,
+    errors,
+    repaired,
+    abutted: info.abutted || [],
+    roomCount: info.roomCount || 0,
+    edgeCount: info.edgeCount || 0,
+  };
+}
+
+/**
+ * finalizeAuthoredExport(json, { structureId }) -> the FINALIZED artifact: a deep copy
+ * of the draft export carrying the provenance/validation block the contract requires
+ * (§12 export pipeline / §14 repair policy). Throws (author-facing message, naming the
+ * unreachable rooms) when the draft is not clean — finalization is a GATE, never a
+ * repair. The input draft is NOT mutated.
+ *
+ * The provenance block is additive (the loader ignores unknown fields) and carries NO
+ * timestamps/hashes-of-the-moment — a re-finalized identical draft is byte-identical,
+ * so finalized artifacts are stable data (like a pack). `finalized: true` is the flag a
+ * future runtime opt-in packet will read to choose { strictFinalized: true } at load;
+ * nothing reads it yet (this packet does not activate strict loading anywhere).
+ */
+export function finalizeAuthoredExport(json, { structureId = 'builder:finalize' } = {}) {
+  const raw = coerceJson(json);
+  const report = validateAuthoredExport(raw, { structureId });
+  if (!report.ok) {
+    fail(`cannot finalize: ${report.errors.join(' ')}`);
+  }
+  const out = JSON.parse(JSON.stringify(raw)); // deep copy — never mutate the draft
+  out.provenance = {
+    finalized: true,
+    authoredBy: 'house-builder',
+    validation: {
+      validator: 'engine/structures/authoredStructure.js#validateAuthoredExport',
+      ok: true,
+      roomCount: report.roomCount,
+      edgeCount: report.edgeCount,
+      repaired: [],               // by definition — a finalized artifact needed none
+      abutted: report.abutted,    // tolerated at v0, recorded so nothing is hidden
+    },
+  };
+  return out;
+}
+
 // ════════════════════════════════════════════════════════════════════════════════════
 // THE REGISTRY (absorbed from authoredPlans.js under LOADER-MERGE) — a plan Tim authored
 // FOR a specific procgen structure id substitutes for that structure. Every function here

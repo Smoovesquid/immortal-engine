@@ -2401,6 +2401,8 @@ function playerMoveCore(world, packsById, text, dqIntent) {
   }
 
   if (!w.combat?.active && !w.scene?.dialogue) {
+    const furnitureSurvey = w.scene?.interior ? visibleFurnitureSurvey(w, text) : null;
+    if (furnitureSurvey) return furnitureSurvey;
     // Look inside / search / "what's inside" a present container → reveal its
     // contents (or say it's empty), before tryExamineTarget would describe the
     // lid and before the explore floor bounces a room-survey (THE_TABLE_TEST).
@@ -7466,6 +7468,33 @@ function tryExamineTarget(w, text) {
   return null;
 }
 
+// R2 — furniture is visible room truth, not a hidden-search prize. A player asking
+// "look/search for furniture" is asking what fixtures are in the room; answer from
+// room-scoped objectsHere() before the generic search roll can contradict canon.
+function visibleFurnitureSurvey(w, text) {
+  const t = String(text || '').toLowerCase().trim();
+  if (!/\b(?:furniture|furnishings)\b/.test(t)) return null;
+  if (/\b(?:hidden|secret|conceal|traps?|tracks?|trail|clues?|compartments?)\b/.test(t)) return null;
+  const asksFurniture = (
+    /\b(?:look(?:ing)?|search(?:ing)?|scan(?:ning)?|survey(?:ing)?|check(?:ing)?)\s+for\s+(?:the\s+|any\s+|some\s+)?(?:furniture|furnishings)\b/.test(t) ||
+    /\bwhat\s+(?:furniture|furnishings)\b/.test(t) ||
+    /\bwhich\s+(?:furniture|furnishings)\b/.test(t) ||
+    /\b(?:is|are)\s+there\s+(?:any\s+|some\s+)?(?:furniture|furnishings)\b/.test(t)
+  );
+  if (!asksFurniture) return null;
+
+  const furniture = objectsHere(w).map(o => o.piece).filter(Boolean);
+  if (!furniture.length) {
+    return { world: w, output: { narration: 'Wizard: You take stock of the room; no furniture stands out here.', mechanics: 'observe only — no roll, state unchanged' } };
+  }
+  const art = (s) => `${/^[aeiou]/i.test(String(s).trim()) ? 'an' : 'a'} ${s}`;
+  const names = furniture.slice(0, 5).map(x => String(x.name || '')).filter(Boolean).map(art);
+  const list = names.length === 1 ? names[0]
+    : names.length === 2 ? `${names[0]} and ${names[1]}`
+      : `${names.slice(0, -1).join(', ')}, and ${names[names.length - 1]}`;
+  return { world: w, output: { narration: `Wizard: You take stock of the furniture here: ${list}.`, mechanics: 'observe only — no roll, state unchanged' } };
+}
+
 // Object-presence query — "is there a mirror around here?", "is there a well
 // nearby?". A yes/no about a SPECIFIC concrete object (not people, not exits,
 // not a vague "anything"). Returns the object noun, or null. The yes/no must be
@@ -10422,11 +10451,11 @@ function objectAttackLine(outcome, objectName, weaponName, material) {
     iron:  { hit: 'rings off the iron',    give: `the ${obj} buckles and comes apart` },
     glass: { hit: 'strikes the glass',     give: `the ${obj} shatters` },
     cloth: { hit: 'catches the cloth',     give: `the ${obj} tears open` },
-    stone: { hit: 'glances off the stone', give: `the ${obj} cracks apart` },
+    stone: { hit: 'strikes the stone',     give: `the ${obj} cracks apart` },
   }[material] || { hit: 'lands', give: `the ${obj} breaks open` };
   if (outcome === 'success') return `${wpn} ${M.hit}, and ${M.give}.`;
   if (outcome === 'mixed')   return `${wpn} ${M.hit}, but the ${obj} holds — battered, not broken.`;
-  return `${wpn} skids off the ${obj}; it holds fast, barely marked.`;
+  return `${wpn} ${M.hit}; the ${obj} takes the blow and holds, barely marked.`;
 }
 
 function detectAttackAnyIntent(world, text) {

@@ -645,8 +645,13 @@ function doorwayPoint(A, B) {
  * Also exposes the loader diagnostics (edges added by abutment fallback / orphan
  * repair) on a non-enumerable `__loaderInfo` so tests/the report can assert HOW the
  * graph was connected without changing the structure's hashed shape.
+ *
+ * @param strictFinalized when true, treat the export as FINALIZED canon: a plan that
+ *                        needs pass-3 orphan repair throws instead of loading
+ *                        (BUILDING_CANON_CONTRACT §14). Off by default — drafts,
+ *                        demos, and the registry keep today's tolerant behavior.
  */
-export function loadAuthoredStructure(json, { nodeId, structureId } = {}) {
+export function loadAuthoredStructure(json, { nodeId, structureId, strictFinalized } = {}) {
   const raw = coerceJson(json);
   validate(raw);
 
@@ -657,6 +662,17 @@ export function loadAuthoredStructure(json, { nodeId, structureId } = {}) {
 
   const idMap = canonicalRoomIds(raw, structId);
   const { edges, abutted, repaired } = buildEdges(raw, idMap);
+
+  // BUILDING_CANON_CONTRACT §14 — finalized authored canon is never repaired at load.
+  // Under { strictFinalized: true } a plan that NEEDED pass-3 orphan repair is rejected:
+  // the invented connection is a doorway the author never drew, so the fix belongs in
+  // the Builder (add the doorway, or mark the room sealed) — not in runtime. Abutment
+  // fallback (pass 2) stays tolerated at v0 — the author DREW the rooms touching — and
+  // remains visible on __loaderInfo.abutted. Default (non-strict) behavior is unchanged.
+  if (strictFinalized && repaired.length) {
+    const pairs = repaired.map(r => `'${r.a}'→'${r.b}'`).join(', ');
+    fail(`finalized structure required orphan repair (${repaired.length} invented connection${repaired.length === 1 ? '' : 's'}: ${pairs}) — an unreachable room must be given a doorway or marked sealed in the Builder; finalized canon is never repaired at load`);
+  }
   const topology = buildTopology(raw, structId, idMap, edges);
   const authoredPlan = buildAuthoredPlan(raw, structId, idMap, topology);
 

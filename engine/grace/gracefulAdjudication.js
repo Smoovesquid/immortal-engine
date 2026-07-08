@@ -1353,9 +1353,13 @@ function answerWeaponDamage(lowerText, world) {
 
   const list = (named.length ? named : weapons).filter(w => w.dice);
   if (!list.length) return null;
+  // DM-GATE-1c: name the modifier's actual number, not just "your ability
+  // modifier" — the unnumbered form is the evasion the gate judge flagged
+  // (RL t9: "what modifier am I adding to the damage?" left unresolved).
+  const dmgMod = fmtMod(meleeProfile(world.party?.[0] || {}).dmgMod);
   return named.length
-    ? `For damage: ${joinList(named.map(describe))}. You add your relevant ability modifier on a hit.`
-    : `Your weapons roll for damage as follows — ${joinList(list.map(describe))}, plus your ability modifier on a hit.`;
+    ? `For damage: ${joinList(named.map(describe))}. You add your ability modifier (${dmgMod} for you) on a hit.`
+    : `Your weapons roll for damage as follows — ${joinList(list.map(describe))}, plus your ability modifier (${dmgMod} for you) on a hit.`;
 }
 
 // Report the last recorded roll (number + DC + outcome) straight from the
@@ -2194,6 +2198,15 @@ export function handleMetaQuestion(text, world) {
     if (statKey && statKey in stats) {
       const score = Number(stats[statKey]) || 10;
       ans = `Your ${statKey} is ${score}, a ${fmtMod(statMod(score))} modifier.`;
+    } else if (/\bdamage\b|\battack(?:s|ing)?\b|\bto[-\s]?hit\b|\bhit(?:s|ting)?\b/.test(lowerText)
+        && !/\bbreakpoints?\b|\b(?:modifier|score|stat)\s+(?:chart|table)\b/.test(lowerText)) {
+      // DM-GATE-1c (Opus gate 2026-07-07, RL t9): "what modifier am I adding
+      // to the damage?" — attack/damage context IS a specific target under
+      // H-40's own rule, so it gets the real number off the equipped weapon,
+      // never the abstract chart. An explicit chart demand in the same breath
+      // still falls through to the table below.
+      const prof = meleeProfile(world.party?.[0] || {});
+      ans = `With the ${prof.name}, damage is the weapon's die plus your ability modifier — ${fmtMod(prof.dmgMod)} for you. Your attack roll adds ${fmtMod(prof.atkBonus)}.`;
     } else {
       ans = `Modifier breakpoints: ${modifierBreakpointTable()}.`;
       const order = ['MIGHT', 'AGILITY', 'WITS', 'GRIT', 'CHARM'];

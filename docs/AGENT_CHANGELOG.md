@@ -3518,3 +3518,24 @@ other agents. (none active)
 - SOAPBOX-1 intact (U637–U640 green; "tell me about chickens" unchanged; secrets still gated).
   Determinism: authored data + prompt + narration only, not in worldHash; U19/21/22/27/30 green;
   NO WORLD_VERSION bump. playtest:quick 50/0.
+
+## 2026-07-08 — Basecamp — DM-GATE-1c → v0.33.6 build 139 "the DM says the number" — a modifier ask mid-fight gets a number, never the chart
+
+- Tim-authorized engine brief (in-chat, 2026-07-08). Closes RL t9 from the 2026-07-07 Opus gate
+  (DM_ARTIFACT_LEAK): "what modifier am I adding to the damage? Roll the 1d6" fell past
+  META_DAMAGE_RULE's yes/no shapes into META_MODIFIER_FORMULA's last resort — the raw ability-score→
+  modifier breakpoint chart, recited at the player.
+- FIX (engine/grace/gracefulAdjudication.js only): (1) damage/attack context now counts as a "specific
+  target" under H-40's own rule — the last-resort branch answers off `meleeProfile` (weapon name, real
+  dmgMod, real atkBonus) instead of the chart; (2) `answerWeaponDamage`'s "plus your ability modifier"
+  now names the actual number ("(+2 for you)") — the unnumbered form was the same evasion shape.
+- H-40 PRESERVED: an explicit chart demand ("show me the full breakpoint chart", "the modifier table")
+  still serves the generated table (U653 diverge guard); vague formula ask (U172-23) unchanged.
+- Tests U652 (t9 verbatim + attack-context probes, red→green) + U653 (diverge guards, green throughout).
+  Full suite 10946/0; `npm run check` GREEN (135/135 convergence, determinism, screen-truth).
+- LIVE v1.html receipt (Bryn, aldermere): t9 verbatim → "With the Worn Blade, damage is the weapon's
+  die plus your ability modifier — +2 for you. Your attack roll adds +4." — instant, no chart, and it
+  corrects the player's wrong "should be the same 0" claim (damage excludes proficiency; attack doesn't).
+- HONEST SCOPE: the "Roll the 1d6 and tell me the result" half is still not rolled — meta answers are
+  observe-only by design; rolling mid-attack is the object-attack lane (1a) when the attack is declared.
+  DM-GATE-1b (persistent object AC/HP, WORLD_VERSION bump) remains queued.

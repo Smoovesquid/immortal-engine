@@ -4,7 +4,10 @@ import { ensureStructures } from './structuresState.js';
 // LOADER-MERGE: authoredPlans.js was folded into authoredStructure.js (ONE loader, ONE
 // registry). The registry API (hasAuthoredPlan / makeAuthoredStructure) and the direct
 // loader (loadAuthoredStructure) now come from the same module.
-import { hasAuthoredPlan, makeAuthoredStructure, loadAuthoredStructure } from './authoredStructure.js';
+// materializeAuthoredExport (not raw loadAuthoredStructure): the materialization path
+// reads the export's own provenance.finalized stamp, so a finalized artifact loads
+// strict (never silently orphan-repaired) while drafts/demos stay tolerant (§14).
+import { hasAuthoredPlan, makeAuthoredStructure, materializeAuthoredExport } from './authoredStructure.js';
 import loaderDemoHouse from '../../packs/base/structures/authored/loader_demo.house.js';
 import threeRoomDemoHouse from '../../packs/base/structures/authored/three_room_demo.house.js';
 
@@ -24,7 +27,7 @@ function maybeInjectLoaderDemo(world, nid, mergedById) {
   const demoId = `authored:${nid}`;
   if (mergedById[demoId]) return; // idempotent — already injected for this node
   try {
-    const st = loadAuthoredStructure(loaderDemoHouse, { nodeId: nid });
+    const st = materializeAuthoredExport(loaderDemoHouse, { nodeId: nid });
     if (st && st.id) mergedById[st.id] = st;
   } catch (err) {
     // A broken demo house degrades to procgen with a warning (never crashes play) —
@@ -70,7 +73,7 @@ function maybeInjectLoaderDemo2(world, nid, node, mergedById) {
   // the seed is walkable at whatever settlement the player starts on.
   const house = authoredHouseForNode(node) || threeRoomDemoHouse;
   try {
-    const st = loadAuthoredStructure(house, { nodeId: nid });
+    const st = materializeAuthoredExport(house, { nodeId: nid });
     if (st && st.id) mergedById[st.id] = st;
   } catch (err) {
     console.warn(`applyGeneratedStructuresForNode: LOAD-2 demo house failed to load (${err?.message || err}); node keeps procgen`);

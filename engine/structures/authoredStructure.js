@@ -704,6 +704,39 @@ export function loadAuthoredStructure(json, { nodeId, structureId, strictFinaliz
   return structure;
 }
 
+/**
+ * isFinalizedAuthoredExport(raw) -> true ⇔ the export carries the Builder's finalization
+ * stamp: `provenance.finalized === true`, EXACTLY (BUILDING_CANON_CONTRACT §14). The
+ * stamp is the SOLE source of truth — never inferred from filename, schema, directory,
+ * or shape, and truthy-but-not-true values ('true', 1) do NOT count. Accepts a parsed
+ * object or a JSON string (same tolerance as the loader); anything else is a draft.
+ */
+export function isFinalizedAuthoredExport(raw) {
+  let obj = raw;
+  if (typeof obj === 'string') {
+    try { obj = JSON.parse(obj); } catch { return false; }
+  }
+  if (!obj || typeof obj !== 'object' || Array.isArray(obj)) return false;
+  return obj?.provenance?.finalized === true;
+}
+
+/**
+ * materializeAuthoredExport(json, { nodeId, structureId }) -> loadAuthoredStructure with
+ * strictness selected FROM THE EXPORT ITSELF: a finalized export (provenance.finalized
+ * === true — the Builder's stamp) loads under { strictFinalized: true } so finished
+ * authored canon is the author's final word (never silently orphan-repaired); a draft
+ * loads tolerantly, exactly as before. This is THE runtime materialization branch —
+ * the registry (makeAuthoredStructure) and the demo/node injections route through it.
+ * Direct loadAuthoredStructure callers stay tolerant unless they opt in explicitly.
+ */
+export function materializeAuthoredExport(json, { nodeId, structureId } = {}) {
+  const raw = coerceJson(json);
+  return loadAuthoredStructure(raw, {
+    nodeId, structureId,
+    strictFinalized: isFinalizedAuthoredExport(raw),
+  });
+}
+
 // ── BUILDER-SIDE VALIDATION / FINALIZATION (BUILDING_CANON_CONTRACT §13–§14) ─────────
 // The strict-finalized gate (above) is runtime's HALF of the contract: finalized canon
 // is never repaired at load. These two helpers are the AUTHORING half: the Builder runs
@@ -757,9 +790,9 @@ export function validateAuthoredExport(json, { structureId = 'builder:validate' 
  *
  * The provenance block is additive (the loader ignores unknown fields) and carries NO
  * timestamps/hashes-of-the-moment — a re-finalized identical draft is byte-identical,
- * so finalized artifacts are stable data (like a pack). `finalized: true` is the flag a
- * future runtime opt-in packet will read to choose { strictFinalized: true } at load;
- * nothing reads it yet (this packet does not activate strict loading anywhere).
+ * so finalized artifacts are stable data (like a pack). `finalized: true` is the flag
+ * the runtime materialization path (materializeAuthoredExport, above) reads to choose
+ * { strictFinalized: true } at load — the stamp is honored, drafts stay tolerant.
  */
 export function finalizeAuthoredExport(json, { structureId = 'builder:finalize' } = {}) {
   const raw = coerceJson(json);
@@ -808,9 +841,10 @@ for (const raw of BUILTIN_AUTHORED_PLANS) {
   const structureId = String(raw?.structureId || '');
   if (!structureId) registryFail('(unknown)', 'missing structureId (the field WE add — see the fixture header)');
   if (REGISTRY.has(structureId)) registryFail(structureId, 'duplicate structureId across authored plans');
-  // Loud well-formedness gate — a trial load through the real loader (throws on any
-  // malformed room/opening) so the registry validates with the SAME rules the live path uses.
-  try { loadAuthoredStructure(raw, { structureId }); }
+  // Loud well-formedness gate — a trial load through the real materialization branch
+  // (throws on any malformed room/opening; a FINALIZED plan additionally validates under
+  // the strict gate) so the registry validates with the SAME rules the live path uses.
+  try { materializeAuthoredExport(raw, { structureId }); }
   catch (err) { registryFail(structureId, err?.message || String(err)); }
   REGISTRY.set(structureId, raw);
 }
@@ -833,16 +867,17 @@ export function authoredStructureIds() {
 /**
  * makeAuthoredStructure(structureId, nodeId) -> a full structure object ready to merge
  * into world.structures.byId, or null when structureId isn't registered. Delegates to
- * loadAuthoredStructure (the ONE materialization branch) with the registered raw export,
- * so a registered authored structure carries the SAME depth (authored roles, roomDetail
- * furniture, doors→adjacency, orphan repair) a directly-loaded one does. Pure +
- * deterministic (no rng, no I/O). Never throws for an absent id (returns null); a
- * registered-but-malformed plan already failed at import time above.
+ * materializeAuthoredExport (the ONE materialization branch) with the registered raw
+ * export, so a registered authored structure carries the SAME depth (authored roles,
+ * roomDetail furniture, doors→adjacency, orphan repair for DRAFTS — a finalized plan
+ * loads strict per its stamp) a directly-loaded one does. Pure + deterministic (no rng,
+ * no I/O). Never throws for an absent id (returns null); a registered-but-malformed
+ * plan already failed at import time above.
  */
 export function makeAuthoredStructure(structureId, nodeId) {
   const raw = authoredRawFor(structureId);
   if (!raw) return null;
-  return loadAuthoredStructure(raw, { nodeId, structureId: String(structureId) });
+  return materializeAuthoredExport(raw, { nodeId, structureId: String(structureId) });
 }
 
 /**

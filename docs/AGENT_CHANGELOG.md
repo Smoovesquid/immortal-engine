@@ -3661,3 +3661,19 @@ other agents. (none active)
 - Remaining from DM-GATE-1: **DM-GATE-1b only** (persistent object AC/HP, own WORLD_VERSION) — per
   Tim's standing ruling, separate and untouched. A re-gate to confirm 11/48 → baseline is now
   worth its $0.96.
+
+## 2026-07-09 — Basecamp (Fable) — RE-GATE (measure-only, Tim-approved $0.96) — 6/48, was 11/48; the 07-07 cluster is clear
+
+- Same shape as 07-07 (48 turns · 4 personas · tallow · Opus player + Opus v1 judge · fresh keyed
+  server, current b145 code — the stale keyless :5179 process was bypassed, not killed). Ledger
+  updated: $12.38 remaining.
+- BASELINE→CURRENT: 11/48 (23%) → **6/48 (12.5%)**. All 11 baseline failures GONE, including verbatim
+  recurrences that now pass ("Who wrote this to me?" — newbie asked it word-for-word). Three of four
+  baseline classes at ZERO (COMBAT_NOT_STARTED, DM_ARTIFACT_LEAK, CANON_HALLUCINATION). 0 new modes
+  (Chao1 CI [5,5]); 1 judge error marked/legacy-passed.
+- SURVIVORS (5 roots / 6 turns), all DETERMINISTIC-ENGINE (no INT-translator in the harness path):
+  sheet-stats ask loses to person-clarify (×2) · named-NPC identity answered only positionally ·
+  pointed no-record question still voices "The room is quiet" (AG-4 residue; B4 fixed only the
+  artifact-grounded case) · presence+move compound leaks egress+"no such place" ("head to the front" —
+  a PLACE ref; B2 fixed object destinations) · flaming pallet deals zero damage (fire-hazard gap).
+  Candidate DM-GATE-1e cluster; queued as findings in PACKETS, NOT started per Tim's instruction.

@@ -98,6 +98,7 @@
         <select id="roomRole" class="sinp"></select>
         <div class="slbl">Lighting</div>
         <div class="seg" id="segLight"><button data-light="lit">Lit</button><button data-light="dark">Dark</button></div>
+        <label id="sealedLbl" style="display:flex;align-items:center;gap:7px;font-size:12px;margin-top:9px;cursor:pointer"><input type="checkbox" id="roomSealed"/> Sealed / secret room<small style="color:var(--ink-soft)">no doorway needed — intentionally unreachable</small></label>
       </div>
       <div id="openPanel" style="display:none">
         <div class="slbl">Lock</div>
@@ -276,7 +277,7 @@
 
   window.addEventListener('mouseup',()=>{
     if(drag&&drag.mode==='draw-room'){ const x=Math.min(drag.x0,drag.x1),y=Math.min(drag.y0,drag.y1),w=Math.abs(drag.x1-drag.x0),h=Math.abs(drag.y1-drag.y0);
-      if(w>=2&&h>=2){ const r={id:nextId('room'),name:`Room ${scene.rooms.length+1}`,shape:'rect',material:'timber',role:'',dark:false,x,y,w,h,curve:{top:0,right:0,bottom:0,left:0}}; scene.rooms.push(r); select('room',r.id); setTool('select'); } }
+      if(w>=2&&h>=2){ const r={id:nextId('room'),name:`Room ${scene.rooms.length+1}`,shape:'rect',material:'timber',role:'',dark:false,sealed:false,x,y,w,h,curve:{top:0,right:0,bottom:0,left:0}}; scene.rooms.push(r); select('room',r.id); setTool('select'); } }
     else if(drag&&drag.mode==='draw-wall'){ const w={id:nextId('w'),x0:drag.x0,y0:drag.y0,x1:drag.x1,y1:drag.y1,material:'stone',bend:0}; if(Math.hypot(w.x1-w.x0,w.y1-w.y0)>=1){ scene.walls.push(w); select('wall',w.id); setTool('select'); } }
     drag=null; draw();
   });
@@ -297,7 +298,7 @@
     else if(sel.kind==='wall'){ const w=scene.walls.find(x=>x.id===id); info.innerHTML=`<b>wall segment</b> · ${w.material}<br><span style="font-size:11px">drag endpoints to reshape</span>`; matRow.style.display='block'; setSeg('#segMaterial','mat',w.material); }
     else if(sel.kind==='secret'){ const s=scene.secrets.find(x=>x.id===id); info.innerHTML=`<b>secret cache</b> · found when the room is searched`; secretPanel.style.display='block';
       document.getElementById('secretVessel').value=s.vessel||''; document.getElementById('secretDC').value=s.dc||12; document.getElementById('itemSearch').value=''; renderItemResults(''); renderStash(s); }
-    else { const r=roomById(id); const c=r.curve||{}; const bowed=(c.top||c.right||c.bottom||c.left)?' · bowed':''; const roleName=(ROLES.find(([v])=>v===(r.role||''))||[])[1]; info.innerHTML=`<b>${r.name}</b> · ${r.w}×${r.h} · ${r.material} · ${r.shape==='round'?'round':'box'}${bowed}${r.role?' · '+esc(roleName):''}`; matRow.style.display='block'; shapeRow.style.display='block'; roleRow.style.display='block'; setSeg('#segMaterial','mat',r.material); setSeg('#segShape','shape',r.shape); setSeg('#segLight','light',r.dark?'dark':'lit'); document.getElementById('roomRole').value=r.role||''; }
+    else { const r=roomById(id); const c=r.curve||{}; const bowed=(c.top||c.right||c.bottom||c.left)?' · bowed':''; const roleName=(ROLES.find(([v])=>v===(r.role||''))||[])[1]; info.innerHTML=`<b>${r.name}</b> · ${r.w}×${r.h} · ${r.material} · ${r.shape==='round'?'round':'box'}${bowed}${r.role?' · '+esc(roleName):''}${r.sealed?' · sealed':''}`; matRow.style.display='block'; shapeRow.style.display='block'; roleRow.style.display='block'; setSeg('#segMaterial','mat',r.material); setSeg('#segShape','shape',r.shape); setSeg('#segLight','light',r.dark?'dark':'lit'); document.getElementById('roomRole').value=r.role||''; document.getElementById('roomSealed').checked=(r.sealed===true); }
     draw();
   }
   function esc(v){ return String(v).replace(/[<>&]/g,m=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[m])); }
@@ -324,6 +325,8 @@
   document.querySelectorAll('#segShape button').forEach(b=>b.addEventListener('click',()=>{ if(sel&&sel.kind==='room'){ roomById(sel.id).shape=b.dataset.shape; select('room',sel.id); } }));
   document.getElementById('roomRole').addEventListener('change',e=>{ if(sel&&sel.kind==='room'){ roomById(sel.id).role=e.target.value; select('room',sel.id); } });
   document.querySelectorAll('#segLight button').forEach(b=>b.addEventListener('click',()=>{ if(sel&&sel.kind==='room'){ roomById(sel.id).dark=(b.dataset.light==='dark'); select('room',sel.id); } }));
+  // SEALED-1 — the ONE explicit sealed/secret marker; exported as room.sealed:true.
+  document.getElementById('roomSealed').addEventListener('change',e=>{ if(sel&&sel.kind==='room'){ roomById(sel.id).sealed=e.target.checked; select('room',sel.id); } });
   const curOpen=()=>sel&&sel.kind==='open'?scene.openings.find(x=>x.id===sel.id):null;
   document.querySelectorAll('#segLock button').forEach(b=>b.addEventListener('click',()=>{ const o=curOpen(); if(o){ o.locked=(b.dataset.lock==='locked'); select('open',o.id); } }));
   document.getElementById('openKey').addEventListener('input',e=>{ const o=curOpen(); if(o) o.key=e.target.value; });
@@ -409,7 +412,7 @@
     ctx.save(); roomPath(r); ctx.strokeStyle=m.col; ctx.lineWidth=m.w; ctx.lineJoin='round'; ctx.stroke();
     if(m.hatch){ ctx.lineWidth=1.2; ctx.beginPath(); if(r.shape==='round') ctx.ellipse((r.x+r.w/2)*CELL,(r.y+r.h/2)*CELL,r.w*CELL/2-4,r.h*CELL/2-4,0,0,7); else ctx.rect(r.x*CELL+4,r.y*CELL+4,r.w*CELL-8,r.h*CELL-8); ctx.stroke(); }
     ctx.restore();
-    ctx.fillStyle=getCss('--ink-soft'); ctx.font='600 12px ui-sans-serif,sans-serif'; ctx.textBaseline='top'; ctx.fillText(r.name,r.x*CELL+7,r.y*CELL+6); }
+    ctx.fillStyle=getCss('--ink-soft'); ctx.font='600 12px ui-sans-serif,sans-serif'; ctx.textBaseline='top'; ctx.fillText(r.name+(r.sealed?' · sealed':''),r.x*CELL+7,r.y*CELL+6); }
 
   function drawWall(w){ const m=MAT[w.material]||MAT.stone, p0=[w.x0*CELL,w.y0*CELL], p1=[w.x1*CELL,w.y1*CELL];
     if(w.bend){ const b=wallBez(w); ctx.strokeStyle=m.col; ctx.lineWidth=m.w; ctx.lineCap='round'; ctx.lineJoin='round'; ctx.beginPath(); ctx.moveTo(p0[0],p0[1]); ctx.quadraticCurveTo(b.ctrl[0],b.ctrl[1],p1[0],p1[1]); ctx.stroke();
@@ -492,8 +495,10 @@
   // Validate & Finalize (the finalize path must judge exactly what export would ship).
   function buildExportDoc(){ scene.name=(document.getElementById('houseName').value||'house').trim();
     const orientOf=a=>{ const m=((a%180)+180)%180; return (m<22.5||m>157.5)?'h':(m>67.5&&m<112.5)?'v':'angled'; };
-    return { kind:'authored-structure', schema:'house-builder/v9', name:scene.name, grid:{cols:COLS,rows:ROWS,cell:CELL},
-      rooms:scene.rooms.map(r=>{ const rec={id:r.id,name:r.name,shape:r.shape,material:r.material,x:r.x,y:r.y,w:r.w,h:r.h}; if(r.role) rec.role=r.role; if(r.dark) rec.dark=true;
+    // v10 adds the optional room boolean `sealed: true` (SEALED-1) — the explicit
+    // "intentionally unreachable" marker the engine loader + finalized validation read.
+    return { kind:'authored-structure', schema:'house-builder/v10', name:scene.name, grid:{cols:COLS,rows:ROWS,cell:CELL},
+      rooms:scene.rooms.map(r=>{ const rec={id:r.id,name:r.name,shape:r.shape,material:r.material,x:r.x,y:r.y,w:r.w,h:r.h}; if(r.role) rec.role=r.role; if(r.dark) rec.dark=true; if(r.sealed===true) rec.sealed=true;
         if(r.shape==='round'){ rec.cx=r.x+r.w/2; rec.cy=r.y+r.h/2; rec.r=+(Math.min(r.w,r.h)/2).toFixed(3); }
         const c=r.curve||{}; if(c.top||c.right||c.bottom||c.left) rec.curve={top:+(c.top||0).toFixed(3),right:+(c.right||0).toFixed(3),bottom:+(c.bottom||0).toFixed(3),left:+(c.left||0).toFixed(3)}; return rec; }),
       walls:scene.walls.map(w=>({x0:w.x0,y0:w.y0,x1:w.x1,y1:w.y1,material:w.material,bend:+((w.bend||0).toFixed(3))})),
@@ -523,22 +528,24 @@
     if(!report.ok){
       const lines=report.repaired.length
         ? report.repaired.map(r=>`• ${nameOf(r.a)} is UNREACHABLE from the entrance — the engine would have to invent a connection to ${nameOf(r.b)} that you never drew.`)
+            .concat(report.errors.slice(report.repaired.length).map(e=>'• '+e))
         : report.errors.map(e=>'• '+e);
-      alert('Cannot finalize — this draft is not clean:\n\n'+lines.join('\n')+'\n\nAdd a doorway to each unreachable room, then finalize again. (Finalized buildings are never repaired by the game at load.)');
+      alert('Cannot finalize — this draft is not clean:\n\n'+lines.join('\n')+'\n\nAdd a doorway to each unreachable room — or select the room and mark it Sealed / secret if it is meant to be unreachable — then finalize again. (Finalized buildings are never repaired by the game at load.)');
       flash('finalize blocked — '+(report.repaired.length||report.errors.length)+' problem(s)');
       return;
     }
     const finalized=mod.finalizeAuthoredExport(doc);
     downloadJson(finalized,`${scene.name||'house'}.finalized.json`);
     const abutNote=report.abutted.length?` · ${report.abutted.length} shared-wall connection(s) inferred (no door drawn)`:'';
-    flash(`finalized clean — ${report.roomCount} rooms, ${report.edgeCount} connections${abutNote}`);
+    const sealedNote=report.sealed.length?` · ${report.sealed.length} sealed room(s)`:'';
+    flash(`finalized clean — ${report.roomCount} rooms, ${report.edgeCount} connections${sealedNote}${abutNote}`);
   });
   function enclosingRoom(f){ const cx=f.x+f.w/2,cy=f.y+f.h/2; return scene.rooms.find(r=>cx>=r.x&&cx<=r.x+r.w&&cy>=r.y&&cy<=r.y+r.h)||null; }
 
   document.getElementById('btnImport').addEventListener('click',()=>document.getElementById('fileInput').click());
   document.getElementById('fileInput').addEventListener('change',(e)=>{ const file=e.target.files[0]; if(!file) return; const rd=new FileReader();
     rd.onload=()=>{ try{ const d=JSON.parse(rd.result); scene=blankScene(); scene.name=d.name||'house'; document.getElementById('houseName').value=scene.name;
-      (d.rooms||[]).forEach(r=>scene.rooms.push({id:r.id||nextId('room'),name:r.name||'Room',shape:r.shape||'rect',material:r.material||'timber',role:r.role||'',dark:!!r.dark,x:r.x,y:r.y,w:r.w,h:r.h,curve:r.curve||{top:0,right:0,bottom:0,left:0}}));
+      (d.rooms||[]).forEach(r=>scene.rooms.push({id:r.id||nextId('room'),name:r.name||'Room',shape:r.shape||'rect',material:r.material||'timber',role:r.role||'',dark:!!r.dark,sealed:r.sealed===true,x:r.x,y:r.y,w:r.w,h:r.h,curve:r.curve||{top:0,right:0,bottom:0,left:0}}));
       (d.walls||[]).forEach(w=>scene.walls.push({id:nextId('w'),x0:w.x0,y0:w.y0,x1:w.x1,y1:w.y1,material:w.material||'stone',bend:w.bend||0}));
       (d.openings||[]).forEach(o=>scene.openings.push({id:nextId('o'),kind:o.kind||'door',x:o.x,y:o.y,angle:(o.angle!=null?o.angle:(o.orient==='v'?90:0)),len:o.len||1,room:o.room||null,locked:!!o.locked,key:o.key||'',entrance:!!o.entrance}));
       (d.tunnels||[]).forEach(t=>scene.tunnels.push({id:nextId('t'),a:t.a,b:t.b,bend:t.bend||0}));

@@ -173,6 +173,13 @@ function validate(raw) {
     if (shape !== 'rect' && shape !== 'round') {
       fail(`room '${id}' has unsupported shape '${shape}' (expected rect or round)`);
     }
+    // SEALED-1 — `sealed` is the ONE explicit sealed/secret-room marker (contract §14:
+    // the exported plan carries the author's CHOSEN answer, "a `sealed:true` room").
+    // It is a boolean or absent; a present-but-non-boolean value is malformed (loud),
+    // never coerced — sealed is NEVER inferred from name/role/darkness/geometry.
+    if ('sealed' in r && typeof r.sealed !== 'boolean') {
+      fail(`room '${id}' has a non-boolean 'sealed' field (sealed/secret must be explicit: true or false)`);
+    }
   }
   for (const o of (Array.isArray(raw.openings) ? raw.openings : [])) {
     if (o.kind !== 'door' && o.kind !== 'window') {
@@ -310,6 +317,27 @@ function canonicalRoomIds(raw, structId) {
   return map;
 }
 
+// ── Sealed/secret rooms (SEALED-1, contract §14) ────────────────────────────────────
+/**
+ * isSealedAuthoredRoom(raw, roomId) -> true iff the room record carries the explicit
+ * `sealed: true` marker (ORIGINAL room-id space). This is authoring/canon metadata:
+ * "this room is INTENTIONALLY unreachable" (a sealed vault, a secret space). Strictly
+ * `=== true` — sealed is never inferred from name, role, darkness, missing doors, or
+ * geometry, and a truthy non-boolean was already rejected by validate().
+ */
+export function isSealedAuthoredRoom(raw, roomId) {
+  const id = String(roomId ?? '');
+  const room = (Array.isArray(raw?.rooms) ? raw.rooms : []).find(r => String(r?.id) === id);
+  return room?.sealed === true;
+}
+
+function sealedRoomIds(raw) {
+  return (Array.isArray(raw?.rooms) ? raw.rooms : [])
+    .filter(r => r?.sealed === true)
+    .map(r => String(r.id))
+    .sort((a, b) => a.localeCompare(b));
+}
+
 // ── The adjacency graph (doors → edges, + abutment fallback + orphan repair) ────────
 /**
  * buildEdges(raw, idMap) -> { edges: [{a,b}] (canonical ids, sorted), repaired: [...] }
@@ -324,6 +352,13 @@ function canonicalRoomIds(raw, structId) {
  *   3. ORPHAN REPAIR — any room still unreachable from the entry is joined to its
  *      nearest neighbour (centre-to-centre). Guarantees a CONNECTED graph — never an
  *      orphaned room / soft-lock. Repairs are reported (the report flags them).
+ * SEALED rooms (`sealed: true` — SEALED-1) are EXEMPT from passes 2 and 3: the author
+ * explicitly declared the room intentionally unreachable, so no connection is ever
+ * inferred or invented for it. A sealed room stays in the topology with ZERO edges —
+ * present but not traversable (movement's compass layout gives it a wall in every
+ * direction). A DRAWN door to a sealed room (pass 1) still connects — explicit ink
+ * beats the flag at load — but that contradiction is reported (sealedViolations) and
+ * blocks finalized validation.
  * Deterministic (pure geometry + sorted iteration); no rng.
  */
 function buildEdges(raw, idMap) {
@@ -346,6 +381,8 @@ function buildEdges(raw, idMap) {
 
   const ids = rooms.map(r => String(r.id)).sort((a, b) => a.localeCompare(b));
   const entryId = pickEntryRoomId(raw);
+  const sealed = sealedRoomIds(raw);
+  const sealedSet = new Set(sealed);
   // canonical id → original id, so the reachability BFS runs in original-id space
   // (rectOf, ids, entryId are all original) while `edges` are canonical.
   const canonToOrig = new Map([...idMap.entries()].map(([o, c]) => [c, o]));
@@ -386,7 +423,8 @@ function buildEdges(raw, idMap) {
   for (let guard = 0; guard <= ids.length; guard++) {
     const reached = reachableFromEntry();
     // The lexicographically-first unreachable room that ABUTS a reachable one.
-    const orphan = ids.find(id => !reached.has(id)
+    // Sealed rooms are exempt — no connection is ever inferred for them (SEALED-1).
+    const orphan = ids.find(id => !reached.has(id) && !sealedSet.has(id)
       && ids.some(other => reached.has(other) && rectsAbut(rectOf.get(id), rectOf.get(other))));
     if (!orphan) break;
     // Connect it to its nearest reachable abutting neighbour.
@@ -407,7 +445,9 @@ function buildEdges(raw, idMap) {
   // Guard against a pathological loop; at most one repair per room.
   for (let guard = 0; guard <= ids.length; guard++) {
     const reached = reachableFromEntry();
-    const orphans = ids.filter(id => !reached.has(id));
+    // Sealed rooms are never orphan-repaired (SEALED-1) — they REMAIN unreachable,
+    // by explicit authorial intent, with no invented edge.
+    const orphans = ids.filter(id => !reached.has(id) && !sealedSet.has(id));
     if (!orphans.length) break;
     // Repair the lexicographically-first orphan → its nearest ALREADY-REACHED room
     // (so each repair grows the connected component toward the entry).
@@ -427,7 +467,20 @@ function buildEdges(raw, idMap) {
   }
 
   edges.sort((x, y) => (x.a + '|' + x.b).localeCompare(y.a + '|' + y.b));
-  return { edges, abutted, repaired };
+
+  // Sealed-marker contradictions (SEALED-1) — reported here, enforced at the strict
+  // gate + Builder validation. Both are AUTHORING mistakes the Builder must resolve:
+  //   • entry-sealed: the entry room cannot be sealed (the player must be able to enter);
+  //   • sealed-but-reachable: a drawn doorway reaches a room marked sealed — the ink
+  //     and the flag disagree; remove the doorway or unmark sealed.
+  const finalReached = reachableFromEntry();
+  const sealedViolations = [];
+  if (sealedSet.has(entryId)) sealedViolations.push({ room: entryId, kind: 'entry-sealed' });
+  for (const id of sealed) {
+    if (id !== entryId && finalReached.has(id)) sealedViolations.push({ room: id, kind: 'sealed-but-reachable' });
+  }
+
+  return { edges, abutted, repaired, sealed, sealedViolations };
 }
 
 // ── Topology ───────────────────────────────────────────────────────────────────────
@@ -440,6 +493,11 @@ function buildTopology(raw, structId, idMap, edges) {
     if (isEntry) tags.push('entry');
     const role = roleForRoom(r, isEntry);
     if (KNOWN_ROLES.has(role)) tags.push(`role:${role}`);
+    // SEALED-1 — carry the explicit marker into the topology as a tag, so runtime/
+    // downstream readers can tell "intentionally unreachable" apart from a bug. The
+    // room's UNREACHABILITY itself comes from having zero edges (buildEdges exempts
+    // sealed rooms from inference/repair) — the tag is metadata, not traversal logic.
+    if (r.sealed === true) tags.push('sealed');
     return { id: idMap.get(origId), tags };
   });
   return { kind: 'rooms', rooms, edges };
@@ -661,17 +719,28 @@ export function loadAuthoredStructure(json, { nodeId, structureId, strictFinaliz
   const structId = explicitId || `authored:${nid}`;
 
   const idMap = canonicalRoomIds(raw, structId);
-  const { edges, abutted, repaired } = buildEdges(raw, idMap);
+  const { edges, abutted, repaired, sealed, sealedViolations } = buildEdges(raw, idMap);
 
   // BUILDING_CANON_CONTRACT §14 — finalized authored canon is never repaired at load.
   // Under { strictFinalized: true } a plan that NEEDED pass-3 orphan repair is rejected:
   // the invented connection is a doorway the author never drew, so the fix belongs in
-  // the Builder (add the doorway, or mark the room sealed) — not in runtime. Abutment
-  // fallback (pass 2) stays tolerated at v0 — the author DREW the rooms touching — and
-  // remains visible on __loaderInfo.abutted. Default (non-strict) behavior is unchanged.
+  // the Builder (add the doorway, or mark the room sealed/secret) — not in runtime.
+  // Abutment fallback (pass 2) stays tolerated at v0 — the author DREW the rooms
+  // touching — and remains visible on __loaderInfo.abutted. A room marked `sealed: true`
+  // (SEALED-1) is EXEMPT: it is intentionally unreachable, carries zero edges, and
+  // passes the gate. Default (non-strict) behavior is unchanged for unsealed content.
   if (strictFinalized && repaired.length) {
     const pairs = repaired.map(r => `'${r.a}'→'${r.b}'`).join(', ');
-    fail(`finalized structure required orphan repair (${repaired.length} invented connection${repaired.length === 1 ? '' : 's'}: ${pairs}) — an unreachable room must be given a doorway or marked sealed in the Builder; finalized canon is never repaired at load`);
+    fail(`finalized structure required orphan repair (${repaired.length} invented connection${repaired.length === 1 ? '' : 's'}: ${pairs}) — an unreachable room must be given a doorway or marked sealed/secret in the Builder; finalized canon is never repaired at load`);
+  }
+  // SEALED-1 — a finalized plan whose sealed markers contradict its drawn geometry is
+  // rejected too, so validateAuthoredExport().ok ⇔ strict load succeeds keeps holding
+  // (the U655 law) with sealed rooms in play.
+  if (strictFinalized && sealedViolations.length) {
+    const lines = sealedViolations.map(v => v.kind === 'entry-sealed'
+      ? `entry room '${v.room}' is marked sealed`
+      : `room '${v.room}' is marked sealed but a drawn doorway reaches it`);
+    fail(`finalized structure has sealed-room contradictions (${lines.join('; ')}) — fix the marker or the doorway in the Builder`);
   }
   const topology = buildTopology(raw, structId, idMap, edges);
   const authoredPlan = buildAuthoredPlan(raw, structId, idMap, topology);
@@ -697,6 +766,8 @@ export function loadAuthoredStructure(json, { nodeId, structureId, strictFinaliz
       edgeCount: edges.length,
       abutted,   // edges added because two rooms shared a wall (no drawn door)
       repaired,  // edges added to reconnect an otherwise-orphaned room
+      sealed,    // ORIGINAL ids of rooms explicitly marked sealed:true (SEALED-1)
+      sealedViolations, // [{room, kind}] sealed-marker/geometry contradictions
     },
     enumerable: false,
   });
@@ -759,23 +830,34 @@ export function materializeAuthoredExport(json, { nodeId, structureId } = {}) {
  *   abutted   pass-2 abutment fallbacks — TOLERATED at v0 (the author drew the rooms
  *             touching; only the door glyph is missing) but reported so the author sees
  *             which connections were inferred rather than drawn.
+ *   sealed    ORIGINAL ids of rooms explicitly marked `sealed: true` (SEALED-1) — the
+ *             report SHOWS the author which rooms are intentionally unreachable, so a
+ *             sealed room passing validation is visible intent, never a silent repair.
  */
 export function validateAuthoredExport(json, { structureId = 'builder:validate' } = {}) {
   let st;
   try {
     st = loadAuthoredStructure(json, { structureId: String(structureId) });
   } catch (err) {
-    return { ok: false, errors: [String(err?.message || err)], repaired: [], abutted: [], roomCount: 0, edgeCount: 0 };
+    return { ok: false, errors: [String(err?.message || err)], repaired: [], abutted: [], sealed: [], roomCount: 0, edgeCount: 0 };
   }
   const info = st.__loaderInfo || {};
   const repaired = info.repaired || [];
   const errors = repaired.map(r =>
-    `room '${r.a}' is unreachable from the entrance — finalizing would require inventing a connection to '${r.b}' the plan never drew. Add a doorway to it in the Builder.`);
+    `room '${r.a}' is unreachable from the entrance — finalizing would require inventing a connection to '${r.b}' the plan never drew. Add a doorway to it in the Builder, or mark it sealed/secret.`);
+  // SEALED-1 contradictions block too — same conditions the strict runtime gate
+  // rejects, so ok ⇔ strict-load keeps holding by construction.
+  for (const v of (info.sealedViolations || [])) {
+    errors.push(v.kind === 'entry-sealed'
+      ? `the entry room '${v.room}' cannot be marked sealed/secret — the player must be able to enter the building.`
+      : `room '${v.room}' is marked sealed/secret but a drawn doorway reaches it — remove the doorway, or unmark sealed.`);
+  }
   return {
     ok: errors.length === 0,
     errors,
     repaired,
     abutted: info.abutted || [],
+    sealed: info.sealed || [],
     roomCount: info.roomCount || 0,
     edgeCount: info.edgeCount || 0,
   };
@@ -811,6 +893,7 @@ export function finalizeAuthoredExport(json, { structureId = 'builder:finalize' 
       edgeCount: report.edgeCount,
       repaired: [],               // by definition — a finalized artifact needed none
       abutted: report.abutted,    // tolerated at v0, recorded so nothing is hidden
+      sealed: report.sealed,      // rooms intentionally unreachable (sealed: true) — visible intent
     },
   };
   return out;

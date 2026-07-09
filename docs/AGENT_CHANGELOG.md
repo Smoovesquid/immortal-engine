@@ -3613,3 +3613,51 @@ other agents. (none active)
   the lazy mini library (gates, fences, bridges, wells, driftwood, archways). Library-registered
   ONLY — no auto-placement in settlements/roads yet; logged in MINIS_WISHLIST. (FUNC-MINIS-1's
   contract is the compliance path if/when these become placeable: placed ⇒ engine-real.)
+
+## 2026-07-09 — Basecamp (Fable) — DM-GATE-1d → v0.35.1 build 145 "the DM answers from canon" — Cluster B closed (five fixes, red-first)
+
+- Tim-authorized engine brief (in-chat, 2026-07-09; B5 kept in per his ruling — "vague violent intent
+  against a present person is a core DM routing failure; mirror the talk path's discipline"). All five
+  2026-07-07 gate leftovers re-proven still-red on b144 through the faithful mirrored router, then
+  fixed inside their named lanes. Tests U665–U670 (28 asserts), each red-first on verbatim gate inputs.
+- **B1 mirror shard** (grace): a look INTO a carried item ("what do I see reflected in it?") answered
+  the ROOM twice running (META_LOCATION's unanchored "what do I see"). Now an object-referent guard on
+  the ANSWER: the item's authored notes are the reply ("Shows you standing somewhere else." + honest
+  close). isMetaQuestion untouched; bare surveys unchanged (U665 pins both).
+- **B2 walk-to-object** (playloop): "I walk to the iron-bound chest and try to open it" was claimed as
+  a LEAVE, then journeyed to a place named "iron-bound chest" ("You know of no such place hereabouts")
+  with [egress:repair] firing — teleported out+in, action dropped. Now a walk to a PRESENT piece is
+  contact: the tail resolves through the normal pipeline with the pronoun bound to the piece (INT-4a's
+  recursive discipline; "You cross to the iron-bound chest. You lift the lid… Inside: a folded
+  letter."). Rooms/doors/outside never match a piece → movement untouched (U666 controls).
+- **B3 continuity-reconcile** (playloop, pre-physics): "When did I light that lantern? It sat unlit —
+  I never struck it" RE-EXECUTED the lighting deterministically (physics 'light' verb), and the LLM
+  polish of that wrongness was the gate's "has always burned" gaslight. Now a continuity gate answers
+  from CANON only: WARM (timeline holds the player's act) → cite it verbatim; COLD → concede honestly
+  ("You're right — no one lit it"); state-changed-but-unrecorded → concede the record. Never
+  re-executes, never invents, worldly no-op (U667: warm ×2, cold, and the real-command control).
+- **B4 letter authorship** (playloop, mainline ground-gated): "Who wrote this to me?" died in the
+  no-record sink voiced through an NPC ("No record I've ever seen"). Now answered from the ARTIFACT:
+  an opened container here holding a letter/note grounds "No name anywhere on it — never signed"
+  (the authored letter pool is unsigned by construction). No letter in play → never fires (U668).
+- **B5 vague bystander violence** (playloop): "I cut down the first villager who runs up with a
+  bucket" — TWO roots. (1) 'cut down'/'strike down' were in NO violence regex → the whole NPC-combat
+  gate never opened → the generic floor narrated a wounded person as "half-broken", combat off.
+  Added as leading alternatives; the ref then resolves through fuzzyMatchNpc's EXISTING generic-person
+  arm to the first present NPC — real combat vs the roster (live receipt: COMBAT HUD, Elske 4/8).
+  (2) tryDarkDeed's civilian class lacked 'villager' → the cruelty charge fell to "fair kill:
+  untagged" — the constitution dodged by word choice. villagers/townsfolk/bystanders join the class:
+  the DECLARATION records the cruelty deed with the roster as witnesses, wrath moves, heat prices it
+  (U669; named fair-fight parity pinned — attacking an armed named person still charges nothing).
+- **U670** — worldHash replay stability across all five sequences ×2 + the no-op lanes leave the hash
+  bit-identical. Full ladder GREEN: 135/135 convergence · suite 11,023/0 · screen truth locked.
+- LIVE v1.html receipts (save-seeded tallow, LLM-ON — the full production path): chest walk → "You
+  cross to the iron-bound chest", NO egress leak (the b144 bug is dead live); villager cut-down →
+  real combat vs Elske Nightherd (HUD Round 2, screenshot). HONEST NOTE: live typed text rides the
+  INT-arc Haiku translator (POST /api/intent confirmed) which can rephrase a tail (the live chest
+  turn resolved as examine-at-contact rather than open+reveal — the deterministic floor does the
+  full open+reveal, pinned by U666 incl. the save round-trip). Translation fidelity is the INT
+  lane's own dial, not a 1d regression — flagged for the next INT re-benchmark.
+- Remaining from DM-GATE-1: **DM-GATE-1b only** (persistent object AC/HP, own WORLD_VERSION) — per
+  Tim's standing ruling, separate and untouched. A re-gate to confirm 11/48 → baseline is now
+  worth its $0.96.

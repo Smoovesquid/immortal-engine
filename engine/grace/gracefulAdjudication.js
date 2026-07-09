@@ -1428,6 +1428,41 @@ const OBJ_LOC_STOPWORDS = new Set([
   'was', 'had', 'just', 'holding', 'here', 'there', 'it', 'thing', 'to',
   'did', 'disappear', 'disappeared', 'vanish', 'vanished', 'where',
 ]);
+// DM-GATE-1d B1 — the look-at-a-carried-thing cue: a look/gaze/peer verb aimed
+// inward ("into it", "at it"), a reflection ask, or the held-up-to-the-face
+// gesture. Deliberately NARROW: a bare "look around" has none of these, so the
+// room survey is untouched.
+const CARRIED_LOOK_CUE = /\b(?:look|looks|looking|stare|stares|staring|gaze|gazes|gazing|peer|peers|peering)\b[^.!?]{0,60}\b(?:in|into|at)\b|\breflect(?:ed|ion|ions)?\b|\bup to my face\b/;
+
+// The carried item the look-question is actually about: the LONGEST inventory
+// item name present in the text (longest wins so "mirror shard" beats a
+// hypothetical "mirror"). Names under 4 chars never match (too collidable).
+function carriedItemLookReferent(world, lowerText) {
+  if (!CARRIED_LOOK_CUE.test(lowerText)) return null;
+  const inv = world?.party?.[0]?.inventory;
+  if (!inv || typeof inv !== 'object') return null;
+  let best = null;
+  for (const arr of Object.values(inv)) {
+    if (!Array.isArray(arr)) continue;
+    for (const it of arr) {
+      const name = String(it?.name || '').toLowerCase().trim();
+      if (name.length >= 4 && lowerText.includes(name)) {
+        if (!best || name.length > String(best.name || '').length) best = it;
+      }
+    }
+  }
+  return best;
+}
+
+// The honest item answer: its authored notes verbatim (canon), then an honest
+// close — evocative flavor or "nothing more", never an invented vision.
+function describeCarriedItemLook(item) {
+  const name = String(item?.name || 'thing');
+  const notes = String(item?.notes || '').trim();
+  const body = notes ? ` ${/[.!?]$/.test(notes) ? notes : `${notes}.`}` : '';
+  return `You turn the ${name} over and look close.${body} Nothing more reveals itself — whatever else it means, it keeps.`;
+}
+
 function answerObjectLocation(world, lowerText) {
   const carried = gatherCarriedItems(world);
   // A carried item named in the text → it's on you.
@@ -1933,6 +1968,16 @@ export function handleMetaQuestion(text, world) {
 
   // Location / survey — checked first (most specific phrasings).
   if (META_LOCATION.test(lowerText) || META_INTERIOR_LAYOUT.test(lowerText) || META_INTERIOR_LAYOUT_SEEK.test(lowerText)) {
+    // DM-GATE-1d B1 — a look INTO a carried thing is about the THING, never the
+    // room: "I look into the Mirror shard — what do I see?" hit META_LOCATION's
+    // unanchored "what do I see" and dumped a room survey twice running (Opus
+    // gate 2026-07-07 RL t2/t3). When the question carries a LOOK-cue aimed at a
+    // named CARRIED item, answer from the item itself — its authored notes are
+    // canon — with an honest close, never an invented vision. This is an
+    // object-referent guard on the ANSWER; isMetaQuestion is untouched and a
+    // bare survey ("look around", "what do I see?") still gets the room.
+    const carried = carriedItemLookReferent(world, lowerText);
+    if (carried) return describeCarriedItemLook(carried);
     return buildLocationSurvey(world, { queryText: lowerText });
   }
 

@@ -1694,6 +1694,57 @@ function playerMoveCore(world, packsById, text, dqIntent) {
     }
   }
 
+  // DM-GATE-1d B2 — a walk whose destination is a PRESENT OBJECT is contact,
+  // never travel. Without this, the movement lane claimed "I walk to the
+  // iron-bound chest and try to open it" as a LEAVE and then journeyed to a
+  // place named "iron-bound chest" ("You step out into the open air. You know
+  // of no such place hereabouts…") — an egress leak that teleported the player
+  // and dropped the real action (Opus gate 2026-07-07 RL t4). The walk clause
+  // is flavor (you cross the room); the REAL action is the tail, resolved
+  // through the normal pipeline with the object bound in place of its pronoun —
+  // the same recursive discipline INT-4a uses below for trivial leads. A bare
+  // walk-to-object resolves as an examine at contact. Movement to rooms, doors,
+  // and the outside is untouched (those refs never match a present piece).
+  // DM-GATE-1d B4 — authorship of a READABLE artifact in play is answered from
+  // the ARTIFACT, never as a database-miss voiced through a person. "Who wrote
+  // this to me?" about the wake letter got "The room is quiet" at the gate
+  // (2026-07-07 newbie t7) and an NPC shrug ("No record I've ever seen") after
+  // AG-4 — but the letter is in the player's hands, and canon knows the truth:
+  // the authored letter bodies carry no signature. Ground-gated (an opened
+  // container here must actually hold a letter/note), so it can sit in the
+  // mainline: a question about some unfound letter never fires it. Placed here
+  // (not in the dq block) because the gate phrasing carries a conversational
+  // lead ("Okay, so it's back — but…?") that falls past the dq block into the
+  // info-check sink.
+  if (!w.combat?.active && !w.scene?.dialogue) {
+    const artifactAuthor = tryArtifactAuthorship(w, text);
+    if (artifactAuthor) return artifactAuthor;
+  }
+
+  if (!w.combat?.active && !w.scene?.dialogue) {
+    const contact = splitWalkToObjectClause(w, text);
+    if (contact) {
+      const name = String(contact.piece.name);
+      // Bind the pronoun to the walked-to piece and keep the first person — the
+      // tail arrives verb-first ("try to open it…"), and the downstream intent
+      // parsers read "I try to open the chest" (probe-A shape), not a bare
+      // imperative.
+      let bound = contact.restText
+        ? contact.restText.replace(/\b[Ii]t\b/, `the ${name}`)
+        : `examine the ${name}.`;
+      if (!/^i\b/i.test(bound)) bound = `I ${bound}`;
+      const acted = playerMoveCore(w, packsById, bound);
+      const actLine = String(acted?.output?.narration || '').replace(/^Wizard:\s*/, '').trim();
+      return {
+        ...acted,
+        output: {
+          ...(acted?.output || {}),
+          narration: actLine ? `Wizard: You cross to the ${name}. ${actLine}` : (acted?.output?.narration || '')
+        }
+      };
+    }
+  }
+
   const interiorAction = inferInteriorAction(text, w.scene?.interior, { roomNames: interiorRoomTargets(w) });
 
   // INT-4a — strip a TRIVIAL LEADING CLAUSE ("take my hatchet in hand and open
@@ -3801,6 +3852,19 @@ function playerMoveCore(world, packsById, text, dqIntent) {
   //   2. Detection must match a furniture/item name (not just a notes substring)
   //   3. The offline fallback must produce real deltas (not a no-op)
   //
+  // DM-GATE-1d B3 — a CONTINUITY CHALLENGE about a present object answers from
+  // CANON (the piece's stored state + the timeline record) and is a worldly
+  // no-op. It must run BEFORE the physics gate: "When did I light that
+  // lantern?" carries the verb 'light', so the physics lane RE-EXECUTED the
+  // lighting ("The oil lantern catches") — and the LLM polish of that wrongness
+  // was the gate's "has always burned" gaslight (CANON_HALLUCINATION,
+  // 2026-07-07 RL t7 / lore-hound t9). Question-scoped: a declarative "I light
+  // the lantern." has no interrogative and never enters.
+  {
+    const reconciled = tryContinuityReconcile(w, text);
+    if (reconciled) return reconciled;
+  }
+
   // Force verbs (rip/break/smash/etc.) additionally roll d20 vs hardness-derived
   // DC so the dice roller fires. Outcome gates the delta application:
   //   success → full damage (all deltas)
@@ -4959,6 +5023,30 @@ function joinFacings(facings) {
 }
 
 const INTERIOR_THEN_ACTION_RE = /\b(?:open|close|shut|look|examine|inspect|study|search|rummage|rifle|peer|peek|read|take|grab|pick\s+up|snatch|seize|collect|loot|pocket|claim|lift|touch|reach|hold|catch|grasp|force|break|smash|bash|kick|shove|wrench|pry|pull|push|move|drag|haul|light|eat|drink|use|talk|ask|tell|attack|strike|slash|cut)\b/i;
+
+// DM-GATE-1d B2 — the walk-to-a-present-object clause. Motion verb + toward-
+// preposition + a ref that NAME-MATCHES a piece standing here (objectsHere —
+// the same matcher the open/close lane uses). Returns { piece, restText } or
+// null; a ref that matches no present piece (a room, a door, "outside") leaves
+// the movement lane's claim untouched.
+const WALK_TO_OBJECT_RE = /\b(?:walk|walks|walking|go|goes|going|head|heads|heading|step|steps|stepping|move|moves|moving|stride|strides|cross|crosses|come|comes)\s+(?:over\s+|up\s+|across\s+|right\s+|straight\s+)?(?:to|toward|towards|up\s+to|over\s+to)\s+(?:the\s+|a\s+|an\s+|this\s+|that\s+|my\s+)?([a-z][a-z'\- ]{2,40}?)(?=\s*(?:[.!?;,]|\s+and\b|\s+then\b|$))/i;
+
+function splitWalkToObjectClause(w, text) {
+  const t = String(text || '');
+  const m = t.match(WALK_TO_OBJECT_RE);
+  if (!m) return null;
+  const target = String(m[1] || '').trim().toLowerCase();
+  if (!target) return null;
+  const scoped = objectsHere(w);
+  if (!scoped.length) return null;
+  const tail = target.split(/\s+/).filter(Boolean).pop();
+  const hit = scoped.find(o => nameMatches(o.piece?.name, target, tail));
+  if (!hit) return null;
+  const after = t.slice(m.index + m[0].length)
+    .replace(/^\s*(?:[.!?;,]\s*)?(?:and\s+(?:then\s+)?|then\s+)?/i, '')
+    .trim();
+  return { piece: hit.piece, restText: after || '' };
+}
 
 function splitInteriorMoveThenAct(text) {
   const m = String(text || '').trim().match(/^([\s\S]+?)\s+and\s+(?:then\s+)?([\s\S]+)$/i);
@@ -8097,6 +8185,105 @@ function takeNounPhrase(noun) {
   return /^[aeiou]/i.test(n) ? `an ${n}` : `a ${n}`;
 }
 
+// DM-GATE-1d B3 — the continuity-challenge shapes. The challenge is a QUESTION
+// about a PAST act on a PRESENT piece ("how/when did I …", "you said it sat
+// unlit", "I never struck it"). All three must hold — interrogative, challenge
+// shape, act verb — so ordinary object questions ("does the lantern have oil in
+// it?") and declarative commands never enter.
+const CONTINUITY_HOWWHEN_RE = /\b(?:how|when)\s+(?:did|could|would|do)\s+i\b/i;
+const CONTINUITY_MARKER_RE = /\byou said\b|\b(?:it|that|the\s+\w+)\s+(?:was|sat)(?:\s+there)?\s+(?:cold(?:\s+and\s+\w+)?|unlit|dark|shut|closed|empty|locked|out)\b|\bi\s+never\s+(?:struck|lit|touched|opened|moved|took)\b/i;
+const CONTINUITY_ACT_VERB_RE = /\b(?:light|lit|struck|strike|open|opened|close|closed|break|broke|move|moved|take|took)\b/i;
+
+// Answer a continuity challenge FROM CANON: cite the recorded act when the
+// timeline holds one; concede honestly when it doesn't. Never re-execute the
+// act, never invent a history, never mutate state (a pure read — the returned
+// world is the input world).
+function tryContinuityReconcile(w, text) {
+  const t = String(text || '');
+  if (!t.includes('?')) return null;
+  if (!(CONTINUITY_HOWWHEN_RE.test(t) || CONTINUITY_MARKER_RE.test(t))) return null;
+  if (!CONTINUITY_ACT_VERB_RE.test(t)) return null;
+  const detection = detectPhysicalInteraction(w, t);
+  const match = (detection?.matches || []).find(x => x.match === 'name' || x.match === 'part');
+  if (!detection?.detected || !match) return null;
+
+  const pieceName = String(match.name || '');
+  const nameTok = pieceName.toLowerCase().split(/\s+/).filter(Boolean).pop() || '';
+  if (!nameTok) return null;
+  const node = (w.map?.nodes || []).find(n => n && n.id === w.map?.currentNodeId) || null;
+  const piece = (node?.furniture || []).find(f => String(f?.name || '') === pieceName) || null;
+
+  // The record: the most recent resolution whose INPUT names the piece with an
+  // act verb and is not itself a question/challenge.
+  const events = Array.isArray(w.timeline) ? w.timeline.slice(-60) : [];
+  let acted = '';
+  for (let i = events.length - 1; i >= 0; i--) {
+    const txt = String(events[i]?.data?.text || events[i]?.data?.intent || '');
+    if (!txt || txt.includes('?')) continue;
+    if (txt.toLowerCase().includes(nameTok) && CONTINUITY_ACT_VERB_RE.test(txt)) { acted = txt; break; }
+  }
+
+  const MECH = '[continuity:from-canon] observe only — no roll, state unchanged';
+  if (acted) {
+    const quote = acted.trim().replace(/^i\s+/i, '').replace(/[.!?]+$/, '');
+    return {
+      world: w,
+      output: {
+        narration: `Wizard: That was your own hand — "${quote}" — it's on the record. Nothing else touched it.`,
+        mechanics: MECH
+      }
+    };
+  }
+  const lightish = /\b(?:light|lit|struck|strike)\b/i.test(t);
+  const state = String(piece?.state || '');
+  if (state && state !== 'intact') {
+    // The seam case: the piece stands changed, but no recorded hand did it.
+    // Concede the record honestly — never backfill a history.
+    return {
+      world: w,
+      output: {
+        narration: `Wizard: You're right to press — nothing in the record shows your hand on the ${pieceName}. What stands there now, stands unexplained.`,
+        mechanics: MECH
+      }
+    };
+  }
+  return {
+    world: w,
+    output: {
+      narration: `Wizard: You're right — no one ${lightish ? 'lit' : 'touched'} it. The ${pieceName} sits there ${lightish ? 'unlit' : 'as it was'}, same as when you woke.`,
+      mechanics: MECH
+    }
+  };
+}
+
+// DM-GATE-1d B4 — "who wrote this?" about a letter/note the player has access
+// to (an OPENED container here holds it) answers from the artifact itself. The
+// authored letter pool (generateFurniture containerItemText) is deliberately
+// unsigned — so "unsigned" IS the canon answer, read off the page in fiction.
+// Returns a full turn result, or null when no readable artifact grounds it.
+function tryArtifactAuthorship(w, text) {
+  const t = String(text || '').toLowerCase();
+  if (!/\bwho\s+(?:wrote|penned|signed|sent|left|authored)\b/.test(t)) return null;
+  if (!/\b(?:letter|note|message|this|it)\b/.test(t)) return null;
+  const node = (w.map?.nodes || []).find(n => n && n.id === w.map?.currentNodeId) || null;
+  if (!node) return null;
+  let found = '';
+  for (const { piece } of objectsHere(w)) {
+    if (!piece || !OPENED_STATES.has(String(piece.state || ''))) continue;
+    const contents = remainingContainerContents(w, node, piece);
+    const hit = (contents || []).find(c => /\b(?:letter|note)\b/i.test(String(c)));
+    if (hit) { found = /\bnote\b/i.test(String(hit)) ? 'note' : 'letter'; break; }
+  }
+  if (!found) return null;
+  return {
+    world: w,
+    output: {
+      narration: `Wizard: You turn the ${found} over and hold it to the light. No name anywhere on it — one steady hand, and no signature. Whoever wrote it never signed it.`,
+      mechanics: 'observe only — no roll, state unchanged'
+    }
+  };
+}
+
 function tryFurnitureStateChange(w, text) {
   const c = classifyTrivial(text);
   if (!c || (c.cat !== 'open' && c.cat !== 'close')) return null;
@@ -9393,7 +9580,14 @@ function tryDarkDeed(world, text) {
 
   const kill = /\b(kill|slay|murder|behead|execute|stab|strangle|drown|slit|smother|cut(?: him| her| them)? down|cut .*throat|put .* to the sword)\b/i.test(t);
   const torture = /\b(torture|torment|flay|maim|break (?:his|her|their) fingers|put .* to the question)\b/i.test(t);
-  const helpless = /\b(bound|tied up|helpless|defenseless|unarmed|sleeping|kneeling|begging|begs? for mercy|surrender(?:ed|ing)?|prisoner|captive|the wounded|dying|infant|baby|elder|old man|old woman|civilian)\b/i.test(t);
+  // DM-GATE-1d B5 — the civilian class includes the everyday person-nouns
+  // (villager/townsfolk/bystander…): "I cut down the first villager who runs up
+  // with a bucket" is a cut-down of a non-combatant, and calling the victim a
+  // 'villager' instead of a 'civilian' must not dodge the cruelty charge (the
+  // moral constitution is not bypassable via vagueness — Opus gate 2026-07-07
+  // chaos t5). An armed, named opponent stays a fair fight (untagged), exactly
+  // as before.
+  const helpless = /\b(bound|tied up|helpless|defenseless|unarmed|sleeping|kneeling|begging|begs? for mercy|surrender(?:ed|ing)?|prisoner|captive|the wounded|dying|infant|baby|elder|old man|old woman|civilian|villagers?|townsfolk|townsperson|bystanders?|passer-?by)\b/i.test(t);
   const save = /\b(to save|to protect|to defend|to spare the|save the|protect the|defend the|rescue|to shield|shield the)\b/i.test(t);
 
   // KILL — save-context first (the bargain), else helpless (cruelty), else untagged.
@@ -10411,7 +10605,15 @@ function detectAttackBeginIntent(world, text) {
 // him"), handled separately, so "throw a coin to Corwin" never reads as an attack.
 // Includes unarmed/natural strikes (bite, knee, elbow, sweep, …) — by SRD they're
 // unarmed strikes (damage) or a shove-to-prone (sweep/trip); either way an attack.
-const DIRECT_ATTACK_VERB = /\b(attack|fight|kill|murder|assault|strike|stab|slash|punch|kick|tackle|charge|bash|club|clobber|whack|brain|throttle|choke|strangle|knife|gut|maim|behead|lunge|headbutt|grapple|shoot|hit|bite|claw|gnaw|scratch|knee|elbow|stomp|stamp|sweep|trip|gore|butt|throttle)\s+(.+)/i;
+// DM-GATE-1d B5 — "cut down" / "strike down" are lethal idioms aimed at people
+// ("I cut down the first villager who runs up with a bucket" narrated a wounded
+// PERSON through the generic skill floor with no combat and no deed — the moral
+// constitution bypassed by vagueness; Opus gate 2026-07-07 chaos t5). Listed
+// FIRST in each alternation so the two-word idiom wins over the bare verb.
+// A bare "cut" stays out on purpose ("cut the rope" is not violence), and an
+// object target still routes to the object lane (declaredObjectAttack is
+// computed first, and fuzzyMatchNpc returns null for non-people).
+const DIRECT_ATTACK_VERB = /\b(cuts?\s+down|strikes?\s+down|attack|fight|kill|murder|assault|strike|stab|slash|punch|kick|tackle|charge|bash|club|clobber|whack|brain|throttle|choke|strangle|knife|gut|maim|behead|lunge|headbutt|grapple|shoot|hit|bite|claw|gnaw|scratch|knee|elbow|stomp|stamp|sweep|trip|gore|butt|throttle)\s+(.+)/i;
 // Attack idioms ("come at her", "set upon the elder", "lay into him", "go for
 // her throat"). "go for X" used to be omitted here because "go" was consumed
 // by the movement gate before combat-begin ever ran (H-64 punchlist) — that
@@ -10420,10 +10622,10 @@ const DIRECT_ATTACK_VERB = /\b(attack|fight|kill|murder|assault|strike|stab|slas
 const ATTACK_IDIOM = /\b(?:come\s+at|lunge\s+(?:at|for)|set\s+(?:upon|on)|lay\s+into|rush\s+at|go\s+for)\s+(.+)/i;
 // Any violence at all (gate). Broad — recall here is fine because the target
 // must still resolve to a PRESENT NPC below (objects/empty refs → no match).
-const ANY_VIOLENCE = /\b(attack|fight|kill|murder|assault|strike|stab|slash|punch|kick|tackle|charge|bash|club|clobber|whack|brain|throttle|choke|strangle|knife|gut|maim|behead|lunge|headbutt|grapple|shoot|swings?|hurl|throw|lob|slam|smash|hit|beat|bite|claw|gnaw|scratch|knee|elbow|stomp|stamp|sweep|trip|gore|butt|come\s+at|set\s+(?:upon|on)|lay\s+into|rush\s+at|go\s+for)\b/i;
+const ANY_VIOLENCE = /\b(cuts?\s+down|strikes?\s+down|attack|fight|kill|murder|assault|strike|stab|slash|punch|kick|tackle|charge|bash|club|clobber|whack|brain|throttle|choke|strangle|knife|gut|maim|behead|lunge|headbutt|grapple|shoot|swings?|hurl|throw|lob|slam|smash|hit|beat|bite|claw|gnaw|scratch|knee|elbow|stomp|stamp|sweep|trip|gore|butt|come\s+at|set\s+(?:upon|on)|lay\s+into|rush\s+at|go\s+for)\b/i;
 // Unambiguously hostile verbs — only these license matching an NPC named anywhere
 // in the sentence (so "throw a coin to Corwin" can't, but "Corwin, I'll kill you" can).
-const UNAMBIGUOUS_VIOLENCE = /\b(attack|kill|murder|assault|stab|slash|punch|kick|tackle|charge|bash|club|clobber|whack|brain|throttle|choke|strangle|knife|gut|maim|behead|lunge)\b/i;
+const UNAMBIGUOUS_VIOLENCE = /\b(cuts?\s+down|strikes?\s+down|attack|kill|murder|assault|stab|slash|punch|kick|tackle|charge|bash|club|clobber|whack|brain|throttle|choke|strangle|knife|gut|maim|behead|lunge)\b/i;
 
 // (H-92) Inanimate strike targets — a swing "at the post/dummy/wall" is not an NPC attack.
 const INANIMATE_STRIKE_TARGET_RE = /\b(?:post|pell|dummy|dummies|sack|sandbag|stake|beam|board|plank|log|stump|fence|crate|barrel|pole|tree|wall)\b/i;

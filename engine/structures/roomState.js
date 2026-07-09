@@ -42,7 +42,12 @@ export function getRoomState(world, nodeId) {
     : null;
   const inside = Boolean(interior) && nid === currentNodeId;
 
+  // FUNC-MINIS-1 — placed (authored) pieces lead the list: the objects the
+  // builder drew are the room's defining furniture, so they must never lose the
+  // display cap to generic decompression pieces. Stable partition (plan order,
+  // then node order); nodeIndex rides per-item so ops stay correctly keyed.
   const objects = objectsHere(world)
+    .sort((a, b) => (b.piece?.authored === true ? 1 : 0) - (a.piece?.authored === true ? 1 : 0))
     .slice(0, OBJECT_CAP)
     .map(({ piece, nodeIndex }) => ({
       name: String(piece?.name || ''),

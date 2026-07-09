@@ -26,6 +26,7 @@ import { normalizeTopology, adjacentRooms } from './structures/topology.js';
 import { exteriorDoorOf, needsForcing as doorNeedsForcing } from './structures/doors.js';
 import { roomWindows, roomWindowFacings } from './structures/roomWindows.js';
 import { furnitureRoomAssignments, objectsHere } from './structures/roomObjects.js';
+import { authoredIntactBedAt } from './structures/authoredFurniture.js';
 import { roomDetail } from './structures/roomDetail.js';
 import { floorPlan } from './structures/floorPlan.js';
 import { resolveTacticalWalk, roomRectCells } from './map/spatial/tacticalPos.js';
@@ -1126,6 +1127,33 @@ function playerMoveCore(world, packsById, text, dqIntent) {
   if (!w.combat?.active && w.meta?.mode === 'escape' && isLongRestIntent(text) && !isNpcAddressedRest(w, text)) {
     const hereId = w.map?.currentNodeId;
     const here = (w.map?.nodes || []).find(n => n && n.id === hereId) || null;
+    // FUNC-MINIS-1 — a REAL bed the builder placed here (and nobody has wrecked)
+    // gives a real night, exactly like a settlement bed: sleep/rest-at-bed is a
+    // placed-object affordance, not scenery. Checked FIRST because sleeping in
+    // the specific bed you placed is more truthful narration than a generic town
+    // bed — the mechanics are the identical long-rest band either way. A
+    // destroyed bed honestly grants nothing (the ladder below resumes).
+    const authoredBed = authoredIntactBedAt(w, hereId);
+    if (authoredBed) {
+      const slept = longRest(w);
+      const curHours = Number(slept.time?.hours) || 0;
+      const nextMorning = (Math.floor(curHours / 24) + 1) * 24;
+      const w1 = pushEvent({
+        ...slept,
+        time: { ...(slept.time || {}), hours: nextMorning }
+      }, {
+        kind: 'resolution',
+        data: { actorId: 'party', text: String(text || ''), intent: String(text || ''), roll: 0, dc: 0, outcome: 'success', updateKind: 'long-rest' }
+      });
+      const slotsLine = w1.party?.[0]?.dnd?.spellcasting ? ' Your magic settles back into reach.' : '';
+      return {
+        world: w1,
+        output: {
+          narration: `Wizard: The ${authoredBed.name} takes you the way only a real bed can. Sleep comes slow, then all at once. You wake whole — ${w1.meta.escapeHp}/${w1.meta.escapeMaxHp} HP.${slotsLine}`,
+          mechanics: '[rest:long]'
+        }
+      };
+    }
     if (here?.nodeType === 'settlement') {
       // The night passes: the clock rolls forward to the next first-light
       // (hours are counted from dawn of day one, so the next multiple of 24
@@ -7483,7 +7511,9 @@ function visibleFurnitureSurvey(w, text) {
   );
   if (!asksFurniture) return null;
 
-  const furniture = objectsHere(w).map(o => o.piece).filter(Boolean);
+  const furniture = objectsHere(w).map(o => o.piece).filter(Boolean)
+    // FUNC-MINIS-1 — placed pieces lead (they must never lose the cap to generics).
+    .sort((a, b) => (b.authored === true ? 1 : 0) - (a.authored === true ? 1 : 0));
   if (!furniture.length) {
     return { world: w, output: { narration: 'Wizard: You take stock of the room; no furniture stands out here.', mechanics: 'observe only — no roll, state unchanged' } };
   }

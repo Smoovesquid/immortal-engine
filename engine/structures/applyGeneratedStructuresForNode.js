@@ -8,6 +8,7 @@ import { ensureStructures } from './structuresState.js';
 // reads the export's own provenance.finalized stamp, so a finalized artifact loads
 // strict (never silently orphan-repaired) while drafts/demos stay tolerant (§14).
 import { hasAuthoredPlan, makeAuthoredStructure, materializeAuthoredExport } from './authoredStructure.js';
+import { seedAuthoredNodeFurniture } from './authoredFurniture.js';
 import loaderDemoHouse from '../../packs/base/structures/authored/loader_demo.house.js';
 import threeRoomDemoHouse from '../../packs/base/structures/authored/three_room_demo.house.js';
 
@@ -148,8 +149,10 @@ export function applyGeneratedStructuresForNode(world, nodeId) {
 
   const merged = ensureStructures({ byId: mergedById, nextId: existing.nextId });
 
-  return {
-    ...w,
-    structures: merged
-  };
+  // FUNC-MINIS-1 — a structure with AUTHORED furniture seeds its pieces into
+  // node.furniture (once per structure, append-only, name-unique) so the placed
+  // barrel/bed/cookpot/dresser are REAL interactable objects: objectsHere
+  // candidates, llmPhysics smash/search targets, effectsCore-mutable state.
+  // No authored structures at this node → the world is returned untouched.
+  return seedAuthoredNodeFurniture({ ...w, structures: merged }, nid);
 }

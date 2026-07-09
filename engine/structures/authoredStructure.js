@@ -58,9 +58,13 @@
 //     and a room you can see is a room you can reach (never a soft-lock).
 //   • MATERIAL — 'stone' anywhere → stone shell, else timber (the cottage default).
 //     buildingType stays 'cottage' so the whole read stack is coherent.
-//   • FURNITURE — each room's authoredPlan furniture is the roomDetail loadout for
-//     its role, so the drawn floor plan shows role-appropriate furniture and the
-//     prose ("look around") and the map agree.
+//   • FURNITURE (FUNC-MINIS-1) — a room's DRAWN pieces are carried verbatim onto the
+//     topology room and the authoredPlan: exact count, kind, identity, and drawn
+//     position (fx/fy from the export's ux/uy). Placement is engine truth — the
+//     pieces are real objects (cover, blocking, narration, smash/search via the
+//     node-furniture seeding in applyGeneratedStructuresForNode.js /
+//     authoredFurniture.js). A room with NOTHING drawn keeps the roomDetail role
+//     loadout, so pre-FUNC exports read exactly as before.
 //
 // ── What is IGNORED / DEGRADED (noted, not represented — future work) ─────────────
 //   • WALLS[] (freeform/bowed wall segments), per-wall CURVES (bowed room walls),
@@ -70,9 +74,6 @@
 //     to the abutment/repair pass rather than a modelled passage.
 //   • WINDOWS — carried onto authoredPlan.windows (additive; roomWindows derives
 //     presence). Not load-bearing for movement.
-//   • The DRAWN per-piece furniture POSITIONS (ux/uy) — narration/furniture is
-//     regenerated from the room ROLE (roomDetail), so a bed drawn in a corner reads
-//     as "a bed" but at the role's canonical layout, not the exact drawn spot.
 //   • multi-FLOOR — the engine interior model is single-storey; a multi-floor export
 //     degrades to one storey (all rooms coplanar). Noted per the report.
 //
@@ -96,6 +97,7 @@
 // creates no cycle with floorPlan.js (which imports THIS module for its override).
 import { interiorCompassLayout } from './topology.js';
 import { roomDetail } from './roomDetail.js';
+import { furnitureByRoom, authoredPlanFurniture } from './authoredFurniture.js';
 
 // ── The authored-plan REGISTRY (absorbed from the deleted authoredPlans.js) ─────────
 // A static-import registry of hand-drawn houses keyed by the procgen structure id each
@@ -486,6 +488,9 @@ function buildEdges(raw, idMap) {
 // ── Topology ───────────────────────────────────────────────────────────────────────
 function buildTopology(raw, structId, idMap, edges) {
   const entryId = pickEntryRoomId(raw);
+  // FUNC-MINIS-1 — the drawn furniture, grouped per room (the export's own per-piece
+  // `room` field, geometric containment as fallback).
+  const drawn = furnitureByRoom(raw);
   const rooms = raw.rooms.map(r => {
     const origId = String(r.id);
     const isEntry = origId === entryId;
@@ -498,7 +503,15 @@ function buildTopology(raw, structId, idMap, edges) {
     // room's UNREACHABILITY itself comes from having zero edges (buildEdges exempts
     // sealed rooms from inference/repair) — the tag is metadata, not traversal logic.
     if (r.sealed === true) tags.push('sealed');
-    return { id: idMap.get(origId), tags };
+    const canonId = idMap.get(origId);
+    // FUNC-MINIS-1 — authored rooms carry their drawn pieces on the topology room
+    // record, so every roomDetail consumer (cover, assignments, narration) reads
+    // the placed furniture, not a role loadout. Omitted when nothing was drawn.
+    const pieces = drawn.get(origId);
+    const furniture = (pieces && pieces.length)
+      ? authoredPlanFurniture(pieces, roomRectHb(r), canonId)
+      : null;
+    return { id: canonId, tags, ...(furniture && furniture.length ? { furniture } : {}) };
   });
   return { kind: 'rooms', rooms, edges };
 }
@@ -585,7 +598,10 @@ function buildAuthoredPlan(raw, structId, idMap, topology) {
     const topoRoom = topoRoomById.get(id) || { id, tags: [] };
     const det = roomDetail(topoRoom, 'cottage');
     // roomDetail's furniture is normalized 0..1 of the room box — floorPlan consumers
-    // read exactly this shape (fx/fy/w/h/r), so pass it through verbatim.
+    // read exactly this shape (fx/fy/w/h/r), so pass it through verbatim. FUNC-MINIS-1:
+    // when the topology room carries AUTHORED furniture (drawn pieces), roomDetail
+    // returns exactly those, at their drawn spots — the plan and the topology agree
+    // by construction. Rooms with nothing drawn keep the role loadout.
     outRooms.push({
       id, role: det.name, name: String(r.name || origId),
       shape: (r.shape === 'round') ? 'round' : 'rect',

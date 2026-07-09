@@ -23,6 +23,9 @@
 
 import { seedFromString, makeRng } from '../../rng.js';
 import { floorPlan } from '../../structures/floorPlan.js';
+// FUNC-MINIS-1 — the walk's blocking mask subtracts placed pieces the world has
+// since destroyed (a wrecked barrel no longer bars the cell it stood on).
+import { destroyedAuthoredPieceIds } from '../../structures/authoredFurniture.js';
 // MR-3a — the wild-feature derivation is the SINGLE source of the outdoor
 // walkable-mask truth: a blocking wild feature (a tree, a boulder) makes its region
 // cell unwalkable, exactly like a wall indoors. tacticalPos calls THROUGH to it (no
@@ -319,9 +322,12 @@ function doorCellKeys(plan) {
 // be furniture-blocked). Cached per structure id (plan is pure). This is the struct
 // mask's blocking layer; roomRectCells already carves the walls out, so a cell is
 // walkable iff it is in a room rect AND not in this set. Pure; no rng; no mutation.
-function furnitureBlockedCells(structure, cache) {
+function furnitureBlockedCells(structure, cache, excludeIds = null) {
   const id = String(structure?.id ?? '');
-  if (cache && cache.has(id)) return cache.get(id);
+  const excluding = excludeIds && excludeIds.size > 0;
+  // The cache memoizes the STATIC mask; a live exclusion set (destroyed pieces)
+  // varies with world state, so those calls bypass it (destruction is rare).
+  if (!excluding && cache && cache.has(id)) return cache.get(id);
   const plan = floorPlan(structure);
   const rooms = Array.isArray(plan?.rooms) ? plan.rooms : [];
   const doorKeys = doorCellKeys(plan);
@@ -330,6 +336,8 @@ function furnitureBlockedCells(structure, cache) {
     const furniture = Array.isArray(r.furniture) ? r.furniture : [];
     for (const f of furniture) {
       if (f && f.flat) continue; // rugs/runners: a floor covering, stand on it
+      // FUNC-MINIS-1 — a destroyed placed piece stops blocking its cell.
+      if (excluding && f && excludeIds.has(String(f.id))) continue;
       const anchor = furnitureAnchorCell(r, f);
       if (!anchor) continue;
       const key = `${anchor.gx},${anchor.gy}`;
@@ -337,7 +345,7 @@ function furnitureBlockedCells(structure, cache) {
       blocked.add(key);
     }
   }
-  if (cache) cache.set(id, blocked);
+  if (!excluding && cache) cache.set(id, blocked);
   return blocked;
 }
 
@@ -353,11 +361,11 @@ function furnitureBlockedCells(structure, cache) {
  * asserts a committed struct pos never sits ON furniture. Pure & deterministic;
  * never throws. `cache` (optional) memoizes the blocked-set for a batch of calls.
  */
-export function structCellFree(structure, gx, gy, cache = null) {
+export function structCellFree(structure, gx, gy, cache = null, excludeIds = null) {
   if (!structure || !Number.isInteger(gx) || !Number.isInteger(gy)) return false;
   const plan = floorPlan(structure);
   if (roomOfStructCell(plan, gx, gy) === '') return false; // wall band / void
-  return !furnitureBlockedCells(structure, cache).has(`${gx},${gy}`);
+  return !furnitureBlockedCells(structure, cache, excludeIds).has(`${gx},${gy}`);
 }
 
 // ── Door thresholds (MR-1a) — the struct↔region cells a doorway maps ─────────
@@ -747,7 +755,9 @@ export function resolveTacticalWalk(world, { actorId = 'party', dir, cells } = {
     // STOPS HONESTLY one cell short of the dresser ("the wardrobe blocks the way"),
     // never on it. furnitureBlockedCells is pure & deterministic, so this keeps the
     // walk replay-stable and adds no randomness (mirrors the outdoor tree-block above).
-    const furnBlocked = furnitureBlockedCells(st, null);
+    // FUNC-MINIS-1 — minus destroyed placed pieces: the wreck of a smashed barrel
+    // no longer bars the cell (a pure function of world state — still replay-stable).
+    const furnBlocked = furnitureBlockedCells(st, null, destroyedAuthoredPieceIds(world, st));
     const inBounds = (nx, ny) =>
       nx >= rect.minX && nx <= rect.maxX && ny >= rect.minY && ny <= rect.maxY
       && !furnBlocked.has(`${nx},${ny}`);

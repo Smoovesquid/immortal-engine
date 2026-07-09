@@ -75,6 +75,17 @@ export function furnitureRoomAssignments(world, nodeId) {
   for (const piece of furniture) {
     const name = String(piece?.name || '');
     if (!name || assignments.has(name)) continue;
+    // FUNC-MINIS-1 — an authored piece KNOWS its room (the Builder drew it there).
+    // Explicit provenance always beats the affinity guess; the seeded pick below
+    // remains byte-identical for every generic piece.
+    if (piece.authored === true && piece.structureId && piece.roomId) {
+      const home = kindsByRoom.find(r =>
+        String(r.structureId) === String(piece.structureId) && String(r.roomId) === String(piece.roomId));
+      if (home) {
+        assignments.set(name, { structureId: home.structureId, roomId: home.roomId });
+        continue;
+      }
+    }
     const kindred = AFFINITY[name.toLowerCase()] || [];
     const preferred = kindsByRoom.filter(r => kindred.some(k => r.kinds.has(k)));
     const pool = preferred.length ? preferred : kindsByRoom;

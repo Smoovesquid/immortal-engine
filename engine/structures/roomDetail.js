@@ -41,7 +41,9 @@ export const COVER_BONUS = { half: 2, 'three-quarter': 5 };
 // marks a floor covering (a rug) drawn under everything else. Sizes are
 // normalized 0..1 of the room box.
 //   shapes: 'rect' (w,h) | 'circle' (r) | 'lshape' (w,h) | 'bed' (w,h) | 'rug' (w,h)
-const FURN = {
+// FUNC-MINIS-1: exported — the Builder's palette (scripts/dump-furniture.mjs) and
+// the authored-furniture contract (authoredFurniture.js) read this same catalog.
+export const FURN = {
   hearth:    { label: 'hearth',         shape: 'rect',   material: 'fire',  light: 2, cover: null,            w: 0.34, h: 0.13 },
   firepit:   { label: 'fire pit',       shape: 'circle', material: 'fire',  light: 2, cover: null,            r: 0.09 },
   brazier:   { label: 'brazier',        shape: 'circle', material: 'fire',  light: 1, cover: null,            r: 0.06 },
@@ -60,6 +62,8 @@ const FURN = {
   bedding:   { label: 'straw bedding',  shape: 'bed',    material: 'cloth', light: 0, cover: null,            w: 0.18, h: 0.22 },
   chest:     { label: 'chest',          shape: 'rect',   material: 'iron',  light: 0, cover: null, loot: 1,   w: 0.14, h: 0.10 },
   wardrobe:  { label: 'wardrobe',       shape: 'rect',   material: 'wood',  light: 0, cover: 'half',          w: 0.12, h: 0.16 },
+  dresser:   { label: 'dresser',        shape: 'rect',   material: 'wood',  light: 0, cover: 'half', loot: 1, w: 0.12, h: 0.08 },
+  cookpot:   { label: 'cooking pot',    shape: 'circle', material: 'iron',  light: 0, cover: null,            r: 0.05 },
   chair:     { label: 'chair',          shape: 'rect',   material: 'wood',  light: 0, cover: null,            w: 0.07, h: 0.07 },
   basin:     { label: 'stone basin',    shape: 'circle', material: 'stone', light: 0, cover: 'half',          r: 0.075 },
   font:      { label: 'font',           shape: 'circle', material: 'stone', light: 0, cover: 'half',          r: 0.06 },
@@ -303,6 +307,46 @@ export function roomDetail(room, forcedType = null) {
     role = slot < B.plan.length ? B.plan[slot] : B.fill;
   }
   const R = ROLES[role] || ROLES.storeroom;
+
+  // FUNC-MINIS-1 — an AUTHORED room carries its own drawn furniture (Builder
+  // placement is engine truth: exact count, kind, identity, drawn position —
+  // never a role-based substitute, never an injected crate). Same additive
+  // posture as LOAD-1's role tag: no procgen room carries the field, so every
+  // generated structure below stays byte-identical.
+  if (Array.isArray(room?.furniture) && room.furniture.length) {
+    const authored = room.furniture
+      .filter(f => f && typeof f === 'object' && String(f.kind || ''))
+      .map((f, i) => {
+        const kind = String(f.kind);
+        const base = FURN[kind] || { label: kind.replace(/[_-]+/g, ' '), shape: 'rect', material: 'wood', light: 0, cover: null, w: 0.1, h: 0.1 };
+        const num = (v, d) => (Number.isFinite(+v) ? +v : d);
+        return {
+          id: String(f.id || `${id}#a${i}`),
+          kind,
+          label: String(f.label || base.label),
+          shape: String(f.shape || base.shape),
+          material: String(f.material || base.material),
+          light: num(f.light, base.light || 0),
+          cover: (f.cover === 'half' || f.cover === 'three-quarter') ? f.cover : null,
+          loot: num(f.loot, base.loot || 0),
+          flat: f.flat ? 1 : 0,
+          fx: Math.max(0, Math.min(1, num(f.fx, 0.5))),
+          fy: Math.max(0, Math.min(1, num(f.fy, 0.5))),
+          w: num(f.w, base.w || 0), h: num(f.h, base.h || 0), r: num(f.r, base.r || 0),
+          authored: 1,
+        };
+      });
+    if (authored.length) {
+      return {
+        buildingType, arch: buildingType, role, kind: role, name: R.name,
+        entry: isEntry,
+        dark: isEntry ? 0 : (R.dark || 0),
+        shape: R.shape || 'rect',
+        sizeW: R.w || 1, sizeH: R.h || 1,
+        furniture: authored
+      };
+    }
+  }
 
   const furniture = layoutFurniture(role, R.items, R.shape, id).map((f, i) => ({
     id: `${id}#f${i}`, ...f

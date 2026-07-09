@@ -606,7 +606,9 @@ function currentRoomCover(world) {
   const rooms = Array.isArray(st?.topology?.rooms) ? st.topology.rooms : [];
   const room = rooms.find(r => String(r?.id) === String(interior.roomId || ''));
   if (!room) return null;
-  return bestCover(coverForRoom(room));
+  // FUNC-MINIS-1 — live-state cover: a placed piece the player wrecked/took no
+  // longer shelters anyone (coverFeatures reads the stored node.furniture twin).
+  return bestCover(coverForRoom(room, { world, structureId: String(interior.structureKey || '') }));
 }
 
 // DX-2c — source the enemy side's opening tactical positions, ONCE at fight start

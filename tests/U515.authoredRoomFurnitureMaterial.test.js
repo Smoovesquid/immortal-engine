@@ -80,18 +80,26 @@ test('U515: the drawn furniture for the room includes a BED (the map and the pro
   assert.ok(kinds.includes('bed'), 'a quarters draws a bed — the authored role furnishes truthfully');
 });
 
-test('U515: the narrated objects that land in the room are role-KINDRED (a bed room gets a straw pallet, not a contradiction)', () => {
+test('U515: the narrated objects that land in the room are room-TRUTHFUL (the drawn pieces first, role-kindred generics after)', () => {
   const w = bootDemo();
   const rs = getRoomState(w);
   const names = rs.objects.map(o => String(o.name).toLowerCase());
   // At least one narrated object, and nothing that contradicts a lived-in quarters.
   assert.ok(names.length > 0, 'the room surfaces real objects to narrate');
-  // The bed-affinity node piece (straw pallet) belongs in a bed room; assert it's the
-  // room it landed in by checking the survey contains a beddish/among-cottage item.
-  const plausible = ['straw pallet', 'wooden chair', 'wooden table', 'oil lantern', 'iron-bound chest', 'stone basin', 'wooden crate', 'tool rack'];
+  // FUNC-MINIS-1 (2026-07-09, supersedes the original role-kindred-only law): the
+  // hut's DRAWN pieces (loader_demo.house.js placed a bed and a barrel) are now
+  // real node objects — the MOST plausible furnishings of all (Tim's acceptance
+  // #5: "recognized as their actual object kinds, not generic props"). Generic
+  // decompression pieces remain alongside them, append-only.
+  const plausible = ['bed', 'barrel', 'straw pallet', 'wooden chair', 'wooden table', 'oil lantern', 'iron-bound chest', 'stone basin', 'wooden crate', 'tool rack'];
   for (const n of names) {
-    assert.ok(plausible.includes(n), `narrated object "${n}" is a plausible cottage furnishing (no invented object)`);
+    assert.ok(plausible.some(p => n === p || n.startsWith(`${p} `)),
+      `narrated object "${n}" is a plausible cottage furnishing (no invented object)`);
   }
+  // The drawn pieces themselves are narratable — the bed the author placed IS the
+  // bed the prose can name.
+  assert.ok(names.some(n => /\bbed\b/.test(n)), 'the drawn bed is a narrated object');
+  assert.ok(names.some(n => /\bbarrel\b/.test(n)), 'the drawn barrel is a narrated object');
 });
 
 test('U515: a STONE fixture narrates a stone material line (material maps down honestly)', () => {

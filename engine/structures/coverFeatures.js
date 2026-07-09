@@ -8,24 +8,43 @@
  * (escapeCombat.js), the HUD (combatHud.js), and the map (LocalMap.js) all agree
  * on exactly what's coverable and where it sits.
  *
+ * FUNC-MINIS-1 — cover reads LIVE state: pass ctx = { world, structureId } and a
+ * placed (authored) piece the player smashed to a wreck or carried off stops
+ * granting cover — the SAME stored node.furniture record that effectsCore
+ * mutations wrote is the record this filter consults. Without ctx (or for
+ * procgen loadout pieces, which have no stored twin yet) behavior is exactly
+ * as before.
+ *
  * D&D 5e tiers: half = +2 AC, three-quarter = +5 AC. Pure + deterministic.
  */
 
 import { roomDetail, COVER_BONUS } from './roomDetail.js';
+import { destroyedAuthoredPieceIds } from './authoredFurniture.js';
 
 /**
- * coverForRoom(room) -> Array<{ id, kind, label, tier, bonus, fx, fy }>
- * The cover-granting furniture in a room. Non-entry rooms always have at least
- * one piece (roomDetail guarantees it).
+ * coverForRoom(room, ctx?) -> Array<{ id, kind, label, tier, bonus, fx, fy }>
+ * The cover-granting furniture in a room. Non-entry procgen rooms always have at
+ * least one piece (roomDetail guarantees it); an authored room offers exactly
+ * what its author placed — minus whatever the world has since destroyed.
  */
-export function coverForRoom(room) {
+export function coverForRoom(room, ctx = null) {
   const det = roomDetail(room);
-  return det.furniture
-    .filter(f => f && f.cover)
-    .map(f => ({
-      id: f.id, kind: f.kind, label: f.label, tier: f.cover,
-      bonus: COVER_BONUS[f.cover] || 2, fx: f.fx, fy: f.fy
-    }));
+  let pieces = det.furniture.filter(f => f && f.cover);
+
+  const world = ctx && typeof ctx === 'object' ? ctx.world : null;
+  const structureId = ctx && typeof ctx === 'object' ? String(ctx.structureId || '') : '';
+  if (world && structureId && pieces.some(f => f.authored === 1)) {
+    const st = world?.structures?.byId?.[structureId];
+    if (st) {
+      const dead = destroyedAuthoredPieceIds(world, st);
+      if (dead.size) pieces = pieces.filter(f => !dead.has(String(f.id)));
+    }
+  }
+
+  return pieces.map(f => ({
+    id: f.id, kind: f.kind, label: f.label, tier: f.cover,
+    bonus: COVER_BONUS[f.cover] || 2, fx: f.fx, fy: f.fy
+  }));
 }
 
 /**

@@ -12,7 +12,8 @@ function roomCoverOf(world) {
   const rooms = Array.isArray(st?.topology?.rooms) ? st.topology.rooms : [];
   const room = rooms.find(r => String(r?.id) === String(interior.roomId || ''));
   if (!room) return null;
-  return bestCover(coverForRoom(room));
+  // FUNC-MINIS-1 — the HUD shows the same live-state cover the resolver uses.
+  return bestCover(coverForRoom(room, { world, structureId: String(interior.structureKey || '') }));
 }
 
 /**

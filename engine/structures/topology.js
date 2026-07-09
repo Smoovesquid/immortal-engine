@@ -20,6 +20,40 @@ function sortPair(a, b) {
   return (A <= B) ? [A, B] : [B, A];
 }
 
+// FUNC-MINIS-1 — shape normalization for a room's authored furniture (the drawn
+// pieces the Builder placed; see authoredFurniture.js for the contract). This is
+// hashed world shape, so every field is coerced explicitly. Returns null when
+// nothing well-formed remains, so the field is omitted rather than stored empty.
+function normalizeRoomFurniture(v) {
+  if (!Array.isArray(v) || !v.length) return null;
+  const num = (x, d = 0) => (Number.isFinite(+x) ? +x : d);
+  const out = [];
+  const seen = new Set();
+  for (const f of v) {
+    if (!isObject(f)) continue;
+    const id = String(f.id ?? '');
+    const kind = String(f.kind ?? '');
+    if (!id || !kind || seen.has(id)) continue;
+    seen.add(id);
+    out.push({
+      id,
+      kind,
+      label: String(f.label ?? kind),
+      shape: String(f.shape ?? 'rect'),
+      material: String(f.material ?? 'wood'),
+      light: num(f.light),
+      cover: (f.cover === 'half' || f.cover === 'three-quarter') ? f.cover : null,
+      loot: num(f.loot),
+      flat: f.flat ? 1 : 0,
+      fx: Math.max(0, Math.min(1, num(f.fx, 0.5))),
+      fy: Math.max(0, Math.min(1, num(f.fy, 0.5))),
+      w: num(f.w), h: num(f.h), r: num(f.r),
+      authored: f.authored ? 1 : 0,
+    });
+  }
+  return out.length ? out : null;
+}
+
 /**
  * Topology v0 (S3): room graph with undirected adjacency.
  * {
@@ -44,7 +78,12 @@ export function normalizeTopology(topology) {
     const id = String(obj.id ?? '');
     if (!id || roomIds.has(id)) continue;
     roomIds.add(id);
-    rooms.push({ id, tags: uniqStrings(Array.isArray(obj.tags) ? obj.tags : []) });
+    // FUNC-MINIS-1 — authored rooms carry their drawn furniture. Kept ONLY when
+    // present and well-formed, so every procgen room's shape (and its worldHash)
+    // is unchanged. Without this the field dies on the first round-trip: rooms
+    // are rebuilt field-by-field right here (the whitelist trap).
+    const furniture = normalizeRoomFurniture(obj.furniture);
+    rooms.push({ id, tags: uniqStrings(Array.isArray(obj.tags) ? obj.tags : []), ...(furniture ? { furniture } : {}) });
   }
 
   const edgesIn = Array.isArray(t.edges) ? t.edges : [];

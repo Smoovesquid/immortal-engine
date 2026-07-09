@@ -472,6 +472,10 @@ function ensureNode(n) {
   }
   // Preserve furniture data for physics interaction
   if (Array.isArray(x.furniture)) base.furniture = x.furniture;
+  // FUNC-MINIS-1 — which authored structures have already seeded their placed
+  // furniture into this node (seed-once marker; a taken/wrecked piece must never
+  // resurrect on a later structure pass).
+  if (Array.isArray(x.furnitureSeeded)) base.furnitureSeeded = x.furnitureSeeded;
   return base;
 }
 

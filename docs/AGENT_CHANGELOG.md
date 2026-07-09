@@ -3539,3 +3539,50 @@ other agents. (none active)
 - HONEST SCOPE: the "Roll the 1d6 and tell me the result" half is still not rolled — meta answers are
   observe-only by design; rolling mid-attack is the object-attack lane (1a) when the attack is declared.
   DM-GATE-1b (persistent object AC/HP, WORLD_VERSION bump) remains queued.
+
+## 2026-07-09 — Basecamp (Fable) — FUNC-MINIS-1 → v0.35.0 build 144 "placed furniture is real" — the Builder's furniture becomes engine truth
+
+- Tim-authorized engine brief (in-chat, 2026-07-09). Hard bar: "If a thing can be placed, the world
+  must believe in it." Root (documented in the loader's own header): authoredStructure.js REGENERATED
+  every room's furniture from its role — a drawn bed read as "a bed" at the role's canonical slot and
+  three drawn barrels in a bedroom didn't exist at all. Red repro U659/U660 (8 asserts) before any fix.
+- THE SEAM: drawn pieces now ride the topology room + authoredPlan verbatim (exact count, kind,
+  identity, drawn position; NO role substitutes, NO injected crate; nothing-drawn rooms keep the role
+  loadout, so pre-FUNC exports are unchanged). New engine/structures/authoredFurniture.js is the ONE
+  contract: Model B (plan/topology item — render/cover/blocking/narration) ↔ Model A (node.furniture
+  piece — objectsHere/llmPhysics/effectsCore) joined by pieceId + explicit structureId/roomId
+  provenance (roomObjects assignment prefers provenance over affinity). Materialization seeds Model A
+  pieces once per structure EVER (node.furnitureSeeded marker — a taken/wrecked piece never
+  resurrects); names unique per node (ROM-4); explicit material/hardness so physics never falls back
+  to name inference (a 'cookpot' would read ceramic). normalizeTopology + mapState carry the new
+  fields (the ensureCombat whitelist-trap lesson, applied twice).
+- LIVE STATE (acceptance #4/#6): coverForRoom(room, {world, structureId}) subtracts destroyed pieces —
+  wreck predicate = terminal state OR damaged-with-parts-exhausted OR twin absent; escapeCombat
+  currentRoomCover + combatHud pass the ctx (one line each — escapeCombat was brief-fenced, Tim's
+  acceptance #6 required exactly this line); resolveTacticalWalk subtracts the same set from the
+  FURN-1 blocking mask. Seeded PLACEMENT stays conservative (documented).
+- FOUR KINDS: FURN catalog gains cookpot (iron, dents) + dresser (wood, half cover, loot); barrel/bed
+  already existed; dump-furniture.mjs rerun (39→41; house-builder strings updated). Bed-rest wired:
+  an intact placed bed = the settlement-bed long-rest band (existing rule, no new number), outranking
+  the generic town-bed narration; a wrecked bed grants nothing. Cooking flagged NOT wired — no cooking
+  mechanic exists to join; wiring one would be invented design (garden seed, not fake plumbing).
+- Survey display: placed pieces lead the object list (roomState + the furniture-ask sink) — the
+  author's pieces never lose the 5-name cap to generic decompression pieces.
+- SCOPE DEVIATIONS (both flagged): (1) STRUCTURE_SCHEMA_VERSION deliberately NOT bumped (brief said
+  27→28) — it pins PROCGEN identity (stgen:v27 ids); procgen is byte-identical here and a bump would
+  regenerate every procgen interior id, breaking save continuity for zero benefit. (2) One line in
+  escapeCombat.js (above). U515's last test updated to the new law (drawn pieces are narratable — was
+  asserting the generic-template-only world).
+- Tests U659–U664 (33 asserts): carriers + round-trip strip-trap guards · node seeding + provenance
+  assignment · barrel exemplar E2E via playerMove (present → cover/blocking → smash → SALVAGE lane
+  destroys + drops board → cover AND blocking released, reading the stored state the smash mutated) ·
+  rulings-lane wreck unit + procgen byte-compat · four-kind physics · bed-rest + wrecked-bed honesty ·
+  determinism (fresh-boot hash equality, replay-stable smash, destruction INSIDE the hash, procgen
+  unaffected). Suite 11001/0; npm run check GREEN ×2 (135/135 convergence, screen truth locked).
+- LIVE v1.html receipt (save-seeded loaderDemo, Sera): survey names the placed bed → "I smash the
+  barrel." → "The barrel comes apart under your hands — you're left with board and handful of nails"
+  → board + nails visible in the PACK panel (screenshot taken). Known pre-existing miss (not this
+  packet): "Is the barrel still here?" routes to NPC-presence, not object-presence — answerability
+  lane follow-up.
+- Architecture note: docs/briefs/FUNC-MINIS-architecture.md (the contract, the recipe for future
+  kinds, honest limits). DM-GATE-1b stays queued & separate per Tim's ruling — no object HP/AC here.

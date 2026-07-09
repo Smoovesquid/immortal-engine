@@ -3677,3 +3677,39 @@ other agents. (none active)
   artifact-grounded case) · presence+move compound leaks egress+"no such place" ("head to the front" —
   a PLACE ref; B2 fixed object destinations) · flaming pallet deals zero damage (fire-hazard gap).
   Candidate DM-GATE-1e cluster; queued as findings in PACKETS, NOT started per Tim's instruction.
+
+## 2026-07-09 — Basecamp (Fable) — DM-GATE-1e → v0.35.2 build 146 "five survivors closed" — the re-gate's remainder, red-first
+
+- Tim-authorized engine brief (in-chat, 2026-07-09; R5b kept in — "deliberate contact with an
+  already-burning object is a bounded consequence gap"). All five roots re-proven red on b145
+  (verbatim re-gate inputs), fixed in engine/playloop.js ONLY (per hard instruction). Tests
+  U671–U676 (23 asserts), red-first with controls pinning every neighbor lane.
+- **R1 sheet stats**: "Give me actual numbers for Might, Agility…" hit the ungrounded-person clarify
+  ("I haven't introduced anyone named Agility"). Now an explicit attribute ask answers the REAL party
+  sheet ("Your sheet, plainly: Might 6, Agility 6, Wits 6, Grit 8, Charm 6" — the 1c law: the sheet is
+  player-visible UI); the five attribute nouns joined NPC_REFERENT_STOPWORDS. Unknown-person clarify
+  intact (control).
+- **R2 multi-name identity**: "Who are Elske, Dalla, Asha?" answered only positionally. Now a
+  who-are ask naming ≥2 roster NPCs answers identity for EACH (name + role from canon); the
+  single-person and location lanes untouched (controls).
+- **R3 grounded no-record decline**: record-keeping questions fell into the presence-survey branch
+  (answerOrDeclineQuestion's "…here?" pre-check) or the validator's inert "The room is quiet." Now a
+  record-ask skips the presence branch and the nameless decline states the RECORD-KIND plainly per
+  Tim's wording rule ("No one here keeps a written record of that — there's no record to check…").
+  U202/U207 decline-shape pins preserved.
+- **R4 presence+move compound**: "anyone else around I could ask? Maybe I should head to the front"
+  bridged out the door into "no such place hereabouts" — the TRAVEL BRIDGE (not the interior parser)
+  owned it. Now a presence-about-HERE question never bridges and movement yields to it everywhere;
+  presence-about-ELSEWHERE ("who's in the NEXT room?") deliberately keeps the egress-door pattern —
+  the U319/LH-2 law the first cut broke and the full ladder caught (the guard is now the RIGHT shape).
+- **R5a "lie" pun**: the deceive detector's \blie\b read "I lie down on the flaming pallet" as telling
+  a lie ("Elske buys it…"). Posture idiom excluded; real deception still routes socially (control).
+- **R5b fire contact**: lying on a burning piece now WOUNDS through the existing instant-wound
+  machinery (2 HP, no roll — trySelfHarm's scale; "the fire doesn't negotiate"); state-gated (a cold
+  pallet stays a harmless rest); systemic fire (spread/per-turn/NPC response) is ENV-FIRE-1, queued.
+- U676: worldHash ×2 across all five sequences; sheet-read = worldly no-op; the burn is a real
+  replay-stable mutation (the R3 decline advances the info-press counter by design — documented).
+- Ladder GREEN after the U319/U202/U207 regression fixes: 135/135 convergence · suite 11,046/0 ·
+  screen truth locked. LIVE receipts (full LLM-on path): the stats answer matches the character panel
+  digit-for-digit; the burn lands at 11/13 in prose AND the party panel (screenshot).
+- Remaining: DM-GATE-1b (separate, Tim's ruling) · ENV-FIRE-1 (queued). Re-gate again at Tim's call.

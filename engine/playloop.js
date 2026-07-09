@@ -1721,6 +1721,27 @@ function playerMoveCore(world, packsById, text, dqIntent) {
     if (artifactAuthor) return artifactAuthor;
   }
 
+  // DM-GATE-1e R1 — an attribute/stat-numbers ask answers the REAL party sheet.
+  // "Give me actual numbers for Might, Agility, Wits, Charm, Grit" hit the
+  // ungrounded-person clarify TWICE at the re-gate ("I haven't introduced
+  // anyone named Agility"). The sheet is player-visible UI, so an explicit ask
+  // gets the numbers — the same law DM-GATE-1c set for modifier asks.
+  if (!w.combat?.active && !w.scene?.dialogue) {
+    const sheet = trySheetStatsAnswer(w, text);
+    if (sheet) return sheet;
+  }
+
+  // DM-GATE-1e R5b — deliberate body contact with a BURNING piece has a real
+  // consequence BEFORE any posture/trivial read ("I lie down on the flaming
+  // pallet" dealt zero damage at the re-gate). Fire does what fire does — the
+  // instant-wound machinery trySelfHarm already uses. State-gated: a cold
+  // pallet stays a harmless rest. Systemic fire (spread, per-turn burn) is
+  // ENV-FIRE-1, not here.
+  if (!w.combat?.active && !w.scene?.dialogue) {
+    const burned = tryBurningContact(w, text, actorId);
+    if (burned) return burned;
+  }
+
   if (!w.combat?.active && !w.scene?.dialogue) {
     const contact = splitWalkToObjectClause(w, text);
     if (contact) {
@@ -2384,7 +2405,14 @@ function playerMoveCore(world, packsById, text, dqIntent) {
   // verb). GUARD: an OCCUPIED interior room resolves the seek to the person right
   // here (no spurious exit) — only an EMPTY room bridges. The knowledge tail ("who
   // founded X") then flows through the existing question machinery once outside.
+  // DM-GATE-1e R4 — a presence-about-HERE question never bridges: "is there
+  // anyone else around I could ask? Maybe I should head to the front." must be
+  // ANSWERED from the roster (the standalone form already is), not walked out
+  // the door into the travel resolver's "no such place hereabouts". Guards BOTH
+  // bridges. Presence-about-ELSEWHERE keeps the egress-door pattern (U319).
+  const asksPresenceQuestion = asksPresenceHere(text);
   const bridgeSeekPerson = isSeekPersonIntent(text)
+    && !asksPresenceQuestion
     && !bridgeApproachesPresentNpc
     && !interiorRoomHasSociablePerson(w);
   if (w.scene?.interior && !w.combat?.active && !declaredNpcViolence && bridgeSeekPerson) {
@@ -2406,6 +2434,7 @@ function playerMoveCore(world, packsById, text, dqIntent) {
     return { ...r, output: { ...(r.output || {}), narration: `Wizard: You step out into the open air. ${inner}`.trim() } };
   }
   if (w.scene?.interior && !w.combat?.active && !declaredNpcViolence && isFreeMovementIntent(text)
+      && !asksPresenceQuestion
       && (bridgeTravelVerb || bridgeNamedPlace || bridgeUnknownDest)) {
     const outside = exitStructureInterior(w);
     const r = playerMoveCore(outside, packsById, text);
@@ -2561,6 +2590,15 @@ function playerMoveCore(world, packsById, text, dqIntent) {
   // generic-descriptor ask with its hostile-observer safety). NO roll: identity is common knowledge,
   // not a skill check. §0-safe: name + role only. Motive/secret/backstory/allegiance/leadership are NOT
   // classified (deferred) → they fall through to their existing non-inventing decline/floor.
+  // DM-GATE-1e R2 — a MULTI-name "who are X, Y, and Z" answers IDENTITY for
+  // each present named NPC (the re-gate answered only positionally — "none of
+  // them are in your bedchamber" — and never said who they are, though canon
+  // holds name + role for every one). Checked before the single-person query so
+  // the plural form never collapses to one answer.
+  if (!w.combat?.active && !w.scene?.dialogue) {
+    const multi = tryMultiPersonIdentity(w, text);
+    if (multi) return multi;
+  }
   if (!w.combat?.active && !w.scene?.dialogue) {
     const personQuery = classifyPersonQuery(text);
     if (personQuery && !personQuery.demonstrative) {
@@ -5196,6 +5234,18 @@ function inferInteriorAction(text, interior, opts = {}) {
     return { kind: 'none' };
   }
 
+  // DM-GATE-1e R4 — a PRESENCE QUESTION outranks a ride-along move. "Is there
+  // anyone else around I could ask? Maybe I should head to the front." leaked
+  // through egress at the re-gate ("You know of no such place hereabouts") or
+  // moved rooms and silently dropped the question. The standalone question
+  // already passes — movement yields so the compound reaches the same sink.
+  // Requires the interrogative, so a plain move never enters; the old asksWho
+  // guard below (exit-gesture branch) is subsumed for who-questions but kept.
+  // (asksPresenceHere is module-scoped — the exit/travel BRIDGES honor the
+  // same yield, since they run long before this parser. Presence-about-
+  // ELSEWHERE stays with the egress-door pattern — U319/LH-2.)
+  if (asksPresenceHere(t)) return { kind: 'none' };
+
   // "I back up and ram the door" — a run-up to FORCE something, not a leave. The
   // ambiguous "back up" / "back out" leave-tokens must not claim a forceful action
   // aimed at a barrier. Tightly scoped to unambiguous force verbs + a barrier noun,
@@ -6539,7 +6589,10 @@ function isGroundedNpcRef(world, ref) {
 const NPC_REFERENT_STOPWORDS = new Set([
   'i', 'me', 'my', 'you', 'your', 'he', 'him', 'she', 'her', 'they', 'them', 'it',
   'someone', 'somebody', 'anyone', 'anybody', 'people', 'person', 'folk', 'locals',
-  'villagers', 'this person', 'that person'
+  'villagers', 'this person', 'that person',
+  // DM-GATE-1e R1 — the five attribute nouns are NEVER people ("I haven't
+  // introduced anyone named Agility" — re-gate 2026-07-09).
+  'might', 'agility', 'wits', 'charm', 'grit'
 ]);
 
 const NPC_PROPER_REFERENT_STOPWORDS = new Set([
@@ -8256,6 +8309,90 @@ function tryContinuityReconcile(w, text) {
   };
 }
 
+// DM-GATE-1e R1 — the five attribute nouns + the ask-shapes that make a stats
+// question. BOTH must hold (an attribute noun alone is normal prose — "I test
+// my might against the door" is an action, not a sheet ask).
+const ATTRIBUTE_NOUN_RE = /\b(might|agility|wits|charm|grit)\b/i;
+const SHEET_ASK_RE = /\b(?:numbers?|scores?|stats?|attributes?|values?)\b|\bwhat(?:'s| is| are)\s+(?:my|each|the)\b|\bgive me\b|\blist\b/i;
+
+function trySheetStatsAnswer(w, text) {
+  const t = String(text || '');
+  if (!ATTRIBUTE_NOUN_RE.test(t) || !SHEET_ASK_RE.test(t)) return null;
+  // Interrogative or an explicit tell/give ask — a declarative action never enters.
+  if (!/\?/.test(t) && !/\b(?:give me|tell me|list|what)\b/i.test(t)) return null;
+  const stats = w.party?.[0]?.stats;
+  if (!stats || typeof stats !== 'object') return null;
+  const ORDER = ['MIGHT', 'AGILITY', 'WITS', 'GRIT', 'CHARM'];
+  const parts = ORDER.filter(k => Number.isFinite(Number(stats[k])))
+    .map(k => `${k.charAt(0)}${k.slice(1).toLowerCase()} ${Number(stats[k])}`);
+  if (!parts.length) return null;
+  return {
+    world: w,
+    output: {
+      narration: `Wizard: Your sheet, plainly: ${parts.join(', ')}.`,
+      mechanics: '[sheet:attributes | read from the sheet, no roll]'
+    }
+  };
+}
+
+// DM-GATE-1e R4 — a presence question ("who's here?", "is there anyone else
+// around?", "anybody about?"). Shared by the interior movement parser AND the
+// exit/travel bridges: wherever a move rides along, the presence half wins and
+// the roster sink answers (it already handles the standalone form).
+const PRESENCE_QUESTION_RE = /\bwho(?:'?s|\s+(?:is|are|do|did|can|could|might|else))\b|\bis\s+there\s+(?:any(?:one|body)|someone|somebody)\b|\bany(?:one|body)\s+(?:else\s+)?(?:around|about|here|nearby|close|outside|out\s+there)\b/i;
+// …but presence-about-ELSEWHERE ("who's in the NEXT room?") belongs to the
+// egress-door pattern (the answerability arc walks you to the door and answers
+// there — U319/LH-2). The yield applies only to presence-about-HERE.
+const PRESENCE_ELSEWHERE_RE = /\b(?:next|other|far|back|that)\s+room\b|\bthrough\s+the\b|\bbehind\s+the\b|\bbeyond\b|\bupstairs\b|\bdownstairs\b|\bin\s+there\b|\bover\s+there\b/i;
+function asksPresenceHere(text) {
+  const t = String(text || '');
+  return /\?/.test(t) && PRESENCE_QUESTION_RE.test(t) && !PRESENCE_ELSEWHERE_RE.test(t);
+}
+
+// DM-GATE-1e R5b — body-contact verbs aimed at a present piece. The consequence
+// fires ONLY when the matched piece is actually burning.
+const BODY_CONTACT_RE = /\b(?:lie|lies|lying|lay|sit|sits|sitting|sleep|sleeps|sleeping|rest|rests|resting|climb|climbs|climbing|roll|rolls|rolling|stand|stands|kneel|kneels|press|presses|lean|leans|throw myself|fling myself|grab|grabs|touch|touches)\b[^.!?]{0,50}\b(?:on|onto|upon|into|in|across|atop|against|over)\b/i;
+
+function tryBurningContact(w, text, actorId) {
+  const t = String(text || '');
+  if (!BODY_CONTACT_RE.test(t)) return null;
+  const detection = detectPhysicalInteraction(w, t);
+  const match = (detection?.matches || []).find(x => x.match === 'name' || x.match === 'part');
+  if (!detection?.detected || !match) return null;
+  const node = (w.map?.nodes || []).find(n => n && n.id === w.map?.currentNodeId) || null;
+  const piece = (node?.furniture || []).find(f => String(f?.name || '') === String(match.name || '')) || null;
+  if (!piece || String(piece.state || '') !== 'burning') return null;
+
+  const pc = w.party?.[0];
+  const id = String(actorId || pc?.id || 'party');
+  // A deliberate full-contact burn bites like a deep cut (trySelfHarm's scale):
+  // instant HP, no roll — you cannot "fail" to be burned by the fire you lie in.
+  const hpCost = 2;
+  let w1 = w;
+  const escMax = Number(w.meta?.escapeMaxHp) || 0;
+  const escapeMode = w.meta?.mode === 'escape' && escMax > 0;
+  let hpLine = '';
+  if (escapeMode) {
+    const beforeHp = Number(w1.meta?.escapeHp) || 0;
+    const afterHp = Math.max(0, beforeHp - hpCost);
+    w1 = { ...w1, meta: { ...w1.meta, escapeHp: afterHp } };
+    hpLine = ` You're at ${afterHp} of ${escMax} hit points now.`;
+  } else {
+    w1 = applyDeltas(w1, [{ op: 'wound', entityId: id, by: hpCost }]);
+  }
+  w1 = pushEvent(w1, {
+    kind: 'resolution',
+    data: { actorId: id, intent: t, text: t, roll: 0, dc: 0, outcome: 'failure', updateKind: 'fire-contact' }
+  });
+  return {
+    world: w1,
+    output: {
+      narration: `Wizard: The ${piece.name} is burning, and the fire doesn't negotiate — flame sears through cloth and skin the moment you're on it, and you come off it scorched.${hpLine}`,
+      mechanics: `[hazard:fire-contact — ${hpCost} HP, no roll]`
+    }
+  };
+}
+
 // DM-GATE-1d B4 — "who wrote this?" about a letter/note the player has access
 // to (an OPENED container here holds it) answers from the artifact itself. The
 // authored letter pool (generateFurniture containerItemText) is deliberately
@@ -8445,7 +8582,11 @@ function detectApproach(t) {
   // "talk or I'll…", "make you talk"). A redirected threat resolves AS an intimidate
   // against its target (socialTarget by name) — never generic atmosphere.
   if (/\bmake you talk\b|\blast\s+chance\b[^.!?]{0,40}\b(?:talk|surrender|leave|answer|comply|before\s+i|or\b)|\btalk\s+(?:to\s+me\s+)?or\s+(?:i\b|you\b|else\b)/i.test(t)) return 'intimidate';
-  if (/\b(deceive|\blie\b|bluff|trick|fool|mislead|pretend|claim\b|make .* believe|convince .* that i|(?:i'?m|i am) the (?:new|royal|king|lord|captain|sheriff|the|a)|tell (?:him|her|them|the \w+) (?:i'?m|i am|that))\b/i.test(t)) return 'deceive';
+  // DM-GATE-1e R5a — \blie\b excludes the POSTURE idiom: "I lie down on the
+  // flaming pallet" is a body position, not a deception (the re-gate's floor
+  // routed it to social:deceive — "Elske buys it, nodding along to a story
+  // that isn't true"). "lie to/about" still deceives.
+  if (/\b(deceive|\blie\b(?!\s+(?:down|back|flat|still|on\b|upon|across|in\b|atop|beside|there))|bluff|trick|fool|mislead|pretend|claim\b|make .* believe|convince .* that i|(?:i'?m|i am) the (?:new|royal|king|lord|captain|sheriff|the|a)|tell (?:him|her|them|the \w+) (?:i'?m|i am|that))\b/i.test(t)) return 'deceive';
   if (/\b(charm|flatter|flirt|seduce|sweet.?talk|compliment|woo|win .* over|befriend|make .* laugh|tell .* (a )?joke|hey (sexy|gorgeous|beautiful|handsome|cutie)|you look (great|lovely|beautiful|amazing|good)|buy you a|take you (out|to dinner)|dinner later)\b/i.test(t)) return 'charm';
   if (/\b(persuade|convince|reason with|bargain|negotiate|appeal to|talk .* into|plead|beg|ask .* to let|let me (in|pass|through|by)|please let|hear me out)\b/i.test(t)) return 'persuade';
   return null;
@@ -8930,7 +9071,9 @@ function declineInfoSeek(world, text, npc) {
     [`${name} sighs. "I told you — I don't know. Won't change by asking twice."`, `${name}'s patience thins. "Same answer. I don't have it."`, `${name} won't be drawn twice on the same dead end.`],
     [`${name} turns away. "Enough. I'm done with that question."`, `${name} is done talking about it — the subject is closed.`, `${name} won't say another word on it.`]
   ] : [
-    [`There's no record of that — not one anyone's ever shown you.`, `Can't rightly say. That's lost, whatever it was.`, `No one here would know. It's not written anywhere you can find.`],
+    // DM-GATE-1e R3 (Tim's wording rule, 2026-07-09): plain and non-cute — say
+    // what kind of record exists or does not exist; never pretend the room answered.
+    [`No one here keeps a written record of that — there's no record to check. What's known lives in the folk who remember it.`, `There's no record or ledger for that here — nothing written down to consult. If anyone knows, it's a person, not a page.`, `That was never written down. This place keeps no record of it — only memory, and memory hasn't offered a name.`],
     [`Same as before — no answer exists to give, however you ask it.`, `Asking again won't conjure a record that isn't there.`, `Still nothing. The matter stays unsettled.`],
     [`That question's closed. There's no answer coming, here or anywhere.`, `Drop it — pressing further won't make a fact appear.`, `The matter's done; no more comes of asking.`]
   ];
@@ -9001,6 +9144,36 @@ function renderCommonLoreDM(world, lore) {
 }
 // (P-2) DM-narrator renderer over a resolved person-identity fact. Mirrors grace's META_NPC_OBSERVER
 // phrasing ("<name>, a <role> — one of the folk here") so the two narrator surfaces read alike. §0-safe.
+// DM-GATE-1e R2 — "who are <two or more roster names>" → identity per person,
+// from canon (name + role), never a location dodge. Fires only when at least
+// TWO settlement-roster names appear in a who-are question; everything else
+// keeps the existing single-person query path.
+function tryMultiPersonIdentity(world, text) {
+  const t = String(text || '');
+  if (!/\bwho\s+are\b/i.test(t) || !/\?/.test(t)) return null;
+  const node = (world.map?.nodes || []).find(n => n && n.id === world.map?.currentNodeId) || null;
+  const npcs = Array.isArray(node?.settlement?.npcs) ? node.settlement.npcs : [];
+  if (npcs.length < 2) return null;
+  const tl = t.toLowerCase();
+  const named = npcs.filter(n => {
+    const first = String(n?.name || '').toLowerCase().split(/\s+/)[0];
+    return first && first.length >= 3 && tl.includes(first);
+  });
+  if (named.length < 2) return null;
+  const art = (r) => (/^[aeiou]/i.test(r) ? 'an' : 'a');
+  const parts = named.map(n => {
+    const role = String(n?.role || '').trim().replace(/_/g, ' ');
+    return role ? `${n.name}, ${art(role)} ${role}` : `${n.name}, one of the folk here`;
+  });
+  return {
+    world,
+    output: {
+      narration: `Wizard: ${parts.join('; ')} — folk of this outpost, going about their day.`,
+      mechanics: `[person → grounded | identity×${named.length}, no roll]`
+    }
+  };
+}
+
 function renderPersonFactDM(world, fact) {
   if (fact?.type === 'location') {
     const who = String(fact?.name || fact?.body || '').trim();
@@ -9201,9 +9374,15 @@ function answerOrDeclineQuestion(world, text, outcome, intent) {
   // real atmosphere if not) — never the info path. Returning null here keeps that
   // handler authoritative at BOTH call sites (the grounded chain and the floor).
   if (isConfrontationChallenge(t)) return null;
+  // DM-GATE-1e R3 — a RECORD-KEEPING / past-attribution question is never a
+  // presence survey. "Who did the repair work here?" carries "here", which let
+  // the presence branch below answer with the roster/room instead of the honest
+  // no-record decline (the re-gate's "The room is quiet" / room-survey miss).
+  // Skipping (a) sends it to the grounded decline path further down.
+  const asksRecord = /\brecords?\b|\bwritten\b|\bwrote\s+down\b|\bledger\b|\bwho\s+(?:did|built|made|repaired|fixed|dug|carved|raised)\b/i.test(t);
   // (a) presence / who's-here / where-is-present → the live roster. Checked first
   // so "where can I find Corwin" isn't mistaken for a feasibility question.
-  if (PRESENCE_Q_RE.test(t) || (WHERE_Q_RE.test(t) && namesPresentNpc(world, t))) {
+  if (!asksRecord && (PRESENCE_Q_RE.test(t) || (WHERE_Q_RE.test(t) && namesPresentNpc(world, t)))) {
     // presence:true — an explicit who's-here / where-is-X question names the
     // settlement roster even inside an interior (the people are reachable);
     // only a bare "look around" is scoped to the room (FIRST_ROOM #4).

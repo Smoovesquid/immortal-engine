@@ -3586,3 +3586,30 @@ other agents. (none active)
   lane follow-up.
 - Architecture note: docs/briefs/FUNC-MINIS-architecture.md (the contract, the recipe for future
   kinds, honest limits). DM-GATE-1b stays queued & separate per Tim's ruling — no object HP/AC here.
+
+## 2026-07-09 — Basecamp (Fable) — BACKFILL: builds 140–143 landed without changelog entries (doc-lag repair)
+
+- Boot-time flag this window: commits e2aa4363 → 43c62a1f pushed with no AGENT_CHANGELOG sections.
+  Entries reconstructed from the commit messages; work was Tim's Fable-window arc (finalize gate) +
+  an Opus mini-registration pass.
+- **b140 v0.33.7 — U654 strict-finalized gate** (`e2aa4363`): loadAuthoredStructure gains
+  { strictFinalized: true } — a plan whose room graph needed pass-3 orphan repair (a connection the
+  author never drew) THROWS naming the invented connection instead of loading. Default tolerant path
+  unchanged; abutment fallback stays tolerated and visible on __loaderInfo. Ships
+  BUILDING_CANON_CONTRACT §14 (merged with the independent Codex draft).
+- **b141 v0.34.0 — U655–U656 Builder Validate & Finalize** (`79f738b0`): authoring half of the gate.
+  validateAuthoredExport (pure report; verdict agrees with strict load by construction) +
+  finalizeAuthoredExport (gate, never a repair: clean draft → deep-copied artifact + deterministic
+  provenance block; dirty → throws naming the unreachable room). house-builder gains ONE
+  'Validate & Finalize' button importing the SAME engine validator; downloads *.finalized.json.
+  Live-verified in-browser (real Import→Finalize gesture, both paths).
+- **b142 v0.34.1 — U657 runtime honors the stamp** (`2a26c0b8`): materializeAuthoredExport is THE
+  runtime materialization branch — strictness read from the export's own provenance.finalized ===
+  true. Registry + both demo injections route through it; no builtin plan is finalized, so existing
+  content unchanged. **+ U658 sealed rooms** (`5b03d439`): room.sealed:true = intentional canon —
+  exempt from the strict gate (zero edges, intentionally unreachable), while a finalized plan whose
+  sealed markers contradict drawn doorways is REJECTED (validate ⇔ strict-load law holds).
+- **b143 v0.34.2 — environment prop minis** (`43c62a1f`, Opus): 8 Meshy GLB set pieces registered in
+  the lazy mini library (gates, fences, bridges, wells, driftwood, archways). Library-registered
+  ONLY — no auto-placement in settlements/roads yet; logged in MINIS_WISHLIST. (FUNC-MINIS-1's
+  contract is the compliance path if/when these become placeable: placed ⇒ engine-real.)

@@ -32,6 +32,46 @@ export const MINI_LIBRARY = [
     url: '/map/assets/corpse_remains_red.glb', fitLong: 1.9, flat: true, footprint: [2, 2],
     tags: ['gore', 'dungeon', 'dead', 'blood', 'gut pile'],
   },
+  {
+    id: 'gothic_gate_collection', name: 'Gothic Gate Collection', category: 'architecture',
+    url: '/map/assets/gothic_gate_collection.glb', fitLong: 2.8, footprint: [2, 1],
+    tags: ['gate', 'gothic', 'fence', 'entry', 'architecture'],
+  },
+  {
+    id: 'fence_run_weathered', name: 'Weathered Fence Run', category: 'architecture',
+    url: '/map/assets/fence_run_weathered.glb', fitLong: 2.5, footprint: [2, 1],
+    tags: ['fence', 'wood', 'weathered', 'yard', 'pen'],
+  },
+  {
+    id: 'fence_fragment_weathered', name: 'Weathered Fence Fragment', category: 'architecture',
+    url: '/map/assets/fence_fragment_weathered.glb', fitLong: 1.8, footprint: [1, 1],
+    tags: ['fence', 'fragment', 'wood', 'weathered', 'ruin'],
+  },
+  {
+    id: 'deadfall_driftwood_weathered', name: 'Weathered Driftwood Deadfall', category: 'wild',
+    url: '/map/assets/deadfall_driftwood_weathered.glb', fitLong: 2.0, flat: true, footprint: [2, 1],
+    tags: ['deadfall', 'driftwood', 'log', 'wilderness', 'cover'],
+  },
+  {
+    id: 'bridges_of_stone', name: 'Bridges of Stone', category: 'architecture',
+    url: '/map/assets/bridges_of_stone.glb', fitLong: 3.0, footprint: [3, 1],
+    tags: ['bridge', 'stone', 'crossing', 'road', 'architecture'],
+  },
+  {
+    id: 'roofed_wells', name: 'Roofed Wells', category: 'architecture',
+    url: '/map/assets/roofed_wells.glb', fitLong: 2.0, footprint: [1, 1],
+    tags: ['well', 'roofed', 'village', 'square', 'water'],
+  },
+  {
+    id: 'stone_archways_timber', name: 'Stone Archways and Timber', category: 'architecture',
+    url: '/map/assets/stone_archways_timber.glb', fitLong: 2.6, footprint: [2, 1],
+    tags: ['archway', 'stone', 'timber', 'gate', 'ruin'],
+  },
+  {
+    id: 'stonewell_ensemble', name: 'Stonewell Ensemble', category: 'architecture',
+    url: '/map/assets/stonewell_ensemble.glb', fitLong: 2.2, footprint: [1, 1],
+    tags: ['well', 'stone', 'village', 'water', 'settlement'],
+  },
 ];
 
 export const miniById = (id) => MINI_LIBRARY.find((m) => m.id === id) || null;

@@ -59,6 +59,20 @@ toppled standing figure).
 ---
 *Append below this line, newest first, date every add.*
 
+**2026-07-08 · RECEIVED + DECIMATED from Tim (Meshy GLB → `public/map/assets/`, registered in
+`public/map/miniLibrary.js`):** bridges_of_stone · roofed_wells · stone_archways_timber ·
+stonewell_ensemble. These cover the Architecture kit's "Bridge" and "Well" rows, plus additional
+stone arch / village-water set pieces. Honest scope: the assets are now in the lazy mini library
+and ready for palette/renderer wiring; this receipt alone does not auto-place bridges or wells in
+settlements/roads.
+
+**2026-07-08 · RECEIVED + DECIMATED from Tim (Meshy GLB → `public/map/assets/`, registered in
+`public/map/miniLibrary.js`):** gothic_gate_collection · fence_run_weathered ·
+fence_fragment_weathered · deadfall_driftwood_weathered. These cover the Architecture kit's
+"Fence run + gate" row and the Wilderness "Stump / deadfall log" row. Honest scope: the assets are
+now in the lazy mini library and ready for palette/renderer wiring; this receipt alone does not make
+fences/deadfall appear automatically in every outdoor scene.
+
 **2026-07-05 · WIRED (TT-MINIS):** corpse_assemblage + corpse_remains_red are live. A defeated
 combat enemy's mini now swaps to one of these two GLBs (figures3d.js's buildCorpseMini,
 deterministic per entity id/name — same foe always shows the same corpse) instead of the old

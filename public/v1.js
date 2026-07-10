@@ -1,6 +1,6 @@
 import { normalizeManifest, normalizePack } from '../engine/rulesets.js';
 import { newWorld, ensureWorld } from '../engine/state.js';
-import { beginAdventure, playerMove, newScene, setPieceCooldownGate, carriesInteriorMovementIntent, detectObjectAttackIntent } from '../engine/playloop.js';
+import { beginAdventure, playerMove, newScene, setPieceCooldownGate, carriesInteriorMovementIntent, detectObjectAttackIntent, detectWindowActionIntent } from '../engine/playloop.js';
 import { isMetaQuestion, handleMetaQuestion, looksMultiAction } from '../engine/grace/gracefulAdjudication.js';
 // INT-2R — buildParseCtx is browser-safe (no server-only deps; already in
 // this bundle's transitive graph via playloop.js -> assemblePacket.js). The
@@ -742,7 +742,10 @@ async function doSubmitMove() {
   const inDialogue = Boolean(w.scene?.dialogue?.npcId);
   // DM-GATE-1a — a declared swing at an OBJECT is resolved as damage-state by playerMove,
   // never answered here as raw attack-math. Mirrors the carriesInteriorMovementIntent skip.
-  if (!w.combat?.active && !inDialogue && isMetaQuestion(text) && !carriesInteriorMovementIntent(w, text) && !detectObjectAttackIntent(w, text)) {
+  // WIN-LOOK-1 — a declared window action (open/close/look/break/exit) is resolved by
+  // playerMove's real window handler, never answered here as a room survey — the same
+  // shape as the object-attack guard, one line above.
+  if (!w.combat?.active && !inDialogue && isMetaQuestion(text) && !carriesInteriorMovementIntent(w, text) && !detectObjectAttackIntent(w, text) && !detectWindowActionIntent(w, text)) {
     const answer = handleMetaQuestion(text, w);
     if (answer) {
       ui.play.lines.push({ who: 'you', text, mech: '' });
@@ -1045,8 +1048,8 @@ function renderInvoke() {
     el('div', { class: 'panel' },
       el('div', { class: 'header' },
         el('div', {},
-          el('div', { class: 'title' }, 'Immortal Engine — v0.35.4'),
-          el('div', { class: 'sub' }, 'build 148 · 2026-07-10 · "still" no longer breaks the question')
+          el('div', { class: 'title' }, 'Immortal Engine — v0.35.5'),
+          el('div', { class: 'sub' }, 'build 149 · 2026-07-10 · open the window, see outside')
         )
       ),
       // ── One-click front door: start (or resume) the Escape game ──────

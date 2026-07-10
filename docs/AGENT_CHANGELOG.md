@@ -3814,3 +3814,69 @@ other agents. (none active)
   GREEN (135/135 convergence, suite clean, screen truth locked — see npm run check output).
 - No WORLD_VERSION — a regex-tolerance change over existing narration logic, zero state-shape impact.
 - Next per Tim: return to WIN-LOOK-1. Still no playtest handoff.
+
+## 2026-07-10 — Basecamp (Fable) — WIN-LOOK-1 → v0.35.5 build 149 — opening the window and looking out now works in one turn, live and in the harness
+
+- Tim-authorized in-chat brief, diagnosis-first. Scope was corrected twice mid-session on Tim's own
+  read of the evidence, not on request — both corrections are worth recording as process, not just
+  outcome:
+  1. First diagnosis (from reading code) proposed guarding playloop.js's OWN internal meta-gate
+     (line ~1378) alongside the outer gates. A fresh, ACTUALLY-RUN repro (direct `playerMove()` call,
+     the same way this repo's tests drive the engine) disproved that half: playloop.js's internal gate
+     already carves out `bareLookAround` for any `META_LOCATION`-shaped text, so the turn was already
+     falling through inside playloop.js on its own — no internal-gate change was needed. Root A/B
+     alone (both inside `windowVerbKind`) were sufficient for the direct-`playerMove()` path.
+  2. Tim caught that this would still leave the LIVE game and the Opus-gate harness swallowing the
+     turn, because `public/v1.js`/`scripts/dm-playtest.mjs` run their OWN pre-`playerMove` meta-gate
+     check with no window carve-out — proven, not assumed, via a harness-mirrored test (U684's 5th
+     case) that reconstructs the exact outer-gate condition and shows it still returns `true` (would
+     still swallow) without the new detector. Revised authorization added the outer-gate guard.
+- ROOT (two-layer, both empirically confirmed, not read off the code):
+  1. `windowVerbKind` (`engine/playloop.js`) required EXACT article-noun adjacency for shutter-open/
+     close — "open **the shuttered** window" broke on the adjective, falling the whole declared
+     action to the generic trivial-action floor. Confirmed pre-fix: direct `playerMove()` on the
+     verbatim gate turn returned "You do so without difficulty." — not a room survey, not a window
+     answer, the *default* floor, because `windowVerbKind` matched nothing.
+  2. A compound "open the window **to look** outside — what do I see?" needs BOTH halves resolved as
+     ONE action; the single-verb-kind dispatch could only ever return one.
+- FIX (engine/playloop.js only, per Root A/B):
+  - Root A: `WINDOW_STATE_ADJ_RE` — an optional `shuttered/closed/barred/locked` group inserted into
+    the shutter-open AND shutter-close regexes, between the article and the noun. Narrow by design
+    (the engine's own window-vocabulary only, not a wildcard gap).
+  - Root B: `WINDOW_LOOK_CUE_RE` + a new `'open-then-look'` verb-kind, checked BEFORE the plain LOOK
+    and shutter-open branches. When both an open-cue and a look/see-outside cue land in the same
+    utterance, the handler performs the existing shutter-open `pushEvent` mutation (if still
+    shuttered) AND answers with the existing `windowView()` in the same turn — never a "shutters are
+    closed" decline for a window the player just said to open.
+- Outer-gate guard (added on Tim's revised authorization): new exported
+  `detectWindowActionIntent(world, text)` in `engine/playloop.js`, mirroring DM-GATE-1a's
+  `detectObjectAttackIntent` exactly — true iff `windowVerbKind` recognizes the text as a declared
+  window action. Wired into the pre-`playerMove` meta-gate checks in `public/v1.js` and
+  `scripts/dm-playtest.mjs` (one line each, `&& !detectWindowActionIntent(w, text)`), the same
+  guard-list pattern the object-attack fix already established.
+- `gracefulAdjudication.js` and `roomWindows.js` untouched — explicitly forbidden files, and diagnosis
+  proved `windowView`'s LOS/fog-of-war logic was already correct (discovered landmarks named,
+  undiscovered ones get a silhouette, never invented).
+- Tests U684 (9 asserts): Root A (adjective-tolerant open + symmetric close) · Root B (compound open+
+  look, both halves verified) · the verbatim gate turn (Root A+B combined) · the outer-gate/harness
+  mirror (proves the combined `isMetaQuestion && !...` condition flips from swallow to pass-through)
+  · four controls (bare look-around untouched, plain open without a look-cue stays plain, an
+  already-open window's plain look doesn't re-open it, and t4's "Wait, you didn't answer…" phrasing
+  is explicitly documented as NOT fixed here, per Tim's scope call — a different, un-adjacent
+  word-collision, its own future finding). Confirmed genuinely red-first via `git stash` on the three
+  implementation files (not just a freshly-written-then-passing test) — pre-fix, the import itself
+  failed since `detectWindowActionIntent` didn't exist yet.
+- Full suite 11085/0 (was 11076); check GREEN; `worldHash` ×2 replay identical after a shutter-open
+  mutation started from the verbatim gate text. Live/harness receipt: the exact gate turn
+  ("I pocket the cord and open the shuttered window to look outside — what do I see?"), run through a
+  harness-mirrored router (LLM-off) → route flips from `meta` to `action`, narration: "You throw the
+  shutters open; daylight and the noise of the street spill back in. Through the window: a
+  settlement outside; to the south you can make out a bridge and to the west you can make out a
+  shrine." — grounded in real discovered/undiscovered map neighbors, fog rules honored.
+- No WORLD_VERSION — text-matching/routing over the existing derived `window-shutter` timeline event
+  and the existing `windowView` reader; no new field, no shape change.
+- Deliberately NOT fixed (Tim's explicit call): t4's "Wait, you didn't answer — I opened the window.
+  What do I see outside through it?" — a separate word-collision, queued as its own finding if Tim
+  wants it later, not silently folded in here.
+- Next per Tim: bring the result back; he'll decide whether this is the playtest checkpoint or
+  whether INV-CONT-1 needs to close first. Still no playtest handoff to Tim yet.

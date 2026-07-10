@@ -1918,6 +1918,21 @@ function playerMoveCore(world, packsById, text, dqIntent) {
         }
         return { world: w, output: { narration: `Wizard: ${windowView(w)}`, mechanics: '' } };
       }
+      // WIN-LOOK-1 Root B — an OPEN declared in the same breath as a look/see-outside
+      // cue ("open the shuttered window to look outside — what do I see?") is ONE
+      // compound action: open, then answer the view. A real DM doesn't make the
+      // player ask twice, and never declines "shutters are closed" when the player
+      // just said to open them. Opens (if needed) and answers windowView() in the
+      // same turn; already-open is a no-op mutation, straight to the view.
+      if (wv === 'open-then-look') {
+        let w1 = w;
+        let openLead = '';
+        if (win.shuttered) {
+          w1 = pushEvent(w, { kind: 'resolution', data: { actorId, intent: String(text || ''), text: String(text || ''), roll: 0, dc: 0, outcome: 'success', updateKind: 'window-shutter', structureKey: String(w.scene.interior.structureKey || ''), roomId: String(w.scene.interior.roomId || ''), closed: false } });
+          openLead = 'You throw the shutters open; daylight and the noise of the street spill back in. ';
+        }
+        return { world: w1, output: { narration: `Wizard: ${openLead}${windowView(w1)}`, mechanics: win.shuttered ? '[window:shutter-open|look]' : '[window:look]' } };
+      }
       if (wv === 'break') {
         const w1 = pushEvent(w, { kind: 'resolution', data: { actorId, intent: String(text || ''), text: String(text || ''), roll: 0, dc: 0, outcome: 'success', updateKind: 'window-break' } });
         return { world: w1, output: { narration: 'Wizard: You smash the window — glass bursts from the frame and rains across the sill. The noise carries; anyone near will have heard it. The way through stands open now.', mechanics: '[window:break]' } };
@@ -4967,12 +4982,33 @@ function classifyOutdoorEnter(t) {
 // windowVerbKind(text) → 'look' | 'break' | 'shoot' | 'exit' | null
 // Classifies a window interaction. Order matters: look / break / shoot are checked
 // before the generic "out the window" egress so they aren't swallowed as an exit.
+// WIN-LOOK-1 Root A — the shutter-open/close verb must tolerate a narrow, known
+// engine-vocabulary adjective sitting between the article and the noun ("open THE
+// SHUTTERED window", "close the BARRED shutters") — without this, the exact-
+// adjacency regex fell an explicitly-declared open/close action past the window
+// handler to the generic trivial-action floor. Deliberately narrow (the engine's
+// own window-state vocabulary only, not a wildcard gap) so unrelated text between
+// verb and noun still correctly fails to match.
+const WINDOW_STATE_ADJ_RE = '(?:shuttered\\s+|closed\\s+|barred\\s+|locked\\s+)?';
+const WINDOW_OPEN_ACTION_RE = new RegExp(`\\b(?:open|opens|opening|unbar|unbars|unlatch|unlatches)\\s+(?:the\\s+|my\\s+|those\\s+|that\\s+|a\\s+)?${WINDOW_STATE_ADJ_RE}(?:shutters?|window)\\b|\\b(?:throw|throws|fling|flings)\\s+open\\s+(?:the\\s+|my\\s+|those\\s+|that\\s+|a\\s+)?${WINDOW_STATE_ADJ_RE}(?:shutters?|window)\\b`);
+const WINDOW_CLOSE_ACTION_RE = new RegExp(`\\b(?:close|closes|closing|shut|shuts|shutting|bar|bars|barring|fasten|fastens|latch|latches)\\s+(?:the\\s+|my\\s+|those\\s+|that\\s+|a\\s+)?${WINDOW_STATE_ADJ_RE}(?:shutters?|window)\\b`);
+// WIN-LOOK-1 Root B — a look/see-outside cue anywhere in the same utterance as a
+// declared open. Deliberately loose on ORDER (unlike the plain LOOK detector
+// below, which requires window-then-cue adjacency) because the compound reading
+// ("open the window TO LOOK outside — what do I see?") puts the look cue in a
+// trailing clause, not adjacent to the word "window" itself.
+const WINDOW_LOOK_CUE_RE = /\b(?:look|looking|see|watch|peer|peek|view)\b|\bwhat\s+(?:do|can)\s+i\s+see\b|\bwhat'?s\s+outside\b/;
+
 function windowVerbKind(text) {
   const t = String(text || '').toLowerCase();
   if (!/\b(?:window|windows|windowsill|sill|shutters?)\b/.test(t)) return null;
   // "throw/hurl/fling MYSELF out the window" is self-harm — a FALL, owned by the
   // hazard path (U159), never a window action. Let it fall through to parseHazard.
   if (/\b(?:throw|throws|hurl|hurls|fling|flings|pitch|pitches|launch|launches|cast|casts|propel|propels)\s+(?:my(?:self)?|him(?:self)?|her(?:self)?|them(?:selves)?|your(?:self)?|itself|my\s+body|his\s+body|her\s+body)\b/.test(t)) return null;
+  // WIN-LOOK-1 Root B — checked BEFORE the plain LOOK/shutter-open branches so a
+  // declared open bundled with a look/see-outside ask reads as ONE compound
+  // action (open, then answer the view), never just the open half.
+  if (WINDOW_OPEN_ACTION_RE.test(t) && WINDOW_LOOK_CUE_RE.test(t)) return 'open-then-look';
   // LOOK OUT — peer through the glass at what's outside.
   if (/\b(?:look|looks|looking|peer|peers|peering|gaze|gazes|gazing|glance|glances|glancing|stare|stares|staring|peek|peeks|peeking|see|watch|watches|check|checks|view)\b[^.!?]*\b(?:out|through|outside|out\s+of)\b[^.!?]*\bwindow/.test(t)
       || /\b(?:out|through)\s+(?:the|a|that)\s+window\b[^.!?]*\b(?:see|look|view|outside|what)\b/.test(t)) return 'look';
@@ -4987,10 +5023,22 @@ function windowVerbKind(text) {
   // CLOSE / OPEN the shutters — a toggle persisted as canon (roomWindows reads it back from the
   // timeline). Tight verb+object patterns so "close in on the foe by the window" / "fire bolt at
   // the window" never misfire. Checked AFTER the egress verbs so "...out the window" stays exit.
-  if (/\b(?:close|closes|closing|shut|shuts|shutting|bar|bars|barring|fasten|fastens|latch|latches)\s+(?:the\s+|my\s+|those\s+|that\s+|a\s+)?(?:shutters?|window)\b/.test(t)) return 'shutter-close';
-  if (/\b(?:open|opens|opening|unbar|unbars|unlatch|unlatches)\s+(?:the\s+|my\s+|those\s+|that\s+|a\s+)?(?:shutters?|window)\b/.test(t)
-      || /\b(?:throw|throws|fling|flings)\s+open\s+(?:the\s+|my\s+|those\s+|that\s+|a\s+)?(?:shutters?|window)\b/.test(t)) return 'shutter-open';
+  if (WINDOW_CLOSE_ACTION_RE.test(t)) return 'shutter-close';
+  if (WINDOW_OPEN_ACTION_RE.test(t)) return 'shutter-open';
   return null;
+}
+
+// WIN-LOOK-1 — is this text a declared window action (open/close/look/break/exit/
+// open-then-look)? Mirrors DM-GATE-1a's detectObjectAttackIntent: guards the OUTER
+// meta gate (public/v1.js, scripts/dm-playtest.mjs) so a declared window action
+// reaches THIS file's real window handler instead of being answered as a room
+// survey by isMetaQuestion's unanchored META_LOCATION match ("what do I see"
+// swallowing "open the window to look outside" before playerMove ever runs).
+export function detectWindowActionIntent(world, text) {
+  const t = String(text || '').trim();
+  if (!t) return false;
+  if (world?.combat?.active || world?.scene?.dialogue) return false;
+  return windowVerbKind(t) !== null;
 }
 
 // windowEntryKind(text) → 'peek' | 'enter' | null — the INWARD window verbs, for when you

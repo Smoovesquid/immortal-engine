@@ -3734,3 +3734,51 @@ other agents. (none active)
 - Ledger reconciled to the real top-up: `set 19.96` → `spend 0.60` (the two dead runs, estimated —
   no precise figure recoverable since neither reached the script's cost-summary step) → `spend 0.96`
   (this run, exact). Balance $18.40. No engine changes made — measure-only per instruction.
+
+## 2026-07-10 — Basecamp (Fable) — OBJ-PRESENCE-1 → v0.35.3 build 147 "the barrel remembers what happened to it"
+
+- Tim-authorized engine brief (in-chat, 2026-07-10; scope corrected to also cover "Where's the
+  barrel?" — "leaving it as a documented known failure is the same player-trust loop"). Root: NOT a
+  playloop routing-precedence issue as first assumed — the bug is a META-GATE INTERCEPTION.
+  `META_NPC_PRESENCE` (gracefulAdjudication.js) matches "is (that|this|the) \w+ (gone|left|still
+  here/around/there)" — blind to whether \w+ names a person or an object — so "is the barrel still
+  here?" satisfied it exactly and answered with NPCs, before playloop's action lane (where the
+  ALREADY-CORRECT objectPresenceTarget handler lives) ever ran. Reproduced on both authored
+  (FUNC-MINIS-1 placed) and procgen furniture — confirmed general, not authored-only. A second,
+  independent bug found while diagnosing: even the working phrasing ("is there a barrel here?") said
+  "Yes — there's a barrel here: battered apart" for a rulings-lane wreck (present, not removed) —
+  fixed in the same packet since shipping routing-only would have made that case WORSE, not better.
+- FIX (engine/grace/gracefulAdjudication.js ONLY, per the hard instruction; isMetaQuestion untouched):
+  two new shared helpers — `roomFurnitureNounMatch` (gates a noun against roomDetail.js's FURN
+  catalog vocabulary, so "stranger"/"Corwin" never match) and `roomObjectState` (reads objectsHere —
+  the SAME kind-agnostic source the working phrasing uses — returning intact/wrecked/absent via
+  isFurnitureDestroyed). Two call sites wired: (1) the `META_NPC_PRESENCE` branch gains a defer-check
+  mirroring the EXISTING carried-item precedent (H-65/META_ITEM_PRESENCE) — same shape, room-object
+  domain; (2) `answerObjectLocation` (the "where's the X" answerer, previously carried-items-only,
+  unconditionally assumed any miss was invented) gains the same room-object check before its
+  "you're not carrying any X" line. New leaf imports only: FURN (roomDetail.js), isFurnitureDestroyed
+  (authoredFurniture.js) — both zero-circularity, confirmed by reading their own import chains first.
+- HONEST FINDING, not fixed here: "Is there still a barrel here?" is EMPIRICALLY unreachable from
+  this file — `isMetaQuestion()` returns false for it (verified directly), so the meta gate never
+  fires; the miss lives in playloop.js's `objectPresenceTarget` regex (anchored, doesn't tolerate an
+  inserted "still"). Per Tim's hard instruction not to touch playloop.js without proving the seam
+  wrong and coming back first — U680 proves it on the record (isMetaQuestion assertion + documented
+  current behavior) rather than silently claiming victory or silently patching outside scope. Brought
+  back as its own finding, not resolved in this packet.
+- Tests U677–U682 (24 asserts): no-NPC-on-smashed (authored+procgen) · wrecked-answers-wrecked
+  (both call sites, grounded in the real stored notes field) · the "where's" phrasing across
+  intact/absent/invented-item states · intact controls + the documented unreachable-phrasing finding
+  · regression guards (carried-item H-65, real NPC presence, person-shaped where-questions, the
+  FURN-vocabulary gate rejecting non-furniture nouns) · worldHash determinism (pure reads, no
+  mutation). One test-writing correction caught before implementing: an "invented item" control used
+  a 3-word noun phrase that exceeded a PRE-EXISTING regex's own capacity, unrelated to this bug —
+  fixed the test, not the code, after confirming the shorter form already worked.
+- Suite 11,070/0; npm run check GREEN (135/135 convergence, screen truth locked). LIVE v1.html
+  receipt (save-seeded loaderDemo, full LLM-on production path): after "I smash the barrel" (salvage
+  lane, board+nails visible in the pack panel), "Is the barrel still here?" → "No — no barrel here."
+  and "Where's the barrel?" → "No barrel here to speak of — not in your hands, not in the room." —
+  both correct, no NPC substitution, screenshot taken.
+- No WORLD_VERSION bump — pure narration/answer-composition over existing stored state
+  (node.furniture, read-only), no new field, no schema change.
+- Next per Tim: WIN-LOOK-1 is the likely next checkpoint; INV-CONT-1 undecided until then; still no
+  live playtest handoff to Tim yet.

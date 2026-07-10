@@ -14,6 +14,8 @@ import { roomWindows, windowSurveyPhrase } from '../structures/roomWindows.js';
 import { outdoorTerrainFacts, terrainSurveyPhrases } from '../world/wildFacts.js';
 import { occupantsOfRoom, outdoorOccupants, visibleThroughWindows, occupiedWindowsFromOutside } from '../structures/roomOccupancy.js';
 import { objectsHere } from '../structures/roomObjects.js';
+import { FURN } from '../structures/roomDetail.js';
+import { isFurnitureDestroyed } from '../structures/authoredFurniture.js';
 import { getRoomState } from '../structures/roomState.js';
 import { reachableRooms } from '../movement/interiorMovement.js';
 import { playerAc, meleeProfile } from '../combat/escapeCombat.js';
@@ -534,6 +536,13 @@ const META_OBJECT_LOC_PERSON_RE = /\b(?:they|them|him|her|she|he|someone|somebod
 // Absence/presence questions about a specific NPC, not a general location survey.
 // (H-16, Rung-1 gate 2026-06-18.)
 const META_NPC_PRESENCE = /\bis\s+(?:that|this|the)\s+\w+\s+(?:gone|left|still\s+(?:here|around|there)|around(?:\s+(?:here|town|anywhere))?|nearby)\b|\bcould\s+i\s+(?:find|look\s+for|spot|search\s+for)\s+them\b|\bwhere\s+(?:did|do)\s+(?:they|them|the\s+\w+)\s+(?:go|end\s+up|head)\b/i;
+// OBJ-PRESENCE-1 (2026-07-10) — a CAPTURING mirror of META_NPC_PRESENCE's
+// "is (that|this|the) NOUN (gone|left|still here/around/there)" shape, used
+// ONLY to pull the noun out so the room-furniture gate below can decide
+// whether to DEFER (same precedent as META_ITEM_PRESENCE's carried-item
+// defer, H-65, just below). META_NPC_PRESENCE itself is byte-identical and
+// untouched — this is purely an additive sibling.
+const NPC_PRESENCE_NOUN_RE = /\bis\s+(?:that|this|the)\s+([a-z][\w'-]*(?:\s+[a-z][\w'-]*){0,2})\s+(?:gone|left|still\s+(?:here|around|there)|around(?:\s+(?:here|town|anywhere))?|nearby)\b/i;
 // General "who's here" roster query — "who are all these people?", "who's
 // everyone here?" — and the sibling "is there a watcher" shape — "is there a
 // stranger watching?", "can I look at the stranger watching from the edges?".
@@ -1463,6 +1472,56 @@ function describeCarriedItemLook(item) {
   return `You turn the ${name} over and look close.${body} Nothing more reveals itself — whatever else it means, it keeps.`;
 }
 
+// OBJ-PRESENCE-1 (2026-07-10) — a NOUN is treated as a candidate ROOM OBJECT
+// only when it matches the engine's own furniture vocabulary (roomDetail.js's
+// FURN catalog — the SAME catalog every placed and procgen piece draws its
+// kind from), so "is the STRANGER still here?" / "where's COWIN?" are never
+// mistaken for object questions, while "barrel"/"chest"/"cooking pot" are
+// recognized regardless of whether the object is currently present, absent,
+// or wrecked. Matches on the noun's full phrase or its last word against each
+// FURN entry's label (also checked by ITS last word, so "cooking pot" answers
+// to "pot" too). Deliberately vocabulary-gated rather than a broad heuristic —
+// a real DM doesn't guess whether a word "sounds like furniture."
+function roomFurnitureNounMatch(noun) {
+  const n = String(noun || '').toLowerCase().trim();
+  if (!n) return false;
+  const tail = n.split(/\s+/).filter(Boolean).pop() || '';
+  for (const def of Object.values(FURN)) {
+    const label = String(def?.label || '').toLowerCase().trim();
+    if (!label) continue;
+    if (label === n || label === tail) return true;
+    const labelTail = label.split(/\s+/).pop();
+    if (labelTail && labelTail === tail) return true;
+  }
+  return false;
+}
+
+// The live state of a named room object at the player's current position:
+// 'intact' | 'wrecked' | 'absent' (+ the matched piece, when found). Reads
+// objectsHere — the SAME room-scoped, kind-agnostic (authored + procgen
+// alike) source the working "is there a/an X here?" phrasing already uses,
+// so every phrasing this packet fixes agrees with what already works.
+// 'absent' covers BOTH "never existed" and "fully salvage-removed" — the
+// engine genuinely can't distinguish them once a piece leaves node.furniture
+// (the salvage lane splices it out with no trace), so neither can the DM;
+// this mirrors the pre-existing honest-uncertainty posture the working
+// phrasing's own "not found" branch already takes, not a new evasion.
+function roomObjectState(world, noun) {
+  const n = String(noun || '').toLowerCase().trim();
+  const tail = n.split(/\s+/).filter(Boolean).pop() || '';
+  const furniture = objectsHere(world).map(o => o.piece).filter(Boolean);
+  const found = furniture.find(p => {
+    const name = String(p?.name || '').toLowerCase();
+    if (!name) return false;
+    return name === n || name === tail || name.endsWith(` ${tail}`);
+  });
+  if (!found) return { state: 'absent', piece: null };
+  return { state: isFurnitureDestroyed(found) ? 'wrecked' : 'intact', piece: found };
+}
+
+const artOf = (s) => `${/^[aeiou]/i.test(String(s).trim()) ? 'an' : 'a'} ${s}`;
+const groundedNotes = (piece) => String(piece?.notes || '').trim().replace(/[.?!]+$/, '');
+
 function answerObjectLocation(world, lowerText) {
   const carried = gatherCarriedItems(world);
   // A carried item named in the text → it's on you.
@@ -1476,6 +1535,22 @@ function answerObjectLocation(world, lowerText) {
   let obj = m ? m[1].trim() : '';
   obj = obj.split(/\s+/).filter(w => w && !OBJ_LOC_STOPWORDS.has(w)).join(' ').trim();
   if (!obj) return null;
+  // OBJ-PRESENCE-1 — before assuming the player invented an un-carried item,
+  // check whether the noun names a ROOM OBJECT (placed or procgen furniture)
+  // and answer honestly from its live state. "Where's the barrel?" about a
+  // real barrel is not the same question as an invented one.
+  if (roomFurnitureNounMatch(obj)) {
+    const { state, piece } = roomObjectState(world, obj);
+    if (state === 'intact') {
+      const notes = groundedNotes(piece);
+      return `Not on you — it's ${artOf(piece.name)}, right here in the room${notes ? `: ${notes}` : ''}.`;
+    }
+    if (state === 'wrecked') {
+      const notes = groundedNotes(piece);
+      return `It's not going anywhere — what's left of ${artOf(piece.name)} is wreckage now${notes ? `, ${notes}` : ''}, still right here.`;
+    }
+    return `No ${obj} here to speak of — not in your hands, not in the room.`;
+  }
   // No such item in canon — the honest correction (the newbie invented it).
   return `You're not carrying any ${obj} — nothing like that has been in your hands. If you meant something else you're holding, name it and I'll place it.`;
 }
@@ -2478,6 +2553,22 @@ export function handleMetaQuestion(text, world) {
   if (META_NPC_PRESENCE.test(lowerText)
       && !(META_ITEM_PRESENCE.test(lowerText)
            && gatherCarriedItems(world).some(it => itemNameInText(lowerText, it.name.toLowerCase())))) {
+    // OBJ-PRESENCE-1 — the SAME defer, for ROOM OBJECTS instead of carried
+    // items: "is the barrel still here?" must not answer with NPCs. Mirrors
+    // the carried-item defer immediately above (H-65).
+    const npcPresenceNoun = NPC_PRESENCE_NOUN_RE.exec(lowerText)?.[1];
+    if (npcPresenceNoun && roomFurnitureNounMatch(npcPresenceNoun)) {
+      const { state, piece } = roomObjectState(world, npcPresenceNoun);
+      if (state === 'intact') {
+        const notes = groundedNotes(piece);
+        return `Still here — ${artOf(piece.name)} hasn't gone anywhere${notes ? `: ${notes}` : ''}.`;
+      }
+      if (state === 'wrecked') {
+        const notes = groundedNotes(piece);
+        return `Not as it was — what's left of ${artOf(piece.name)} is wreckage now${notes ? `, ${notes}` : ''}.`;
+      }
+      return `No — no ${npcPresenceNoun} here.`;
+    }
     const node = (world?.map?.nodes || []).find(n => n && n.id === world?.map?.currentNodeId) || null;
     const sociable = (node?.settlement?.npcs || []).filter(n => n && !n.hostile);
     if (sociable.length) {

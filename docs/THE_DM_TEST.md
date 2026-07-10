@@ -31,6 +31,15 @@ Would a real DM say or do this? If the answer is no, it's wrong — no matter ho
   move, *not* a parser bounce). Usually resolve intent; sometimes decline like a DM — but never
   decline *creativity*: "befriend the dragon" or "climb with my daggers as pitons" still gets honored.
 
+**The presence law (standing, Tim 2026-07-09 — DM-GATE-1e):**
+- "Is anyone around here?" **answers presence** — from the roster, right where the player
+  stands. A move riding along in the same breath ("…maybe I should head to the front")
+  never erases the question: **the bridge must not erase a question about the current scene.**
+- "Who is in the next room?" **may use the door/egress answerability pattern** — a real DM
+  walks you to the door and answers from there (the AG-arc's egress-door law, U319/LH-2).
+- The seam in code: `asksPresenceHere()` (playloop) guards the interior parser AND both
+  exit/travel bridges; presence-about-ELSEWHERE deliberately falls through to egress-repair.
+
 ## What this subordinates
 The overworld tile/cardinal/node model, the local place-walk, the structure interior
 system — all of it is **implementation in service of the DM**, not the player-facing

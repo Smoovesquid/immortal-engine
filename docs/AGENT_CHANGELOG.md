@@ -3713,3 +3713,24 @@ other agents. (none active)
   screen truth locked. LIVE receipts (full LLM-on path): the stats answer matches the character panel
   digit-for-digit; the burn lands at 11/13 in prose AND the party panel (screenshot).
 - Remaining: DM-GATE-1b (separate, Tim's ruling) · ENV-FIRE-1 (queued). Re-gate again at Tim's call.
+
+## 2026-07-10 — Basecamp (Fable) — RE-GATE v0.35.2 (measure-only, Tim-approved) — 5/48, was 6/48; three failed attempts before a clean run
+
+- Same shape as prior gates (48 turns · 4 personas · tallow · Opus v1 judge). TWO attempts failed
+  before a usable report: (1) network fetch failure mid-run (persona 2), no report written — the
+  script only writes results after all four personas finish; (2) API credit exhaustion mid-run
+  (`400: credit balance too low`), confirmed directly against the live API — Tim topped the dev key
+  to $19.96, third attempt completed cleanly.
+- BASELINE→CURRENT: 11/48 (07-07) → 6/48 (07-09, post-1d) → **5/48 (07-10, post-1e)**.
+- CLASSIFICATION (verified against the audit JSONL's mechanics strings, not narration pattern-match
+  alone — each failure's actual code path confirmed, not assumed): **0 old-cluster survivors, 0
+  recurrences of 1e's own 6 survivors, 0 regressions from 1d/1e.** Five NEW/adjacent residuals,
+  three families: window look-and-report (same shape as B1, different object class — B1 was
+  deliberately carried-item-scoped) · item-possession continuity dodge (same shape as B3, different
+  fact domain — B3 is furniture-piece-scoped) · letter-content comprehension gap (asking about people
+  named IN the letter's prose, not the roster — confirmed not touched by R2 via mechanics-tag
+  absence) · one unrelated composer roll/narration numeric-mismatch bug (CRUNCH class, first
+  occurrence, nothing to do with playloop routing). 0 new failure modes (Chao1 CI [5,5]).
+- Ledger reconciled to the real top-up: `set 19.96` → `spend 0.60` (the two dead runs, estimated —
+  no precise figure recoverable since neither reached the script's cost-summary step) → `spend 0.96`
+  (this run, exact). Balance $18.40. No engine changes made — measure-only per instruction.

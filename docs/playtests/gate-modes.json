@@ -104,6 +104,15 @@
         "CRUNCH_INCONSISTENCY",
         "DM_TEST_DEADEND"
       ]
+    },
+    {
+      "runId": "gate-2026-07-10T14-53-34-501Z-v1",
+      "date": "2026-07-10",
+      "regime": "v1",
+      "modes": [
+        "CRUNCH_INCONSISTENCY",
+        "DM_TEST_DEADEND"
+      ]
     }
   ]
 }

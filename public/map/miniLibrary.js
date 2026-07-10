@@ -73,6 +73,10 @@ export const MINI_LIBRARY = [
     tags: ['well', 'stone', 'village', 'water', 'settlement'],
   },
 ];
+// NOT registered (on disk awaiting a split pass): furniture_sheet_rustic_a/b.glb are
+// SHEETS of 6–8 loose furniture pieces (crates, shelf, cabinet, table, pallet bed) —
+// placing one as a mini would drop the whole disconnected spread on the board. Split
+// into per-piece GLBs first (see MINIS_WISHLIST.md 2026-07-10 receipt).
 
 export const miniById = (id) => MINI_LIBRARY.find((m) => m.id === id) || null;
 export const minisByCategory = (cat) => MINI_LIBRARY.filter((m) => m.category === cat);

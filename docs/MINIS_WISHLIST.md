@@ -59,6 +59,21 @@ toppled standing figure).
 ---
 *Append below this line, newest first, date every add.*
 
+**2026-07-10 · RECEIVED + DECIMATED from Tim (Meshy "Rustic Wooden Crates" ×2 → `public/map/assets/`),
+NOT registered anywhere yet:** furniture_sheet_rustic_a · furniture_sheet_rustic_b. Rendered through
+the live GLTFLoader, each GLB turns out to be a SHEET of loose rustic pieces (A: 6 islands — crates,
+shelf unit, cabinet, table, low pallet/bed-base; B: 8 islands — crates, shelf, long lids/pallets,
+pallet bed), not a single placeable object — registering one as a mini would drop the whole
+disconnected spread on the board. Decimated (27k/26k tris, ~1.1 MB each, plain-loader-safe) and
+verified loading in-browser; parked on disk like the 07-05 corpse drop until a SPLIT pass claims
+them: split islands into per-piece GLBs (offline pass, or extend figureAssets' `pack:` island-split
+treatment to props), then register pieces individually. The pieces cover tier-1 domestic-core
+subjects (crate, shelf, table, bed) but the 39-type contract below still wants per-`type` singles
+at authored scale — these sheet pieces can seed that once split. NOTE for the next intake lane: the
+07-08 "collection/ensemble" assets (roofed_wells · stonewell_ensemble · gothic_gate_collection) may
+carry the same multi-object-sheet property and are already registered as single minis — worth a
+visual check before first placement.
+
 **2026-07-08 · RECEIVED + DECIMATED from Tim (Meshy GLB → `public/map/assets/`, registered in
 `public/map/miniLibrary.js`):** bridges_of_stone · roofed_wells · stone_archways_timber ·
 stonewell_ensemble. These cover the Architecture kit's "Bridge" and "Well" rows, plus additional

@@ -1045,8 +1045,8 @@ function renderInvoke() {
     el('div', { class: 'panel' },
       el('div', { class: 'header' },
         el('div', {},
-          el('div', { class: 'title' }, 'Immortal Engine — v0.35.3'),
-          el('div', { class: 'sub' }, 'build 147 · 2026-07-10 · the barrel remembers what happened to it')
+          el('div', { class: 'title' }, 'Immortal Engine — v0.35.4'),
+          el('div', { class: 'sub' }, 'build 148 · 2026-07-10 · "still" no longer breaks the question')
         )
       ),
       // ── One-click front door: start (or resume) the Escape game ──────

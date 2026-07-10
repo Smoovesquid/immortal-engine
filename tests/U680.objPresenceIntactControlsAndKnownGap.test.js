@@ -1,15 +1,14 @@
 // U680 — OBJ-PRESENCE-1: intact-object controls (both authored + procgen,
-// both fixed phrasings) plus an HONEST documentation of the one phrasing
-// this packet's seam cannot reach.
+// both fixed phrasings), plus the "is there still a barrel here?" gap this
+// packet's OWN seam couldn't reach.
 //
-// "Is there still a barrel here?" is EMPIRICALLY unreachable from
-// gracefulAdjudication.js: isMetaQuestion() returns false for it (confirmed
-// below), so the outer meta gate never fires and playloop.js's own
-// objectPresenceTarget (whose anchored regex doesn't tolerate the inserted
-// "still") owns the miss. Per Tim's hard instruction not to touch
-// playloop.js without proving the seam wrong and coming back first — this
-// test PROVES it, on the record, rather than silently dropping the phrasing.
-// Brought back to Tim as its own finding; not fixed in this packet.
+// UPDATE (OBJ-PRESENCE-1b, 2026-07-10): that gap is now CLOSED — Tim
+// authorized a narrow, separate micro-packet touching ONLY
+// engine/playloop.js's objectPresenceTarget regex (never gracefulAdjudication.js).
+// The isMetaQuestion assertion below still documents WHY the fix had to live
+// in a different file than the rest of OBJ-PRESENCE-1: the meta gate never
+// even sees this phrasing, so no gracefulAdjudication.js-only change could
+// have reached it. See tests/U683 for OBJ-PRESENCE-1b's own full coverage.
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -46,15 +45,13 @@ test('U680: control — "is there a barrel around here?" (the already-working ph
   assert.match(String(r.output?.narration || ''), /Yes\s*—\s*there'?s a barrel here/i);
 });
 
-test('U680: KNOWN GAP (documented, not fixed here) — "is there still a barrel here?" is unreachable from gracefulAdjudication.js', () => {
+test('U680: "is there still a barrel here?" — unreachable from THIS file, but the gap itself is closed (by OBJ-PRESENCE-1b, playloop.js)', () => {
   assert.equal(isMetaQuestion('Is there still a barrel here?'), false,
-    'the meta gate never sees this phrasing — confirms the root sits in playloop.js\'s objectPresenceTarget regex, out of this packet\'s owned files');
+    'the meta gate never sees this phrasing — confirms the fix correctly lives in playloop.js\'s objectPresenceTarget, not this file');
   const w = bootAuthored();
   const r = playerMove(w, PACKS, 'Is there still a barrel here?');
-  // Documents CURRENT (unfixed) behavior — a generic room-survey floor, not
-  // an NPC answer and not a correct object answer either. If this assertion
-  // ever fails because someone fixed it elsewhere, that's good news — update
-  // the test, don't be alarmed.
-  assert.doesNotMatch(String(r.output?.narration || ''), /Yes\s*—\s*there'?s a barrel here/i,
-    'still unresolved as of this packet — tracked as a separate finding for Tim');
+  // OBJ-PRESENCE-1b landed (playloop.js's objectPresenceTarget now tolerates
+  // an inserted "still") — the intact barrel reads plainly present.
+  assert.match(String(r.output?.narration || ''), /Yes\s*—\s*there'?s a barrel here/i,
+    'fixed by OBJ-PRESENCE-1b — see tests/U683 for full coverage of this phrasing');
 });

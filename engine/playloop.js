@@ -7678,7 +7678,12 @@ const OBJECT_PRESENCE_EXCLUDE = new Set([
 ]);
 function objectPresenceTarget(text) {
   const t = String(text || '').toLowerCase().trim();
-  const m = t.match(/^(?:is|are)\s+there\s+(?:a|an|any|some)\s+([a-z][a-z '-]*?)\s*(?:\b(?:around|here|nearby|near|anywhere|about|close\s+by|in\s+here|i\s+(?:could|can|might|may|need|want)|that\s+i)\b|[?.,]|$)/i);
+  // OBJ-PRESENCE-1b (2026-07-10) — tolerate an inserted "still" between
+  // "there" and the article ("is there STILL a barrel here?"). Without this,
+  // the anchor's exact adjacency requirement fell the turn past this handler
+  // to the generic room-survey floor — the same player-trust loop as the
+  // NPC-substitution bug OBJ-PRESENCE-1 fixed, just for a sibling phrasing.
+  const m = t.match(/^(?:is|are)\s+there\s+(?:still\s+)?(?:a|an|any|some)\s+([a-z][a-z '-]*?)\s*(?:\b(?:around|here|nearby|near|anywhere|about|close\s+by|in\s+here|i\s+(?:could|can|might|may|need|want)|that\s+i)\b|[?.,]|$)/i);
   if (!m) return null;
   let noun = m[1].trim().replace(/^(?:other|spare|second|small|large|big|old|good|proper|real|nice|decent|working)\s+/, '').trim();
   noun = noun.replace(/\s+(?:i|to)$/, '').trim();

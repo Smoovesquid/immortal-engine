@@ -3782,3 +3782,35 @@ other agents. (none active)
   (node.furniture, read-only), no new field, no schema change.
 - Next per Tim: WIN-LOOK-1 is the likely next checkpoint; INV-CONT-1 undecided until then; still no
   live playtest handoff to Tim yet.
+
+## 2026-07-10 — Basecamp (Fable) — OBJ-PRESENCE-1b → v0.35.4 build 148 — "still" no longer breaks the object-presence question
+
+- Tim-authorized micro-packet (in-chat, 2026-07-10; his sizing note: "tiny but engine-facing parser
+  fix — bounded, but not doc-only"). Closes the one honest gap OBJ-PRESENCE-1 flagged rather than
+  silently patched: "Is there still a barrel here?" — same player-trust loop (a smashed/removed
+  object must not read as if the question were never about an object), Tim: "close it before
+  WIN-LOOK-1."
+- Root: `objectPresenceTarget` (engine/playloop.js) anchors `^(?:is|are)\s+there\s+(?:a|an|any|some)\s+
+  NOUN` — the article must sit IMMEDIATELY after "there". An inserted "still" breaks that adjacency,
+  so the turn fell past the (correct) object-presence handler to the generic room-survey floor.
+  Confirmed in OBJ-PRESENCE-1's own U680: `isMetaQuestion('Is there still a barrel here?')` === false
+  — the meta gate never sees this phrasing at all, so no gracefulAdjudication.js-only fix could reach
+  it; the miss lives entirely in this one regex.
+- FIX (engine/playloop.js ONLY, one line): `(?:still\s+)?` inserted between `there\s+` and the article
+  group. gracefulAdjudication.js untouched, isMetaQuestion untouched, no broadening into WIN-LOOK-1 /
+  inventory-continuity / furniture-parity.
+- Test-writing correction caught before shipping: an initial control assumed objectPresenceTarget
+  gates non-furniture nouns the way OBJ-PRESENCE-1's NEW gracefulAdjudication.js helper does — it
+  doesn't and never has (ANY noun surviving the regex gets an honest presence answer, per the
+  handler's own header: "never invents an object canon doesn't hold"). Verified "is there a ghost
+  here?" (no "still") already said "No — no ghost here" pre-this-packet; fixed the test to assert the
+  real invariant — PARITY between the two phrasings — not a new rejection rule.
+- U683 (6 asserts): smashed authored + procgen answer honestly absent · intact reads present · the
+  original "is there a barrel here?" phrasing byte-preserved · NPC/person presence untouched · the
+  ghost-noun parity control. U680's prior "KNOWN GAP" test flipped from red-by-design to green — its
+  own comment anticipated this ("if this assertion ever fails because someone fixed it elsewhere,
+  that's good news") — updated to confirm the fix rather than document the gap.
+- Full object-presence suite (U677–U683) 30/30; neighborhood sweep (U66x/U67x/U68x) 95/95; full ladder
+  GREEN (135/135 convergence, suite clean, screen truth locked — see npm run check output).
+- No WORLD_VERSION — a regex-tolerance change over existing narration logic, zero state-shape impact.
+- Next per Tim: return to WIN-LOOK-1. Still no playtest handoff.

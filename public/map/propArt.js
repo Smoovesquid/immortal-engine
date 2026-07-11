@@ -22,36 +22,43 @@
 //     cottage-interior arrangement in worldAssets — NOT placement-driven);
 //     'miniLibrary' entries exist only in the lazy manifest.
 
+// BUILDER-OBJ-2 (2026-07-11): the placed-piece GLB render path now exists
+// (figures3d.js buildPropMini prefers glbPropMini, gated on THIS FLAG, before
+// falling back to the procedural box) — every `treeAssets`-sourced kind below
+// is wired. `rack`'s art lives on the lazy `miniLibrary` loader, which
+// buildPropMini does not consume yet (a second, async loading path — parked,
+// not a rewrite), so it stays unwired until that follow-up lands.
 export const PROP_ART = {
-  barrel: { wired: false, minis: [
+  barrel: { wired: true, minis: [
     { url: '/map/assets/barrel_rustic.glb', source: 'treeAssets' },
     { url: '/map/assets/barrel_wood.glb', source: 'treeAssets' },
   ] },
-  bed: { wired: false, minis: [
+  bed: { wired: true, minis: [
     { url: '/map/assets/bed_rustic.glb', source: 'treeAssets' },
   ] },
-  chest: { wired: false, minis: [
+  chest: { wired: true, minis: [
     { url: '/map/assets/chest_iron_a.glb', source: 'treeAssets' },
     { url: '/map/assets/chest_iron_b.glb', source: 'treeAssets' },
   ] },
-  hearth: { wired: false, minis: [
+  hearth: { wired: true, minis: [
     { url: '/map/assets/hearth.glb', source: 'treeAssets' },
   ] },
-  table: { wired: false, minis: [
+  table: { wired: true, minis: [
     { url: '/map/assets/table_rustic.glb', source: 'treeAssets' },
   ] },
-  chair: { wired: false, minis: [
+  chair: { wired: true, minis: [
     { url: '/map/assets/chair_wood.glb', source: 'treeAssets' },
   ] },
-  dresser: { wired: false, minis: [
+  dresser: { wired: true, minis: [
     { url: '/map/assets/dresser_wood.glb', source: 'treeAssets' },
   ] },
   // the cauldron GLB is the cookpot kind's visual — the engine object is and
-  // stays 'cookpot' (a GLB never names an object; FUNC-MINIS architecture note)
-  cookpot: { wired: false, minis: [
+  // stays 'cookpot' (a GLB never names an object; FUNC-MINIS architecture note).
+  // figures3d.js's GLB_KIND_ALIAS maps this kind to treeAssets' 'cauldron' REG entry.
+  cookpot: { wired: true, minis: [
     { url: '/map/assets/cauldron.glb', source: 'treeAssets' },
   ] },
-  rug: { wired: false, minis: [
+  rug: { wired: true, minis: [
     { url: '/map/assets/rug_crimson.glb', source: 'treeAssets' },
   ] },
   rack: { wired: false, minis: [

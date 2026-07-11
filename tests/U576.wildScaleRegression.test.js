@@ -45,7 +45,15 @@ const ONEMAP_SRC = fs.readFileSync(path.join(REPO_ROOT, 'public', 'map', 'oneMap
 
 // -------------------- 1. The 2-D ink path is untouched (source-level) --------------------
 
-test('U576a drawModel.js and oneMap.js (the 2-D ink draw path) are byte-identical to the pre-packet base — this packet only sizes 3-D minis, never the ink', () => {
+// BUILDER-OBJ-2 (2026-07-11) legitimately touches drawModel.js — it grows
+// PROP_MINI_KINDS (the 3-D-mini eligibility set TT-PROPS itself defined),
+// which gates `placedTokenModel`'s `props` array, NEVER the 2-D canvas ink
+// (oneMap.js reads b.plan.furniture directly for its own draw, untouched).
+// oneMap.js's byte-lock stays absolute; drawModel.js's is narrowed to "nothing
+// but the PROP_MINI_KINDS set changed" so a later, unrelated packet touching
+// this file still fails loudly, while a conscious mini-eligibility grow-out
+// doesn't have to re-litigate WILD-SCALE-1's whole original pin.
+test('U576a drawModel.js\'s only change since the pre-packet base is PROP_MINI_KINDS (never the ink); oneMap.js (the 2-D ink draw path) is byte-identical', () => {
   // Pinned to 109f3146 — this worker's own reset point (docs/PACKETS.md's
   // WILD-SCALE-1 dispatch commit), immutable in shared history.
   const BASE = '109f3146';
@@ -56,7 +64,13 @@ test('U576a drawModel.js and oneMap.js (the 2-D ink draw path) are byte-identica
   } catch { /* leave empty — precondition assertions below will fail loudly */ }
   assert.ok(baseDrawModel.length > 0, 'precondition: could read drawModel.js from the dispatch-point base via git');
   assert.ok(baseOneMap.length > 0, 'precondition: could read oneMap.js from the dispatch-point base via git');
-  assert.equal(DRAWMODEL_SRC, baseDrawModel, 'drawModel.js must be BYTE-IDENTICAL to the pre-packet base — the 2-D ink model is untouched (this packet reads INK_PARAMS, never edits it)');
+  const normalizeDrawModel = (src) => src.replace(
+    /(?:\/\/[^\n]*\n)*const PROP_MINI_KINDS = new Set\(\[[^\]]*\]\);/,
+    'PROP_MINI_KINDS_PLACEHOLDER'
+  );
+  assert.notEqual(normalizeDrawModel(baseDrawModel), 0, 'precondition: base drawModel.js actually contains a PROP_MINI_KINDS declaration to normalize');
+  assert.equal(normalizeDrawModel(DRAWMODEL_SRC), normalizeDrawModel(baseDrawModel),
+    'drawModel.js must be byte-identical to the pre-packet base OUTSIDE the PROP_MINI_KINDS set — the 2-D ink model is untouched (this packet reads INK_PARAMS, never edits it)');
   assert.equal(ONEMAP_SRC, baseOneMap, 'oneMap.js must be BYTE-IDENTICAL to the pre-packet base — the 2-D canvas draw is untouched');
 });
 
@@ -151,13 +165,22 @@ test('U576e FIGURE_HEIGHT_WU and PROP_TRUE_SIZE (REND-SCALE-1\'s own tables) are
   // the one ft→wu seam because the sheet's wu is metric. The original packet
   // constraint this test pinned (WILD-SCALE-1 must not edit REND-SCALE-1's
   // tables) is preserved in exactly that authored-value form.
+  //
+  // BUILDER-OBJ-2 (2026-07-11) consciously ADDS five new entries (the GLB-
+  // backed kinds it wires) alongside the original four — a genuine grow-out,
+  // not the "WILD-SCALE-1 must not touch this" violation this test originally
+  // guarded against, so the four originals are still individually pinned below.
   assert.deepEqual(FIGURE_HEIGHT_WU, { small: 3.5 * WU_PER_FT, medium: 6 * WU_PER_FT }, 'FIGURE_HEIGHT_WU authored values must be untouched');
-  assert.deepEqual(PROP_TRUE_SIZE, {
-    barrel: { axis: 'y', wu: 3.2 * WU_PER_FT },
-    chest: { axis: 'y', wu: 2.2 * WU_PER_FT },
-    dresser: { axis: 'y', wu: 4.2 * WU_PER_FT },
-    bed: { axis: 'z', wu: 7 * WU_PER_FT },
-  }, 'PROP_TRUE_SIZE authored values must be untouched');
+  assert.deepEqual(
+    { barrel: PROP_TRUE_SIZE.barrel, chest: PROP_TRUE_SIZE.chest, dresser: PROP_TRUE_SIZE.dresser, bed: PROP_TRUE_SIZE.bed },
+    {
+      barrel: { axis: 'y', wu: 3.2 * WU_PER_FT },
+      chest: { axis: 'y', wu: 2.2 * WU_PER_FT },
+      dresser: { axis: 'y', wu: 4.2 * WU_PER_FT },
+      bed: { axis: 'z', wu: 7 * WU_PER_FT },
+    }, 'the four original PROP_TRUE_SIZE authored values must be untouched');
+  assert.deepEqual(new Set(Object.keys(PROP_TRUE_SIZE)), new Set(['barrel', 'chest', 'dresser', 'bed', 'hearth', 'table', 'chair', 'cookpot', 'rug']),
+    'PROP_TRUE_SIZE\'s kind set is exactly the four originals plus BUILDER-OBJ-2\'s five wired additions');
   // Spot-check the consumer functions still return the SAME values U566 pins.
   assert.equal(figureHeightWu({ name: 'Hobbit' }), 3.5 * WU_PER_FT);
   assert.equal(figureHeightWu(null), 6 * WU_PER_FT);

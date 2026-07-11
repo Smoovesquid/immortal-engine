@@ -112,6 +112,45 @@ optional polish keyed by kind.
 - To add a supported palette kind: the 3-step recipe above + a PALETTE row in
   house-builder.html (footprint) + extend U685/U686's lists.
 
+## BUILDER-OBJ-2 addendum (2026-07-11) — placed-piece GLB render path
+
+- `figures3d.js`'s `buildPropMini(THREE, kind)` now PREFERS a confirmed GLB
+  (`glbPropMini`, gated on `propArt.js`'s own `wired` flag) before falling
+  back to its old procedural box — the box survives only for the four kinds
+  that had one (barrel/bed/chest/dresser); every other wired kind renders
+  GLB-or-nothing (never a fabricated placeholder shape).
+- The GLB comes from `treeAssets.js`'s existing eager-preloaded furniture
+  templates (`buildGLBProp`) — no second loader was built. `cookpot` is the
+  one kind whose engine name differs from its GLB's REG kind (`cauldron`);
+  `GLB_KIND_ALIAS` in figures3d.js carries that one mapping (a GLB never
+  names the engine object).
+- Wired kinds (propArt.js): barrel, bed, chest, dresser, hearth, table,
+  chair, cookpot, rug — 9 of the Builder's 16. `rack`'s art lives on the
+  lazy `miniLibrary` loader (a second, async loading path, not yet built) so
+  it stays unwired.
+- `drawModel.js`'s `PROP_MINI_KINDS` (which gates whether a furniture kind
+  becomes a 3-D mini candidate at all) grew from 4 to 9 to match — hearth/
+  table/chair/cookpot/rug previously never became minis (TT-PROPS's original
+  "picked-up-off-the-table" framing predates the Builder's authored-object
+  palette; Tim's own commission for this packet was the direct counter-case:
+  "a placed table should look like the table GLB").
+- `figures3d.js`'s `PROP_TRUE_SIZE` gained entries for the five new kinds,
+  including a new `axis: 'footprint'` option (measured via the existing
+  yaw-invariant `measureAuthoredFootprint`) for table/rug — their GLBs aren't
+  authored axis-aligned the way the bed is, so a fixed-axis height read could
+  land on a near-zero value and blow the true-size scale up hugely (the same
+  failure class UNIT-CLASH-1 already named).
+- Tests: U687 (new — hermetic gating/fallback proof + source-contract checks
+  for the wiring, since three.js can't run headless in this test env); U685's
+  wired-state expectation and U576a/U576e's byte-locks were updated
+  consciously (each documents why in its own comment) since this packet
+  legitimately grows both propArt.js's wired set and PROP_TRUE_SIZE.
+- Live receipt: the tallow boot cottage's Hearth Room renders a detailed
+  brick hearth (with chimney), an iron-banded chest, a flat rug, and a barrel
+  as real GLB sculpts (not procedural boxes) — `window.__rendScaleAudit`
+  additionally confirms `table`'s mini resolved (it has no procedural
+  fallback, so its presence there is only possible via the GLB path).
+
 ## Known limits (honest scope)
 
 - **Procgen cover staleness pre-exists**: a generic (non-authored) piece's

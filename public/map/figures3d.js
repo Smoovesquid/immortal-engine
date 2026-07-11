@@ -19,6 +19,13 @@
 // they're loaded — see figureAssets.js. Graceful: until/unless a GLB is ready, the
 // procedural figure below is used. The preload kicks on import of that module.
 import { buildFigureFromGLB } from './figureAssets.js';
+// BUILDER-OBJ-2 — the same graceful-GLB contract for PLACED FURNITURE PROPS:
+// treeAssets.js's furniture REG already eager-preloads these sculpts (the
+// "canned cottage-interior arrangement" comment in propArt.js — this is the
+// wiring that makes it placement-driven instead). Until/unless a kind's GLB is
+// ready, buildPropMini falls through to the existing procedural box.
+import { buildGLBProp } from './treeAssets.js';
+import { artForKind } from './propArt.js';
 
 const PALETTE = {
   player:   { body: 0x2f6fd0, accent: 0x9fc8ff, emissive: 0x163a78, ring: 0xd9a441, ei: 0.34 },
@@ -207,17 +214,51 @@ function propShadowMat(THREE) {
   return m;
 }
 
+// Engine FURN kind -> treeAssets.js REG kind, only where the names differ. A
+// GLB never NAMES an object (FUNC-MINIS architecture note): the cauldron GLB
+// is the 'cookpot' kind's visual, so this is the one alias the render path
+// needs; every other wired kind's propArt key already matches its REG kind.
+const GLB_KIND_ALIAS = { cookpot: 'cauldron' };
+
+// glbPropMini(THREE, kind) -> THREE.Group | null. Only attempts a kind that
+// propArt.js has actually flipped `wired: true` for (the registry IS the
+// single source of truth for which kinds this render path draws with art —
+// flipping a kind here without flipping propArt.js would make the Builder's
+// status chip lie). Returns null (never throws, never fetches synchronously)
+// when unwired, not yet loaded, or the asset failed — buildPropMini's caller
+// falls through to the procedural box exactly as today.
+function glbPropMini(THREE, kind) {
+  if (!artForKind(kind)?.wired) return null;
+  const glbKind = GLB_KIND_ALIAS[String(kind)] || String(kind);
+  const mesh = buildGLBProp(THREE, glbKind);
+  if (!mesh) return null;
+  const g = new THREE.Group();
+  const shadow = new THREE.Mesh(new THREE.CircleGeometry(0.55, 16), propShadowMat(THREE));
+  shadow.rotation.x = -Math.PI / 2;
+  shadow.position.y = 0.012;
+  g.add(shadow);
+  g.add(mesh);
+  g.userData.kind = String(kind);
+  g.userData.glb = true;
+  return g;
+}
+
 /**
  * buildPropMini(THREE, kind) -> THREE.Group | null
- * A standing prop token — barrel/bed/chest/dresser — as a SIMPLE SOLID piece
- * (a single box or cylinder, full color, no rig) sitting on a soft round
- * shadow disc (the "base + soft shadow" that sells "standing on the tilted
- * table", per TABLETOP_MAP.md's miniature art direction). Feet at y=0, like
- * buildArchetypeFigure, so the caller positions/scales it identically. Returns
- * null for an unrecognized kind (never fabricate a shape for data that isn't
- * one of the props this stage covers).
+ * A standing prop token, preferring the confirmed GLB sculpt propArt.js has
+ * wired for `kind` (glbPropMini, above); falling back to a SIMPLE SOLID
+ * procedural piece (a single box or cylinder, full color, no rig) for the
+ * four kinds that have one (barrel/bed/chest/dresser) — sitting on a soft
+ * round shadow disc either way (the "base + soft shadow" that sells "standing
+ * on the tilted table", per TABLETOP_MAP.md's miniature art direction). Feet
+ * at y=0, like buildArchetypeFigure, so the caller positions/scales it
+ * identically. Returns null for a kind with neither GLB nor procedural art
+ * (never fabricate a shape for data that isn't one of the props this stage
+ * covers).
  */
 export function buildPropMini(THREE, kind) {
+  const glb = glbPropMini(THREE, kind);
+  if (glb) return glb;
   const pal = PROP_PALETTE[String(kind || '')];
   if (!pal) return null;
   const g = new THREE.Group();
@@ -575,6 +616,17 @@ export const PROP_TRUE_SIZE = {
   chest:   { axis: 'y', wu: ftWu(2.2) },
   dresser: { axis: 'y', wu: ftWu(4.2) },
   bed:     { axis: 'z', wu: ftWu(7) },
+  // BUILDER-OBJ-2 additions — GLB-backed kinds. 'footprint' (measured via
+  // measureAuthoredFootprint, a yaw-invariant horizontal diagonal) is used for
+  // pieces whose long axis isn't authored axis-aligned like the bed is (a
+  // table/rug's GLB may sit at any rotation) — height-axis measurement would
+  // read a rug's near-zero 'y' extent and blow its scale up to something
+  // enormous, the same failure mode UNIT-CLASH-1 already warns about.
+  hearth:  { axis: 'y', wu: ftWu(4.5) },
+  table:   { axis: 'footprint', wu: ftWu(4.4) },
+  chair:   { axis: 'y', wu: ftWu(3) },
+  cookpot: { axis: 'y', wu: ftWu(2) },
+  rug:     { axis: 'footprint', wu: ftWu(6) },
 };
 export function propTrueSize(kind) {
   return PROP_TRUE_SIZE[String(kind || '')] || { axis: 'y', wu: ftWu(3) };

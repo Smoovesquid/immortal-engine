@@ -60,14 +60,21 @@ test('U685: the palette carries the whole supported set', () => {
   for (const k of SUPPORTED) assert.ok(kinds.has(k), `supported kind '${k}' is on the palette`);
 });
 
-test('U685: propArt only annotates real kinds, every GLB exists, nothing is wired yet', () => {
+// BUILDER-OBJ-2 (2026-07-11): the placed-piece GLB render path now exists
+// (figures3d.js buildPropMini/glbPropMini) for every treeAssets-sourced kind;
+// this expectation was updated CONSCIOUSLY, per this file's own header note,
+// alongside that render-path change. 'rack' stays unwired — its art lives on
+// the lazy miniLibrary loader, which buildPropMini does not consume.
+const NOT_YET_WIRED = new Set(['rack']);
+
+test('U685: propArt only annotates real kinds, every GLB exists, wired state matches the render path', () => {
   const kinds = Object.keys(PROP_ART);
   assert.ok(kinds.length >= 10, 'the registry is populated');
   for (const kind of kinds) {
     assert.ok(FURN[kind], `propArt annotates '${kind}' — must be an engine FURN kind (art never mints an object)`);
     const entry = PROP_ART[kind];
-    assert.equal(entry.wired, false,
-      `'${kind}' claims wired art — no placed-piece GLB render path exists yet; if you just built one, update this expectation`);
+    assert.equal(entry.wired, !NOT_YET_WIRED.has(kind),
+      `'${kind}' wired flag must match whether a placed-piece GLB render path actually consumes it`);
     assert.ok(Array.isArray(entry.minis) && entry.minis.length > 0, `'${kind}' names at least one GLB`);
     for (const m of entry.minis) {
       assert.match(m.url, /^\/map\/assets\/[\w.-]+\.glb$/, `${kind}: sane asset url (${m.url})`);

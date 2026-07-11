@@ -206,7 +206,7 @@
     if(!inEngine) return { cls:'none', txt:'needs object contract', place:false };
     const art=PROPART[t];
     if(art) return art.wired
-      ? { cls:'real', txt:'real object · art wired', place:true }
+      ? { cls:'real', txt:'real object · GLB rendered', place:true }
       : { cls:'art', txt:`real object · has art (${art.minis.length} GLB) — needs wiring`, place:true };
     return { cls:'real', txt:'real object', place:true };
   }

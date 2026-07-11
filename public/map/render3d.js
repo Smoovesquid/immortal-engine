@@ -813,7 +813,11 @@ export async function mountSlice3D(container, sceneData, opts = {}) {
         // REND-SCALE-1 — a prop's true size per kind (a bed is LENGTH-true: 7 ft
         // along its long axis; casks/chests/dressers height-true).
         const trueSize = propTrueSize(prop.kind);
-        const pAuth = measureAuthoredSize(THREE, mini, trueSize.axis);
+        // 'footprint' (table/rug — BUILDER-OBJ-2) measures the yaw-invariant
+        // horizontal diagonal instead of one fixed axis; see PROP_TRUE_SIZE.
+        const pAuth = trueSize.axis === 'footprint'
+          ? measureAuthoredFootprint(THREE, mini)
+          : measureAuthoredSize(THREE, mini, trueSize.axis);
         const rec = {
           group: mini, baseY: y, baseScale: 1, rate: 0.6, phase: phaseFromKey(prop.kind + prop.wx + prop.wy), bob: 0.008, defeated: false, wx: prop.wx, wy: prop.wy, yOff: 0,
           wuPerAuthored: trueSize.wu / pAuth, heightWu: trueSize.wu, authoredSize: pAuth, floorScale: 1

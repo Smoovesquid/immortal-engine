@@ -42,6 +42,15 @@ const boot = () => beginAdventure(
   PACKS
 ).world;
 
+// BUILDER-OBJ-2 (2026-07-11) superseded the "only four kinds" floor below: TT-
+// PROPS's original "picked-up-off-the-table" framing predates the Builder's
+// 16-kind authored-object palette (BUILDER-OBJ-1). Tim's own commission for
+// this packet ("a placed table should look like the table GLB, not a
+// placeholder") is the direct opposite of the old hearth/table/rug exclusion
+// for BUILDER-PLACED furniture specifically — so PROP_MINI_KINDS (drawModel.js)
+// now carries every kind propArt.js has wired a GLB for. Kinds with neither a
+// KIND_PHYSICS row nor propArt art (altar/statue/column/brazier/shelf/bars)
+// are untouched and still never appear here — see the test below.
 test('U480: the tallow boot world (player at home, inside their own structure) yields real, positioned furniture props', () => {
   const w = boot();
   const model = placedTokenModel(w, String(w.map.currentNodeId));
@@ -49,7 +58,8 @@ test('U480: the tallow boot world (player at home, inside their own structure) y
   assert.ok(model.props.length > 0, 'the boot cottage has furniture — props must not be empty for the home/open structure');
   for (const p of model.props) {
     assert.ok(Number.isFinite(p.wx) && Number.isFinite(p.wy), 'every prop has a finite world-unit position');
-    assert.ok(['barrel', 'bed', 'chest', 'dresser'].includes(p.kind), `prop kind "${p.kind}" must be one of the four TT-PROPS furniture kinds`);
+    assert.ok(['barrel', 'bed', 'chest', 'dresser', 'hearth', 'table', 'chair', 'cookpot', 'rug'].includes(p.kind),
+      `prop kind "${p.kind}" must be one of the TT-PROPS/BUILDER-OBJ-2 mini-eligible furniture kinds`);
   }
 });
 
@@ -105,11 +115,11 @@ test('U480: props positions are DERIVED, never invented — every prop lands str
   }
 });
 
-test('U480: only the four picked-up-off-the-table kinds become props — hearths/altars/tables/rugs (fixed masonry or floor dressing) never appear', () => {
+test('U480: kinds with no KIND_PHYSICS/propArt entry (true room-shell architecture) never become props — altar/statue/column/brazier/shelf/bars', () => {
   const w = boot();
   const model = placedTokenModel(w, String(w.map.currentNodeId));
   for (const p of model.props) {
-    assert.ok(!['hearth', 'altar', 'statue', 'column', 'brazier', 'table', 'rug', 'shelf', 'bars'].includes(p.kind),
-      `"${p.kind}" is fixed/room-shell furniture per the decision rule (if it's the shape of the world -> ink), not a mini`);
+    assert.ok(!['altar', 'statue', 'column', 'brazier', 'shelf', 'bars'].includes(p.kind),
+      `"${p.kind}" is fixed/room-shell furniture outside the Builder's supported palette, not a mini`);
   }
 });

@@ -614,7 +614,13 @@ export function decorativeBuildingRects(world, nodeId) {
 // fixtures (hearth, altar, statue, column, brazier — masonry, part of the
 // room's shell) and 'rug'/'bars' are excluded: the decision rule is "if you
 // could pick it up off the table → mini" and a hearth is not picked up.
-const PROP_MINI_KINDS = new Set(['barrel', 'bed', 'chest', 'dresser']);
+// BUILDER-OBJ-2 — every kind propArt.js can hand a confirmed GLB to (minus
+// 'rack', whose art lives on the lazy miniLibrary loader, not the eager
+// treeAssets preload buildPropMini consumes — parked, not wired). A kind
+// entering this set with no GLB yet and no procedural PROP_PALETTE fallback
+// still just draws nothing (buildPropMini returns null, caller skips it) —
+// never a fabricated placeholder shape.
+const PROP_MINI_KINDS = new Set(['barrel', 'bed', 'chest', 'dresser', 'hearth', 'table', 'chair', 'cookpot', 'rug']);
 
 /**
  * placedTokenModel(world, nodeId) -> {

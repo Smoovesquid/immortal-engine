@@ -59,6 +59,34 @@ toppled standing figure).
 ---
 *Append below this line, newest first, date every add.*
 
+**2026-07-10 · RECEIVED + DECIMATED + REGISTERED (Meshy → `public/map/assets/`, registered in
+`public/map/miniLibrary.js`):** armory_iron ("The Iron Armory", free-standing iron weapon rack —
+low-poly generation, kept at full 12.5k tris) · wall_of_blades ("Wall of Blades", long post-and-rail
+rack of spears/swords) · armory_arcane ("Arcane Armory", triple-arched stone display of glowing
+weapons). Island-checked: all three are SINGLE connected objects (1–2 islands), upright, Y-up — the
+first Meshy arrivals that qualify as placeable minis as-is. All three serve the "weapon rack" (`rack`)
+row of the 39-type list; they're candidates for `rack`'s type-mini once the buildPropMini GLB path
+lands — that wiring (and any engine placement) remains the 39-type packet, not this intake.
+
+**2026-07-10 · RECEIVED + DECIMATED from Tim (Meshy "Medieval Hearth and S…/F…" ×2 →
+`public/map/assets/`), NOT registered:** furniture_sheet_hearth_a (8 pieces: gothic stone fireplace,
+long bench, rug/runner, hanging lantern, firepit with logs, candle, small ironwork) ·
+furniture_sheet_hearth_b (9 pieces: long table, sideboard, standing brazier, log firepit, round
+stone ring, pedestal basin/font, anvil, plinth). Same sheet-not-object finding as the rustic pair
+below — decimated (~46k/44k tris, 1.7/1.6 MB), verified loading live, parked awaiting the split
+pass. Across the four parked sheets the split would yield candidates for MANY 39-type rows: hearth,
+firepit, brazier, basin/font, anvil, table, bench, rug/runner, lantern, candles, shelf, crate, bed.
+
+**2026-07-10 · AUDIT — the whole 07-08 batch is catalog sheets too.** Rendered all eight registered
+07-08 entries through the live loader: every one is a multi-object sheet (roofed_wells 7 islands ·
+stonewell_ensemble 8 · gothic_gate_collection 14 · bridges_of_stone 8 · stone_archways_timber 5 ·
+fence_run_weathered 13 · fence_fragment_weathered 6 · deadfall_driftwood_weathered 9 —
+screenshot-verified as spread-apart separate objects). LATENT, not live: only the corpse category is
+consumed today, and the corpse pair are intentional single heaps. Registrations left as-is; the
+split pass should re-cut these eight before anything places one. Generation-side implication for
+Tim: Meshy returns the whole reference image as ONE GLB — single-subject images produce placeable
+minis directly (the armory trio above proves it); multi-object sheets always need the split step.
+
 **2026-07-10 · RECEIVED + DECIMATED from Tim (Meshy "Rustic Wooden Crates" ×2 → `public/map/assets/`),
 NOT registered anywhere yet:** furniture_sheet_rustic_a · furniture_sheet_rustic_b. Rendered through
 the live GLTFLoader, each GLB turns out to be a SHEET of loose rustic pieces (A: 6 islands — crates,
@@ -69,10 +97,8 @@ verified loading in-browser; parked on disk like the 07-05 corpse drop until a S
 them: split islands into per-piece GLBs (offline pass, or extend figureAssets' `pack:` island-split
 treatment to props), then register pieces individually. The pieces cover tier-1 domestic-core
 subjects (crate, shelf, table, bed) but the 39-type contract below still wants per-`type` singles
-at authored scale — these sheet pieces can seed that once split. NOTE for the next intake lane: the
-07-08 "collection/ensemble" assets (roofed_wells · stonewell_ensemble · gothic_gate_collection) may
-carry the same multi-object-sheet property and are already registered as single minis — worth a
-visual check before first placement.
+at authored scale — these sheet pieces can seed that once split. (The "check the 07-08 collections
+too" note that first lived here is resolved — see the AUDIT entry above: all eight are sheets.)
 
 **2026-07-08 · RECEIVED + DECIMATED from Tim (Meshy GLB → `public/map/assets/`, registered in
 `public/map/miniLibrary.js`):** bridges_of_stone · roofed_wells · stone_archways_timber ·

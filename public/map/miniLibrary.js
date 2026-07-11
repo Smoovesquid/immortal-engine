@@ -72,11 +72,33 @@ export const MINI_LIBRARY = [
     url: '/map/assets/stonewell_ensemble.glb', fitLong: 2.2, footprint: [1, 1],
     tags: ['well', 'stone', 'village', 'water', 'settlement'],
   },
+  // Armory trio (2026-07-10) — SINGLE-object weapon racks (island-checked, upright,
+  // Y-up). Candidates for the `rack` furniture type's mini once the buildPropMini GLB
+  // path exists (the 39-type packet) — until then library-placeable props only.
+  {
+    id: 'armory_iron', name: 'The Iron Armory', category: 'prop',
+    url: '/map/assets/armory_iron.glb', fitLong: 1.3, footprint: [1, 1],
+    tags: ['rack', 'weapon', 'armory', 'iron', 'martial'],
+  },
+  {
+    id: 'wall_of_blades', name: 'Wall of Blades', category: 'prop',
+    url: '/map/assets/wall_of_blades.glb', fitLong: 1.7, footprint: [2, 1],
+    tags: ['rack', 'weapon', 'blades', 'spears', 'martial'],
+  },
+  {
+    id: 'armory_arcane', name: 'Arcane Armory', category: 'prop',
+    url: '/map/assets/armory_arcane.glb', fitLong: 2.2, footprint: [2, 1],
+    tags: ['rack', 'weapon', 'arcane', 'display', 'magic'],
+  },
 ];
-// NOT registered (on disk awaiting a split pass): furniture_sheet_rustic_a/b.glb are
-// SHEETS of 6–8 loose furniture pieces (crates, shelf, cabinet, table, pallet bed) —
-// placing one as a mini would drop the whole disconnected spread on the board. Split
-// into per-piece GLBs first (see MINIS_WISHLIST.md 2026-07-10 receipt).
+// NOT registered (on disk awaiting a split pass): furniture_sheet_rustic_a/b.glb and
+// furniture_sheet_hearth_a/b.glb are SHEETS of 6–11 loose furniture pieces (crates,
+// shelves, tables, hearth, firepits, brazier, basin, anvil …) — placing one would drop
+// the whole disconnected spread on the board; split into per-piece GLBs first (see the
+// MINIS_WISHLIST.md 2026-07-10 receipts). AUDIT 2026-07-10: the eight architecture/wild
+// entries above are ALSO multi-object catalog sheets (5–14 islands each; screenshot-
+// verified) — latent, since only the corpse category is consumed today; the split-pass
+// packet owns re-cutting them before anything places one.
 
 export const miniById = (id) => MINI_LIBRARY.find((m) => m.id === id) || null;
 export const minisByCategory = (cat) => MINI_LIBRARY.filter((m) => m.category === cat);

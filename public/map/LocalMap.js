@@ -847,7 +847,7 @@ export function renderLocalMap(world, opts = {}) {
     // tab as a zoom-out.) Falls back to the tile renderer on any error.
     try {
       const model = placeFromWorldNode(world, world?.map?.currentNodeId) || placeModelFromNode(world, world?.map?.currentNodeId);
-      if (model) { const pm = createPlaceMap(canvas, { seed: String(model.seed || 'place'), fog: false }); pm.draw(model); }
+      if (model) { const pm = createPlaceMap(canvas, { seed: String(model.seed || 'place') }); pm.draw(model); }
       else drawExterior(ctx, world, w, size, cell);
     } catch (e) { try { console.warn('[map] place render fell back to tiles:', e && (e.message || e)); } catch {} drawExterior(ctx, world, w, size, cell); }
   }

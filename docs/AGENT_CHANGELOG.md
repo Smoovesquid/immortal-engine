@@ -3880,3 +3880,23 @@ other agents. (none active)
   wants it later, not silently folded in here.
 - Next per Tim: bring the result back; he'll decide whether this is the playtest checkpoint or
   whether INV-CONT-1 needs to close first. Still no playtest handoff to Tim yet.
+
+## 2026-07-10 — Basecamp (Fable) — exterior fog-of-war restored → v0.35.6 build 150
+
+- Tim: "turn fog of war back on." `public/map/LocalMap.js`'s exterior (settlement) local-map renderer
+  had `fog: false` hardcoded into its `createPlaceMap()` call since the map was first unified onto the
+  hand-drawn place renderer (commit 309f5f9d, 2026-06-05) — no comment explaining why, and the interior
+  view right above it already uses real fog. The fog ENGINE itself was never missing:
+  `handDrawnPlace.js`'s `computeFog`/`visibleFrom` already do real line-of-sight + an `EXPLORED` set
+  (unexplored cells clipped out entirely; explored-but-not-currently-visible cells get a grey shroud
+  overlay) — it was just switched off for the outdoor view specifically.
+- FIX: removed the `fog: false` override (one line, `public/map/LocalMap.js`); `createPlaceMap`'s own
+  default (`opts.fog !== false`) now applies, matching the interior view's behavior.
+- Verified live: fresh Bryn Holt start (aldermere), stepped outside — the settlement map now shows
+  only the explored radius around the player (nearby buildings + road), with the rest of the canvas
+  blank/unexplored, instead of the whole settlement rendered at once. Screenshot receipt taken.
+- Existing map/fog tests (U97, U402, U432, U433, U64 — 27 asserts) untouched and green; they cover the
+  SEPARATE interior fog model (`world.scene.interior.visited`), not this exterior renderer, so no
+  collision. No new test written — this is a pure rendering-default flip with an existing, already-
+  tested fog engine underneath; nothing new to unit-test.
+- No WORLD_VERSION, no engine files touched — `public/map/` only.

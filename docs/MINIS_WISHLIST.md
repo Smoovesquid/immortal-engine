@@ -59,6 +59,17 @@ toppled standing figure).
 ---
 *Append below this line, newest first, date every add.*
 
+**2026-07-11 · BUILDER-OBJ-1 shipped (v0.36.0 b151) — the wiring ledger moves to code.** The
+kind→art status this wishlist tracked prose-wise is now DATA: `public/map/propArt.js` maps engine
+furniture kinds to their confirmed single-object GLBs (`wired: false` until a placed-piece GLB
+render path exists — flipping a kind's flag + U685 is the wiring packet's job), and the 07-10 sheet
+audit now rides `miniLibrary.js` as `sheet: true` flags the Building Builder reads (sheets show
+"needs split → object contract" and are not placeable). The Builder's 16-kind supported palette
+(barrel, bed, dresser, chest, cookpot, crate, shelf, table, chair, nightstand, wardrobe, rug,
+runner, lantern, candles, hearth) shows per-kind status chips; all 16 place as REAL engine objects
+with explicit physics (KIND_PHYSICS 4→16). The armory trio is registered as `rack` art in propArt.
+Guards: tests U685/U686.
+
 **2026-07-10 · RECEIVED + DECIMATED + REGISTERED (Meshy → `public/map/assets/`, registered in
 `public/map/miniLibrary.js`):** armory_iron ("The Iron Armory", free-standing iron weapon rack —
 low-poly generation, kept at full 12.5k tris) · wall_of_blades ("Wall of Blades", long post-and-rail

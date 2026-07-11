@@ -95,6 +95,23 @@ twins yet, so their cover behavior is byte-identical — see "Known limits."
 That's the whole surface. No renderer work is required for existence; a mini is
 optional polish keyed by kind.
 
+## BUILDER-OBJ-1 addendum (v0.36.0 b151, 2026-07-11)
+
+- `KIND_PHYSICS` now covers the whole supported Builder palette (16 kinds):
+  barrel, bed, cookpot, dresser + chest, crate, shelf, table, chair, nightstand,
+  wardrobe, rug, runner, lantern, candles, hearth. The honesty rule that drove
+  it: Model B's RENDER material must never leak into smash physics — a lantern
+  is ironwork that carries fire (iron, h3, bulk 1 = takeable), candles are wax,
+  a hearth is set masonry (stone, h5, bulk 5). Drawer-bearing kinds (nightstand,
+  wardrobe, crate, chest) are `category: 'container'` = the open/search class.
+- Kind→GLB art status lives in `public/map/propArt.js` (curated, single-object
+  confirmed only, `wired: false` until a placed-piece GLB render path exists).
+  The Builder's status chips read it; miniLibrary `sheet: true` marks audited
+  multi-object sheets the Builder must refuse. Guards: U685 (palette ⊆ FURN,
+  registry integrity), U686 (all-16-kind end-to-end contract).
+- To add a supported palette kind: the 3-step recipe above + a PALETTE row in
+  house-builder.html (footprint) + extend U685/U686's lists.
+
 ## Known limits (honest scope)
 
 - **Procgen cover staleness pre-exists**: a generic (non-authored) piece's

@@ -28,6 +28,13 @@
   .tool.active { border-color:var(--accent); box-shadow:inset 0 0 0 1px var(--accent); background:#fff; }
   .tool .swatch { width:26px; height:26px; flex:none; display:inline-flex; }
   .tool small { display:block; color:var(--ink-soft); font-size:10px; }
+  .chip { display:inline-block; font-size:9px; padding:1px 5px; border-radius:8px; margin-top:2px; letter-spacing:.2px; vertical-align:middle; }
+  .chip.real { background:#e4efdd; color:#3e6b2f; border:1px solid #b9d3a8; }
+  .chip.art  { background:#f6ecd4; color:#8a6414; border:1px solid #e0c98f; }
+  .chip.none { background:#f3ddd8; color:#9a3b2c; border:1px solid #e0b7ad; }
+  .tool.blocked { opacity:.45; cursor:not-allowed; }
+  .librow { font-size:11px; padding:4px 7px; border-radius:6px; color:var(--ink); background:#fbf8ef; border:1px solid var(--panel-line); margin-bottom:4px; }
+  .librow small { display:block; color:var(--ink-soft); font-size:9.5px; }
   .seg { display:flex; gap:6px; margin:6px 0; }
   .seg button { flex:1; padding:6px 4px; font-size:12px; border:1px solid var(--panel-line); background:#fbf8ef; border-radius:7px; cursor:pointer; color:var(--ink); }
   .seg button.on { border-color:var(--accent); background:#fff; box-shadow:inset 0 0 0 1px var(--accent); font-weight:600; }
@@ -75,12 +82,13 @@
       <button class="tool" data-tool="trap"><span class="swatch" id="sw-trap"></span><span>Trap<small>hidden hazard · click a square</small></span></button>
     </div>
     <div class="group">
-      <h2>Furniture</h2>
-      <button class="tool" data-tool="bed"><span class="swatch" id="sw-bed"></span><span>Bed<small>2 × 3</small></span></button>
-      <button class="tool" data-tool="barrel"><span class="swatch" id="sw-barrel"></span><span>Barrel<small>1 × 1</small></span></button>
-      <button class="tool" data-tool="cookpot"><span class="swatch" id="sw-cookpot"></span><span>Cooking pot<small>1 × 1</small></span></button>
-      <button class="tool" data-tool="dresser"><span class="swatch" id="sw-dresser"></span><span>Dresser<small>2 × 1</small></span></button>
+      <h2>Furniture · engine objects</h2>
+      <div id="furnPalette"></div>
       <button class="tool" data-tool="furniture"><span class="swatch" id="sw-furniture"></span><span>More…<small>any of 41 engine types</small></span></button>
+    </div>
+    <div class="group">
+      <h2>Mini library</h2>
+      <div id="miniLib" style="font-size:11px;color:var(--ink-soft)">loading…</div>
     </div>
     <div class="group">
       <h2>Selected</h2>
@@ -150,7 +158,25 @@
   const cv=document.getElementById('cv'); cv.width=1008; cv.height=700; const ctx=cv.getContext('2d');
   const cam={ scale:1, ox:40, oy:40 };              // world→screen: sx = wx*scale + ox (fixed viewport, big world)
   let spaceHeld=false;
-  const FURN={ bed:{w:2,h:3,label:'bed'}, barrel:{w:1,h:1,label:'barrel'}, cookpot:{w:1,h:1,label:'cooking pot'}, dresser:{w:2,h:1,label:'dresser'} };
+  // BUILDER-OBJ-1 — the supported furniture palette. HARD LAW (Tim, 2026-07-11):
+  // every palette entry MUST be an engine FURN kind — if a thing can be placed,
+  // the game must believe in it; no decor-only minis. tests/U685 enforces
+  // PALETTE ⊆ engine catalog, and kindStatus() blocks placement at runtime for
+  // anything the engine dump doesn't know.
+  const PALETTE=[
+    {type:'bed',label:'Bed',w:2,h:3}, {type:'barrel',label:'Barrel',w:1,h:1},
+    {type:'cookpot',label:'Cooking pot',w:1,h:1}, {type:'dresser',label:'Dresser',w:2,h:1},
+    {type:'chest',label:'Chest',w:1,h:1}, {type:'crate',label:'Crate',w:1,h:1},
+    {type:'shelf',label:'Shelves',w:2,h:1}, {type:'table',label:'Table',w:2,h:2},
+    {type:'chair',label:'Chair',w:1,h:1}, {type:'nightstand',label:'Nightstand',w:1,h:1},
+    {type:'wardrobe',label:'Wardrobe',w:2,h:1}, {type:'rug',label:'Rug',w:3,h:2},
+    {type:'runner',label:'Aisle runner',w:1,h:4}, {type:'lantern',label:'Lantern',w:1,h:1},
+    {type:'candles',label:'Candles',w:1,h:1}, {type:'hearth',label:'Hearth',w:2,h:1}
+  ];
+  const FURN=Object.fromEntries(PALETTE.map(p=>[p.type,{w:p.w,h:p.h,label:p.label.toLowerCase()}]));
+  document.getElementById('furnPalette').innerHTML=PALETTE.map(p=>
+    `<button class="tool" data-tool="${p.type}"><span class="swatch" id="sw-${p.type}"></span><span>${p.label}<small>${p.w} × ${p.h}</small><br/><span class="chip real" id="chip-${p.type}">real object</span></span></button>`
+  ).join('');
   const MAT={ timber:{col:'#8a5a2e',w:3,hatch:false}, stone:{col:'#4a4a52',w:4,hatch:true} };
   // room roles the engine knows (engine/structures/roomDetail.js) — drives narration + furnishing
   const ROLES=[['','— generic room —'],['quarters','Bedchamber / Quarters'],['kitchen','Kitchen'],['cellar','Cellar'],['pantry','Pantry'],['larder','Larder'],['scullery','Scullery'],['greathall','Great Hall'],['taproom','Taproom'],['mead','Mead Hall'],['dungeon','Dungeon'],['armory','Armory'],['barracks','Barracks'],['solar','Solar'],['storeroom','Storeroom'],['counting','Counting House'],['crypt','Crypt'],['chapel','Side Chapel'],['vestry','Vestry'],['nave','Nave'],['tower','Tower'],['privy','Privy']];
@@ -165,8 +191,44 @@
   let ITEMS=[];
   const VESSELS=['Loose floorboard','Secret stone compartment','False-bottomed chest','Hollow statue','Concealed wall niche','Under the mattress','Behind a loose brick','Buried in the ash','Beneath a flagstone','Inside a hollow book','Under a rug','Hidden wall panel'];
   fetch('/map/items.json').then(r=>r.json()).then(j=>{ ITEMS=j; }).catch(()=>{ ITEMS=[]; });
-  let FURNCAT=[]; fetch('/map/furniture.json').then(r=>r.json()).then(j=>{ FURNCAT=j; }).catch(()=>{ FURNCAT=[]; });
+  let FURNCAT=[]; fetch('/map/furniture.json').then(r=>r.json()).then(j=>{ FURNCAT=j; refreshStatus(); }).catch(()=>{ FURNCAT=[]; });
   const furnName=t=>{ const f=FURNCAT.find(x=>x.type===t); return f?f.name:(FURN[t]?FURN[t].label:t); };
+  // Status truth (BUILDER-OBJ-1): the engine dump (furniture.json) says what EXISTS;
+  // propArt.js says which kinds have confirmed single-object GLB art and whether a
+  // placed-piece render path consumes it; miniLibrary.js is the raw mini manifest.
+  let PROPART={}, MINILIB=[];
+  Promise.allSettled([
+    import('/map/propArt.js').then(m=>{ PROPART=m.PROP_ART||{}; }),
+    import('/map/miniLibrary.js').then(m=>{ MINILIB=m.MINI_LIBRARY||[]; }),
+  ]).then(refreshStatus);
+  function kindStatus(t){
+    const inEngine = FURNCAT.length ? FURNCAT.some(x=>x.type===t) : !!FURN[t];
+    if(!inEngine) return { cls:'none', txt:'needs object contract', place:false };
+    const art=PROPART[t];
+    if(art) return art.wired
+      ? { cls:'real', txt:'real object · art wired', place:true }
+      : { cls:'art', txt:`real object · has art (${art.minis.length} GLB) — needs wiring`, place:true };
+    return { cls:'real', txt:'real object', place:true };
+  }
+  function refreshStatus(){
+    for(const p of PALETTE){ const el=document.getElementById('chip-'+p.type); if(!el) continue;
+      const s=kindStatus(p.type); el.className='chip '+s.cls; el.textContent=s.txt;
+      el.closest('.tool').classList.toggle('blocked',!s.place); }
+    renderMiniLib();
+  }
+  function renderMiniLib(){
+    const el=document.getElementById('miniLib'); if(!el) return;
+    if(!MINILIB.length){ el.textContent='library unavailable — open via the dev server (npm run dev)'; return; }
+    const claimOf=url=>Object.keys(PROPART).find(k=>(PROPART[k].minis||[]).some(x=>x.url===url))||null;
+    el.innerHTML=MINILIB.map(m=>{
+      const kind=claimOf(m.url); let chip,note;
+      if(kind){ chip='<span class="chip art">has art — needs wiring</span>'; note=`art candidate for the <b>${esc(kind)}</b> engine object`; }
+      else if(m.category==='corpse'){ chip='<span class="chip real">engine-placed</span>'; note='death visuals — the engine places these, never the Builder'; }
+      else if(m.sheet){ chip='<span class="chip none">needs split → object contract</span>'; note='multi-object sheet — not placeable until the split pass re-cuts it'; }
+      else { chip='<span class="chip none">needs object contract</span>'; note='no engine object kind yet — not placeable'; }
+      return `<div class="librow">${esc(m.name)} ${chip}<small>${note}</small></div>`;
+    }).join('');
+  }
   document.getElementById('vesselPresets').innerHTML=VESSELS.map(v=>`<option>${v}</option>`).join('');
   document.getElementById('roomRole').innerHTML=ROLES.map(([v,n])=>`<option value="${v}">${n}</option>`).join('');
   document.getElementById('trapPresets').innerHTML=TRAPS.map(v=>`<option>${v}</option>`).join('');
@@ -237,7 +299,7 @@
     else if(tool==='secret'){ const s={id:nextId('s'),x:cCol(c.gx)+0.5,y:cRow(c.gy)+0.5,vessel:'Loose floorboard',dc:12,items:[]}; scene.secrets.push(s); select('secret',s.id); setTool('select'); }
     else if(tool==='trap'){ const t={id:nextId('tr'),x:cCol(c.gx)+0.5,y:cRow(c.gy)+0.5,kind:'Dart trap',dc:13,effect:''}; scene.traps.push(t); select('trap',t.id); setTool('select'); }
     else if(tool==='furniture'){ const f={id:nextId('f'),type:'table',x:Math.min(cCol(c.gx),COLS-1),y:Math.min(cRow(c.gy),ROWS-1),w:1,h:1,rot:0}; scene.furniture.push(f); select('furn',f.id); drag={mode:'move-furn',id:f.id,offx:0,offy:0}; setTool('select'); }
-    else if(FURN[tool]){ const def=FURN[tool]; const f={id:nextId('f'),type:tool,x:cCol(c.gx),y:cRow(c.gy),w:def.w,h:def.h,rot:0}; f.x=Math.min(f.x,COLS-f.w); f.y=Math.min(f.y,ROWS-f.h); scene.furniture.push(f); select('furn',f.id); drag={mode:'move-furn',id:f.id,offx:0,offy:0}; setTool('select'); }
+    else if(FURN[tool]){ if(!kindStatus(tool).place){ flash('not placeable — needs an engine object contract'); return; } const def=FURN[tool]; const f={id:nextId('f'),type:tool,x:cCol(c.gx),y:cRow(c.gy),w:def.w,h:def.h,rot:0}; f.x=Math.min(f.x,COLS-f.w); f.y=Math.min(f.y,ROWS-f.h); scene.furniture.push(f); select('furn',f.id); drag={mode:'move-furn',id:f.id,offx:0,offy:0}; setTool('select'); }
     else {
       if(sel&&sel.kind==='room'){ const r=roomById(sel.id); if(r){
         const CH=cornerHandles(r); for(const k in CH){ const p=CH[k]; if(Math.hypot(p[0]-c.px,p[1]-c.py)<9/cam.scale+5){ drag={mode:'resize-room',id:r.id,corner:k}; return; } }
@@ -317,7 +379,7 @@
   function curFurn(){ return sel&&sel.kind==='furn'?scene.furniture.find(x=>x.id===sel.id):null; }
   function renderFurnResults(q){ const el=document.getElementById('furnResults'), f=curFurn(); if(!f){ el.innerHTML=''; return; }
     q=(q||'').toLowerCase().trim(); const list=q?FURNCAT.filter(x=>x.name.toLowerCase().includes(q)||x.type.includes(q)):FURNCAT;
-    el.innerHTML=list.length?list.slice(0,60).map(x=>`<div class="iresult" data-t="${x.type}"><span>${esc(x.name)}</span>${x.type===f.type?'<span class="k">current</span>':''}</div>`).join(''):'<div style="font-size:11px;color:var(--ink-soft);padding:4px 2px">no match</div>';
+    el.innerHTML=list.length?list.slice(0,60).map(x=>{ const art=kindStatus(x.type).cls==='art'?' <span class="chip art">art ✓</span>':''; return `<div class="iresult" data-t="${x.type}"><span>${esc(x.name)}${art}</span>${x.type===f.type?'<span class="k">current</span>':''}</div>`; }).join(''):'<div style="font-size:11px;color:var(--ink-soft);padding:4px 2px">no match</div>';
     el.querySelectorAll('.iresult').forEach(d=>d.addEventListener('click',()=>{ f.type=d.dataset.t; const def=FURN[f.type]; if(def){ f.w=def.w; f.h=def.h; } else { f.w=1; f.h=1; } select('furn',f.id); })); }
   document.getElementById('furnSearch').addEventListener('input',e=>renderFurnResults(e.target.value));
   function setSeg(s2,attr,val){ document.querySelectorAll(s2+' button').forEach(b=>b.classList.toggle('on',b.dataset[attr]===val)); }
@@ -457,6 +519,10 @@
     else if(f.type==='barrel'){ const cx=x+w/2,cy=y+h/2,rr=Math.min(iw,ih)/2; ctx.fillStyle=getCss('--wood'); circle(cx,cy,rr); ctx.fill(); ctx.strokeStyle=getCss('--wood-dark'); ctx.lineWidth=1.5; circle(cx,cy,rr); ctx.stroke(); circle(cx,cy,rr*0.6); ctx.stroke(); }
     else if(f.type==='cookpot'){ const cx=x+w/2,cy=y+h/2,rr=Math.min(iw,ih)/2; ctx.fillStyle=getCss('--iron'); circle(cx,cy,rr); ctx.fill(); ctx.strokeStyle='#20222699'; ctx.lineWidth=2; circle(cx,cy,rr*0.62); ctx.stroke(); ctx.fillStyle=getCss('--iron'); circle(cx-rr,cy,rr*0.16); ctx.fill(); circle(cx+rr,cy,rr*0.16); ctx.fill(); }
     else if(f.type==='dresser'){ ctx.fillStyle=getCss('--wood'); roundRect(ix,iy,iw,ih,3); ctx.fill(); ctx.strokeStyle=getCss('--wood-dark'); ctx.lineWidth=1.5; roundRect(ix,iy,iw,ih,3); ctx.stroke(); const yy=iy+ih/2; line(ix+2,yy,ix+iw-2,yy); ctx.stroke(); ctx.fillStyle=getCss('--wood-dark'); circle(ix+iw/2,iy+ih*0.28,1.6); ctx.fill(); circle(ix+iw/2,iy+ih*0.72,1.6); ctx.fill(); }
+    else if(f.type==='rug'||f.type==='runner'){ ctx.save(); ctx.strokeStyle=getCss('--cloth'); ctx.fillStyle='rgba(125,149,172,0.14)'; ctx.lineWidth=1.4; ctx.setLineDash([5,3]); roundRect(ix,iy,iw,ih,3); ctx.fill(); ctx.stroke(); ctx.setLineDash([]); ctx.restore(); }
+    else if(f.type==='lantern'||f.type==='candles'){ const cx=x+w/2,cy=y+h/2,rr=Math.min(iw,ih)/2; ctx.fillStyle='rgba(216,162,58,0.28)'; circle(cx,cy,rr); ctx.fill(); ctx.fillStyle='#d8a23a'; circle(cx,cy,rr*0.32); ctx.fill(); ctx.strokeStyle=f.type==='lantern'?getCss('--iron'):'#a3782c'; ctx.lineWidth=1.4; circle(cx,cy,rr*0.6); ctx.stroke(); }
+    else if(f.type==='hearth'){ ctx.fillStyle=getCss('--stone'); roundRect(ix,iy,iw,ih,2); ctx.fill(); ctx.strokeStyle='#33343b'; ctx.lineWidth=1.4; roundRect(ix,iy,iw,ih,2); ctx.stroke(); ctx.fillStyle='rgba(216,120,58,0.9)'; ctx.beginPath(); ctx.arc(x+w/2,iy+ih-1,Math.min(iw,ih)*0.32,Math.PI,0); ctx.fill(); }
+    else if(f.type==='chest'){ ctx.fillStyle=getCss('--iron'); roundRect(ix,iy,iw,ih,3); ctx.fill(); ctx.strokeStyle='#202226'; ctx.lineWidth=1.4; roundRect(ix,iy,iw,ih,3); ctx.stroke(); ln(ix,iy+ih*0.4,ix+iw,iy+ih*0.4,'#202226',1.2); ctx.fillStyle='#b8792f'; ctx.fillRect(x+w/2-1.5,iy+ih*0.4-1.5,3,4); }
     else { ctx.fillStyle=getCss('--wood'); roundRect(ix,iy,iw,ih,3); ctx.fill(); ctx.strokeStyle=getCss('--wood-dark'); ctx.lineWidth=1.3; roundRect(ix,iy,iw,ih,3); ctx.stroke(); ctx.fillStyle='#fff'; ctx.font=`700 ${Math.min(9,Math.max(6,iw/4))}px ui-sans-serif`; ctx.textAlign='center'; ctx.textBaseline='middle'; const nm=furnName(f.type); ctx.fillText(nm.length>9?nm.slice(0,8)+'…':nm, x+w/2, y+h/2); ctx.textAlign='left'; ctx.textBaseline='alphabetic'; } }
 
   function line(x0,y0,x1,y1){ ctx.beginPath(); ctx.moveTo(x0,y0); ctx.lineTo(x1,y1); ctx.stroke(); }
@@ -479,8 +545,18 @@
     else if(kind==='barrel'){ g.fillStyle='#9c6b3e'; g.beginPath(); g.arc(13,13,9,0,7); g.fill(); g.strokeStyle='#6f4a28'; g.lineWidth=1.5; g.beginPath(); g.arc(13,13,5.5,0,7); g.stroke(); }
     else if(kind==='cookpot'){ g.fillStyle='#3d3f45'; g.beginPath(); g.arc(13,13,9,0,7); g.fill(); g.strokeStyle='#20222699'; g.lineWidth=2; g.beginPath(); g.arc(13,13,5.5,0,7); g.stroke(); }
     else if(kind==='dresser'){ g.fillStyle='#9c6b3e'; g.fillRect(3,7,20,12); g.strokeStyle='#6f4a28'; g.lineWidth=1.2; g.strokeRect(3,7,20,12); g.beginPath(); g.moveTo(3,13); g.lineTo(23,13); g.stroke(); }
-    else if(kind==='furniture'){ g.fillStyle='#9c6b3e'; g.fillRect(4,6,18,14); g.strokeStyle='#6f4a28'; g.lineWidth=1.2; g.strokeRect(4,6,18,14); g.fillStyle='#fff'; g.font='700 11px ui-sans-serif'; g.textAlign='center'; g.textBaseline='middle'; g.fillText('+',13,13); g.textAlign='left'; g.textBaseline='alphabetic'; } }
-  ['select','room','wall','door','window','tunnel','secret','trap','bed','barrel','cookpot','dresser','furniture'].forEach(k=>swatch('sw-'+k,k));
+    else if(kind==='furniture'){ g.fillStyle='#9c6b3e'; g.fillRect(4,6,18,14); g.strokeStyle='#6f4a28'; g.lineWidth=1.2; g.strokeRect(4,6,18,14); g.fillStyle='#fff'; g.font='700 11px ui-sans-serif'; g.textAlign='center'; g.textBaseline='middle'; g.fillText('+',13,13); g.textAlign='left'; g.textBaseline='alphabetic'; }
+    else if(kind==='chest'){ g.fillStyle='#3d3f45'; g.fillRect(4,8,18,12); g.strokeStyle='#202226'; g.strokeRect(4,8,18,12); g.beginPath(); g.moveTo(4,13); g.lineTo(22,13); g.stroke(); g.fillStyle='#b8792f'; g.fillRect(12,12,3,3); }
+    else if(kind==='crate'){ g.fillStyle='#9c6b3e'; g.fillRect(5,5,16,16); g.strokeStyle='#6f4a28'; g.lineWidth=1.2; g.strokeRect(5,5,16,16); g.beginPath(); g.moveTo(5,5); g.lineTo(21,21); g.moveTo(21,5); g.lineTo(5,21); g.stroke(); }
+    else if(kind==='shelf'){ g.strokeStyle='#6f4a28'; g.lineWidth=2; for(const yy of [8,13,18]){ g.beginPath(); g.moveTo(4,yy); g.lineTo(22,yy); g.stroke(); } g.lineWidth=1.2; g.strokeRect(4,6,18,14); }
+    else if(kind==='table'){ g.strokeStyle='#6f4a28'; g.lineWidth=1.6; g.strokeRect(5,7,16,12); g.strokeRect(8,10,10,6); }
+    else if(kind==='chair'){ g.fillStyle='#9c6b3e'; g.fillRect(8,11,10,9); g.strokeStyle='#6f4a28'; g.lineWidth=2; g.beginPath(); g.moveTo(8,11); g.lineTo(8,5); g.lineTo(18,5); g.lineTo(18,11); g.stroke(); }
+    else if(kind==='nightstand'){ g.fillStyle='#9c6b3e'; g.fillRect(7,8,12,12); g.strokeStyle='#6f4a28'; g.strokeRect(7,8,12,12); g.fillStyle='#6f4a28'; g.beginPath(); g.arc(13,14,1.6,0,7); g.fill(); }
+    else if(kind==='wardrobe'){ g.fillStyle='#9c6b3e'; g.fillRect(7,4,12,19); g.strokeStyle='#6f4a28'; g.strokeRect(7,4,12,19); g.beginPath(); g.moveTo(13,4); g.lineTo(13,23); g.stroke(); }
+    else if(kind==='rug'||kind==='runner'){ g.strokeStyle='#7d95ac'; g.fillStyle='rgba(125,149,172,0.18)'; g.lineWidth=1.3; g.setLineDash([3,2]); const r2=kind==='rug'?[4,7,18,12]:[10,3,6,20]; g.fillRect(...r2); g.strokeRect(...r2); g.setLineDash([]); }
+    else if(kind==='lantern'||kind==='candles'){ g.fillStyle='rgba(216,162,58,0.3)'; g.beginPath(); g.arc(13,13,9,0,7); g.fill(); g.fillStyle='#d8a23a'; g.beginPath(); g.arc(13,13,3,0,7); g.fill(); g.strokeStyle=kind==='lantern'?'#3d3f45':'#a3782c'; g.lineWidth=1.4; g.beginPath(); g.arc(13,13,5.6,0,7); g.stroke(); }
+    else if(kind==='hearth'){ g.fillStyle='#4a4a52'; g.fillRect(3,7,20,12); g.strokeStyle='#33343b'; g.strokeRect(3,7,20,12); g.fillStyle='rgba(216,120,58,0.9)'; g.beginPath(); g.arc(13,19,5,Math.PI,0); g.fill(); } }
+  ['select','room','wall','door','window','tunnel','secret','trap','furniture',...PALETTE.map(p=>p.type)].forEach(k=>swatch('sw-'+k,k));
 
   // ── fit view ──
   document.getElementById('btnFit').addEventListener('click',fitView);

@@ -41,11 +41,26 @@ import { FURN } from './roomDetail.js';
 // would otherwise read as ceramic). category is the interaction class the DM
 // infers affordances from: container → open/search/break-into; furniture →
 // obstacle/cover. bulk > 2 = too heavy to take (generateFurniture convention).
+// BUILDER-OBJ-1 (2026-07-11) extends the table to the full supported Builder
+// palette. Light-bearing kinds are OBJECTS that carry fire — Model B's 'fire'
+// render material must never leak into smash physics (a lantern is ironwork).
 const KIND_PHYSICS = {
-  barrel:  { material: 'wood', category: 'container', hardness: 2, bulk: 3, weight: 3, parts: ['stave', 'hoop', 'lid'], notes: 'coopered oak, iron-hooped' },
-  bed:     { material: 'wood', category: 'furniture', hardness: 2, bulk: 4, weight: 3, parts: ['frame', 'slat', 'bedding'], notes: 'a timber frame under a straw tick' },
-  cookpot: { material: 'iron', category: 'container', hardness: 4, bulk: 2, weight: 3, parts: ['belly', 'handle', 'lid'], notes: 'soot-blacked cast iron, meant for a fire' },
-  dresser: { material: 'wood', category: 'container', hardness: 2, bulk: 4, weight: 4, parts: ['drawer', 'panel', 'knob'], notes: 'a drawered keeper of clothes and small things' },
+  barrel:     { material: 'wood',  category: 'container', hardness: 2, bulk: 3, weight: 3, parts: ['stave', 'hoop', 'lid'], notes: 'coopered oak, iron-hooped' },
+  bed:        { material: 'wood',  category: 'furniture', hardness: 2, bulk: 4, weight: 3, parts: ['frame', 'slat', 'bedding'], notes: 'a timber frame under a straw tick' },
+  cookpot:    { material: 'iron',  category: 'container', hardness: 4, bulk: 2, weight: 3, parts: ['belly', 'handle', 'lid'], notes: 'soot-blacked cast iron, meant for a fire' },
+  dresser:    { material: 'wood',  category: 'container', hardness: 2, bulk: 4, weight: 4, parts: ['drawer', 'panel', 'knob'], notes: 'a drawered keeper of clothes and small things' },
+  chest:      { material: 'iron',  category: 'container', hardness: 4, bulk: 3, weight: 4, parts: ['lid', 'hasp', 'band'], notes: 'iron-banded, built to keep what it holds' },
+  crate:      { material: 'wood',  category: 'container', hardness: 2, bulk: 3, weight: 3, parts: ['slat', 'corner post', 'lid'], notes: 'nailed pine slats, pry-able' },
+  shelf:      { material: 'wood',  category: 'furniture', hardness: 2, bulk: 4, weight: 3, parts: ['plank', 'bracket', 'upright'], notes: 'open shelving, pegged to the wall' },
+  table:      { material: 'wood',  category: 'furniture', hardness: 2, bulk: 4, weight: 4, parts: ['top', 'leg', 'trestle'], notes: 'a plank top on trestle legs' },
+  chair:      { material: 'wood',  category: 'furniture', hardness: 2, bulk: 2, weight: 2, parts: ['leg', 'back', 'seat'], notes: 'a joined wooden chair' },
+  nightstand: { material: 'wood',  category: 'container', hardness: 2, bulk: 2, weight: 2, parts: ['drawer', 'top', 'leg'], notes: 'a small drawered stand for bedside things' },
+  wardrobe:   { material: 'wood',  category: 'container', hardness: 2, bulk: 4, weight: 4, parts: ['door', 'rail', 'panel'], notes: 'a tall cupboard for hanging clothes' },
+  rug:        { material: 'cloth', category: 'furniture', hardness: 0, bulk: 3, weight: 2, parts: ['fringe', 'backing'], notes: 'woven wool, laid flat underfoot' },
+  runner:     { material: 'cloth', category: 'furniture', hardness: 0, bulk: 2, weight: 1, parts: ['fringe', 'backing'], notes: 'a long woven strip down the boards' },
+  lantern:    { material: 'iron',  category: 'furniture', hardness: 3, bulk: 1, weight: 1, parts: ['pane', 'cage', 'handle'], notes: 'horn-paned ironwork that carries its own light' },
+  candles:    { material: 'wax',   category: 'furniture', hardness: 0, bulk: 1, weight: 1, parts: ['taper', 'holder'], notes: 'soft wax tapers in a holder' },
+  hearth:     { material: 'stone', category: 'furniture', hardness: 5, bulk: 5, weight: 5, parts: ['mantel', 'firebrick', 'flue'], notes: 'set masonry — part of the house more than furniture in it' },
 };
 
 // Fallback hardness by material for kinds without an explicit physics row

@@ -3900,3 +3900,39 @@ other agents. (none active)
   collision. No new test written — this is a pure rendering-default flip with an existing, already-
   tested fog engine underneath; nothing new to unit-test.
 - No WORLD_VERSION, no engine files touched — `public/map/` only.
+
+## 2026-07-11 — Basecamp (Fable) — BUILDER-OBJ-1: the Builder's object palette is engine truth → v0.36.0 build 151
+
+- Tim's autonomous dispatch: give the Building Builder a real mini/object placement workflow —
+  "If it is placeable in the Builder, the game must believe in it. No decor-only minis."
+- DIAGNOSIS: the FUNC-MINIS-1 chain (b144) was already kind-agnostic — every one of the 41 engine
+  furniture kinds placed via the Builder already became a real object. The gaps were honesty gaps:
+  (a) only 4 kinds had explicit Model A physics; the rest fell to a material-derived default that
+  let Model B's RENDER material leak into smash physics — a placed lantern minted as material
+  'fire', hardness 0; a hearth was hardness-0 'fire' masonry; wardrobe/nightstand/crate weren't
+  containers. (b) The Builder UI offered 4 kinds first-class; the other 37 hid behind a search that
+  placed everything at a wrong 1×1 footprint. (c) No surface said which kinds have GLB art waiting.
+- ENGINE (engine/structures/authoredFurniture.js, data-only): KIND_PHYSICS 4→16 rows. New: chest,
+  crate, shelf, table, chair, nightstand, wardrobe, rug, runner, lantern, candles, hearth. FURN
+  catalog untouched — procgen/worldHash byte-identical by construction.
+- BUILDER (public/house-builder.html): data-driven 16-kind palette (PALETTE const) with authored
+  footprints (bed 2×3 … rug 3×2, runner 1×4, hearth 2×1), per-kind status chips computed from the
+  engine dump (furniture.json) + the new art registry; runtime placement guard refuses any kind the
+  engine dump doesn't know ("not placeable — needs an engine object contract"); search results show
+  art badges; new canvas glyphs (rug/runner draw dashed-flat, lantern/candles glow, hearth ember,
+  chest hasp); NEW "Mini library" panel labels every registered mini honestly — engine-placed
+  (corpses) / has art—needs wiring (armory trio → rack) / needs split → object contract (the 8
+  audited sheets) / needs object contract (anything unclaimed). Nothing in the library is placeable.
+- REGISTRIES: NEW public/map/propArt.js — curated kind→confirmed-single-object-GLB map with
+  wired:false until a placed-piece GLB render path exists (flip per-kind + update U685 when wiring
+  lands); public/map/miniLibrary.js gains sheet:true flags encoding the 07-10 audit as data.
+- TESTS: U685 (palette ⊆ FURN law, registry integrity, GLBs exist on disk, sheets never claimed as
+  kind art, runtime-guard presence) + U686 (red-first: all-16-kind loader carry verbatim with drawn
+  positions, Model B flat/light carriage, explicit per-kind physics, seeding count/identity/
+  idempotence — 3 barrels stay 3 barrels). U659–U664 (FUNC-MINIS) untouched and green.
+- Landed the prior window's finished 07-10 minis intake first as its own attributed commit
+  (armory trio + hearth sheets + sheet audit) — my edits build on it cleanly.
+- Live receipt: dev-server house-builder — 16 chips render with live data, placed table/rug/
+  lantern/hearth draw with their glyphs, library refusals on screen. Screenshots taken.
+- Engine-brief ritual: Tim's dispatch pre-authorized engine object-truth work in-chat; brief
+  rendered in the session, marker touched, flagged in the report for audit.

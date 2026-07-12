@@ -3936,3 +3936,36 @@ other agents. (none active)
   lantern/hearth draw with their glyphs, library refusals on screen. Screenshots taken.
 - Engine-brief ritual: Tim's dispatch pre-authorized engine object-truth work in-chat; brief
   rendered in the session, marker touched, flagged in the report for audit.
+
+## 2026-07-11 — Basecamp (Fable) — BUILDER-PREVIEW-1: one-click 3D preview from the House Builder → v0.38.0 build 153
+
+- Tim: "place rooms/furniture/minis, click Preview, and see the playable/game-map rendering with
+  GLBs" — no JSON juggling, real save untouched.
+- SHAPE: the preview is a THIN MOUNT of the game itself, not a new renderer. The Builder's new
+  **Preview 3D ↗** button runs the current draft through the SAME validate/finalize gate as
+  Validate & Finalize (shared helper — invalid drafts get the identical explanation), stashes the
+  finalized artifact at the scratch key `ie.builderPreview`, and opens `builder-preview.html`,
+  which registers the draft on the engine seam, boots an EPHEMERAL world
+  (`beginAdventure(newWorld({seed:'builderPreview'}))`), and mounts the game's own
+  `renderContinuousMap` — the identical 2D-ink→3D-diorama morph, GLB furniture included.
+- ENGINE (applyGeneratedStructuresForNode.js, additive ~30 lines): `registerBuilderPreviewHouse()`
+  + `maybeInjectBuilderPreview` — gated on seed AND registration (LOAD-1/LOAD-2 posture; U688
+  proves a registered draft changes NOTHING about default-seed worldHash). KEY REWORK found live:
+  substitution over attachment (MR-2c pattern) — the draft ADOPTS the boot node's first procgen
+  candidate id so the settlement layout anchors it and the map draws it; a free-floating
+  `authored:<nid>` attach was playable but invisible to the sheet (no anchor, no world rect).
+- TWO silent-failure classes found and pinned: (a) bare-specifier `'three'` requires v1.html's
+  import map — without it mountSlice3D throws and continuousMap latches `_failed`, map stays 2D
+  forever (page carries the map; U689 asserts it); (b) a static preview never takes a turn, so GLB
+  templates arriving after the first scene build left placeholder tokens forever — the page now
+  pre-warms treeAssets/figureAssets pools before mounting.
+- TESTS: U688 (5) — boots INSIDE the drawn house (recognized by authoredPlan under the substituted
+  id), placed objects real at the node, finalized-payload parity, unregistered seed → plain
+  procgen, deterministic replay, default-seed isolation. U689 (4) — same-doc-as-finalize contract,
+  Builder writes only the scratch key, preview page is storage-READ-ONLY (never imports save.js),
+  banner honesty + import map. Suite 11,113/0; check GREEN.
+- LIVE RECEIPT (localhost:5179): draw room → place hearth/table/rug/barrel → click Preview 3D →
+  PREVIEW banner ("Nothing here is saved") → Room 1 on the game sheet → tilted diorama with the
+  sculpted hero mini, barrel GLB, table GLB standing in the drawn room; hearth GLB confirmed via
+  window.__rendScaleAudit. localStorage after the whole flow = exactly ['ie.builderPreview'].
+- Engine-brief ritual: dispatch pre-authorized; brief in-chat; marker touched and flagged.

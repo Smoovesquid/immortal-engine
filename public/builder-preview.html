@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Builder Preview — Immortal Engine (dev tool)</title>
+<!-- Three.js resolution for the 3D diorama (public/map/render3d.js imports the
+     bare specifier 'three') — same import map + CDN/version as v1.html. Without
+     it every 3D mount throws 'Failed to resolve module specifier' and the map
+     silently stays 2D (continuousMap's _failed latch). -->
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+}}
+</script>
+<style>
+  html,body { margin:0; height:100%; background:#161512; color:#e9e2cf;
+    font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif; overflow:hidden; }
+  #banner { position:fixed; top:0; left:0; right:0; z-index:20; display:flex; align-items:center; gap:10px;
+    padding:8px 14px; background:#2a2113; border-bottom:1px solid #6b5424; font-size:12.5px; line-height:1.4; }
+  #banner .tag { flex:none; background:#d9a441; color:#241a08; font-weight:700; font-size:11px;
+    letter-spacing:.8px; padding:2px 8px; border-radius:5px; }
+  #banner b { color:#f0d9a4; }
+  #banner a { color:#d9a441; }
+  #stage { position:absolute; top:42px; bottom:0; left:0; right:0; }
+  .msg { max-width:520px; margin:18vh auto 0; padding:22px 26px; background:#211d15; border:1px solid #4a4433;
+    border-radius:10px; font-size:14px; line-height:1.6; color:#d8cfb8; }
+  .msg a { color:#d9a441; }
+</style>
+</head>
+<body>
+<div id="banner">
+  <span class="tag">PREVIEW</span>
+  <span><b id="bname">…</b> — a throwaway preview world rendered by the game's own map.
+    <b>Nothing here is saved</b>; your real game save is untouched.
+    Scroll to zoom (the map tilts into 3D) · drag to orbit · close this tab to return to the Builder.</span>
+</div>
+<div id="stage"></div>
+<script type="module">
+  // BUILDER-PREVIEW-1 — one-click 3D preview of a House Builder draft.
+  //
+  // This page is a THIN MOUNT, not a renderer: the world is built by the same
+  // engine calls the game uses (newWorld → beginAdventure, with the draft
+  // registered on the LOAD-1/LOAD-2-style seam), and the view is the game's own
+  // renderContinuousMap surface — the identical 2D-ink→3D-diorama morph, GLB
+  // furniture included. EPHEMERAL BY CONTRACT: this page never writes any
+  // storage (U689 guards it); the 'builderPreview' seed + runtime registration
+  // can never occur in normal play (U688 proves default seeds byte-identical).
+  const stage = document.getElementById('stage');
+  const say = (html) => { stage.innerHTML = `<div class="msg">${html}</div>`; };
+
+  let payload = null;
+  try { payload = JSON.parse(localStorage.getItem('ie.builderPreview') || 'null'); } catch {}
+
+  if (!payload || !payload.doc) {
+    document.getElementById('bname').textContent = 'no draft';
+    say('No preview draft found.<br/><br/>Open the <a href="/house-builder.html">House Builder</a>, draw a building, then click <b>Preview 3D</b> — it stashes the current draft here and opens this page.');
+  } else {
+    const when = payload.savedAt ? new Date(payload.savedAt).toLocaleTimeString() : '';
+    document.getElementById('bname').textContent = `${payload.name || 'house'}${when ? ' · drafted ' + when : ''}`;
+    try {
+      const [{ normalizeManifest }, { newWorld }, { beginAdventure }, { registerBuilderPreviewHouse }, { renderContinuousMap }] = await Promise.all([
+        import('/engine/rulesets.js'),
+        import('/engine/state.js'),
+        import('/engine/playloop.js'),
+        import('/engine/structures/applyGeneratedStructuresForNode.js'),
+        import('/map/continuousMap.js'),
+      ]);
+      const PACKS = normalizeManifest(await fetch('/packs/manifest.json').then(r => r.json()));
+
+      registerBuilderPreviewHouse(payload.doc);
+      const world = beginAdventure(
+        newWorld({ seed: 'builderPreview', fate: 0.2, mode: 'escape', pack: { primaryId: 'fantasy', mixerId: null } }),
+        PACKS,
+      ).world;
+
+      // MR-2c substitution: the draft adopts the boot node's procgen candidate
+      // id, so recognize the house by its authoredPlan, not by an id prefix.
+      const structKey = String(world?.scene?.interior?.structureKey || '');
+      if (!world?.structures?.byId?.[structKey]?.authoredPlan) {
+        console.warn('builder-preview: boot did not land inside the authored house', structKey);
+      }
+
+      // Pre-warm the GLB template pools BEFORE the diorama's first scene build.
+      // The game rebuilds its 3D scene every turn, so late-arriving templates
+      // swap in naturally there — this static preview never takes a turn, so a
+      // scene built before the GLBs land would keep placeholder tokens forever.
+      try {
+        const [tree, fig] = await Promise.all([import('/map/treeAssets.js'), import('/map/figureAssets.js')]);
+        await Promise.all([tree.ensureFoliageGLBs(), fig.ensureFigureGLB('player')]);
+      } catch { /* placeholders are an acceptable degrade — never block the preview */ }
+
+      stage.appendChild(renderContinuousMap(world, { heightCss: '100%' }));
+      window.__builderPreviewWorld = world; // debug handle — read-only by convention
+
+      // Open ON the house: indoors the map resolves to the plan band (the tilt
+      // threshold), so ride the map's own public input — synthetic wheel ticks at
+      // the canvas center — to carry the view across the 2D→3D crossfade. Same
+      // path a real wheel takes; a manual zoom is never fought afterwards.
+      const wheelIn = (ticks) => {
+        const canvas = stage.querySelector('canvas');
+        if (!canvas || ticks <= 0) return;
+        const r = canvas.getBoundingClientRect();
+        canvas.dispatchEvent(new WheelEvent('wheel', {
+          deltaY: -140, clientX: r.left + r.width / 2, clientY: r.top + r.height / 2,
+          bubbles: true, cancelable: true,
+        }));
+        setTimeout(() => wheelIn(ticks - 1), 90);
+      };
+      // 3 ticks ≈ plan band ×1.25³ — lands INSIDE the diorama regime at a framing
+      // distance (6 hit the z-max clamp: a hyper-closeup of the player mini).
+      setTimeout(() => wheelIn(3), 350);
+    } catch (err) {
+      console.error(err);
+      say(`Preview failed to boot: <b>${(err && err.message) || err}</b><br/><br/>Open this page via the dev server (npm run dev → http://localhost:5179/builder-preview.html) and re-run Preview 3D from the Builder.`);
+    }
+  }
+</script>
+</body>
+</html>

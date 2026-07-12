@@ -1048,8 +1048,8 @@ function renderInvoke() {
     el('div', { class: 'panel' },
       el('div', { class: 'header' },
         el('div', {},
-          el('div', { class: 'title' }, 'Immortal Engine — v0.37.0'),
-          el('div', { class: 'sub' }, 'build 152 · 2026-07-11 · placed objects render as GLBs')
+          el('div', { class: 'title' }, 'Immortal Engine — v0.38.0'),
+          el('div', { class: 'sub' }, 'build 153 · 2026-07-11 · one-click 3D preview')
         )
       ),
       // ── One-click front door: start (or resume) the Escape game ──────

@@ -65,11 +65,15 @@
     <button id="btnClear">New</button>
     <button id="btnImport">Import…</button>
     <button id="btnFinalize">Validate &amp; Finalize</button>
+    <button id="btnPreview3d" title="Validate this draft, then open the game's own 3D map render of it in a new tab">Preview 3D ↗</button>
     <button id="btnExport" class="primary">Export JSON</button>
     <input id="fileInput" type="file" accept="application/json" style="display:none"/>
   </header>
 
   <aside>
+    <div style="font-size:10.5px;color:var(--ink-soft);line-height:1.45;margin:0 0 12px;padding:7px 9px;background:#f7f3e6;border:1px solid var(--panel-line);border-radius:8px;">
+      <b style="color:var(--ink)">Goal:</b> place real objects into the building. Anything placeable here should become something the game can describe, search, block, break, or use.
+    </div>
     <div class="group">
       <h2>Build</h2>
       <button class="tool active" data-tool="select"><span class="swatch" id="sw-select"></span><span>Select / Move<small>drag pieces · handles</small></span></button>
@@ -594,19 +598,24 @@
   // (what strict runtime loading will one day key on). Not clean → finalization is
   // BLOCKED and the author is told which room is unreachable — the fix (add a
   // doorway) happens here, at authoring time, never invented by runtime.
-  document.getElementById('btnFinalize').addEventListener('click',async()=>{
-    let mod;
-    try{ mod=await import('/engine/structures/authoredStructure.js'); }
-    catch(err){ alert('Validation needs the engine — open this page via the dev server (npm run dev → http://localhost:5179/house-builder.html).\n\n'+err.message); return; }
-    const doc=buildExportDoc();
+  // ONE engine import + ONE problem-lister, shared by Validate & Finalize AND
+  // Preview 3D — both gates must judge exactly the document buildExportDoc ships.
+  async function engineLoaderMod(){
+    try{ return await import('/engine/structures/authoredStructure.js'); }
+    catch(err){ alert('Validation needs the engine — open this page via the dev server (npm run dev → http://localhost:5179/house-builder.html).\n\n'+err.message); return null; } }
+  function draftProblems(doc,report){
     const nameOf=id=>{ const r=(doc.rooms||[]).find(r=>r.id===id); return r&&r.name?`${r.name} (${id})`:String(id); };
+    return report.repaired.length
+      ? report.repaired.map(r=>`• ${nameOf(r.a)} is UNREACHABLE from the entrance — the engine would have to invent a connection to ${nameOf(r.b)} that you never drew.`)
+          .concat(report.errors.slice(report.repaired.length).map(e=>'• '+e))
+      : report.errors.map(e=>'• '+e); }
+
+  document.getElementById('btnFinalize').addEventListener('click',async()=>{
+    const mod=await engineLoaderMod(); if(!mod) return;
+    const doc=buildExportDoc();
     const report=mod.validateAuthoredExport(doc);
     if(!report.ok){
-      const lines=report.repaired.length
-        ? report.repaired.map(r=>`• ${nameOf(r.a)} is UNREACHABLE from the entrance — the engine would have to invent a connection to ${nameOf(r.b)} that you never drew.`)
-            .concat(report.errors.slice(report.repaired.length).map(e=>'• '+e))
-        : report.errors.map(e=>'• '+e);
-      alert('Cannot finalize — this draft is not clean:\n\n'+lines.join('\n')+'\n\nAdd a doorway to each unreachable room — or select the room and mark it Sealed / secret if it is meant to be unreachable — then finalize again. (Finalized buildings are never repaired by the game at load.)');
+      alert('Cannot finalize — this draft is not clean:\n\n'+draftProblems(doc,report).join('\n')+'\n\nAdd a doorway to each unreachable room — or select the room and mark it Sealed / secret if it is meant to be unreachable — then finalize again. (Finalized buildings are never repaired by the game at load.)');
       flash('finalize blocked — '+(report.repaired.length||report.errors.length)+' problem(s)');
       return;
     }
@@ -615,6 +624,26 @@
     const abutNote=report.abutted.length?` · ${report.abutted.length} shared-wall connection(s) inferred (no door drawn)`:'';
     const sealedNote=report.sealed.length?` · ${report.sealed.length} sealed room(s)`:'';
     flash(`finalized clean — ${report.roomCount} rooms, ${report.edgeCount} connections${sealedNote}${abutNote}`);
+  });
+
+  // BUILDER-PREVIEW-1 — one click: the CURRENT draft → the same validation gate →
+  // finalized artifact stashed at ie.builderPreview (a scratch key — NEVER a game
+  // save slot) → the preview page boots an ephemeral world and renders it with
+  // the game's own map (2D ink tilting into the 3D diorama, GLB furniture).
+  document.getElementById('btnPreview3d').addEventListener('click',async()=>{
+    const mod=await engineLoaderMod(); if(!mod) return;
+    const doc=buildExportDoc();
+    const report=mod.validateAuthoredExport(doc);
+    if(!report.ok){
+      alert('Cannot preview — this draft is not clean:\n\n'+draftProblems(doc,report).join('\n')+'\n\nAdd a doorway to each unreachable room — or select the room and mark it Sealed / secret if it is meant to be unreachable — then preview again. (Preview runs the same check as Validate & Finalize.)');
+      flash('preview blocked — '+(report.repaired.length||report.errors.length)+' problem(s)');
+      return;
+    }
+    const finalized=mod.finalizeAuthoredExport(doc);
+    try{ localStorage.setItem('ie.builderPreview', JSON.stringify({ doc:finalized, name:scene.name||'house', savedAt:Date.now() })); }
+    catch(err){ alert('Could not stash the preview draft: '+err.message); return; }
+    window.open('/builder-preview.html','ie-builder-preview');
+    flash('preview 3D opened in a new tab ↗');
   });
   function enclosingRoom(f){ const cx=f.x+f.w/2,cy=f.y+f.h/2; return scene.rooms.find(r=>cx>=r.x&&cx<=r.x+r.w&&cy>=r.y&&cy<=r.y+r.h)||null; }
 

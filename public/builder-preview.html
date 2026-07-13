@@ -4,8 +4,9 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>Builder Preview — Immortal Engine (dev tool)</title>
-<!-- Three.js resolution for the 3D interior renderer (builderPreview3d.js imports
-     the bare specifier 'three') — same import map + CDN/version as v1.html. -->
+<!-- Three.js resolution for the gameplay renderer (render3d.js's mountSlice3D, which
+     the thin adapter wraps, imports the bare specifier 'three') — same import map +
+     CDN/version as v1.html. -->
 
 <script type="importmap">
 { "imports": {
@@ -31,22 +32,24 @@
 <body>
 <div id="banner">
   <span class="tag">PREVIEW</span>
-  <span><b id="bname">…</b> — a 3D view of the building you drew, rendered with the game's own furniture art.
+  <span><b id="bname">…</b> — your building alone on the game's tabletop, with your placed furniture.
     <b>Nothing here is saved</b>; your real game save is untouched.
-    Drag to orbit · scroll to zoom · close this tab to return to the Builder.</span>
+    Drag to orbit · scroll to zoom · close this tab to return to the Builder.
+    <span id="proof"></span></span>
 </div>
 <div id="stage"></div>
 <script type="module">
-  // BUILDER-PREVIEW-2 — one-click 3D INTERIOR preview of a House Builder draft.
-  //
-  // A dedicated interior renderer (builderPreview3d.js) draws the authored floor
-  // plan DIRECTLY — room floors, walls with door gaps, the game's GLB furniture
-  // standing at the drawn positions, a person for scale — framed on the building.
-  // No engine world, no settlement: the raw builder doc IS the input. EPHEMERAL:
-  // this page only READS the ie.builderPreview scratch key and never writes any
-  // storage (U689), so the real save is untouched.
+  // BUILDER-PREVIEW-3 — one-click preview of a House Builder draft on the GAME's
+  // own tabletop. A THIN adapter (builderPreview3d.js) draws the canonical
+  // graph-paper/ink floorplan and hands it, plus the authored GLB prop transforms
+  // and the isolated building bounds, to the REAL gameplay renderer (mountSlice3D)
+  // — same camera, lighting, tabletop, and prop presentation as play. No engine
+  // world, no settlement: the raw builder doc IS the input. EPHEMERAL: this page
+  // only READS the ie.builderPreview scratch key and never writes any storage
+  // (U689), so the real save is untouched.
   const stage = document.getElementById('stage');
   const say = (html) => { stage.innerHTML = `<div class="msg">${html}</div>`; };
+  const proof = document.getElementById('proof');
 
   let payload = null;
   try { payload = JSON.parse(localStorage.getItem('ie.builderPreview') || 'null'); } catch {}
@@ -59,10 +62,20 @@
     document.getElementById('bname').textContent = `${payload.name || 'house'}${when ? ' · drafted ' + when : ''}`;
     try {
       const { mountBuilderPreview3D } = await import('/map/builderPreview3d.js');
-      const ctrl = await mountBuilderPreview3D(stage, payload.doc);
-      window.__builderPreview = ctrl; // debug handle (ctrl.layout is the pure geometry spec)
-      if (!ctrl.layout.rooms.length) {
+      const res = await mountBuilderPreview3D(stage, payload.doc);
+      window.__builderPreview = res; // debug handle (res.report = runtime GLB facts; res.proj = pure projection)
+      if (res.empty) {
         say('This draft has no rooms to preview yet.<br/><br/>Draw at least one room in the <a href="/house-builder.html">House Builder</a>, then click <b>Preview 3D</b> again.');
+      } else {
+        // A COMPACT, truthful status line from RUNTIME facts (counts of GLBs that
+        // actually resolved) — failures expand, never a hard-coded success claim.
+        const b = res.banner;
+        proof.textContent = '· ' + b.line.replace(/^Preview proves:\s*/, 'proves: ');
+        proof.style.color = b.ok ? '#9fd39f' : '#e6b45a';
+        if (b.warnings.length) {
+          proof.textContent += ' — ' + b.warnings.join(' ');
+          proof.style.color = '#e6b45a';
+        }
       }
     } catch (err) {
       console.error(err);

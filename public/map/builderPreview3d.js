@@ -1,299 +1,208 @@
-// builderPreview3d.js — a dedicated 3D INTERIOR preview of a House Builder draft.
+// builderPreview3d.js — a THIN projection adapter for the House Builder's
+// "Preview 3D": your building ALONE, on the GAME's own graph-paper/tabletop
+// surface, at the game's normal tilted 3D map POV, with your placed furniture as
+// real GLB minis at the authored positions + rotations.
 //
-// BUILDER-PREVIEW-2 (Tim's bar, 2026-07-11): the preview must show the AUTHORED
-// building — the room shell (floor + walls), the furniture standing inside it at
-// the drawn positions, a person for scale — framed so you instantly recognise
-// "this is the house I drew." The overworld/settlement diorama can't do this: by
-// design it draws architecture as INK on a flat ground sheet (TT-INK), so walls
-// never rise. This renderer instead draws the floor plan DIRECTLY as geometry.
+// BUILDER-PREVIEW-3 (Tim's correction of b155): the b155 renderer drew its OWN
+// look — raised box-beam walls, colored floor slabs, a scale person, a bespoke
+// camera, generic-block fallbacks. That was a THIRD visual direction. The correct
+// architecture is a thin wrapper around the REAL gameplay 3D renderer:
 //
-// It is fed the raw builder export (doc.rooms {x,y,w,h,shape,material}, doc.openings
-// {x,y,room,entrance}, doc.furniture {type,ux,uy,rot,...}) — no engine world boot.
-// Furniture reuses the GAME's GLB mini builder (figures3d buildPropMini, already
-// GLB-wired per BUILDER-OBJ-2) so a placed table looks like the game's table; the
-// person reuses buildArchetypeFigure. The room shell is simple lit geometry.
+//   finalized builder doc
+//     -> projectBuilderDoc()  (PURE: doc -> canonical ink scene model + authored
+//                              prop transforms + isolated building bounds)
+//     -> createInteriorMap()  (the SHARED hand-drawn floorplan renderer draws the
+//                              graph-paper + ink onto an offscreen canvas)
+//     -> mountSlice3D({ preview })  (the game's OWN camera / lighting / tabletop /
+//                              GLB prop presentation — see render3d.js's seam)
 //
-// buildPreviewLayout(doc) is PURE (no THREE) so the plan→geometry mapping is unit-
-// tested in node (U691); mountBuilderPreview3D() is the thin Three.js consumer.
+// This module owns NO renderer, camera, lighting, or architectural geometry (it
+// never even imports THREE) — mountSlice3D owns all of that. It only derives the
+// projection and hands it over. The finalized RAW builder furniture is the source
+// of truth for prop placement (room / ux / uy / rot) — the preview never loses the
+// authored rotation the engine's own materialization may drop.
 
-import {
-  buildPropMini, buildArchetypeFigure, propTrueSize,
-  measureAuthoredSize, measureAuthoredFootprint, figureHeightWu,
-} from './figures3d.js';
+import { mountSlice3D } from './render3d.js';
+import { createInteriorMap } from './handDrawnInterior.js';
 
-// A builder cell is ~0.7 m. Furniture is true-sized by its GLB (metres), and this
-// scale makes a piece fill the cell footprint it was drawn on (a 2×3-cell bed ≈
-// 1.4×2.1 m — a real bed), so drawn layout and real furniture agree.
+// A builder cell is ~0.7 m (the same figure b155 pinned, so real furniture fills
+// the cell footprint it was drawn on). The one place metres enter the projection.
 export const PREVIEW_CELL_M = 0.7;
-const WALL_H = 2.2;      // metres — tall enough to read as a room, open-topped (no roof) so an angled camera sees in
-const DOOR_W_CELLS = 1.2; // doorway gap left in a wall where an opening sits
 
 const num = (v, d = 0) => (Number.isFinite(+v) ? +v : d);
 
-// ── PURE layout core (doc → world-space geometry spec; testable without THREE) ──
-
-function onRoomEdge(o, r) {
-  const x0 = r.x, y0 = r.y, x1 = r.x + r.w, y1 = r.y + r.h, t = 0.6;
-  const onH = (Math.abs(o.y - y0) < t || Math.abs(o.y - y1) < t) && o.x >= x0 - t && o.x <= x1 + t;
-  const onV = (Math.abs(o.x - x0) < t || Math.abs(o.x - x1) < t) && o.y >= y0 - t && o.y <= y1 + t;
-  return onH || onV;
-}
-const centerIn = (f, r) => {
-  const cx = num(f.x) + num(f.w, 1) / 2, cy = num(f.y) + num(f.h, 1) / 2;
-  return cx >= r.x && cx <= r.x + r.w && cy >= r.y && cy <= r.y + r.h;
-};
-
-// One room's 4 edges as wall segments (cell coords), each split to leave a DOOR_W
-// gap wherever an opening sits on it — so a doorway is a real hole you can see through.
-function edgeSegments(r, ops) {
-  const x0 = r.x, y0 = r.y, x1 = r.x + r.w, y1 = r.y + r.h, t = 0.6, half = DOOR_W_CELLS / 2;
-  const edges = [
-    { axis: 'h', fixed: y0, lo: x0, hi: x1 }, // north
-    { axis: 'h', fixed: y1, lo: x0, hi: x1 }, // south
-    { axis: 'v', fixed: x0, lo: y0, hi: y1 }, // west
-    { axis: 'v', fixed: x1, lo: y0, hi: y1 }, // east
-  ];
-  const out = [];
-  for (const e of edges) {
-    const along = ops
-      .filter(o => (e.axis === 'h' ? Math.abs(o.y - e.fixed) < t : Math.abs(o.x - e.fixed) < t))
-      .map(o => (e.axis === 'h' ? o.x : o.y))
-      .filter(p => p > e.lo - t && p < e.hi + t)
-      .sort((a, b) => a - b);
-    let cursor = e.lo;
-    const emit = (lo, hi) => {
-      if (hi - lo < 0.05) return;
-      out.push(e.axis === 'h'
-        ? { ax: lo, ay: e.fixed, bx: hi, by: e.fixed }
-        : { ax: e.fixed, ay: lo, bx: e.fixed, by: hi });
-    };
-    for (const p of along) {
-      const gs = Math.max(e.lo, p - half), ge = Math.min(e.hi, p + half);
-      if (gs > cursor) emit(cursor, gs);
-      cursor = Math.max(cursor, ge);
-    }
-    if (cursor < e.hi) emit(cursor, e.hi);
-  }
-  return out;
-}
-
-export function buildPreviewLayout(doc, { cellM = PREVIEW_CELL_M } = {}) {
+// ── PURE projection: builder doc → canonical ink scene model + props + bounds ──
+// No THREE, no canvas, no DOM — unit-tested (U691). Produces exactly what the two
+// downstream consumers need: `sceneModel` for the shared floorplan ink renderer,
+// `props` (authored CENTER in cells + rotation) for the gameplay prop path, and
+// `bounds` (cells) isolated to just the drawn building for camera framing.
+export function projectBuilderDoc(doc) {
   const rooms = Array.isArray(doc?.rooms) ? doc.rooms : [];
   const openings = Array.isArray(doc?.openings) ? doc.openings : [];
   const furniture = Array.isArray(doc?.furniture) ? doc.furniture : [];
 
+  // The shared ink renderer draws ONE material band (rock hatch). Use the first
+  // room's material (the ink is a floorplan, not a material study). timber default.
+  const material = String(rooms[0]?.material || 'timber');
+
+  // rooms → the canonical interior scene-model room shape (CENTER + size + name).
+  const sceneRooms = rooms.map(r => {
+    const shape = r.shape === 'round' ? 'round' : 'rect';
+    const w = num(r.w, 1), h = num(r.h, 1);
+    const cx = Number.isFinite(+r.cx) ? +r.cx : num(r.x) + w / 2;
+    const cy = Number.isFinite(+r.cy) ? +r.cy : num(r.y) + h / 2;
+    return { id: String(r.id), shape, cx, cy, w, h, r: Number.isFinite(+r.r) ? +r.r : Math.min(w, h) / 2, name: r.name || r.role || String(r.id) };
+  });
+
+  // openings → ink doors + windows. The glyphs read orient 'h'|'v'; an 'angled'
+  // opening (rare) defaults to horizontal.
+  const orientOf = o => {
+    if (o.orient === 'v' || o.orient === 'h') return o.orient;
+    const m = ((num(o.angle) % 180) + 180) % 180;
+    return (m > 45 && m < 135) ? 'v' : 'h';
+  };
+  const doors = [], windows = [];
+  for (const o of openings) {
+    const rec = { x: num(o.x), y: num(o.y), orient: orientOf(o) };
+    if (String(o.kind) === 'window') windows.push({ ...rec, t: 'casement', len: num(o.len, 0.7) });
+    else doors.push(rec);
+  }
+
+  // furniture → ink glyphs (absolute top-left cell + size — the SAME the Builder draws).
+  const inkFurniture = furniture
+    .filter(f => f.type || f.kind)
+    .map(f => ({ type: String(f.type || f.kind), ux: num(f.x), uy: num(f.y), uw: num(f.w, 1), uh: num(f.h, 1) }));
+
+  // furniture → props: authored CENTER in cells (from the finalized ux/uy inside
+  // its room — the truthful placement) + rotation, both preserved verbatim.
+  const rawRoomById = new Map(rooms.map(r => [String(r.id), r]));
+  const props = furniture.map(f => {
+    const kind = String(f.type || f.kind || '');
+    if (!kind) return null;
+    const room = rawRoomById.get(String(f.room || ''));
+    let cellX, cellY;
+    if (room && Number.isFinite(+f.ux) && Number.isFinite(+f.uy)) {
+      cellX = num(room.x) + (+f.ux) * num(room.w, 1);
+      cellY = num(room.y) + (+f.uy) * num(room.h, 1);
+    } else {
+      cellX = num(f.x) + num(f.w, 1) / 2;
+      cellY = num(f.y) + num(f.h, 1) / 2;
+    }
+    return { kind, cellX, cellY, rot: num(f.rot, 0), room: room ? String(room.id) : null };
+  }).filter(Boolean);
+
+  // isolated building bounds (cells) — just the union of the drawn rooms.
   let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
   for (const r of rooms) {
-    minX = Math.min(minX, r.x); minY = Math.min(minY, r.y);
-    maxX = Math.max(maxX, r.x + r.w); maxY = Math.max(maxY, r.y + r.h);
+    minX = Math.min(minX, num(r.x)); minY = Math.min(minY, num(r.y));
+    maxX = Math.max(maxX, num(r.x) + num(r.w, 1)); maxY = Math.max(maxY, num(r.y) + num(r.h, 1));
   }
-  if (!Number.isFinite(minX)) { minX = minY = 0; maxX = maxY = 10; }
-  const cx = (minX + maxX) / 2, cy = (minY + maxY) / 2;
-  const toX = (bx) => (bx - cx) * cellM;   // world X (east)
-  const toZ = (by) => (by - cy) * cellM;   // world Z (builder y-down → +Z south)
+  if (!Number.isFinite(minX)) { minX = minY = maxX = maxY = 0; }
 
-  const roomOut = rooms.map(r => ({
-    id: String(r.id), material: String(r.material || 'timber'), role: String(r.role || ''),
-    dark: !!r.dark, shape: String(r.shape || 'rect'),
-    cxW: toX(r.x + r.w / 2), czW: toZ(r.y + r.h / 2), w: r.w * cellM, d: r.h * cellM,
-    rxW: (r.w / 2) * cellM, rzW: (r.h / 2) * cellM,
-  }));
-
-  const walls = [];
-  for (const r of rooms) {
-    if (String(r.shape) === 'round') {
-      walls.push({ round: true, cxW: toX(r.x + r.w / 2), czW: toZ(r.y + r.h / 2), rxW: (r.w / 2) * cellM, rzW: (r.h / 2) * cellM, material: String(r.material || 'timber') });
-      continue;
-    }
-    const ops = openings.filter(o => String(o.room || '') === String(r.id) || onRoomEdge(o, r));
-    for (const s of edgeSegments(r, ops)) {
-      walls.push({ x1: toX(s.ax), z1: toZ(s.ay), x2: toX(s.bx), z2: toZ(s.by), material: String(r.material || 'timber') });
-    }
-  }
-
-  const byId = new Map(rooms.map(r => [String(r.id), r]));
-  const furnitureOut = furniture.map(f => {
-    const room = byId.get(String(f.room || '')) || rooms.find(r => centerIn(f, r)) || null;
-    let bx, by;
-    if (room && Number.isFinite(+f.ux) && Number.isFinite(+f.uy)) {
-      bx = room.x + (+f.ux) * room.w; by = room.y + (+f.uy) * room.h;
-    } else {
-      bx = num(f.x) + num(f.w, 1) / 2; by = num(f.y) + num(f.h, 1) / 2;
-    }
-    return { kind: String(f.type || f.kind || ''), x: toX(bx), z: toZ(by), rot: num(f.rot, 0), wCells: num(f.w, 1), hCells: num(f.h, 1) };
-  }).filter(f => f.kind);
-
-  // The person stands in the entrance room (or the first room) for scale.
-  const entry = openings.find(o => o.entrance);
-  const entryRoom = entry ? (byId.get(String(entry.room || '')) || rooms.find(r => onRoomEdge(entry, r))) : null;
-  const pr = entryRoom || rooms[0] || null;
-  const player = pr ? { x: toX(pr.x + pr.w / 2), z: toZ(pr.y + pr.h / 2) } : { x: 0, z: 0 };
-
-  return {
-    cellM, rooms: roomOut, walls, furniture: furnitureOut, player,
-    bounds: { minX: toX(minX), maxX: toX(maxX), minZ: toZ(minY), maxZ: toZ(maxY), w: (maxX - minX) * cellM, d: (maxY - minY) * cellM },
+  const sceneModel = {
+    material,
+    rooms: sceneRooms,
+    doors, windows,
+    corridors: [],
+    furniture: inkFurniture,
+    tokens: [], // the preview shows JUST the building — no player / NPC token
   };
+  return { material, sceneModel, props, bounds: { minX, minY, maxX, maxY } };
 }
 
-// ── Three.js mount (thin consumer of the pure layout) ──
+// ── PURE honesty banner: reflect the RUNTIME prop facts, never hard-code success ──
+// report.props = [{ kind, wired, glb }] from the renderer's preview projection.
+// Success stays compact; only FAILURES expand (a wired GLB that didn't resolve, or
+// a kind with no registered GLB whose ink mark stands alone).
+export function previewBanner(report) {
+  const props = Array.isArray(report?.props) ? report.props : [];
+  const wired = props.filter(p => p.wired);
+  const placed = wired.filter(p => p.glb);
+  const failed = wired.filter(p => !p.glb);
+  const noArt = props.filter(p => !p.wired && !p.glb);
+  const line = 'Preview proves: ' + [
+    'your building only',
+    'graph-paper floorplan',
+    `${placed.length}/${wired.length} placed GLBs`,
+    'game camera',
+    'save untouched',
+  ].join(' · ');
+  const warnings = [];
+  if (failed.length) {
+    const kinds = [...new Set(failed.map(p => p.kind))].join(', ');
+    warnings.push(`Furniture art incomplete: ${kinds} GLB failed. No placeholder was shown.`);
+  }
+  if (noArt.length) {
+    const kinds = [...new Set(noArt.map(p => p.kind))].join(', ');
+    warnings.push(`No 3D art registered yet for: ${kinds} — the ink mark is shown honestly, with no stand-in.`);
+  }
+  return { line, warnings, ok: failed.length === 0 && noArt.length === 0 };
+}
 
-const FLOOR_COL = { timber: 0x7c5a34, stone: 0x6f7078 };
-const WALL_COL = { timber: 0x9c7746, stone: 0x8a8b93 };
+// ── the browser mount: draw the ink ground, then hand it to the gameplay renderer ──
+// Returns { ctrl, proj, report, banner, empty }. Owns no THREE — createInteriorMap
+// draws a 2-D canvas, mountSlice3D owns the whole 3-D scene.
+export async function mountBuilderPreview3D(container, doc) {
+  const proj = projectBuilderDoc(doc);
+  if (!proj.sceneModel.rooms.length) {
+    const report = { props: [] };
+    return { ctrl: null, proj, report, banner: previewBanner(report), empty: true };
+  }
 
-export async function mountBuilderPreview3D(container, doc, opts = {}) {
-  const THREE = await import('three');
-  const { OrbitControls } = await import('three/addons/controls/OrbitControls.js');
-  // Preload the GLB furniture + figure template pools so buildPropMini/buildArchetypeFigure
-  // resolve to real sculpts on first build (a static preview never takes a turn to swap them in).
+  // Warm the GLB furniture pool so the game's buildPropMini resolves real sculpts
+  // on the first (static) mount — a preview never takes a turn to swap a late
+  // template in. (This is a pool warm, not a THREE import — treeAssets owns THREE.)
+  // ensureFoliageGLBs() early-returns if a load is already in flight (it kicks off
+  // on import), so its await alone can return MID-load; poll treeGLBsReady() — which
+  // flips true only once the WHOLE REG finished (state='ready' is set once, after
+  // the last template) — so every wired furniture GLB is ready before we mount.
   try {
-    const [tree, fig] = await Promise.all([import('./treeAssets.js'), import('./figureAssets.js')]);
-    await Promise.all([tree.ensureFoliageGLBs?.(), fig.ensureFigureGLB?.('player')]);
-  } catch { /* procedural fallbacks are fine */ }
+    const t = await import('./treeAssets.js');
+    await t.ensureFoliageGLBs?.();
+    const deadline = Date.now() + 6000;
+    while (!t.treeGLBsReady?.() && Date.now() < deadline) await new Promise(r => setTimeout(r, 60));
+  } catch { /* procedural nothing — reported honestly */ }
 
-  const layout = buildPreviewLayout(doc, opts);
-  let W = container.clientWidth || 1280, H = container.clientHeight || 800;
+  // 1) Draw the CANONICAL graph-paper + ink floorplan onto an offscreen canvas via
+  //    the SHARED hand-drawn-interior renderer (grid · rock band · inked walls ·
+  //    door swings · furniture glyphs) — the exact routine the live LocalMap uses.
+  const b = proj.bounds;
+  const cellsW = Math.max(1, b.maxX - b.minX), cellsH = Math.max(1, b.maxY - b.minY);
+  const PX_PER_CELL = 46, MARGIN_CELLS = 3, CAP = 2200;
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.min(CAP, Math.round((cellsW + MARGIN_CELLS * 2) * PX_PER_CELL));
+  canvas.height = Math.min(CAP, Math.round((cellsH + MARGIN_CELLS * 2) * PX_PER_CELL));
+  const ink = createInteriorMap(canvas, { seed: doc?.name || 'builder-preview' });
+  ink.drawBase(proj.sceneModel); // floorplan only — NO tokens (no player figure)
+  const TT = ink.transform;      // { s: px/cell, ox, oy } — the fit transform the ink used
 
-  const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
-  renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
-  renderer.setSize(W, H);
-  renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-  renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.1;
-  container.appendChild(renderer.domElement);
+  // 2) ONE mapping, derived from the SAME fit transform the ink drew with, so every
+  //    prop lands exactly on its drawn mark. s px = 1 cell = PREVIEW_CELL_M metres;
+  //    the ground plane is centered at the scene origin, so a canvas pixel (px,py)
+  //    maps to scene ((px - W/2)·mPerPx, (py - H/2)·mPerPx).
+  const mPerPx = PREVIEW_CELL_M / TT.s;
+  const cellToScene = (cx, cy) => ({
+    x: (TT.ox + cx * TT.s - canvas.width / 2) * mPerPx,
+    z: (TT.oy + cy * TT.s - canvas.height / 2) * mPerPx,
+  });
 
-  const scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x181a1f);
-  const camera = new THREE.PerspectiveCamera(44, W / H, 0.03, 400);
+  const props = proj.props.map(p => {
+    const s = cellToScene(p.cellX, p.cellY);
+    return { kind: p.kind, x: s.x, z: s.z, rot: p.rot };
+  });
+  const c0 = cellToScene(b.minX, b.minY), c1 = cellToScene(b.maxX, b.maxY);
+  const bounds = { minX: Math.min(c0.x, c1.x), maxX: Math.max(c0.x, c1.x), minZ: Math.min(c0.z, c1.z), maxZ: Math.max(c0.z, c1.z) };
+  const groundSize = { w: canvas.width * mPerPx, d: canvas.height * mPerPx };
 
-  scene.add(new THREE.HemisphereLight(0xbcd2f0, 0x3a3020, 0.9));
-  const sun = new THREE.DirectionalLight(0xffe6b0, 1.45);
-  sun.position.set(6, 14, 8); sun.castShadow = true;
-  sun.shadow.mapSize.set(2048, 2048);
-  const ext = Math.max(6, Math.max(layout.bounds.w, layout.bounds.d));
-  Object.assign(sun.shadow.camera, { left: -ext, right: ext, top: ext, bottom: -ext, near: 0.5, far: 60 });
-  scene.add(sun);
-  // A second soft fill from the opposite side + brighter ambient so the interior
-  // furniture reads from any orbit angle (the walls otherwise shadow the pieces).
-  const fill = new THREE.DirectionalLight(0xdfeaff, 0.5); fill.position.set(-8, 9, -6); scene.add(fill);
-  scene.add(new THREE.AmbientLight(0xfff0d8, 0.5));
+  // 3) Hand the ground canvas + prop transforms + isolated bounds to the REAL
+  //    gameplay renderer. Empty nodes/edges + no world → no settlement/terrain/NPC
+  //    content can enter. showPlayer:false → no scale figure.
+  const ctrl = await mountSlice3D(container, {
+    nodes: [], edges: [], seed: doc?.name || 'builder-preview', bounds: { minX: 0, minY: 0, maxX: 0, maxY: 0 },
+  }, {
+    preview: { groundCanvas: canvas, groundSize, groundCenter: { x: 0, z: 0 }, props, bounds, showPlayer: false },
+  });
 
-  const ROOT = new THREE.Group(); scene.add(ROOT);
-
-  // A dim ground pad under the whole building, so it doesn't float in the void.
-  {
-    const pad = new THREE.Mesh(
-      new THREE.PlaneGeometry(layout.bounds.w + 6, layout.bounds.d + 6),
-      new THREE.MeshStandardMaterial({ color: 0x14161b, roughness: 1 }));
-    pad.rotation.x = -Math.PI / 2; pad.position.y = -0.02; pad.receiveShadow = true;
-    ROOT.add(pad);
-  }
-
-  // Floors (one lit slab per room; dark rooms dimmer).
-  for (const r of layout.rooms) {
-    const col = FLOOR_COL[r.material] || FLOOR_COL.timber;
-    const mat = new THREE.MeshStandardMaterial({ color: col, roughness: 0.9, metalness: 0.02 });
-    if (r.dark) mat.color.multiplyScalar(0.55);
-    const floor = new THREE.Mesh(new THREE.PlaneGeometry(Math.max(0.2, r.w), Math.max(0.2, r.d)), mat);
-    floor.rotation.x = -Math.PI / 2; floor.position.set(r.cxW, 0, r.czW); floor.receiveShadow = true;
-    ROOT.add(floor);
-    // a thin skirting border so each room reads as its own cell even where floors abut
-    const edge = new THREE.LineSegments(
-      new THREE.EdgesGeometry(new THREE.PlaneGeometry(r.w, r.d)),
-      new THREE.LineBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.18 }));
-    edge.rotation.x = -Math.PI / 2; edge.position.set(r.cxW, 0.005, r.czW); ROOT.add(edge);
-  }
-
-  // Walls (box beams tracing each edge; door gaps already cut in the layout).
-  const WALL_T = 0.12;
-  for (const w of layout.walls) {
-    const mat = new THREE.MeshStandardMaterial({ color: WALL_COL[w.material] || WALL_COL.timber, roughness: 0.85 });
-    if (w.round) {
-      const rad = (w.rxW + w.rzW) / 2;
-      const ring = new THREE.Mesh(new THREE.CylinderGeometry(rad, rad, WALL_H, 40, 1, true), mat);
-      mat.side = THREE.DoubleSide;
-      ring.position.set(w.cxW, WALL_H / 2, w.czW); ring.castShadow = true; ROOT.add(ring);
-      continue;
-    }
-    const dx = w.x2 - w.x1, dz = w.z2 - w.z1;
-    const len = Math.hypot(dx, dz); if (len < 0.05) continue;
-    const beam = new THREE.Mesh(new THREE.BoxGeometry(len, WALL_H, WALL_T), mat);
-    beam.position.set((w.x1 + w.x2) / 2, WALL_H / 2, (w.z1 + w.z2) / 2);
-    beam.rotation.y = -Math.atan2(dz, dx);
-    beam.castShadow = true; beam.receiveShadow = true;
-    ROOT.add(beam);
-  }
-
-  // Furniture — the game's own GLB minis, true-sized (scene units are metres), at
-  // the drawn positions. Kinds without a mini get a labelled box so nothing the
-  // player placed silently vanishes.
-  for (const f of layout.furniture) {
-    let mini = null;
-    try { mini = buildPropMini(THREE, f.kind); } catch { mini = null; }
-    if (mini) {
-      const ts = propTrueSize(f.kind);
-      let pAuth = 1;
-      try { pAuth = ts.axis === 'footprint' ? measureAuthoredFootprint(THREE, mini) : measureAuthoredSize(THREE, mini, ts.axis); } catch {}
-      const s = (ts.wu || 1) / (pAuth || 1);   // ts.wu is metres; scene is metres
-      if (Number.isFinite(s) && s > 0) mini.scale.multiplyScalar(s);
-    } else {
-      const w = Math.max(0.3, f.wCells * layout.cellM * 0.8), d = Math.max(0.3, f.hCells * layout.cellM * 0.8);
-      mini = new THREE.Mesh(new THREE.BoxGeometry(w, 0.7, d),
-        new THREE.MeshStandardMaterial({ color: 0x9c6b3e, roughness: 0.9 }));
-      mini.position.y = 0.35;
-    }
-    const holder = new THREE.Group();
-    holder.add(mini);
-    holder.position.set(f.x, 0, f.z);
-    holder.rotation.y = -(f.rot || 0) * Math.PI / 180;
-    holder.traverse(o => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
-    ROOT.add(holder);
-  }
-
-  // The person, for scale — the same figure the game stands you up as.
-  try {
-    const fig = buildArchetypeFigure(THREE, 'humanoid', {});
-    const targetH = figureHeightWu('human') || 1.8;
-    let h = 1;
-    try { h = measureAuthoredSize(THREE, fig, 'y') || 1; } catch {}
-    const s = targetH / h;
-    if (Number.isFinite(s) && s > 0) fig.scale.multiplyScalar(s);
-    fig.position.set(layout.player.x, 0, layout.player.z);
-    fig.traverse(o => { if (o.isMesh) { o.castShadow = true; } });
-    ROOT.add(fig);
-  } catch { /* the room reads fine without the figure */ }
-
-  // Camera framed on the building — a 3/4 dollhouse view from above the SE corner,
-  // distance derived from the bounds diagonal so the whole plan sits in frame.
-  const controls = new OrbitControls(camera, renderer.domElement);
-  controls.enableDamping = true; controls.target.set(0, 0.6, 0);
-  const diag = Math.max(4, Math.hypot(layout.bounds.w, layout.bounds.d));
-  const dist = diag * 1.15 + 3;
-  const frame = () => {
-    camera.position.set(dist * 0.62, dist * 0.82, dist * 0.62);
-    controls.target.set(0, 0.5, 0); controls.update();
-  };
-  frame();
-
-  let alive = true;
-  const render = () => renderer.render(scene, camera);
-  const loop = () => { if (!alive) return; controls.update(); render(); requestAnimationFrame(loop); };
-  loop();
-
-  const onResize = () => {
-    W = container.clientWidth || W; H = container.clientHeight || H;
-    renderer.setSize(W, H); camera.aspect = W / H; camera.updateProjectionMatrix();
-  };
-  window.addEventListener('resize', onResize);
-
-  return {
-    canvas: renderer.domElement,
-    layout,
-    resetView: frame,
-    dispose() {
-      alive = false;
-      window.removeEventListener('resize', onResize);
-      try { controls.dispose(); } catch {}
-      try { renderer.dispose(); } catch {}
-      try { renderer.domElement.remove(); } catch {}
-    },
-  };
+  const report = (ctrl && ctrl.preview) || { props: [] };
+  return { ctrl, proj, report, banner: previewBanner(report), empty: false };
 }

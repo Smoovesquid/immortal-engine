@@ -65,7 +65,7 @@
     <button id="btnClear">New</button>
     <button id="btnImport">Import…</button>
     <button id="btnFinalize">Validate &amp; Finalize</button>
-    <button id="btnPreview3d" title="Validate this draft, then open the game's own 3D map render of it in a new tab">Preview 3D ↗</button>
+    <button id="btnPreview3d" title="3D Preview target: this building alone on the game's tabletop, with your placed furniture. Validates this draft, then opens the game's own 3D render in a new tab.">Preview 3D ↗</button>
     <button id="btnExport" class="primary">Export JSON</button>
     <input id="fileInput" type="file" accept="application/json" style="display:none"/>
   </header>
@@ -628,21 +628,28 @@
 
   // BUILDER-PREVIEW-1 — one click: the CURRENT draft → the same validation gate →
   // finalized artifact stashed at ie.builderPreview (a scratch key — NEVER a game
-  // save slot) → the preview page boots an ephemeral world and renders it with
-  // the game's own map (2D ink tilting into the 3D diorama, GLB furniture).
+  // save slot) → the preview page renders it on the game's own tabletop.
+  // BUILDER-PREVIEW-3 popup fix: open the preview tab SYNCHRONOUSLY, inside the
+  // click gesture. The async validate/finalize below strips the user-activation, and
+  // a strict popup blocker (Safari especially) silently swallows any window.open
+  // made AFTER an await — the "Preview 3D won't open" bug. We open a blank tab now
+  // and fill it once the finalized draft is stashed; a not-clean draft closes it.
   document.getElementById('btnPreview3d').addEventListener('click',async()=>{
-    const mod=await engineLoaderMod(); if(!mod) return;
+    const win=window.open('','ie-builder-preview');
+    const mod=await engineLoaderMod(); if(!mod){ if(win)win.close(); return; }
     const doc=buildExportDoc();
     const report=mod.validateAuthoredExport(doc);
     if(!report.ok){
+      if(win)win.close();
       alert('Cannot preview — this draft is not clean:\n\n'+draftProblems(doc,report).join('\n')+'\n\nAdd a doorway to each unreachable room — or select the room and mark it Sealed / secret if it is meant to be unreachable — then preview again. (Preview runs the same check as Validate & Finalize.)');
       flash('preview blocked — '+(report.repaired.length||report.errors.length)+' problem(s)');
       return;
     }
     const finalized=mod.finalizeAuthoredExport(doc);
     try{ localStorage.setItem('ie.builderPreview', JSON.stringify({ doc:finalized, name:scene.name||'house', savedAt:Date.now() })); }
-    catch(err){ alert('Could not stash the preview draft: '+err.message); return; }
-    window.open('/builder-preview.html','ie-builder-preview');
+    catch(err){ if(win)win.close(); alert('Could not stash the preview draft: '+err.message); return; }
+    if(win){ win.location.href='/builder-preview.html'; }
+    else { window.open('/builder-preview.html','ie-builder-preview'); } // popup blocked even synchronously — last-ditch
     flash('preview 3D opened in a new tab ↗');
   });
   function enclosingRoom(f){ const cx=f.x+f.w/2,cy=f.y+f.h/2; return scene.rooms.find(r=>cx>=r.x&&cx<=r.x+r.w&&cy>=r.y&&cy<=r.y+r.h)||null; }

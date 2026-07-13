@@ -31,6 +31,11 @@ const TILE_WU = 40; // world units per node tile — keeps the 3D geography to s
 // Pure helpers; they receive the lazily-imported THREE, so this stays a
 // zero-cost static import.
 import { buildArchetypeFigure, buildPropMini, buildWildMini, buildCorpseMini, breatheMinis, phaseFromKey, miniSheetScale, figureHeightWu, propTrueSize, measureAuthoredSize, wildTrueSize, measureAuthoredFootprint, buildChickenMini, CHICKEN_HEIGHT_WU } from './figures3d.js';
+// BUILDER-PREVIEW-3 — the preview projection enforces GLB truth: a `wired` kind
+// must resolve a real GLB (buildPropMini's userData.glb === true), never a
+// fabricated box. artForKind is the single source of truth for which kinds are
+// wired (the SAME registry the Builder's status chips + buildPropMini's own gate read).
+import { artForKind } from './propArt.js';
 
 // CARL-FOWL (Tim canon 2026-07-07): which settlement-NPCs render as a creature
 // mini instead of the humanoid figure, by their stable engine id. Carl is a
@@ -313,9 +318,49 @@ function webglAvailable() {
   } catch { return false; }
 }
 
+// BUILDER-PREVIEW-3 — the camera distance (wu) that frames a building of the
+// given horizontal span (metres) with a sensible paper margin, using the SAME
+// perspective the gameplay camera uses (vFovTan is the tan of half the FOV; aspect
+// = w/h). PURE (no THREE) so the small-plan/large-plan fit is unit-tested (U692).
+// A bounding-sphere fit — a safe over-approximation under the tilt — times a fixed
+// margin for the graph-paper border around the building.
+export function previewFrameRadius(spanX, spanZ, { vFovTan = 0.4142, aspect = 1.6, margin = 1.4 } = {}) {
+  const R = 0.5 * Math.hypot(Math.max(0, +spanX || 0), Math.max(0, +spanZ || 0));
+  const vTan = Math.max(1e-3, vFovTan);
+  const hTan = vTan * Math.max(1e-3, aspect);
+  const fit = (R > 0 ? R : 1.5) / Math.min(vTan, hTan);
+  return Math.max(4, fit * margin);
+}
+
+// BUILDER-PREVIEW-3 — the isolated tabletop ground: the supplied graph-paper/ink
+// canvas (drawn by the SHARED hand-drawn-interior renderer) painted onto ONE flat
+// lit plane, sized/placed from the projection. It stands in for the world sheet in
+// preview mode with the SAME small interface (mesh, heightAt, currentZ, refresh) so
+// the rest of mountSlice3D needs no special-casing — but it never re-zooms or pulls
+// in world cartography: a preview is a single fixed frame of just the building.
+function buildPreviewGround(THREE, preview) {
+  const tex = new THREE.CanvasTexture(preview.groundCanvas);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  try { tex.anisotropy = 4; } catch {}
+  const mat = new THREE.MeshStandardMaterial({ map: tex, roughness: 0.97, metalness: 0.0 });
+  const size = preview.groundSize || { w: 10, d: 10 };
+  const mesh = new THREE.Mesh(new THREE.PlaneGeometry(Math.max(0.5, size.w), Math.max(0.5, size.d)), mat);
+  mesh.rotation.x = -Math.PI / 2;
+  const c = preview.groundCenter || { x: 0, z: 0 };
+  mesh.position.set(c.x, 0, c.z);
+  mesh.receiveShadow = true;
+  return { mesh, heightAt: () => 0, currentZ: () => 1, refresh() {} };
+}
+
 export async function mountSlice3D(container, sceneData, opts = {}) {
   if (!container) throw new Error('no-container');
   if (!webglAvailable()) throw new Error('webgl-unavailable');
+  // BUILDER-PREVIEW-3 — the optional preview projection: when present, render an
+  // ISOLATED building on the game's own tabletop (supplied ink ground + authored
+  // props + explicit bounds), suppressing all world content (nodes/edges/roads/
+  // wilderness/settlement/NPCs/fog/player). null unless a caller opts in, so the
+  // world path below is the default and stays byte-for-byte unchanged.
+  const preview = opts.preview && typeof opts.preview === 'object' ? opts.preview : null;
 
   const THREE = await import('three');
 
@@ -430,16 +475,24 @@ export async function mountSlice3D(container, sceneData, opts = {}) {
   // immediately after mount, before first paint) re-centers the plane on
   // `target` directly, which is the sheet's real, ongoing source of truth
   // (see buildWorldSheet's centering note — never a second independent focus).
-  const boundsCenterWu = { wx: ((bounds.minX + bounds.maxX) / 2) * NODE_WU, wy: ((bounds.minY + bounds.maxY) / 2) * NODE_WU };
-  const focusWu0 = (opts.world && playerFocusWu(opts.world)) || boundsCenterWu;
-  const worldPos0 = worldPosFromWu(focusWu0.wx, focusWu0.wy);
-  const worldSheet = buildWorldSheet(THREE, opts.world || sceneData, worldPos0, 32 / NODE_WU, 200, vFovTan);
+  let worldSheet;
+  if (preview) {
+    // The ground IS the supplied graph-paper/ink canvas on a flat lit plane — no
+    // world cartography, and no distance haze around a single small building.
+    worldSheet = buildPreviewGround(THREE, preview);
+    scene.fog = null;
+  } else {
+    const boundsCenterWu = { wx: ((bounds.minX + bounds.maxX) / 2) * NODE_WU, wy: ((bounds.minY + bounds.maxY) / 2) * NODE_WU };
+    const focusWu0 = (opts.world && playerFocusWu(opts.world)) || boundsCenterWu;
+    const worldPos0 = worldPosFromWu(focusWu0.wx, focusWu0.wy);
+    worldSheet = buildWorldSheet(THREE, opts.world || sceneData, worldPos0, 32 / NODE_WU, 200, vFovTan);
+  }
   const { heightAt } = worldSheet;
   scene.add(worldSheet.mesh);
   // The last point the sheet was actually centered/re-textured on (3-D world
   // units) — compared against `target` in setCamera to decide whether a real
   // enough move happened to justify a re-render (never every frame).
-  let _sheetTarget = { x: worldPos0.x, z: worldPos0.z };
+  let _sheetTarget = { x: worldSheet.mesh.position.x, z: worldSheet.mesh.position.z };
 
   // REND-TRUTH-1 — THE ONE ENTITY↔SHEET TRANSFORM. A world-unit point projected
   // onto the ground sheet's OWN ink, so an engine-occupancy mini (people/props)
@@ -648,7 +701,10 @@ export async function mountSlice3D(container, sceneData, opts = {}) {
   function onPointerUp() { drag = false; }
   function onPointerMove(e) { if (!drag) return; az -= (e.clientX - lx) * 0.005; lx = e.clientX; applyCamera(); }
   function onWheel(e) { e.preventDefault(); alt = clamp(alt + e.deltaY * 0.6, 60, 700); applyCamera(); }
-  const interactive = opts.controls !== false;
+  // BUILDER-PREVIEW-3 — the standalone alt/az drag model would overwrite the
+  // bounds-derived preview framing on every drag; the preview installs its OWN
+  // free-orbit handlers below (orbitBy + a distance dolly) instead.
+  const interactive = opts.controls !== false && !preview;
   if (interactive) {
     canvas.addEventListener('pointerdown', onPointerDown);
     canvas.addEventListener('pointerup', onPointerUp);
@@ -731,7 +787,9 @@ export async function mountSlice3D(container, sceneData, opts = {}) {
     board.group.position.set(px - board.playerCenter.x * S, py + 0.05, pz - board.playerCenter.z * S);
     scene.add(board.group);
     for (const m of board.minis) sliceMinis.push(m);
-  } else {
+  } else if (!preview) {
+    // BUILDER-PREVIEW-3 — a preview shows JUST the building: no player, no scale
+    // figure. Everyone but the preview still stands "you" up here.
     const token = buildArchetypeFigure(THREE, 'player', {});
     token.position.set(px, py + 0.06, pz);
     scene.add(token);
@@ -826,6 +884,40 @@ export async function mountSlice3D(container, sceneData, opts = {}) {
       }
     }
   }
+
+  // BUILDER-PREVIEW-3 — the preview places its OWN authored props: the finalized
+  // builder furniture (carrying the drawn rotation), as the game's real GLB minis,
+  // true-sized in metres on the ink ground. GLB TRUTH: a mini only mounts when its
+  // GLB actually resolved (userData.glb === true); a failed or unregistered kind
+  // leaves its ink mark visible and is REPORTED — never a fabricated block. The
+  // scene units here are metres (the adapter's cell→metre mapping), so the SAME
+  // true-size scaling the world props loop uses lands each piece at its real size.
+  const previewProps = [];
+  if (preview) {
+    for (const p of preview.props) {
+      const kind = String(p.kind || '');
+      const art = artForKind(kind);
+      const wired = !!(art && art.wired);
+      const mini = buildPropMini(THREE, kind);
+      const glb = !!(mini && mini.userData && mini.userData.glb === true);
+      if (mini && glb) {
+        const ts = propTrueSize(kind);
+        let authored = 1;
+        try { authored = ts.axis === 'footprint' ? measureAuthoredFootprint(THREE, mini) : measureAuthoredSize(THREE, mini, ts.axis); } catch {}
+        const s = (ts.wu || 1) / (authored || 1);
+        if (Number.isFinite(s) && s > 0) mini.scale.multiplyScalar(s);
+        const holder = new THREE.Group();
+        holder.add(mini);
+        holder.position.set(Number(p.x) || 0, 0, Number(p.z) || 0);
+        holder.rotation.y = -(Number(p.rot) || 0) * Math.PI / 180; // authored rotation
+        holder.traverse(o => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
+        scene.add(holder);
+        sliceMinis.push({ group: holder, baseY: 0, baseScale: 1, rate: 0.6, phase: phaseFromKey(kind + p.x + p.z), bob: 0.006, defeated: false });
+      }
+      previewProps.push({ kind, wired, glb });
+    }
+  }
+
   // MR-3b (docs/briefs/MR-3-FOG-PROCGEN.md §MR-3b) — THE WILD DRAWN. The wild
   // stands wherever the engine says it stands (MR-3a's wildFeaturesAround) —
   // this loop only DRAWS it, never invents a feature the derivation didn't
@@ -972,21 +1064,48 @@ export async function mountSlice3D(container, sceneData, opts = {}) {
   }
 
   // ---------- clean HUD (corner title = the place you're in, + zoom band) ----------
-  const placeName = (nodeById[player.nodeId] && nodeById[player.nodeId].name) || (nodes[0] && nodes[0].name) || '';
-  const hudEl = buildHud(container, placeName);
-  const typeLabel = t => t === 'settlement' ? 'SETTLEMENT' : t === 'dungeon_entrance' ? 'RUIN' : 'WILDERNESS';
-  // The corner title names the place the camera is looking at (updates on pan),
-  // with its kind as the subtitle. Only writes on change — cheap per frame.
-  updateHud = () => {
-    let best = null, bd = 1e9;
-    for (const n of nodes) { const p = wPos(n); const d = Math.hypot(target.x - p.x, target.z - p.z); if (d < bd) { bd = d; best = n; } }
-    if (!best || best.id === hudEl._id) return;
-    hudEl._id = best.id;
-    hudEl._title.textContent = best.name || '';
-    hudEl._sub.textContent = typeLabel(best.nodeType) + ' · 3D';
-  };
+  // Skipped for a preview — it names a WORLD place, and a preview shows no world.
+  if (!preview) {
+    const placeName = (nodeById[player.nodeId] && nodeById[player.nodeId].name) || (nodes[0] && nodes[0].name) || '';
+    const hudEl = buildHud(container, placeName);
+    const typeLabel = t => t === 'settlement' ? 'SETTLEMENT' : t === 'dungeon_entrance' ? 'RUIN' : 'WILDERNESS';
+    // The corner title names the place the camera is looking at (updates on pan),
+    // with its kind as the subtitle. Only writes on change — cheap per frame.
+    updateHud = () => {
+      let best = null, bd = 1e9;
+      for (const n of nodes) { const p = wPos(n); const d = Math.hypot(target.x - p.x, target.z - p.z); if (d < bd) { bd = d; best = n; } }
+      if (!best || best.id === hudEl._id) return;
+      hudEl._id = best.id;
+      hudEl._title.textContent = best.name || '';
+      hudEl._sub.textContent = typeLabel(best.nodeType) + ' · 3D';
+    };
+  }
 
   applyCamera();
+
+  // BUILDER-PREVIEW-3 — frame the ISOLATED building using the GAMEPLAY camera
+  // contract (same FOV 45 / tone-mapping / lighting as every other mount): north-up
+  // azimuth (az 0, matching the 2-D plan) + the full map tilt (58° from top-down,
+  // the diorama vantage continuousMap tilts to), with distance derived from the
+  // building bounds so a one-room cottage and a big multi-room hall both sit framed
+  // with a paper margin. Then wire the preview's OWN free-orbit: drag swings the
+  // vantage (orbitBy preserves the framing), wheel dollies the distance.
+  if (preview) {
+    fogEdge.mesh.visible = false;
+    const pb = preview.bounds || { minX: -3, maxX: 3, minZ: -3, maxZ: 3 };
+    const spanX = pb.maxX - pb.minX, spanZ = pb.maxZ - pb.minZ;
+    const aspect = (canvas.clientWidth || w0) / (canvas.clientHeight || h0);
+    target.set((pb.minX + pb.maxX) / 2, 0, (pb.minZ + pb.maxZ) / 2);
+    baseAz = 0; azOffset = 0; phiOffset = 0;
+    basePhi = clamp(58 * Math.PI / 180, 0.02, 1.35);
+    curRad = clamp(previewFrameRadius(spanX, spanZ, { vFovTan, aspect }), 4, 4000);
+    positionCamera();
+    let pdrag = false, plx = 0, ply = 0;
+    canvas.addEventListener('pointerdown', e => { pdrag = true; plx = e.clientX; ply = e.clientY; try { canvas.setPointerCapture(e.pointerId); } catch {} });
+    canvas.addEventListener('pointerup', () => { pdrag = false; });
+    canvas.addEventListener('pointermove', e => { if (!pdrag) return; orbitBy((e.clientX - plx) * -0.008, (e.clientY - ply) * -0.006); plx = e.clientX; ply = e.clientY; });
+    canvas.addEventListener('wheel', e => { e.preventDefault(); curRad = clamp(curRad * (1 + e.deltaY * 0.0012), 4, 4000); positionCamera(); renderFrame(); }, { passive: false });
+  }
 
   // ---------- roof-peel cutaway (XCOM-style), driven by the continuous zoom ----------
   // As the zoom pushes in, the FOCUSED building (the one nearest the look-at) lifts +
@@ -1156,7 +1275,7 @@ export async function mountSlice3D(container, sceneData, opts = {}) {
     return { phi: +basePhi.toFixed(3), rad: Math.round(curRad) };
   }
 
-  return { dispose, renderFrame, setView, setCamera, setPlayerFocus, orbitBy, setOrbiting, pause, resume, canvas };
+  return { dispose, renderFrame, setView, setCamera, setPlayerFocus, orbitBy, setOrbiting, pause, resume, canvas, preview: preview ? { props: previewProps } : null };
 }
 
 // ───────────────────────────────────────────────────────────────────────────

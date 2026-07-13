@@ -349,7 +349,10 @@ function buildPreviewGround(THREE, preview) {
   const c = preview.groundCenter || { x: 0, z: 0 };
   mesh.position.set(c.x, 0, c.z);
   mesh.receiveShadow = true;
-  return { mesh, heightAt: () => 0, currentZ: () => 1, refresh() {} };
+  // OBJ-INK-1 — refresh() re-stamps the texture from the (possibly redrawn) ground
+  // canvas. The adapter redraws the ink with mounted-GLB glyphs suppressed AFTER the
+  // props resolve, then calls this so the CanvasTexture re-uploads the new pixels.
+  return { mesh, heightAt: () => 0, currentZ: () => 1, refresh() { tex.needsUpdate = true; } };
 }
 
 export async function mountSlice3D(container, sceneData, opts = {}) {
@@ -914,7 +917,7 @@ export async function mountSlice3D(container, sceneData, opts = {}) {
         scene.add(holder);
         sliceMinis.push({ group: holder, baseY: 0, baseScale: 1, rate: 0.6, phase: phaseFromKey(kind + p.x + p.z), bob: 0.006, defeated: false });
       }
-      previewProps.push({ kind, wired, glb });
+      previewProps.push({ id: p.id, kind, wired, glb });
     }
   }
 
@@ -1275,7 +1278,10 @@ export async function mountSlice3D(container, sceneData, opts = {}) {
     return { phi: +basePhi.toFixed(3), rad: Math.round(curRad) };
   }
 
-  return { dispose, renderFrame, setView, setCamera, setPlayerFocus, orbitBy, setOrbiting, pause, resume, canvas, preview: preview ? { props: previewProps } : null };
+  // OBJ-INK-1 — refreshGround lets the preview adapter re-stamp the ground texture
+  // after it redraws the ink canvas (mounted-GLB glyphs suppressed) and re-render.
+  const refreshGround = () => { try { worldSheet && worldSheet.refresh && worldSheet.refresh(); } catch {} renderFrame(); };
+  return { dispose, renderFrame, setView, setCamera, setPlayerFocus, orbitBy, setOrbiting, pause, resume, canvas, preview: preview ? { props: previewProps, refreshGround } : null };
 }
 
 // ───────────────────────────────────────────────────────────────────────────

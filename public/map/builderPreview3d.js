@@ -68,15 +68,25 @@ export function projectBuilderDoc(doc) {
     else doors.push(rec);
   }
 
+  // OBJ-INK-1 — a stable per-object id, minted once on the RAW furniture element and
+  // carried onto BOTH the ink glyph and the 3-D prop, so a GLB that mounts can
+  // suppress exactly its own glyph (never the wrong one, never all-or-nothing). It
+  // prefers an id the finalized doc already carries (id/pieceId — the forward path
+  // for gameplay's stable object identity in OBJ-STATE-1) and otherwise mints a
+  // deterministic index id. Both derivations below filter on the same predicate, so
+  // minting on the raw element keeps the two views correlated by construction.
+  const furnId = (f, i) => (f && f.id != null ? String(f.id) : f && f.pieceId != null ? String(f.pieceId) : 'fp-' + i);
+
   // furniture → ink glyphs (absolute top-left cell + size — the SAME the Builder draws).
   const inkFurniture = furniture
-    .filter(f => f.type || f.kind)
-    .map(f => ({ type: String(f.type || f.kind), ux: num(f.x), uy: num(f.y), uw: num(f.w, 1), uh: num(f.h, 1) }));
+    .map((f, i) => ({ f, id: furnId(f, i) }))
+    .filter(({ f }) => f.type || f.kind)
+    .map(({ f, id }) => ({ id, type: String(f.type || f.kind), ux: num(f.x), uy: num(f.y), uw: num(f.w, 1), uh: num(f.h, 1) }));
 
   // furniture → props: authored CENTER in cells (from the finalized ux/uy inside
   // its room — the truthful placement) + rotation, both preserved verbatim.
   const rawRoomById = new Map(rooms.map(r => [String(r.id), r]));
-  const props = furniture.map(f => {
+  const props = furniture.map((f, i) => {
     const kind = String(f.type || f.kind || '');
     if (!kind) return null;
     const room = rawRoomById.get(String(f.room || ''));
@@ -88,7 +98,7 @@ export function projectBuilderDoc(doc) {
       cellX = num(f.x) + num(f.w, 1) / 2;
       cellY = num(f.y) + num(f.h, 1) / 2;
     }
-    return { kind, cellX, cellY, rot: num(f.rot, 0), room: room ? String(room.id) : null };
+    return { id: furnId(f, i), kind, cellX, cellY, rot: num(f.rot, 0), room: room ? String(room.id) : null };
   }).filter(Boolean);
 
   // isolated building bounds (cells) — just the union of the drawn rooms.
@@ -188,7 +198,7 @@ export async function mountBuilderPreview3D(container, doc) {
 
   const props = proj.props.map(p => {
     const s = cellToScene(p.cellX, p.cellY);
-    return { kind: p.kind, x: s.x, z: s.z, rot: p.rot };
+    return { id: p.id, kind: p.kind, x: s.x, z: s.z, rot: p.rot };
   });
   const c0 = cellToScene(b.minX, b.minY), c1 = cellToScene(b.maxX, b.maxY);
   const bounds = { minX: Math.min(c0.x, c1.x), maxX: Math.max(c0.x, c1.x), minZ: Math.min(c0.z, c1.z), maxZ: Math.max(c0.z, c1.z) };
@@ -204,5 +214,18 @@ export async function mountBuilderPreview3D(container, doc) {
   });
 
   const report = (ctrl && ctrl.preview) || { props: [] };
+
+  // OBJ-INK-1 — the glyphs are drawn; the GLBs are mounted; the report tells us
+  // which objects ACTUALLY resolved a real GLB (glb === true, not merely wired). Now
+  // redraw the ink ground with exactly those ids suppressed, so a mounted mini isn't
+  // doubled by an outline beneath it — while a failed/unwired GLB keeps its honest
+  // ink mark. Only the successfully-mounted set is passed, so the redraw is truthful
+  // by construction. Then re-stamp the ground texture the 3-D plane samples.
+  const mounted = new Set((report.props || []).filter(p => p.glb).map(p => String(p.id)));
+  if (mounted.size) {
+    ink.drawBase(proj.sceneModel, { suppressFurnitureIds: mounted });
+    ctrl?.preview?.refreshGround?.();
+  }
+
   return { ctrl, proj, report, banner: previewBanner(report), empty: false };
 }

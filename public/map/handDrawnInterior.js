@@ -184,8 +184,16 @@ export function createInteriorMap(canvas, opts = {}) {
   }
 
   // ── draw ──
-  function draw(model) {
+  // opts.suppressFurnitureIds (Set|array of ids) — OBJ-INK-1: skip drawing the ink
+  // glyph for any furniture whose real GLB successfully mounted in the 3-D view, so
+  // the mini isn't doubled by an outline beneath it. Absent/empty (the live 2-D
+  // LocalMap call) → every glyph is drawn, unchanged. Suppression short-circuits by
+  // id but KEEPS the loop index, so the surviving glyphs stay byte-identical (their
+  // seeded jitter key is 'F' + i).
+  function draw(model, opts = {}) {
     HPAT = null; HITBOXES = [];
+    const sup = opts.suppressFurnitureIds instanceof Set ? opts.suppressFurnitureIds
+      : Array.isArray(opts.suppressFurnitureIds) ? new Set(opts.suppressFurnitureIds.map(String)) : null;
     const mat = MATERIALS[model.material] || MATERIALS.stone;
     fit(model, 46);
     ctx.fillStyle = PAPER; ctx.fillRect(0, 0, canvas.width, canvas.height); grid();
@@ -199,7 +207,7 @@ export function createInteriorMap(canvas, opts = {}) {
     const cur = voids.find(v => v.room && v.room.current);
     if (cur) { ctx.save(); trace(cur.p, true); ctx.clip(); ctx.fillStyle = WARM; ctx.fill(); ctx.restore(); }
     // furniture
-    (model.furniture || []).forEach((f, i) => furn(f.type, f.ux, f.uy, f.uw, f.uh, 'F' + i));
+    (model.furniture || []).forEach((f, i) => { if (sup && f.id != null && sup.has(String(f.id))) return; furn(f.type, f.ux, f.uy, f.uw, f.uh, 'F' + i); });
     // walls
     voids.forEach(v => { if (v.room) inkLoop(v.p, mat.wall, mat.wallW, 2); else inkLoop(v.p, mat.wall, mat.wallW - 0.6, 2); });
     // openings + doors + windows

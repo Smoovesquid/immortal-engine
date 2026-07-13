@@ -30,6 +30,10 @@ function projectForHash(world) {
     reputation: w.reputation,
     structures: w.structures,
 
+    // OBJ-STATE-1 (v33) — mirror the node projection: the live-object overlay joins
+    // the hash. Keep this in lockstep with engine/worldHash.js (U39/U397 parity).
+    objects: w.objects,
+
     canonLog: w.canonLog,
     // Pass R1: project rumors for hash — exclude body (immutable prose).
     rumors: (w.rumors || []).map(r => ({ id: r.id, tier: r.tier, age: r.age })),

@@ -35,6 +35,7 @@
  */
 
 import { FURN } from './roomDetail.js';
+import { authoredObjectId } from '../objects/identity.js';
 
 // Builder kind -> Model A physics. llmPhysics reads material/hardness straight
 // off the node piece (explicit fields, never name-keyword inference — 'cookpot'
@@ -190,6 +191,9 @@ export function authoredNodePieces(structure) {
         structureId: String(structure.id),
         roomId: String(room.id),
         pieceId: String(f.id),
+        // OBJ-STATE-1 — globally-unique stable identity, minted at birth from the
+        // immutable structure+piece provenance (survives ROM-4 name-uniquify + splices).
+        objectId: authoredObjectId(structure.id, f.id),
       });
     }
   }

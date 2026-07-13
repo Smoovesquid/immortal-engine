@@ -29,6 +29,7 @@ import {
   isTacticalPosConsistent
 } from './map/spatial/tacticalPos.js';
 import { normalizeDoors } from './structures/doors.js';
+import { authoredObjectId, procgenObjectId } from './objects/identity.js';
 
 // Pass R1 — bumped from 16 → 17. Adds rumor layer: world.rumors[],
 // npc.rumorIds[], npc.sophistication. See docs/RUMOR_LAYER.md.
@@ -95,7 +96,7 @@ import { normalizeDoors } from './structures/doors.js';
 // ensureFactions: the field is DERIVED deterministically from id+goal keywords
 // (deriveFactionEthos), defaulting to 'neutral' (today's uniform behavior). worldHash
 // projects w.factions wholesale, so the boot fingerprint shifts once (U454-E re-pin).
-export const WORLD_VERSION = 32;
+export const WORLD_VERSION = 33;
 
 // Crunch caps (T1). Kept here so they're colocated with ensureEntity.
 const FOCI_CAP = 6;
@@ -217,6 +218,13 @@ export function ensureWorld(partial) {
 
     structures: ensureStructures(w.structures),
 
+    // OBJ-STATE-1 (v33) — the canonical live-object overlay: a map from a furniture
+    // object's stable objectId to its optional live placement override
+    // ({ placedAt?, heldByActorId? }). Absent override ⇒ the object sits at its
+    // immutable base provenance. Empty but PRESENT on every world (hash-visible via
+    // worldHash's projectForHash). Later lifecycle packets extend each record
+    // (durability / debris / barricade); this packet defines placement only.
+    objects: (w.objects && typeof w.objects === 'object' && !Array.isArray(w.objects)) ? w.objects : {},
 
     regions: Array.isArray(w.regions) ? w.regions : generateRegions(String(meta.seed ?? 'seed')),
 
@@ -389,6 +397,11 @@ export function ensureWorld(partial) {
   // instead of being healed back to the default. Pure + deterministic (rng.js only).
   backfillDoors(world);
 
+  // OBJ-STATE-1 (v33) — stamp a stable objectId on any furniture piece that predates
+  // the feature (legacy saves). New pieces are born with an id at their seam
+  // (authored/procgen); this catches the rest. Runs at the TAIL, after seeding.
+  backfillObjectIds(world);
+
   // TAC-1 — canonical tactical position backfill (docs/POSITION_AS_CANON.md §2/§5).
   // The keystone under 5-ft minis: every present entity gets a deterministic 5-ft
   // cell in `pos`. Runs at the TAIL of world assembly (map/structures/scene are all
@@ -404,6 +417,45 @@ export function ensureWorld(partial) {
 
   assertWorldInvariants(world);
   return world;
+}
+
+// OBJ-STATE-1 — stamp a stable objectId on any furniture piece that predates the
+// feature (authored by immutable provenance → au:; procgen by the lowest-free stable
+// per-node ordinal → pg:). Idempotent: a piece that already has an id is skipped, so
+// an unchanged world re-ensures byte-identically and a live-moved object keeps its
+// id. Deterministic + collision-free per node; the au:/pg: prefixes keep authored and
+// procgen ids from ever colliding. Written in place (shape-preserving), matching the
+// door / tactical-position backfills that bracket it.
+//
+// MIGRATION DECISION (locked in U694-L): a MIGRATED v32 procgen piece gets a COMPACTED
+// array ordinal here, which may DIFFER from the generation-slot id a FRESH v33 replay
+// stamps at birth (a splice before the feature existed leaves a gap fresh, but no gap
+// to recover from in the legacy save). This divergence is intentional and safe: the
+// two are different world instances, and determinism only requires per-world stability
+// (idempotent re-ensure) + replay-equality of the SAME initial state — never that a
+// frozen old save match a fresh replay. Recovering the exact slot would require the
+// fragile affinity-matching that stable ids exist to eliminate, so we do not attempt it.
+function backfillObjectIds(world) {
+  const nodes = Array.isArray(world?.map?.nodes) ? world.map.nodes : [];
+  for (const node of nodes) {
+    const furniture = Array.isArray(node?.furniture) ? node.furniture : [];
+    if (!furniture.length) continue;
+    const used = new Set();
+    for (const p of furniture) if (p && typeof p.objectId === 'string' && p.objectId) used.add(p.objectId);
+    let k = 0;
+    for (const p of furniture) {
+      if (!p || (typeof p.objectId === 'string' && p.objectId)) continue;
+      let id;
+      if (p.structureId != null && p.pieceId != null) {
+        id = authoredObjectId(p.structureId, p.pieceId);
+      } else {
+        while (used.has(procgenObjectId(node.id, k))) k++;
+        id = procgenObjectId(node.id, k);
+      }
+      p.objectId = id;
+      used.add(id);
+    }
+  }
 }
 
 // MR-2a — author each registered structure's canon door records (state.js tail).

@@ -721,14 +721,23 @@ export function applyDeltas(world, deltas = []) {
       const rawId = toInt(op.furnitureId ?? -1);
       const resolvedName = furnitureName.get(op) || '';
       const changes = op.changes && typeof op.changes === 'object' ? op.changes : null;
-      if (!nodeId || !changes || (!resolvedName && rawId < 0)) continue;
+      const objId = String(op.objectId || '');
+      if (!nodeId || !changes || (!objId && !resolvedName && rawId < 0)) continue;
       w = mutateNode(w, nodeId, (node) => {
         const furniture = Array.isArray(node.furniture) ? [...node.furniture] : [];
-        // Splice-proof: locate the piece by its batch-resolved stable name; fall
-        // back to the raw index only when the name couldn't be resolved (older or
-        // hand-built deltas). See the batch-stable pre-pass at the top of applyDeltas.
-        let fi = resolvedName ? furniture.findIndex(f => String(f?.name ?? '') === resolvedName) : -1;
-        if (fi < 0) fi = rawId;
+        // OBJ-STATE-1: an EXPLICIT stable objectId resolves ONLY by that id (exact,
+        // splice-proof, tells two same-named pieces apart). If it does not resolve in
+        // this node it is a NO-OP — it must NEVER fall back to name/index, or a stale/
+        // foreign id would silently mutate the wrong piece (the exact failure stable
+        // ids exist to prevent). Name/index (the legacy ROM-4 path, unchanged) applies
+        // ONLY when no objectId was supplied.
+        let fi;
+        if (objId) {
+          fi = furniture.findIndex(f => String(f?.objectId ?? '') === objId);
+        } else {
+          fi = resolvedName ? furniture.findIndex(f => String(f?.name ?? '') === resolvedName) : -1;
+          if (fi < 0) fi = rawId;
+        }
         if (fi < 0 || fi >= furniture.length) return node;
         const cur = furniture[fi] || {};
         const next = { ...cur };
@@ -1073,14 +1082,21 @@ export function applyDeltas(world, deltas = []) {
       const nodeId = String(op.nodeId || '');
       const rawId = toInt(op.furnitureId ?? -1);
       const resolvedName = furnitureName.get(op) || '';
-      if (!nodeId || (!resolvedName && rawId < 0)) continue;
+      const objId = String(op.objectId || '');
+      if (!nodeId || (!objId && !resolvedName && rawId < 0)) continue;
       w = mutateNode(w, nodeId, (node) => {
         const furniture = Array.isArray(node.furniture) ? [...node.furniture] : [];
-        // Splice-proof: find by the batch-resolved stable name (index fallback for
-        // hand-built deltas), then splice — so an earlier remove in this batch can't
-        // shift this one onto the wrong piece. See the pre-pass at applyDeltas' top.
-        let fi = resolvedName ? furniture.findIndex(f => String(f?.name ?? '') === resolvedName) : -1;
-        if (fi < 0) fi = rawId;
+        // OBJ-STATE-1: an EXPLICIT stable objectId resolves ONLY by that id — a
+        // stale/foreign id is a NO-OP, never a fall-through to name/index (which would
+        // splice the wrong piece). Name/index (legacy ROM-4, splice-proof by the
+        // batch pre-pass) applies ONLY when no objectId was supplied.
+        let fi;
+        if (objId) {
+          fi = furniture.findIndex(f => String(f?.objectId ?? '') === objId);
+        } else {
+          fi = resolvedName ? furniture.findIndex(f => String(f?.name ?? '') === resolvedName) : -1;
+          if (fi < 0) fi = rawId;
+        }
         if (fi < 0 || fi >= furniture.length) return node;
         furniture.splice(fi, 1);
         return { ...node, furniture };

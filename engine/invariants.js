@@ -876,6 +876,64 @@ export function assertWorldInvariants(world) {
       }
     }
   }
+
+  // OBJ-STATE-1 (v33) — furniture object identity + the live-object overlay.
+  // (a) Every objectId is GLOBALLY unique across the whole map — the guarantee that
+  //     lets stable-id addressing tell two same-named pieces apart. (b) world.objects
+  //     is a plain map of well-shaped placement overrides.
+  {
+    const nodes = Array.isArray(world.map?.nodes) ? world.map.nodes : [];
+    const nodeIds = new Set(nodes.map(n => String(n?.id ?? '')));
+    const seenObjectIds = new Set();
+    for (const node of nodes) {
+      const furniture = Array.isArray(node?.furniture) ? node.furniture : [];
+      for (const p of furniture) {
+        if (!p || p.objectId == null) continue; // a piece may be mid-seed before the tail backfill runs
+        const oid = String(p.objectId);
+        if (seenObjectIds.has(oid)) {
+          throw new Error(`Invariant: duplicate furniture objectId ${oid}`);
+        }
+        seenObjectIds.add(oid);
+      }
+    }
+
+    const objects = world.objects;
+    if (objects == null || typeof objects !== 'object' || Array.isArray(objects)) {
+      throw new Error('Invariant: world.objects must be a plain object map');
+    }
+    for (const oid of Object.keys(objects)) {
+      const rec = objects[oid];
+      if (rec == null || typeof rec !== 'object' || Array.isArray(rec)) {
+        throw new Error(`Invariant: world.objects[${oid}] must be a plain object`);
+      }
+      // Overlay integrity: an override may only exist for a furniture object that is
+      // actually in the world (a held/placed/damaged object stays in node.furniture —
+      // nothing removes it while an override lives; a destroyed object becomes
+      // debris, still present). A key with no backing object is a leak/desync.
+      if (!seenObjectIds.has(String(oid))) {
+        throw new Error(`Invariant: world.objects[${oid}] names an unknown furniture objectId`);
+      }
+      if (rec.heldByActorId != null && typeof rec.heldByActorId !== 'string') {
+        throw new Error(`Invariant: world.objects[${oid}].heldByActorId must be a string or absent`);
+      }
+      if (rec.placedAt != null) {
+        const pa = rec.placedAt;
+        if (typeof pa !== 'object' || Array.isArray(pa)) {
+          throw new Error(`Invariant: world.objects[${oid}].placedAt must be an object or absent`);
+        }
+        if (typeof pa.node !== 'string' || !pa.node) {
+          throw new Error(`Invariant: world.objects[${oid}].placedAt.node must be a non-empty string`);
+        }
+        if (!nodeIds.has(String(pa.node))) {
+          throw new Error(`Invariant: world.objects[${oid}].placedAt.node ${pa.node} does not match any node`);
+        }
+        const c = pa.cell;
+        if (!c || !Number.isInteger(c.x) || !Number.isInteger(c.y)) {
+          throw new Error(`Invariant: world.objects[${oid}].placedAt.cell must be an integer { x, y }`);
+        }
+      }
+    }
+  }
 }
 
 // TAC-1 — assert one entity's canonical tactical `pos` (docs/POSITION_AS_CANON.md

@@ -32,6 +32,11 @@ function projectForHash(world) {
     reputation: w.reputation,
     structures: w.structures,
 
+    // OBJ-STATE-1 (v33) — the canonical live-object overlay is deterministic state,
+    // so it joins the hash. (The objectId stamped on each node.furniture piece is
+    // already covered by `map`, above.)
+    objects: w.objects,
+
     canonLog: w.canonLog,
     // Pass R1: project rumors for hash — exclude body (immutable prose).
     rumors: (w.rumors || []).map(r => ({ id: r.id, tier: r.tier, age: r.age })),

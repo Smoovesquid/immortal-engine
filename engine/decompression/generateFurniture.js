@@ -3,6 +3,7 @@
 // so that "examine the table" and "break the chair" have something to act on.
 
 import { seedFromString, makeRng } from '../rng.js';
+import { procgenObjectId } from '../objects/identity.js';
 
 // Templates: each entry seeds the basic shape; the generator picks a few per node.
 // bulk/weight are 0..5; bulk > 2 means too heavy to take.
@@ -193,6 +194,9 @@ export function generateNodeFurniture(nodeId, seed) {
     used.add(idx);
     const t = TEMPLATES[idx];
     picked.push({
+      // OBJ-STATE-1 — stable identity minted at the generation seam from the node +
+      // the deterministic generation slot (i). Same seed+node → same ids (replay-safe).
+      objectId: procgenObjectId(nid, i),
       name: t.name,
       parts: [...t.parts],
       state: 'intact',

@@ -200,13 +200,21 @@ test('U454-E: default fantasy/tallow boot (real normalizePack idiom) — post-PA
   // atrocity run, U616 the save-upgrade path). SOLE DELTA vs the MP-5b tree is the per-faction ethos
   // key. NOTE: if another packet's fields land ahead of this at integration, Basecamp recomputes this
   // anchor (it has happened repeatedly, per this file's own history).
-  // (Anchor chain: … MP-4 db503a11… → MP-5b bbf2ef13… → SP-2 7fc17002….)
-  const HASH_AFTER_SP2 = '7fc1700240febefb73e2081a3368d0f7aa32291f2ac55a89976d52a2a22181f1';
-  assert.equal(worldHash(result.world), HASH_AFTER_SP2,
-    'default fantasy/tallow boot worldHash re-pinned post-SP-2 (additive w.factions[].ethos, WORLD_VERSION 32)');
+  // RE-PINNED for OBJ-STATE-1 (2026-07-13, WORLD_VERSION 32 → 33): the default boot's
+  // worldHash shifts ONCE MORE. Sole deltas: meta.version 32→33 and the canonical
+  // live-object overlay `world.objects` (empty {} on a fresh boot, but hash-visible via
+  // projectForHash) — plus a stable `objectId` on any node.furniture piece, though the
+  // tallow boot has no seeded furniture yet so that channel is inert here. Deliberate
+  // additive-state re-pin (the ONE named WORLD_VERSION bump of the object-physics arc),
+  // NOT a determinism break: the boot is byte-identical to itself under replay (asserted
+  // ×2 below; U694-I pins the v32→v33 migration + save round-trip).
+  // (Anchor chain: … MP-4 db503a11… → MP-5b bbf2ef13… → SP-2 7fc17002… → OBJ-STATE-1 7f911937….)
+  const HASH_AFTER_OBJSTATE1 = '7f911937f2150a8d25cb489559c4ff74bb2956548bdba08e57f8e33b94a975ae';
+  assert.equal(worldHash(result.world), HASH_AFTER_OBJSTATE1,
+    'default fantasy/tallow boot worldHash re-pinned post-OBJ-STATE-1 (additive world.objects + objectId, WORLD_VERSION 33)');
 
   // Same seed => identical world (the placement is deterministic).
   const w2 = newWorld({ seed: 'tallow', fate: 0.3, mode: 'escape', pack: { primaryId: 'fantasy', mixerId: null } });
-  assert.equal(worldHash(beginAdventure(w2, PACKS).world), HASH_AFTER_SP2,
-    'default tallow boot must be deterministic ×2 after SP-2');
+  assert.equal(worldHash(beginAdventure(w2, PACKS).world), HASH_AFTER_OBJSTATE1,
+    'default tallow boot must be deterministic ×2 after OBJ-STATE-1');
 });

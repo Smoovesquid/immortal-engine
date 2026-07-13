@@ -81,48 +81,6 @@ function maybeInjectLoaderDemo2(world, nid, node, mergedById) {
   }
 }
 
-// BUILDER-PREVIEW-1 — the House Builder's one-click "Preview 3D" (2026-07-11).
-// Same posture as LOAD-1/LOAD-2 above: gated ENTIRELY on one opt-in seed so the
-// DEFAULT game is byte-identical — PLUS a runtime registration, so even the
-// preview seed alone changes nothing (U688 locks both). The preview page
-// (public/builder-preview.html) registers the draft it read from localStorage
-// BEFORE creating the world; nothing registers in normal play or on the server,
-// and the preview world is EPHEMERAL BY CONTRACT — the page never saves it
-// (U689 guards the page sources). Deterministic per registration: same doc +
-// same seed → the same world, so replay holds within a preview session.
-const BUILDER_PREVIEW_SEED = 'builderPreview';
-let builderPreviewHouse = null;
-
-/** registerBuilderPreviewHouse(doc|null) — arm (or clear) the preview injection. */
-export function registerBuilderPreviewHouse(doc) {
-  builderPreviewHouse = (doc && typeof doc === 'object') ? doc : null;
-}
-
-function maybeInjectBuilderPreview(world, nid, mergedById, generated) {
-  if (String(world?.meta?.seed || '') !== BUILDER_PREVIEW_SEED) return; // default game untouched
-  if (!builderPreviewHouse) return; // preview seed without a draft: plain procgen, no crash
-  try {
-    // SUBSTITUTE, don't attach (the MR-2c pattern, same as authoredOrProcgen
-    // below): the draft adopts the node's FIRST procgen candidate id, so the
-    // settlement layout gives it a real building anchor/rect and the map — 2D
-    // ink, marker rail, 3D diorama — draws it exactly like any other building.
-    // A free-floating `authored:<nid>` attach (the first cut of this seam) was
-    // fully playable but invisible to the sheet: no place-layout anchor, no
-    // world rect, nothing to draw. Only at a node with NO candidates (procgen
-    // skips it) does the attach fallback remain — playable there too, just
-    // without settlement ink, same as the LOAD-1 demo.
-    const candidateId = String(generated?.[0]?.id || '').trim();
-    const previewId = candidateId || `authored:${nid}`;
-    if (mergedById[previewId] && mergedById[previewId].authoredPlan) return; // idempotent
-    const st = materializeAuthoredExport(builderPreviewHouse, { nodeId: nid, structureId: previewId });
-    if (st && st.id) mergedById[st.id] = st;
-  } catch (err) {
-    // A broken draft degrades to procgen with a warning (never crashes the preview) —
-    // same failure posture as the loader demos above.
-    console.warn(`applyGeneratedStructuresForNode: builder-preview house failed to load (${err?.message || err}); node keeps procgen`);
-  }
-}
-
 // MR-2c (docs/briefs/MR-2-FUNCTIONAL-INK.md §MR-2c) — AUTHORED OVERRIDE. The
 // procgen candidate id for a node is fully deterministic (generateStructures.js:
 // `stgen:v${ver}:${nid}:0`), so a plan Tim authored FOR that exact id can simply be
@@ -171,8 +129,7 @@ export function applyGeneratedStructuresForNode(world, nodeId) {
   // whose id doesn't match generateStructures' `/^n\d+/` heuristic). So the "nothing
   // to do" early-out only fires when there are NO procgen candidates AND this isn't a
   // demo seed — otherwise the default game is byte-identical to before.
-  const isLoaderDemo = seed === LOADER_DEMO_SEED || seed === LOADER_DEMO2_SEED
-    || (seed === BUILDER_PREVIEW_SEED && !!builderPreviewHouse);
+  const isLoaderDemo = seed === LOADER_DEMO_SEED || seed === LOADER_DEMO2_SEED;
   if (!generated.length && !isLoaderDemo) return w;
 
   const existing = ensureStructures(w.structures);
@@ -189,8 +146,6 @@ export function applyGeneratedStructuresForNode(world, nodeId) {
   maybeInjectLoaderDemo(w, nid, mergedById);
   // LOAD-2 — inject the authored multi-room demo (seed-gated; no-op on every other seed).
   maybeInjectLoaderDemo2(w, nid, node, mergedById);
-  // BUILDER-PREVIEW-1 — substitute the Builder's registered draft (seed+registration gated).
-  maybeInjectBuilderPreview(w, nid, mergedById, generated);
 
   const merged = ensureStructures({ byId: mergedById, nextId: existing.nextId });
 

@@ -3993,3 +3993,35 @@ other agents. (none active)
 - Suite 11,116/0; check GREEN. Live receipt: room + hearth/table/rug/barrel/chair → Preview 3D → the
   building on clean ground, hearth/table/barrel as GLBs, HUD reads "clean-preview", no town/NPCs/trees;
   localStorage after the flow = exactly ['ie.builderPreview'].
+
+## 2026-07-11 — Basecamp (Fable) — BUILDER-PREVIEW-2: Preview 3D renders the authored ROOM → v0.39.0 build 155
+
+- Tim REJECTED b154: "a giant empty settlement tile with the player and loose objects, not the actual
+  house/building interior." New bar: show the room shell (floor + walls), furniture inside at drawn
+  positions, a person for scale, framed on the building — recognizably "the house I drew."
+- DIAGNOSIS: b153/b154 rendered via the overworld/settlement diorama, which draws architecture as INK
+  on a flat ground sheet (TT-INK — buildSettlement stopped mounting 3-D walls). Walls never rise, so
+  that renderer fundamentally can't meet the bar; the bare-preview gate removed the town but left a
+  flat plane + floating furniture.
+- PIVOT (Tim-authorized "escalate if you need to redesign preview rendering"): a DEDICATED interior
+  renderer public/map/builderPreview3d.js, fed the raw builder doc directly — no engine world boot.
+  - buildPreviewLayout(doc) — PURE, testable: rooms → floor slabs (metres); each room boundary → wall
+    beams WITH a gap cut at every door opening; furniture → world position from the drawn ux/uy inside
+    its room (carrying rotation); a person in the entrance room; bounds for camera framing.
+  - mountBuilderPreview3D — thin Three.js consumer: floors, open-topped box-beam walls (angled camera
+    sees in), the GAME's own GLB furniture (figures3d buildPropMini, true-sized in metres; 9k–16k-vert
+    sculpts, labelled-box fallback for unmapped kinds), buildArchetypeFigure person, framed orbit
+    camera, warm interior lighting + fill.
+- REVERTED the now-dead settlement-boot plumbing: the engine injection (registerBuilderPreviewHouse /
+  maybeInjectBuilderPreview — engine byte-identical to pre-b153) and the placeFromNode.js bare-gate.
+  Preview page rewritten to read the scratch key → mountBuilderPreview3D; storage read-only; no engine
+  imports.
+- TESTS: U691 (5, new — pure layout: rooms→floors, door-gap walls, furniture inside its room at the
+  drawn pos, person in the entrance room, empty-draft→empty geometry) + U689 (rewritten — same-doc-as-
+  finalize contract, scratch-key-only writes, page renders via builderPreview3d & no longer boots a
+  world). DELETED U688/U690 (tested the reverted engine-boot + bare-gate paths).
+- Suite 11,113/0; convergence 135/135; goldens locked (engine revert = default game byte-identical);
+  check GREEN. Live receipt: 2-room cottage (hall+snug, shared-wall door, front door) + hearth/table/
+  chair/barrel/bed → Preview 3D → two walled rooms, front doorstep + interior doorway gaps, GLB
+  furniture standing inside at the drawn spots (hearth glowing), a person for scale, framed on the
+  house; no town/NPCs/trees; localStorage after the flow = exactly ['ie.builderPreview']. Meets the bar.

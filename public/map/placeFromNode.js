@@ -254,19 +254,7 @@ export function placeFromWorldNode(world, nodeId) {
   // furniture) — the SAME rooms settlementLayout used for the scatter, so the extent (and
   // therefore ox/oy) is unchanged; only the furniture the sheet inks is added. A
   // decorative building keeps the synthetic plan the layout already carries.
-  //
-  // BUILDER-PREVIEW-1 (bare preview) — the House Builder's "Preview 3D" shows ONLY
-  // the authored building: no decorative town buildings, no outdoor NPCs, no
-  // groves/well. Pure RENDERER gate, opt-in via `world.__builderPreview` (the
-  // preview page sets it on its throwaway world; the real game never sets it, so
-  // every settlement stays byte-identical). The authored building is a real
-  // structure, so it keeps its engine-scattered position and draws with its
-  // furniture — we just stop drawing everything ELSE the settlement would add.
-  const barePreview = !!(world && world.__builderPreview);
-  const srcBuildings = barePreview
-    ? layout.buildings.filter(b => world?.structures?.byId?.[String(b.structureKey || '')]?.authoredPlan)
-    : layout.buildings;
-  const buildings = srcBuildings.map(b => {
+  const buildings = layout.buildings.map(b => {
     const structId = String(b.structureKey || '');
     if (structId) {
       const st = world?.structures?.byId?.[structId] || null;
@@ -303,9 +291,7 @@ export function placeFromWorldNode(world, nodeId) {
   const laneX = terrain.paths?.[0]?.pts?.[0]?.[0] ?? 0; // the road's west end (== old x0)
   const fallbackPlayerUnit = { ux: laneX + 1.5, uy: roadY(laneX + 1.5) };
   tokens.push({ type: 'player', ...playerTokenPlaceUnit(world, buildings, fallbackPlayerUnit) });
-  // Bare preview: the player token only — no outdoor NPC scatter (no strangers
-  // milling around a building you're just inspecting).
-  const shown = barePreview ? [] : outdoorNpcs.filter(n => n && !n.hostile).slice(0, 12).concat(outdoorNpcs.filter(n => n && n.hostile).slice(0, 2).map(n => ({ ...n, name: '?' })));
+  const shown = outdoorNpcs.filter(n => n && !n.hostile).slice(0, 12).concat(outdoorNpcs.filter(n => n && n.hostile).slice(0, 2).map(n => ({ ...n, name: '?' })));
   shown.forEach((n, i) => {
     const ax0 = minX + ((i + 1) / (shown.length + 1)) * (maxX - minX) + (rng.nextFloat() - 0.5) * 2;
     const ay0 = roadY(ax0) + (rng.nextFloat() < 0.5 ? -1 : 1) * (0.8 + rng.nextFloat() * 1.4);
@@ -318,11 +304,7 @@ export function placeFromWorldNode(world, nodeId) {
     tokens.push({ type: 'npc', ux: ax, uy: ay, label: String(n.name || 'V').trim().charAt(0).toUpperCase() || 'V', npc: { id: n.id || ('npc' + i), name: n.name, role: n.role } });
   });
 
-  // Bare preview: no groves (the settlement's hardcoded tree clusters) and no
-  // props (the well) — the drawn building stands on clean ground. The road ribbon
-  // stays (harmless ground orientation; the player fallback reads paths[0]).
-  const outTerrain = barePreview ? { ...terrain, groves: [], props: [] } : terrain;
-  return { nodeType: node.nodeType || 'settlement', tier: tierForNode(world, node), seed, terrain: outTerrain, buildings, tokens, footprintW };
+  return { nodeType: node.nodeType || 'settlement', tier: tierForNode(world, node), seed, terrain, buildings, tokens, footprintW };
 }
 
 function nodeTypeFor(node) {

@@ -3969,3 +3969,27 @@ other agents. (none active)
   sculpted hero mini, barrel GLB, table GLB standing in the drawn room; hearth GLB confirmed via
   window.__rendScaleAudit. localStorage after the whole flow = exactly ['ie.builderPreview'].
 - Engine-brief ritual: dispatch pre-authorized; brief in-chat; marker touched and flagged.
+
+## 2026-07-11 — Basecamp (Fable) — BUILDER-PREVIEW-1b: preview shows JUST your building → v0.38.1 build 154
+
+- Tim's live report on b153: "the preview gave me a saltmarket town with NPCs and trees."
+- ROOT: to make the drawn building appear on the sheet, BUILDER-PREVIEW-1 substitutes it into a real
+  settlement's building slot (MR-2c). But a settlement renders its whole self — decorative town
+  buildings, an outdoor NPC roster, and two HARDCODED groves (~15 trees) + a well (settlementLayout.js
+  emits the groves unconditionally, so pruning node data can't remove them).
+- FIX — renderer-only, opt-in, ZERO engine edits: a "bare preview" gate in placeFromWorldNode
+  (public/map/placeFromNode.js — the one chokepoint both the 2D ink and the 3D TT-PROPS diorama read
+  for a node's buildings/tokens/terrain), keyed on world.__builderPreview. When set: (a) keep only
+  buildings whose structureKey resolves to an authoredPlan structure (the drawn house alone); (b) emit
+  no outdoor-NPC tokens; (c) return groves:[] and props:[] (no trees, no well; road ribbon kept).
+- Preview page (builder-preview.html): sets the flag on its throwaway world, islands the map to the
+  boot node only (no neighbour scatter drifts in on zoom-out), and renames that node to the house name
+  so the 3D HUD titles it after the building — nodeType STAYS 'settlement' (flipping it would trip
+  render3d's wilderness tree/tent scatter at the nodeType guard).
+- Default game byte-identical: the flag is never set outside the preview; goldens + determinism
+  U19/21/22/27/30 stay green. Test U690 (3): un-gated control still draws many buildings + groves (the
+  reported bug), gated draws the authored building alone (no npc tokens, no groves, no props), and a
+  default-seed world is never flagged.
+- Suite 11,116/0; check GREEN. Live receipt: room + hearth/table/rug/barrel/chair → Preview 3D → the
+  building on clean ground, hearth/table/barrel as GLBs, HUD reads "clean-preview", no town/NPCs/trees;
+  localStorage after the flow = exactly ['ie.builderPreview'].

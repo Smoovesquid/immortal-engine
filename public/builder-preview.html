@@ -82,6 +82,26 @@
         console.warn('builder-preview: boot did not land inside the authored house', structKey);
       }
 
+      // BARE PREVIEW — this is a viewer for ONE building, not a place in a world.
+      // (a) __builderPreview flags the renderer (placeFromNode.js) to draw only the
+      // authored building — no decorative town, no NPCs, no groves/well. (b) Island
+      // the throwaway world to just the boot node so no neighbouring settlement or
+      // wilderness scatter drifts in when the camera pulls back. Ephemeral world,
+      // never saved, no further engine turns — safe to prune in place.
+      world.__builderPreview = true;
+      try {
+        const nid = String(world.map.currentNodeId);
+        const boot = (world.map.nodes || []).find(n => String(n.id) === nid);
+        if (boot) {
+          // The HUD titles the place after the node (render3d). Name it after the
+          // building so it reads "Preview Cottage", not the borrowed "Saltmarket
+          // Town". nodeType STAYS 'settlement' — that's what routes the building
+          // through the (now bare) settlement draw instead of wilderness scatter.
+          boot.name = payload.name || 'Your building';
+          world.map = { ...world.map, nodes: [boot], edges: [] };
+        }
+      } catch { /* keep the full map rather than fail the preview */ }
+
       // Pre-warm the GLB template pools BEFORE the diorama's first scene build.
       // The game rebuilds its 3D scene every turn, so late-arriving templates
       // swap in naturally there — this static preview never takes a turn, so a

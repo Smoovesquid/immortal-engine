@@ -64,6 +64,13 @@ const KIND_PHYSICS = {
   hearth:     { material: 'stone', category: 'furniture', hardness: 5, bulk: 5, weight: 5, parts: ['mantel', 'firebrick', 'flue'], notes: 'set masonry — part of the house more than furniture in it' },
 };
 
+// Narrow immutable census for cross-catalog coverage tests. The full interaction
+// records stay private so tests cannot mutate Builder runtime physics by importing
+// the table they are trying to verify.
+export const AUTHORED_KIND_MATERIALS = Object.freeze(
+  Object.entries(KIND_PHYSICS).map(([kind, def]) => Object.freeze({ kind, material: def.material }))
+);
+
 // Fallback hardness by material for kinds without an explicit physics row
 // (mirrors generateFurniture.js's hardness scale).
 const MATERIAL_HARDNESS = { cloth: 0, web: 0, fire: 0, glass: 1, bone: 1, ceramic: 1, wood: 2, iron: 4, stone: 5 };

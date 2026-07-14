@@ -14,3 +14,6 @@ export { resolvedObjectPlacement, findFurnitureByObjectId } from './placement.js
 export { mobilityForObject, objectPhysics, IDENTITY_MOBILITY, normalizeIdentity } from './mobility.js';
 export { actorObjectCapacity, baseCapacity } from './capacity.js';
 export { findPhysicsActor, actorSize, actorMight, actorFacts } from './physicsActor.js';
+
+// OBJ-DURABILITY-1 — material-derived AC/HP/threshold profiles for object strikes.
+export { durabilityProfile, initialDurability, hasDurabilityProfile } from './durability.js';

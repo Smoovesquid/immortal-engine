@@ -1,5 +1,5 @@
-// U651 — DM-GATE-1a-R2: furniture cannot dodge, and visible furniture queries
-// must be answered from room truth, never as hidden-search rolls.
+// U651 — DM-GATE-1b object-strike routing, plus visible furniture queries that
+// must be answered from room truth rather than hidden-search rolls.
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -16,20 +16,24 @@ function boot() {
   return beginAdventure(newWorld({ seed: 'tallow', fate: 0.3, mode: 'escape', pack: { primaryId: 'fantasy', mixerId: null } }), PACKS).world;
 }
 
-const MISS_WORDS = /\b(?:miss|misses|missed|skids?\s+off|glances?\s+off|whiffs?|fails?\s+to\s+(?:hit|connect))\b/i;
-const CONTACT_WORDS = /\b(?:bites?|strikes?|rings?\s+against|catches?|lands?|takes?\s+the\s+blow|shudders?)\b/i;
-
-test('U651-01: a resisted furniture attack still connects physically; failure means no meaningful damage, not a miss', () => {
+// DM-GATE-1b (OBJ-DURABILITY-1, 2026-07-14) SUPERSEDES DM-GATE-1a-R2 for the resolution:
+// a declared furniture attack now resolves against the object's PERSISTENT AC/HP/threshold,
+// so a swing legitimately MISSES (goes wide), is ABSORBED (sub-threshold), damages, or
+// destroys — the old "furniture cannot dodge, never a miss" ruling no longer holds (the
+// four outcomes are proven exhaustively in U697). What still holds and is guarded here: it
+// resolves in fiction against the NAMED furniture, never starts combat, never rolls to
+// WOUND THE PLAYER, and leaks no raw dice math into the prose.
+test('U651-01: a declared furniture attack resolves against the object via the AC/HP path, never wounding the player', () => {
   const r = playerMove(boot(), PACKS, 'I attack the iron-bound chest with my Worn Blade.');
   const narration = String(r.output?.narration || '');
   const mechanics = String(r.output?.mechanics || '');
 
   assert.equal(r.world.combat?.active ?? false, false, 'furniture attacks never start combat');
-  assert.match(mechanics, /approach:force/i, 'still resolves through the object/force path');
+  assert.match(mechanics, /object-strike/i, 'resolves through the persistent object-strike path');
+  assert.match(mechanics, /vs AC:\d+/i, 'the AC model is in force');
   assert.doesNotMatch(mechanics, /stake:harm|wounds/i, 'never becomes the generic player-wounding floor');
   assert.match(narration, /iron-bound chest/i, 'names the furniture target');
-  assert.doesNotMatch(narration, MISS_WORDS, 'furniture cannot dodge; narration must not read as a miss');
-  assert.match(narration, CONTACT_WORDS, 'resisted outcome must still describe physical contact');
+  assert.doesNotMatch(narration, /\bd20\b|\b1d6\b|attack bonus/i, 'no raw dice math leaks into the prose');
 });
 
 const FURNITURE_QUERIES = [

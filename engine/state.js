@@ -96,7 +96,14 @@ import { authoredObjectId, procgenObjectId } from './objects/identity.js';
 // ensureFactions: the field is DERIVED deterministically from id+goal keywords
 // (deriveFactionEthos), defaulting to 'neutral' (today's uniform behavior). worldHash
 // projects w.factions wholesale, so the boot fingerprint shifts once (U454-E re-pin).
-export const WORLD_VERSION = 33;
+// OBJ-DURABILITY-1 (v33 → v34) — the live-object overlay record gains an optional
+// `durability` snapshot ({ material, ac, maxHp, hp, threshold }), written lazily on a
+// piece's first declared-attack strike. Purely additive: old saves have no durability
+// records and derive them on demand (initialDurability). loadSlot warns once on the
+// version delta (save.js), then loads cleanly. worldHash projects w.objects wholesale,
+// so a damaged object's HP is already in the fingerprint; boot worlds carry no
+// durability record, so the boot hash is unmoved.
+export const WORLD_VERSION = 34;
 
 // Crunch caps (T1). Kept here so they're colocated with ensureEntity.
 const FOCI_CAP = 6;
@@ -219,11 +226,12 @@ export function ensureWorld(partial) {
     structures: ensureStructures(w.structures),
 
     // OBJ-STATE-1 (v33) — the canonical live-object overlay: a map from a furniture
-    // object's stable objectId to its optional live placement override
-    // ({ placedAt?, heldByActorId? }). Absent override ⇒ the object sits at its
-    // immutable base provenance. Empty but PRESENT on every world (hash-visible via
-    // worldHash's projectForHash). Later lifecycle packets extend each record
-    // (durability / debris / barricade); this packet defines placement only.
+    // object's stable objectId to its live override. OBJ-MOVE-1 added { placedAt },
+    // OBJ-STRENGTH-1/OBJ-MOVE-1 { heldByActorId }, OBJ-DURABILITY-1 (v34) an optional
+    // { durability } snapshot. Absent override ⇒ the object sits at its immutable base
+    // provenance, at full material HP. Empty but PRESENT on every world (hash-visible
+    // via worldHash's projectForHash). Records are preserved wholesale here; the delta
+    // ops in effectsCore are the sole writers, invariants.js validates each record.
     objects: (w.objects && typeof w.objects === 'object' && !Array.isArray(w.objects)) ? w.objects : {},
 
     regions: Array.isArray(w.regions) ? w.regions : generateRegions(String(meta.seed ?? 'seed')),

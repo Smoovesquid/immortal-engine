@@ -9,6 +9,8 @@ import { DOOR_STATES } from './structures/doors.js';
 import { escalationTier, heatAccrual } from './morality/escalation.js';
 import { legalMoveTargetCell } from './map/spatial/tacticalPos.js';
 import { findFurnitureByObjectId } from './objects/placement.js';
+import { initialDurability } from './objects/durability.js';
+import { isFurnitureDestroyed } from './structures/authoredFurniture.js';
 
 // MR-2a — the valid target states for the `door` op (canon door-state enum).
 const DOOR_STATE_ENUM = new Set(DOOR_STATES);
@@ -725,6 +727,7 @@ export function applyDeltas(world, deltas = []) {
       const changes = op.changes && typeof op.changes === 'object' ? op.changes : null;
       const objId = String(op.objectId || '');
       if (!nodeId || !changes || (!objId && !resolvedName && rawId < 0)) continue;
+      let terminalObjectId = '';
       w = mutateNode(w, nodeId, (node) => {
         const furniture = Array.isArray(node.furniture) ? [...node.furniture] : [];
         // OBJ-STATE-1: an EXPLICIT stable objectId resolves ONLY by that id (exact,
@@ -752,9 +755,32 @@ export function applyDeltas(world, deltas = []) {
         if (Array.isArray(changes.takenItems)) {
           next.takenItems = [...new Set(changes.takenItems.map(String))].slice(0, 8);
         }
+        // OBJ-DURABILITY-1: Model A's terminal state and the overlay's HP are one
+        // truth. A legacy break/tear delta can still terminally wreck a piece after
+        // durability exists, so remember that identity for reconciliation below.
+        // Conversely, no generic modify op may resurrect a zero-HP object.
+        const nextObjectId = String(next.objectId || '');
+        const existingDurability = nextObjectId && w.objects?.[nextObjectId]?.durability;
+        if (existingDurability && existingDurability.hp === 0 && !isFurnitureDestroyed(next)) {
+          next.state = 'wrecked';
+        }
+        if (nextObjectId && isFurnitureDestroyed(next)) terminalObjectId = nextObjectId;
         furniture[fi] = next;
         return { ...node, furniture };
       });
+      if (terminalObjectId) {
+        const rec = w.objects?.[terminalObjectId];
+        const durability = rec?.durability;
+        if (durability && durability.hp !== 0) {
+          w = {
+            ...w,
+            objects: {
+              ...w.objects,
+              [terminalObjectId]: { ...rec, durability: { ...durability, hp: 0 } },
+            },
+          };
+        }
+      }
       continue;
     }
 
@@ -1086,6 +1112,7 @@ export function applyDeltas(world, deltas = []) {
       const resolvedName = furnitureName.get(op) || '';
       const objId = String(op.objectId || '');
       if (!nodeId || (!objId && !resolvedName && rawId < 0)) continue;
+      let removedObjectId = '';
       w = mutateNode(w, nodeId, (node) => {
         const furniture = Array.isArray(node.furniture) ? [...node.furniture] : [];
         // OBJ-STATE-1: an EXPLICIT stable objectId resolves ONLY by that id — a
@@ -1100,9 +1127,17 @@ export function applyDeltas(world, deltas = []) {
           if (fi < 0) fi = rawId;
         }
         if (fi < 0 || fi >= furniture.length) return node;
+        removedObjectId = String(furniture[fi]?.objectId || '');
         furniture.splice(fi, 1);
         return { ...node, furniture };
       });
+      // A removed piece no longer backs an object overlay. Delete placement,
+      // held-state, and durability atomically so the returned world is invariant-clean.
+      if (removedObjectId && Object.prototype.hasOwnProperty.call(w.objects || {}, removedObjectId)) {
+        const objects = { ...w.objects };
+        delete objects[removedObjectId];
+        w = { ...w, objects };
+      }
       continue;
     }
 
@@ -1139,6 +1174,50 @@ export function applyDeltas(world, deltas = []) {
         }
       };
       w = { ...w, objects: { ...(w.objects || {}), [objId]: nextObj } };
+      continue;
+    }
+
+    // OBJ-DURABILITY-1 — persist a declared-attack strike on an object. The SOLE
+    // writer of world.objects[id].durability. Lazy: on a piece's first strike it
+    // derives the material profile from the live piece, then subtracts op.damage
+    // (already resolved + threshold-filtered by the seeded roll in playloop). HP 0
+    // mirrors the Model A piece to the terminal 'wrecked' state (destroyed-state
+    // contract — never removed; debris/rubble is a later packet). A stale/foreign id
+    // is a no-op. Determinism: the damage number is world-seeded, so replay repeats it.
+    if (kind === 'damageObject') {
+      const objId = String(op.objectId || '');
+      if (!objId) continue;
+      const found = findFurnitureByObjectId(w, objId);
+      if (!found || !found.piece) continue;                 // stale/foreign id → no-op
+      const piece = found.piece;
+      if (isFurnitureDestroyed(piece) && !w.objects?.[objId]?.durability) continue;
+      const prev = (w.objects && typeof w.objects === 'object' && w.objects[objId] && typeof w.objects[objId] === 'object') ? w.objects[objId] : {};
+      // Durability seed: the live overlay record if present (subsequent strikes),
+      // else derive it from the authoritative live piece. Caller-supplied profile
+      // fields are never trusted across this mutation boundary.
+      const seedRec = (prev.durability && typeof prev.durability === 'object')
+        ? prev.durability
+        : initialDurability(piece.kind || piece.type, piece.material);
+      const maxHp = Number.isFinite(+seedRec.maxHp) ? +seedRec.maxHp : 0;
+      if (maxHp <= 0) continue;                             // never mint a 0-HP record
+      const ac = Number.isFinite(+seedRec.ac) && +seedRec.ac > 0 ? +seedRec.ac : 1;
+      const threshold = Number.isFinite(+seedRec.threshold) && +seedRec.threshold >= 0 ? +seedRec.threshold : 0;
+      const material = (typeof seedRec.material === 'string' && seedRec.material) ? seedRec.material : 'unknown';
+      const prevHp = Number.isFinite(+seedRec.hp) ? +seedRec.hp : maxHp;
+      const dmg = Math.max(0, Math.round(Number.isFinite(+op.damage) ? +op.damage : 0));
+      const hp = Math.max(0, Math.min(maxHp, prevHp - dmg));
+      const durability = { material, ac, maxHp, hp, threshold };
+      w = { ...w, objects: { ...(w.objects || {}), [objId]: { ...prev, durability } } };
+      if (hp === 0) {
+        w = mutateNode(w, String(found.nodeId), (node) => {
+          const furniture = Array.isArray(node.furniture) ? node.furniture : [];
+          const fi = furniture.findIndex(f => f && String(f.objectId || '') === objId);
+          if (fi < 0 || String(furniture[fi]?.state || '') === 'wrecked') return node;
+          const next = furniture.slice();
+          next[fi] = { ...next[fi], state: 'wrecked' };
+          return { ...node, furniture: next };
+        });
+      }
       continue;
     }
 

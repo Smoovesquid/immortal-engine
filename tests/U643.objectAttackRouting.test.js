@@ -2,8 +2,8 @@
 //
 // A weapon swing at a present OBJECT (furniture) must (a) NOT be swallowed by the
 // meta gate when a rules question rides along, (b) NOT start combat, (c) NOT leak
-// raw dice math, (d) resolve as graded damage-STATE against the object's material.
-// This packet adds NO persistent object HP/AC — that is DM-GATE-1b.
+// raw dice math, (d) resolve against persistent object AC/HP/threshold under
+// DM-GATE-1b. The earlier damage-state-only contract has been superseded.
 //
 // Evidence (Opus gate 2026-07-07, rules-lawyer, seed tallow): "I attack the
 // iron-bound chest with my Worn Blade. What's my attack roll…" routed to `meta`
@@ -104,17 +104,28 @@ test('U644-02: object attack is deterministic under replay (worldHash stable)', 
   assert.equal(worldHash(a), worldHash(b), 'same seed + same input → identical world');
 });
 
-// ── U645 — a strong/repeated hit changes the furniture state or removes it ───────
-test('U645-01: repeated hits change the chest state or remove it — still no combat (damage-STATE, not HP)', () => {
+// ── U645 — repeated hits persistently wear the furniture down, then wreck it ─────
+// DM-GATE-1b (OBJ-DURABILITY-1) SUPERSEDES the old "damage-STATE, not HP" contract this test
+// once encoded: a declared attack now drives PERSISTENT overlay HP (world.objects[id].durability)
+// and mirrors the piece to 'wrecked' when HP reaches 0 — still never combat. The boot PC's Worn
+// Blade is weak (atkBonus 0, dmgMod −2), so it chips this chest slowly across many swings — that
+// slow attrition is exactly the AC/threshold model at work. U697 proves the four outcomes,
+// persistence, and determinism exhaustively; here we prove the routing + persistence over repeats.
+test('U645-01: repeated hits persistently lower the chest overlay HP and eventually wreck it — still no combat', () => {
   let w = boot();
-  const start = chest(w)?.state ?? null;
-  assert.equal(start, 'intact', 'chest starts intact');
-  let changed = false;
-  for (let i = 0; i < 12 && !changed; i++) {
-    w = playerMove(w, PACKS, ATTACK_PLAIN).world;
+  const oid = chest(w)?.objectId;
+  assert.ok(oid, 'the chest is present with a stable objectId');
+  assert.equal(chest(w)?.state ?? null, 'intact', 'chest starts intact');
+  let sawHp = false, wrecked = false;
+  for (let i = 0; i < 80 && !wrecked; i++) {
+    const r = playerMove(w, PACKS, ATTACK_PLAIN);
+    w = r.world;
     assert.equal(w.combat?.active ?? false, false, 'never starts combat across repeated hits');
-    const c = chest(w);
-    if (c == null || c.state !== 'intact') changed = true;
+    assert.match(String(r.output?.mechanics || ''), /object-strike/i, 'resolves through the persistent object path');
+    const rec = (w.objects || {})[oid]?.durability;
+    if (rec && rec.hp < rec.maxHp) sawHp = true;                 // persistent HP tracking (HP model, not raw dice)
+    if ((chest(w)?.state ?? 'intact') !== 'intact') wrecked = true;
   }
-  assert.ok(changed, 'a repeated weapon attack eventually damages or removes the chest (observed via world state)');
+  assert.ok(sawHp, 'repeated attacks persistently lower the chest overlay HP');
+  assert.ok(wrecked, 'enough repeated attacks eventually wreck the chest (observed via world state)');
 });

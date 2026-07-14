@@ -26,7 +26,8 @@ import { normalizeTopology, adjacentRooms } from './structures/topology.js';
 import { exteriorDoorOf, needsForcing as doorNeedsForcing } from './structures/doors.js';
 import { roomWindows, roomWindowFacings } from './structures/roomWindows.js';
 import { furnitureRoomAssignments, objectsHere } from './structures/roomObjects.js';
-import { authoredIntactBedAt } from './structures/authoredFurniture.js';
+import { authoredIntactBedAt, isFurnitureDestroyed } from './structures/authoredFurniture.js';
+import { hasObjectId, initialDurability } from './objects/index.js';
 import { roomDetail } from './structures/roomDetail.js';
 import { floorPlan } from './structures/floorPlan.js';
 import { resolveTacticalWalk, roomRectCells } from './map/spatial/tacticalPos.js';
@@ -3936,21 +3937,30 @@ function playerMoveCore(world, packsById, text, dqIntent) {
   // stays OUT — it collides with travel ("move to the table"). Mirrors llmPhysics MOVE_RE.
   const PHYSICS_VERB_RE = /\b(examine|inspect|search|look at|check|rip|break|smash|tear|kick|punch|shatter|take|grab|pick up|steal|drag|push|shove|light|ignite|set fire|torch|kindle|burn|hide\s+behind|duck\s+behind|crouch\s+behind|brace\s+against|shelter\s+behind|press\s+against|take\s+cover)\b|\bset\b[^.!?]*\b(?:on fire|ablaze|alight|aflame|burning)\b/i;
   const FORCE_VERB_RE   = /\b(rip|break|smash|tear|kick|punch|shatter)\b/i;
-  // DM-GATE-1a — a weapon swing at a present OBJECT ("I attack the chest with my blade")
-  // routes through this same graded force resolver: hit/damage vs the object's material
-  // hardness → mutate its damage-state. Never combat, never an enemy, never a persistent
-  // HP number (that's DM-GATE-1b). Gated to a furniture target with no present NPC.
+  // DM-GATE-1b — a weapon swing at a present OBJECT ("I attack the chest with my blade")
+  // resolves out of combat against persistent object AC/HP/threshold. Gated to a
+  // furniture primary target with no present NPC.
   const objectAttack = !w.combat?.active && !w.scene?.dialogue && !declaredNpcViolence && detectObjectAttackIntent(w, text);
   if (PHYSICS_VERB_RE.test(String(text || '')) || objectAttack) {
     const detection = detectPhysicalInteraction(w, text);
     const nameMatch = (detection.matches || []).some(m => m.match === 'name' || m.match === 'part');
     if (detection.detected && nameMatch) {
-      // Attack verbs aren't recognized by the physics ruling as damaging; normalize to a
-      // force verb so the swing yields graded damage-state deltas against the material.
-      const physicsText = objectAttack ? String(text || '').replace(OBJECT_ATTACK_VERB_RE, 'break') : String(text || '');
+      // OBJ-DURABILITY-1 / DM-GATE-1b — a DECLARED FURNITURE ATTACK resolves against the
+      // target's PERSISTENT AC/HP/threshold via resolveObjectStrike, which carries the ONE
+      // canonical objectId end-to-end (target → durability profile → damageObject delta →
+      // terminal 'wrecked' mirror). This REPLACES DM-GATE-1a's hardness-DC object-attack
+      // resolution; under the AC model a swing can miss, be absorbed, damage, or destroy.
+      // Bare smash/break/kick (objectAttack false) still uses the legacy force resolver below.
+      if (objectAttack) {
+        // Target matching is scoped to the PRIMARY target phrase. Keep the full-sentence
+        // detection separately so an explicitly named carried weapon can still label prose.
+        const targetDetection = detectPhysicalInteraction(w, objectAttackPrimaryTarget(text));
+        return resolveObjectStrike(w, text, targetDetection, detection, actorId);
+      }
+      const physicsText = String(text || '');
       const physics = evaluatePhysicsSync(w, physicsText);
       if (physics && physics.plausible) {
-        const isForce = FORCE_VERB_RE.test(String(text || '')) || objectAttack;
+        const isForce = FORCE_VERB_RE.test(String(text || ''));
         let appliedDeltas = physics.deltas ? [...physics.deltas] : [];
         let mechStr;
         let physicsDesc = physics.description;
@@ -3984,14 +3994,6 @@ function playerMoveCore(world, packsById, text, dqIntent) {
               `You swing hard. The ${targetName} shudders but doesn't give.`
             ];
             physicsDesc = FAILURE_LINES[check.rawDie % FAILURE_LINES.length];
-          }
-
-          // DM-GATE-1a — for a weapon swing, replace the generic/pry physics prose with a
-          // weapon- and material-aware line so a blade reads as a blade (damage-state, no numbers).
-          if (objectAttack) {
-            const targetName = detection.matches.find(m => m.type === 'furniture')?.name || detection.matches[0]?.name || 'object';
-            const weaponName = detection.matches.find(m => m.type === 'item')?.name || null;
-            physicsDesc = objectAttackLine(check.outcome, targetName, weaponName, physics.material);
           }
 
           // Noise: rulings library already computed noiseBy for this material;
@@ -10867,8 +10869,8 @@ const UNAMBIGUOUS_VIOLENCE = /\b(cuts?\s+down|strikes?\s+down|attack|kill|murder
 // (H-92) Inanimate strike targets — a swing "at the post/dummy/wall" is not an NPC attack.
 const INANIMATE_STRIKE_TARGET_RE = /\b(?:post|pell|dummy|dummies|sack|sandbag|stake|beam|board|plank|log|stump|fence|crate|barrel|pole|tree|wall)\b/i;
 
-// DM-GATE-1a — weapon-attack verbs aimed at an OBJECT. Kept separate from the NPC
-// ANY_VIOLENCE set: these route to the object hardness/damage-state path, never combat.
+// DM-GATE-1b — weapon-attack verbs aimed at an OBJECT. Kept separate from the NPC
+// ANY_VIOLENCE set: these route to persistent object durability, never combat.
 const OBJECT_ATTACK_VERB_RE = /\b(attack|hit|slash|stab|hack|chop|cut|swing)\b/i;
 
 // DM-GATE-1a-R1 — the PRIMARY target of the swing: the noun phrase right after the attack
@@ -10890,7 +10892,7 @@ function objectAttackPrimaryTarget(text) {
 // meta gate, never mint an enemy. True iff the swing's PRIMARY target is a real furniture
 // piece HERE (by name/part — not a mere room-notes echo, not the wielded weapon) and that
 // primary target is not itself a present NPC. Incidental NPC mentions in trailing clauses are
-// stripped by objectAttackPrimaryTarget, so they never flip this to combat. NO persistent HP/AC (1b).
+// stripped by objectAttackPrimaryTarget, so they never flip this to combat.
 export function detectObjectAttackIntent(world, text) {
   const t = String(text || '').trim();
   if (!t) return false;
@@ -10909,22 +10911,161 @@ export function detectObjectAttackIntent(world, text) {
   return true;
 }
 
-// DM-GATE-1a — weapon-aware, material+outcome-aware object-attack narration. Replaces the
-// generic physics "you interact with…"/pry line so a blade reads as a blade. DAMAGE-STATE
-// prose, never numbers, never "object HP".
-function objectAttackLine(outcome, objectName, weaponName, material) {
+// OBJ-DURABILITY-1 — a target-clause ordinal ("the second wooden barrel", "the 2nd
+// barrel") selects that name-match. Numeric ordinals are open-ended; common spoken
+// ordinals are supported through twentieth. An out-of-range ordinal resolves to no
+// target — it must never clamp to the last real object. No ordinal defaults to first.
+const STRIKE_ORDINAL_WORDS = Object.freeze([
+  'first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth', 'tenth',
+  'eleventh', 'twelfth', 'thirteenth', 'fourteenth', 'fifteenth', 'sixteenth', 'seventeenth',
+  'eighteenth', 'nineteenth', 'twentieth',
+]);
+function strikeOrdinalIndex(targetText) {
+  const t = String(targetText || '').toLowerCase();
+  const numeric = t.match(/\b(\d+)(?:st|nd|rd|th)\b/);
+  if (numeric) {
+    const ordinal = Number(numeric[1]);
+    return Number.isSafeInteger(ordinal) && ordinal >= 1 ? ordinal - 1 : Number.MAX_SAFE_INTEGER;
+  }
+  if (/\bzeroth\b/.test(t)) return Number.MAX_SAFE_INTEGER;
+  for (let i = 0; i < STRIKE_ORDINAL_WORDS.length; i++) {
+    if (new RegExp(`\\b${STRIKE_ORDINAL_WORDS[i]}\\b`).test(t)) return i;
+  }
+  return 0;
+}
+
+// OBJ-DURABILITY-1 / DM-GATE-1b — weapon- and material-aware strike narration across the
+// four AC-model outcomes (miss / absorbed / damaged / destroyed). DAMAGE-STATE prose, never
+// numbers in the narration (the crunch rides the mechanics line). Supersedes DM-GATE-1a's
+// objectAttackLine: under the AC model a swing can genuinely miss, and a sub-threshold hit
+// is absorbed rather than "held".
+function objectStrikeLine(outcome, objectName, weaponName, material) {
   const obj = String(objectName || 'object').toLowerCase();
   const wpn = weaponName ? `Your ${weaponName}` : 'Your blow';
   const M = {
-    wood:  { hit: 'bites into the wood',   give: `the ${obj} splinters and gives way` },
-    iron:  { hit: 'rings off the iron',    give: `the ${obj} buckles and comes apart` },
-    glass: { hit: 'strikes the glass',     give: `the ${obj} shatters` },
-    cloth: { hit: 'catches the cloth',     give: `the ${obj} tears open` },
-    stone: { hit: 'strikes the stone',     give: `the ${obj} cracks apart` },
-  }[material] || { hit: 'lands', give: `the ${obj} breaks open` };
-  if (outcome === 'success') return `${wpn} ${M.hit}, and ${M.give}.`;
-  if (outcome === 'mixed')   return `${wpn} ${M.hit}, but the ${obj} holds — battered, not broken.`;
-  return `${wpn} ${M.hit}; the ${obj} takes the blow and holds, barely marked.`;
+    wood:  { hit: 'bites into the wood',  crack: `the ${obj} splinters apart` },
+    iron:  { hit: 'rings off the iron',   crack: `the ${obj} buckles and comes apart` },
+    stone: { hit: 'strikes the stone',    crack: `the ${obj} cracks apart` },
+    glass: { hit: 'strikes the glass',    crack: `the ${obj} shatters` },
+    cloth: { hit: 'catches the cloth',    crack: `the ${obj} is torn apart` },
+    bone:  { hit: 'cracks against bone',  crack: `the ${obj} splinters to shards` },
+    web:   { hit: 'snags the web',        crack: `the ${obj} rips away` },
+    wax:   { hit: 'bites into the wax',   crack: `the ${obj} is crushed to pieces` },
+  }[material] || { hit: 'lands', crack: `the ${obj} breaks apart` };
+  if (outcome === 'miss')     return `${wpn} goes wide, and the ${obj} stands untouched.`;
+  if (outcome === 'absorbed') return `${wpn} ${M.hit}, but the blow isn't enough to matter — the ${obj} is barely marked.`;
+  if (outcome === 'damaged')  return `${wpn} ${M.hit}, and the ${obj} takes the wound — battered, but still standing.`;
+  return `${wpn} ${M.hit}, and ${M.crack}.`; // destroyed
+}
+
+// OBJ-DURABILITY-1 / DM-GATE-1b — resolve a declared furniture attack against the target's
+// persistent AC/HP/threshold. Actor-agnostic in shape (takes actorId + derives the weapon
+// profile) so a later packet can drive NPC strikes through the same resolver. NEVER combat,
+// never an enemy, never object deletion (a wrecked piece stays in node.furniture as debris).
+// Determinism: the strike roll is seeded from world identity, so replay repeats it.
+function resolveObjectStrike(w, text, targetDetection, fullDetection, actorId) {
+  // IDENTITY CONTRACT: resolve the ONE targeted furniture piece, then use its canonical
+  // objectId directly (ensureWorld → backfillObjectIds guarantees it). Never re-address by
+  // name and never re-run detection — two same-named pieces must stay distinct. When the
+  // phrasing names an ordinal ("the second wooden barrel"), select that Nth furniture
+  // name-match so a player can single out one of several identical objects; default is the
+  // first match. targetDetection.matches preserve node.furniture order, so the Nth match is the
+  // Nth piece (its `index` is the canonical node index).
+  const furnMatches = (targetDetection.matches || []).filter(m => m.type === 'furniture' && (m.match === 'name' || m.match === 'part'));
+  const ord = strikeOrdinalIndex(objectAttackPrimaryTarget(text));
+  const mt = furnMatches[ord] || null;
+  const here = (w.map?.nodes || []).find(n => n && n.id === w.map?.currentNodeId) || null;
+  const furniture = Array.isArray(here?.furniture) ? here.furniture : [];
+  const piece = (mt && Number.isInteger(mt.index)) ? furniture[mt.index] : null;
+  if (!piece) {
+    return { world: w, output: { narration: 'Your swing finds nothing solid to bite.', mechanics: '[object-strike | no resolvable target | no-op]' } };
+  }
+  if (!hasObjectId(piece)) {
+    // ensureWorld backfilled every piece before this ran — an absent id is an invariant
+    // breach, not a reason to mint an action-time identity. Fail loudly (dev/test).
+    throw new Error(`OBJ-DURABILITY-1: furniture target #${mt.index} at node ${String(here?.id ?? '')} has no objectId (ensureWorld backfill breach)`);
+  }
+  const objectId = piece.objectId;
+  const objName = String(piece.name || piece.kind || piece.type || 'object');
+
+  // A wrecked piece takes no further strikes (terminal — debris this packet).
+  if (isFurnitureDestroyed(piece)) {
+    return {
+      world: w,
+      output: {
+        narration: `The ${objName.toLowerCase()} is already wrecked — there's nothing left to break.`,
+        mechanics: `[object-strike:${objectId} | already wrecked | no roll]`,
+      },
+    };
+  }
+
+  // Lazy durability: the live overlay record if this piece has been struck before, else a
+  // fresh full-HP snapshot derived from its material profile.
+  const prevRec = (w.objects && typeof w.objects === 'object' && w.objects[objectId] && typeof w.objects[objectId] === 'object') ? w.objects[objectId] : {};
+  const cur = (prevRec.durability && typeof prevRec.durability === 'object')
+    ? prevRec.durability
+    : initialDurability(piece.kind || piece.type, piece.material);
+  const material = cur.material || 'unknown';
+  const ac = cur.ac, maxHp = cur.maxHp, threshold = cur.threshold;
+  const startHp = Number.isFinite(+cur.hp) ? +cur.hp : maxHp;
+
+  // Weapon profile + world-seeded strike roll (replay-stable).
+  const pc = (Array.isArray(w.party) ? w.party : [])[0] || {};
+  const weapon = meleeProfile(pc);
+  const seed = seedFromString(`${w.meta.seed}|objstrike|${(w.timeline || []).length}|${actorId}|${objectId}|${String(text || '')}`);
+  const rng = makeRng(seed);
+  const rawDie = rng.int(1, 20);
+  const atkTotal = rawDie + (Number(weapon.atkBonus) || 0);
+  const hit = rawDie === 20 || (rawDie !== 1 && atkTotal >= ac);
+
+  // On a hit, weapon damage vs the material threshold: below threshold is absorbed
+  // (0 HP lost); equality or greater subtracts in full (5e threshold semantics).
+  let dmg = 0, absorbed = false, outcome = 'miss';
+  if (hit) {
+    const rawDmg = Math.max(1, rng.int(1, Number(weapon.die) || 6) + (Number(weapon.dmgMod) || 0));
+    if (rawDmg < threshold) { absorbed = true; outcome = 'absorbed'; }
+    else dmg = rawDmg;
+  }
+  const endHp = Math.max(0, Math.min(maxHp, startHp - dmg));
+  if (hit && !absorbed) outcome = endHp === 0 ? 'destroyed' : 'damaged';
+
+  const weaponName = (fullDetection.matches || []).find(m => m.type === 'item')?.name
+    || (weapon.name && !/worn blade/i.test(String(weapon.name)) ? weapon.name : null);
+  const narration = objectStrikeLine(outcome, objName, weaponName, material);
+
+  // Persist through the sole overlay writer. A clean miss changes no state (no delta); any
+  // contact (absorbed or damaging) derives durability at the writer and applies damage.
+  let nextW = w;
+  if (hit) {
+    nextW = applyDeltas(w, [{
+      op: 'damageObject',
+      objectId,
+      damage: dmg,
+    }]);
+    const rulingId = `dm.ruling:${nextW.meta?.seed || ''}:${(nextW.timeline || []).length}`;
+    const cl = nextW.canonLog && typeof nextW.canonLog === 'object' ? nextW.canonLog : { events: [] };
+    nextW = { ...nextW, canonLog: appendCanonEvent(cl, { id: rulingId, type: 'dm.ruling', targetId: objectId }) };
+  }
+
+  // Resolution event → deterministic replay re-executes this strike.
+  nextW = pushEvent(nextW, {
+    kind: 'resolution',
+    data: {
+      actorId,
+      intent: String(text || ''),
+      text: String(text || ''),
+      roll: atkTotal,
+      dc: ac,
+      outcome: 'object-strike',
+      updateKind: 'object-strike',
+      objectId,
+      deltaCount: hit ? 1 : 0,
+    },
+  });
+
+  const mechStr = `[object-strike:${objectId} | atk:${atkTotal} vs AC:${ac} → ${hit ? 'hit' : 'miss'}`
+    + `${hit ? ` | dmg:${dmg} vs thr:${threshold}` : ''} | hp:${endHp}/${maxHp} | ${material} | approach:force]`;
+  return { world: nextW, output: { narration, mechanics: mechStr } };
 }
 
 function detectAttackAnyIntent(world, text) {

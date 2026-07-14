@@ -39,8 +39,8 @@ test('U694-A: authored/procgen ids are namespaced and structure/node-scoped', ()
   assert.equal(hasObjectId({ name: 'Barrel' }), false);
 });
 
-test('U694-B: WORLD_VERSION is 33', () => {
-  assert.equal(WORLD_VERSION, 33);
+test('U694-B: WORLD_VERSION is 34', () => {
+  assert.equal(WORLD_VERSION, 34);
 });
 
 // ── C. procgen mints a stable id AT BIRTH, deterministically ──
@@ -201,7 +201,7 @@ test('U694-H4: removeFurniture with an unresolved objectId NO-OPS — never spli
 
 // ── I. migration is deterministic once; save round-trip + replay preserve the hash ──
 
-test('U694-I: a v32 world migrates deterministically to v33; save→load and re-ensure preserve the hash', () => {
+test('U694-I: a v32 world migrates deterministically to the current version; save→load and re-ensure preserve the hash', () => {
   // simulate a pre-feature v32 save: no world.objects, furniture without ids
   const legacy = baseWorld();
   legacy.map.nodes[0].furniture = [{ name: 'Barrel', state: 'intact' }, { name: 'Chest', state: 'intact' }];
@@ -210,12 +210,12 @@ test('U694-I: a v32 world migrates deterministically to v33; save→load and re-
   for (const n of legacy.map.nodes) for (const p of (n.furniture || [])) delete p.objectId;
 
   const migrated = ensureWorld(legacy);
-  assert.equal(migrated.meta.version, 33, 'migrates once to v33');
+  assert.equal(migrated.meta.version, WORLD_VERSION, 'migrates once to the current version');
   const h = worldHash(migrated);
 
   // idempotent: re-ensure → same hash
   assert.equal(worldHash(ensureWorld(migrated)), h, 'idempotent migration');
-  // save → load → save preserves the v33 hash
+  // save → load → save preserves the current-version hash
   assert.equal(worldHash(importWorld(exportWorld(migrated))), h, 'export/import round-trip preserves the hash');
 });
 

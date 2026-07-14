@@ -3,6 +3,7 @@ import { statMod, maxWounds } from './ruleset/core/stats.js';
 import { nearestNodeToRegionCell, roomOfStructCell } from './map/spatial/tacticalPos.js';
 import { floorPlan } from './structures/floorPlan.js';
 import { isDoorState } from './structures/doors.js';
+import { isFurnitureDestroyed } from './structures/authoredFurniture.js';
 
 const SPELL_SLOT_LEVELS = [1, 2, 3, 4, 5];
 const CURRENCY_KEYS = ['copper', 'silver', 'gold', 'platinum'];
@@ -885,15 +886,25 @@ export function assertWorldInvariants(world) {
     const nodes = Array.isArray(world.map?.nodes) ? world.map.nodes : [];
     const nodeIds = new Set(nodes.map(n => String(n?.id ?? '')));
     const seenObjectIds = new Set();
+    const furnitureByObjectId = new Map();
     for (const node of nodes) {
       const furniture = Array.isArray(node?.furniture) ? node.furniture : [];
       for (const p of furniture) {
-        if (!p || p.objectId == null) continue; // a piece may be mid-seed before the tail backfill runs
+        if (!p) continue;
+        // OBJ-DURABILITY-1 — PRESENCE: ensureWorld → backfillObjectIds stamps every
+        // piece before assertWorldInvariants runs (state.js: backfill precedes assert;
+        // worldTick ensureWorlds first), so a furniture piece without a stable objectId
+        // in a validated world is an invariant breach, not a legal mid-seed state. This
+        // is the guarantee stable-id addressing (OBJ-MOVE / OBJ-DURABILITY) relies on.
+        if (p.objectId == null || p.objectId === '') {
+          throw new Error(`Invariant: furniture piece missing objectId (node ${String(node?.id ?? '')})`);
+        }
         const oid = String(p.objectId);
         if (seenObjectIds.has(oid)) {
           throw new Error(`Invariant: duplicate furniture objectId ${oid}`);
         }
         seenObjectIds.add(oid);
+        furnitureByObjectId.set(oid, p);
       }
     }
 
@@ -930,6 +941,39 @@ export function assertWorldInvariants(world) {
         const c = pa.cell;
         if (!c || !Number.isInteger(c.x) || !Number.isInteger(c.y)) {
           throw new Error(`Invariant: world.objects[${oid}].placedAt.cell must be an integer { x, y }`);
+        }
+      }
+      // OBJ-DURABILITY-1 (v34) — a durability snapshot, when present, is well-shaped:
+      // a positive AC and maxHp, hp in [0, maxHp], a non-negative threshold (0 is
+      // legal — wax/web/cloth/glass/bone absorb nothing), and a named material.
+      if (rec.durability != null) {
+        const d = rec.durability;
+        if (typeof d !== 'object' || Array.isArray(d)) {
+          throw new Error(`Invariant: world.objects[${oid}].durability must be an object or absent`);
+        }
+        for (const f of ['ac', 'maxHp', 'hp', 'threshold']) {
+          if (!Number.isFinite(d[f])) {
+            throw new Error(`Invariant: world.objects[${oid}].durability.${f} must be a finite number`);
+          }
+        }
+        if (d.ac <= 0) {
+          throw new Error(`Invariant: world.objects[${oid}].durability.ac must be > 0`);
+        }
+        if (d.maxHp <= 0) {
+          throw new Error(`Invariant: world.objects[${oid}].durability.maxHp must be > 0`);
+        }
+        if (d.hp < 0 || d.hp > d.maxHp) {
+          throw new Error(`Invariant: world.objects[${oid}].durability.hp must be within 0..maxHp`);
+        }
+        if (d.threshold < 0) {
+          throw new Error(`Invariant: world.objects[${oid}].durability.threshold must be >= 0`);
+        }
+        if (typeof d.material !== 'string' || !d.material) {
+          throw new Error(`Invariant: world.objects[${oid}].durability.material must be a non-empty string`);
+        }
+        const destroyed = isFurnitureDestroyed(furnitureByObjectId.get(String(oid)));
+        if ((d.hp === 0) !== destroyed) {
+          throw new Error(`Invariant: world.objects[${oid}].durability.hp terminal state disagrees with furniture state`);
         }
       }
     }

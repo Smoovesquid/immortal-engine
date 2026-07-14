@@ -208,13 +208,19 @@ test('U454-E: default fantasy/tallow boot (real normalizePack idiom) — post-PA
   // additive-state re-pin (the ONE named WORLD_VERSION bump of the object-physics arc),
   // NOT a determinism break: the boot is byte-identical to itself under replay (asserted
   // ×2 below; U694-I pins the v32→v33 migration + save round-trip).
-  // (Anchor chain: … MP-4 db503a11… → MP-5b bbf2ef13… → SP-2 7fc17002… → OBJ-STATE-1 7f911937….)
-  const HASH_AFTER_OBJSTATE1 = '7f911937f2150a8d25cb489559c4ff74bb2956548bdba08e57f8e33b94a975ae';
-  assert.equal(worldHash(result.world), HASH_AFTER_OBJSTATE1,
-    'default fantasy/tallow boot worldHash re-pinned post-OBJ-STATE-1 (additive world.objects + objectId, WORLD_VERSION 33)');
+  // RE-PINNED for OBJ-DURABILITY-1 (2026-07-14, WORLD_VERSION 33 → 34): the default boot's
+  // worldHash shifts ONCE MORE. SOLE DELTA is meta.version 33→34 — the object-durability
+  // overlay field is written only on a declared strike, so a fresh tallow boot carries no
+  // durability record and world.objects stays {} (byte-identical). Deliberate additive-state
+  // re-pin, NOT a determinism break: the boot is byte-identical to itself under replay
+  // (asserted ×2 below; U697 pins the durability persistence + v33→v34 migration).
+  // (Anchor chain: … MP-5b bbf2ef13… → SP-2 7fc17002… → OBJ-STATE-1 7f911937… → OBJ-DURABILITY-1 e1b89d6f….)
+  const HASH_AFTER_OBJDURABILITY1 = 'e1b89d6fab9fc77462d9c38d550dbe910815395b3ecfdcf9a1e0b1e9532c077d';
+  assert.equal(worldHash(result.world), HASH_AFTER_OBJDURABILITY1,
+    'default fantasy/tallow boot worldHash re-pinned post-OBJ-DURABILITY-1 (WORLD_VERSION 34; overlay durability written only on a strike)');
 
   // Same seed => identical world (the placement is deterministic).
   const w2 = newWorld({ seed: 'tallow', fate: 0.3, mode: 'escape', pack: { primaryId: 'fantasy', mixerId: null } });
-  assert.equal(worldHash(beginAdventure(w2, PACKS).world), HASH_AFTER_OBJSTATE1,
-    'default tallow boot must be deterministic ×2 after OBJ-STATE-1');
+  assert.equal(worldHash(beginAdventure(w2, PACKS).world), HASH_AFTER_OBJDURABILITY1,
+    'default tallow boot must be deterministic ×2 after OBJ-DURABILITY-1');
 });

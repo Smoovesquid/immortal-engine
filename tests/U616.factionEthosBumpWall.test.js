@@ -43,8 +43,8 @@ function legacyV31Save() {
   };
 }
 
-test('U616-01: WORLD_VERSION is 33', () => {
-  assert.equal(WORLD_VERSION, 33);
+test('U616-01: WORLD_VERSION is 34', () => {
+  assert.equal(WORLD_VERSION, 34);
 });
 
 test('U616-02: a pre-v32 save WARNS and upgrades, deriving ethos for every faction', () => {
@@ -60,11 +60,11 @@ test('U616-02: a pre-v32 save WARNS and upgrades, deriving ethos for every facti
 
   assert.ok(loaded, 'the legacy save loads');
   assert.equal(loaded.meta.version, WORLD_VERSION, 'upgraded to the current version');
-  assert.equal(loaded.meta.version, 33);
+  assert.equal(loaded.meta.version, 34);
 
   // Old saves must WARN before upgrade (When-Bumping protocol step 4, d50c49f precedent).
   assert.ok(warnings.length > 0, 'a version-mismatch warning fired');
-  assert.ok(warnings[0].includes('v31') && warnings[0].includes('v33'),
+  assert.ok(warnings[0].includes('v31') && warnings[0].includes('v34'),
     `the warning names both versions: ${warnings[0]}`);
 
   // Every faction gained a DERIVED ethos, from its authored id+goal.

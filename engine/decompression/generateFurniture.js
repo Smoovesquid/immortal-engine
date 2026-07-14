@@ -179,6 +179,13 @@ export function containerItemText(seed, nodeId, name, item) {
 // that test (fail-closed).
 export const TEMPLATE_NAMES = Object.freeze(TEMPLATES.map(t => t.name));
 
+// OBJ-DURABILITY-1 — the procgen templates' physical identities, for the
+// data-derived durability-coverage test (name + material per template). Frozen
+// projection so the test enumerates the real source, not a hand-kept copy.
+export const TEMPLATE_MATERIALS = Object.freeze(
+  TEMPLATES.map(t => Object.freeze({ name: t.name, material: t.material }))
+);
+
 /**
  * generateNodeFurniture(nodeId, seed) → furniture[]
  * Deterministic. Returns 2-4 furniture items per node.

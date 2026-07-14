@@ -26,6 +26,7 @@ import { floorPlan } from '../../structures/floorPlan.js';
 // FUNC-MINIS-1 — the walk's blocking mask subtracts placed pieces the world has
 // since destroyed (a wrecked barrel no longer bars the cell it stood on).
 import { destroyedAuthoredPieceIds } from '../../structures/authoredFurniture.js';
+import { findFurnitureByObjectId, resolvedObjectPlacement } from '../../objects/placement.js';
 // MR-3a — the wild-feature derivation is the SINGLE source of the outdoor
 // walkable-mask truth: a blocking wild feature (a tree, a boulder) makes its region
 // cell unwalkable, exactly like a wall indoors. tacticalPos calls THROUGH to it (no
@@ -292,7 +293,7 @@ function furnitureAnchorCell(room, f) {
 // building. The plan is authored/derived UPSTREAM (floorPlan / an authored override);
 // the mask does not edit it — it simply REFUSES to let furniture block a door cell
 // (the furniture loses those cells here). Returns a Set of "gx,gy" keys.
-function doorCellKeys(plan) {
+export function reservedDoorCells(plan) {
   const keys = new Set();
   const doors = Array.isArray(plan?.doors) ? plan.doors : [];
   for (const d of doors) {
@@ -330,7 +331,7 @@ function furnitureBlockedCells(structure, cache, excludeIds = null) {
   if (!excluding && cache && cache.has(id)) return cache.get(id);
   const plan = floorPlan(structure);
   const rooms = Array.isArray(plan?.rooms) ? plan.rooms : [];
-  const doorKeys = doorCellKeys(plan);
+  const doorKeys = reservedDoorCells(plan);
   const blocked = new Set();
   for (const r of rooms) {
     const furniture = Array.isArray(r.furniture) ? r.furniture : [];
@@ -366,6 +367,120 @@ export function structCellFree(structure, gx, gy, cache = null, excludeIds = nul
   const plan = floorPlan(structure);
   if (roomOfStructCell(plan, gx, gy) === '') return false; // wall band / void
   return !furnitureBlockedCells(structure, cache, excludeIds).has(`${gx},${gy}`);
+}
+
+// ── OBJ-MOVE-1 — authored furniture repositioning ────────────────────────────
+// The FIRST consumer of the OBJ-STATE-1 overlay. One pieceId join (authoredBase-
+// AnchorCell), one live occupancy projection (liveAuthoredBlockedCells), and the
+// exported door mask (reservedDoorCells) feed all of: legal-target selection,
+// tactical walking (resolveTacticalWalk), and the renderer. Collision moves WITH the
+// object — anchor-only (FURN-1 contract), never a full footprint. Authored pieces
+// only; generic/procgen movement waits on Model A↔B identity parity.
+
+// The one base-position derivation: objectId → authored Model A piece →
+// {structureId, roomId, pieceId} → the matching floorPlan item (f.id === pieceId) →
+// its single base tactical anchor cell. Pure; null for non-authored / unmatched.
+// Reused by occupancy AND rendering — never re-derived per consumer.
+export function authoredBaseAnchorCell(world, objectId) {
+  const found = findFurnitureByObjectId(world, objectId);
+  const p = found?.piece;
+  if (!p || p.authored !== true) return null;
+  const structure = world?.structures?.byId?.[String(p.structureId)];
+  if (!structure) return null;
+  const plan = floorPlan(structure);
+  const room = (Array.isArray(plan?.rooms) ? plan.rooms : []).find(r => String(r?.id) === String(p.roomId));
+  if (!room) return null;
+  const f = (Array.isArray(room.furniture) ? room.furniture : []).find(ff => String(ff?.id) === String(p.pieceId));
+  if (!f) return null;
+  const anchor = furnitureAnchorCell(room, f);
+  return anchor ? { x: anchor.gx, y: anchor.gy } : null;
+}
+
+// Every authored object with a live placement override in THIS structure, joined
+// objectId → Model A piece → pieceId (the exclusion domain furnitureBlockedCells
+// speaks — NEVER objectId), paired with its single override anchor cell.
+function movedAuthoredPieces(world, structure) {
+  const out = [];
+  const objects = (world && world.objects && typeof world.objects === 'object') ? world.objects : {};
+  const sid = String(structure?.id ?? '');
+  for (const oid of Object.keys(objects)) {
+    const ov = objects[oid];
+    const placedAt = ov && ov.placedAt && typeof ov.placedAt === 'object' ? ov.placedAt : null;
+    if (!placedAt) continue;
+    const c = placedAt.cell;
+    if (!c || !Number.isInteger(+c.x) || !Number.isInteger(+c.y)) continue;
+    const p = findFurnitureByObjectId(world, oid)?.piece;
+    if (!p || p.authored !== true || String(p.structureId) !== sid) continue;
+    out.push({ pieceId: String(p.pieceId), cell: { x: +c.x, y: +c.y } });
+  }
+  return out;
+}
+
+// The ONE live occupancy projection: the static furniture mask with every MOVED (and
+// destroyed) piece EXCLUDED by pieceId, then each moved piece's single override anchor
+// cell ADDED. With an empty overlay it reduces exactly to today's
+// furnitureBlockedCells(structure, …, destroyed) — the FURN-1 walk stays byte-identical.
+export function liveAuthoredBlockedCells(world, structure, cache = null) {
+  const moved = movedAuthoredPieces(world, structure);
+  const excludeIds = new Set();
+  const destroyed = destroyedAuthoredPieceIds(world, structure);
+  if (destroyed) for (const d of destroyed) excludeIds.add(String(d));
+  for (const m of moved) excludeIds.add(m.pieceId);
+  // Copy: furnitureBlockedCells may return a cached Set — never mutate it in place.
+  const base = new Set(furnitureBlockedCells(structure, excludeIds.size ? null : cache, excludeIds.size ? excludeIds : null));
+  for (const m of moved) base.add(`${m.cell.x},${m.cell.y}`);
+  return base;
+}
+
+function resolvePartyActor(world, actorId) {
+  const party = Array.isArray(world?.party) ? world.party : [];
+  if (String(actorId ?? '') === 'party' || !actorId) return party[0] || null;
+  return party.find(m => String(m?.id) === String(actorId)) || null;
+}
+
+// The deterministic legal target for "push/drag <authored object> aside": the nearest
+// free tactical cell in the object's current room. Returns {x,y} or null (→ no move).
+// Held objects are NOT movable by this verb (place-down is a later packet).
+export function legalMoveTargetCell(world, objectId, actorId) {
+  const placement = resolvedObjectPlacement(world, objectId);
+  if (!placement || placement.status === 'held') return null; // held → not this verb
+  const p = findFurnitureByObjectId(world, objectId)?.piece;
+  if (!p || p.authored !== true) return null;                 // authored only
+  const structure = world?.structures?.byId?.[String(p.structureId)];
+  if (!structure) return null;
+  const plan = floorPlan(structure);
+  const room = (Array.isArray(plan?.rooms) ? plan.rooms : []).find(r => String(r?.id) === String(p.roomId));
+  const rect = room ? roomRectCells(room) : null;
+  if (!rect) return null;
+
+  // Actor must be indoors in THIS room.
+  const actor = resolvePartyActor(world, actorId);
+  const apos = actor?.pos;
+  if (!apos || String(apos.frame) !== `struct:${structure.id}` || !Number.isInteger(apos.gx) || !Number.isInteger(apos.gy)) return null;
+  if (roomOfStructCell(plan, apos.gx, apos.gy) !== String(room.id)) return null;
+
+  const blocked = liveAuthoredBlockedCells(world, structure, null);
+  const doorReserved = reservedDoorCells(plan);
+  const actorKey = `${apos.gx},${apos.gy}`;
+  const cur = placement.cell || authoredBaseAnchorCell(world, objectId); // exclude own cell
+  const curKey = cur ? `${cur.x},${cur.y}` : null;
+  const ref = cur || { x: rect.cx, y: rect.cy };
+
+  let best = null, bestD = Infinity;
+  for (let y = rect.minY; y <= rect.maxY; y++) {
+    for (let x = rect.minX; x <= rect.maxX; x++) {
+      const key = `${x},${y}`;
+      if (key === actorKey || key === curKey) continue;
+      if (roomOfStructCell(plan, x, y) !== String(room.id)) continue; // wall/void or other room
+      if (blocked.has(key) || doorReserved.has(key)) continue;
+      // Nearest by Chebyshev, then stable (y,x) tie-break.
+      const d = Math.max(Math.abs(x - ref.x), Math.abs(y - ref.y));
+      if (d < bestD || (d === bestD && best && (y < best.y || (y === best.y && x < best.x)))) {
+        best = { x, y }; bestD = d;
+      }
+    }
+  }
+  return best;
 }
 
 // ── Door thresholds (MR-1a) — the struct↔region cells a doorway maps ─────────
@@ -757,7 +872,11 @@ export function resolveTacticalWalk(world, { actorId = 'party', dir, cells } = {
     // walk replay-stable and adds no randomness (mirrors the outdoor tree-block above).
     // FUNC-MINIS-1 — minus destroyed placed pieces: the wreck of a smashed barrel
     // no longer bars the cell (a pure function of world state — still replay-stable).
-    const furnBlocked = furnitureBlockedCells(st, null, destroyedAuthoredPieceIds(world, st));
+    // OBJ-MOVE-1 — the WALK reads the LIVE occupancy: a moved authored piece frees its
+    // old anchor and blocks its new one (empty overlay → byte-identical to the static
+    // destroyed-excluded mask). Only resolveTacticalWalk (already world-aware) routes
+    // here; the static structCellFree predicate is untouched.
+    const furnBlocked = liveAuthoredBlockedCells(world, st, null);
     const inBounds = (nx, ny) =>
       nx >= rect.minX && nx <= rect.maxX && ny >= rect.minY && ny <= rect.maxY
       && !furnBlocked.has(`${nx},${ny}`);

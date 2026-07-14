@@ -3929,7 +3929,12 @@ function playerMoveCore(world, packsById, text, dqIntent) {
   // fire ruling (evaluatePhysicsSync → resolveFireRuling) instead of a generic skill
   // roll. Requires the "set" verb so a bare descriptive/question "is the pallet on
   // fire?" does NOT trip arson. Mirrors the broadened FIRE_RE in llmPhysics.js.
-  const PHYSICS_VERB_RE = /\b(examine|inspect|search|look at|check|rip|break|smash|tear|kick|punch|shatter|take|grab|pick up|steal|light|ignite|set fire|torch|kindle|burn|hide\s+behind|duck\s+behind|crouch\s+behind|brace\s+against|shelter\s+behind|press\s+against|take\s+cover)\b|\bset\b[^.!?]*\b(?:on fire|ablaze|alight|aflame|burning)\b/i;
+  // OBJ-MOVE-1 — the unambiguous object-move verbs (drag/push/shove) open the physics
+  // gate so a repositioning reaches evaluatePhysicsSync's MOVE branch instead of a
+  // generic skill roll. The furniture-name guard below (nameMatch) contains them: a
+  // verb with no object noun ("push through the crowd") never intercepts. Bare "move"
+  // stays OUT — it collides with travel ("move to the table"). Mirrors llmPhysics MOVE_RE.
+  const PHYSICS_VERB_RE = /\b(examine|inspect|search|look at|check|rip|break|smash|tear|kick|punch|shatter|take|grab|pick up|steal|drag|push|shove|light|ignite|set fire|torch|kindle|burn|hide\s+behind|duck\s+behind|crouch\s+behind|brace\s+against|shelter\s+behind|press\s+against|take\s+cover)\b|\bset\b[^.!?]*\b(?:on fire|ablaze|alight|aflame|burning)\b/i;
   const FORCE_VERB_RE   = /\b(rip|break|smash|tear|kick|punch|shatter)\b/i;
   // DM-GATE-1a — a weapon swing at a present OBJECT ("I attack the chest with my blade")
   // routes through this same graded force resolver: hit/damage vs the object's material

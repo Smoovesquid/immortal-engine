@@ -7,6 +7,8 @@ import { applyCondition as applyConditionPure } from './combat/conditions.js';
 import { ensureStructures } from './structures/structuresState.js';
 import { DOOR_STATES } from './structures/doors.js';
 import { escalationTier, heatAccrual } from './morality/escalation.js';
+import { legalMoveTargetCell } from './map/spatial/tacticalPos.js';
+import { findFurnitureByObjectId } from './objects/placement.js';
 
 // MR-2a — the valid target states for the `door` op (canon door-state enum).
 const DOOR_STATE_ENUM = new Set(DOOR_STATES);
@@ -1101,6 +1103,42 @@ export function applyDeltas(world, deltas = []) {
         furniture.splice(fi, 1);
         return { ...node, furniture };
       });
+      continue;
+    }
+
+    // OBJ-MOVE-1 — reposition an AUTHORED object to a legal tactical cell. The SOLE
+    // writer to world.objects. Two hard rules: (1) recompute the deterministic legal
+    // target and commit ONLY when op.to.cell EXACTLY equals it (never trust a supplied
+    // cell — a legal-but-not-chosen cell is rejected); (2) a HELD object is not movable
+    // by this op (legalMoveTargetCell returns null for held → no-op), so clearing
+    // heldByActorId never becomes a back-door place-down. Base furniture + floor plan
+    // are never mutated; unrelated overlay fields are preserved.
+    if (kind === 'moveObject') {
+      const objId = String(op.objectId || '');
+      const actorId = String(op.actorId || 'party');
+      if (!objId) continue;
+      const target = legalMoveTargetCell(w, objId, actorId);
+      if (!target) continue;
+      const toCell = op.to && typeof op.to === 'object' ? op.to.cell : null;
+      if (!toCell || toInt(toCell.x) !== target.x || toInt(toCell.y) !== target.y) continue;
+      const found = findFurnitureByObjectId(w, objId);
+      const piece = found?.piece;
+      if (!piece || piece.authored !== true) continue;
+      const rot = Number.isFinite(+piece.rot) ? +piece.rot : 0;
+      const prev = (w.objects && typeof w.objects === 'object' && w.objects[objId] && typeof w.objects[objId] === 'object') ? w.objects[objId] : {};
+      const rest = { ...prev };
+      delete rest.heldByActorId;
+      const nextObj = {
+        ...rest,
+        placedAt: {
+          node: String(found.nodeId),
+          structureId: String(piece.structureId),
+          room: String(piece.roomId),
+          cell: { x: target.x, y: target.y },
+          rot
+        }
+      };
+      w = { ...w, objects: { ...(w.objects || {}), [objId]: nextObj } };
       continue;
     }
 

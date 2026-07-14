@@ -7,6 +7,12 @@ import { placeModelFromNode, placeFromWorldNode } from './placeFromNode.js';
 import { interiorPeopleTokens } from './interiorTokens.js';
 import { ALL_PLANS } from './plans/planTopology.js';
 import { seedFromString as seedStr } from '../../engine/rng.js';
+// OBJ-MOVE-1 — the render join: draw the ENGINE's authored furniture (with real
+// pieceIds) for Builder-authored buildings, and reposition a moved piece from its
+// live placement override. Tactical cell → layout display coord at THIS boundary only.
+import { authoredObjectId } from '../../engine/objects/identity.js';
+import { resolvedObjectPlacement } from '../../engine/objects/placement.js';
+import { PLACE_WU } from '../../engine/map/spatial/tacticalPos.js';
 
 function el(tag, attrs = {}, ...children) {
   const node = document.createElement(tag);
@@ -773,10 +779,96 @@ function engineRoomIndex(roomId) {
   return m ? parseInt(m[1], 10) : null;
 }
 
+// OBJ-MOVE-1 — is this the interior of a FINALIZED authored (Builder) building?
+// The durable marker is the stored authoredPlan (structuresState only carries it for
+// authored canon; a procgen structure never has one). This — NOT "the floor plan has
+// furniture" — is what selects the engine-furniture render branch, because EVERY
+// procgen plan has furniture too and those must keep their hand-drawn catalog art.
+export function isFinalizedAuthored(st) {
+  return !!(st && st.authoredPlan && Array.isArray(st.authoredPlan.rooms) && st.authoredPlan.rooms.length);
+}
+
+// OBJ-MOVE-1 — the ONE render join: the ENGINE's authored furniture in scene-model
+// shape ({type, ux, uy, uw, uh, id}), each piece at its live placement override when
+// one exists (a moved barrel draws at its new cell), else its authored base position.
+// Tactical cell → layout display coord happens HERE, at the renderer boundary only.
+// ONLY genuine Builder-authored pieces (f.authored === 1) — never role-fallback /
+// procedural room-detail furniture, which a procgen floor plan also carries.
+//
+// The scene model wants a TOP-LEFT corner (furn(): bx=gx(ux), cx=bx+bw/2) and
+// dimensions in LAYOUT UNITS (bw=uw*TT.s). Model B stores room-RELATIVE fractions
+// (w/h a fraction of the room box; a circle carries r, a fraction, with w=h=0), so
+// each piece must be converted, not passed raw — passing a normalized f.w straight
+// through (as the first cut did) drew every barrel as a zero-size point. The center
+// is the authored fx/fy anchor (matching furnitureAnchorCell in tacticalPos), or,
+// for a moved piece, its override cell brought back to layout units (cell / PLACE_WU).
+const SAFE_FALLBACK_U = 0.5; // layout-unit size for malformed dimensions only
+export function buildAuthoredSceneFurniture(fp, world, structureId) {
+  const out = [];
+  const rooms = Array.isArray(fp?.rooms) ? fp.rooms : [];
+  for (const r of rooms) {
+    const roomW = Number(r.w) || 0, roomH = Number(r.h) || 0;
+    for (const f of (Array.isArray(r.furniture) ? r.furniture : [])) {
+      if (f == null || f.id == null || f.authored !== 1) continue;
+      const oid = authoredObjectId(structureId, String(f.id));
+      const ov = resolvedObjectPlacement(world, oid);
+
+      // 1. display size in layout units.
+      let uw, uh;
+      if (String(f.shape || '') === 'circle') {
+        // A circle's diameter in room-relative units is r*2 (tacticalPos uses the
+        // same substitution); scale by the room width so it lands round and sized
+        // like its catalog twin (barrel r=0.065, room w=6 → 0.78 ≈ catalog 0.8).
+        const rad = Number(f.r);
+        const dia = Number.isFinite(rad) && rad > 0 ? rad * 2 * roomW : 0;
+        uw = uh = dia > 0 ? dia : SAFE_FALLBACK_U;
+      } else {
+        const fw = Number(f.w), fh = Number(f.h);
+        uw = Number.isFinite(fw) && fw > 0 ? fw * roomW : SAFE_FALLBACK_U;
+        uh = Number.isFinite(fh) && fh > 0 ? fh * roomH : SAFE_FALLBACK_U;
+      }
+
+      // 2. center in layout units.
+      let centerX, centerY;
+      if (ov && ov.status === 'placed' && ov.cell) {
+        centerX = ov.cell.x / PLACE_WU;
+        centerY = ov.cell.y / PLACE_WU;
+      } else {
+        centerX = Number(r.cx) + (Number(f.fx) - 0.5) * roomW;
+        centerY = Number(r.cy) + (Number(f.fy) - 0.5) * roomH;
+      }
+      if (!Number.isFinite(centerX) || !Number.isFinite(centerY)) continue;
+
+      // 3. center → top-left.
+      out.push({ type: String(f.kind || f.type || ''), ux: centerX - uw / 2, uy: centerY - uh / 2, uw, uh, id: oid });
+    }
+  }
+  return out;
+}
+
 function drawInteriorV2(canvas, world) {
   const interior = world?.scene?.interior;
   const st = world?.structures?.byId?.[String(interior?.structureKey || '')];
   if (!st) throw new Error('no structure');
+
+  // OBJ-MOVE-1 — a FINALIZED authored (Builder) building draws the ENGINE's own
+  // furniture (real pieceIds), so a moved piece is visibly repositioned by its
+  // overlay. Gated on the durable authored-plan marker, NOT "the floor plan has
+  // furniture" — every procgen plan carries furniture too, and those keep their
+  // hand-drawn catalog art below. An authored building with nothing placed still
+  // renders its OWN empty room shell (empty furniture array): an empty authored
+  // house must stay visibly empty, never borrow a decorative catalog room.
+  if (isFinalizedAuthored(st)) {
+    const engFp = floorPlan(st);
+    const authoredFurniture = buildAuthoredSceneFurniture(engFp, world, String(st.id || ''));
+    const roomId = String(interior?.roomId || '');
+    const visited = Array.isArray(interior?.visited) && interior.visited.length ? interior.visited : [roomId];
+    const cur = engFp.rooms.find(r => String(r.id) === roomId);
+    const tokens = cur ? [{ type: 'player', ux: cur.cx, uy: cur.cy }] : [];
+    const model = floorPlanToSceneModel(engFp, { currentRoomId: roomId, visited, tokens, furniture: authoredFurniture });
+    createInteriorMap(canvas, { seed: String(st.id || 'interior') }).draw(model);
+    return;
+  }
 
   // Prefer the authored building-catalog plan for this type — the good-looking
   // hand-drawn buildings — mapping the engine's current/visited rooms onto the

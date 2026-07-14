@@ -11,6 +11,7 @@ import { rollPhysicsCheck } from './resolve.js';
 import { objectPhysics } from './objects/mobility.js';
 import { actorObjectCapacity } from './objects/capacity.js';
 import { actorFacts } from './objects/physicsActor.js';
+import { legalMoveTargetCell } from './map/spatial/tacticalPos.js';
 
 // Banned words in LLM-generated notes (Heartbreak Principle: no dramatic editorializing).
 const BANNED_WORDS = [
@@ -382,6 +383,12 @@ export function validateDeltas(deltas, world) {
 const FORCE_RE  = /\b(rip|break|smash|tear|kick|punch|shatter)\b/;
 const EXAMINE_RE = /\b(search|examine|inspect|look at|check)\b/;
 const TAKE_RE   = /\b(take|grab|pick up|steal)\b/;
+// OBJ-MOVE-1 — reposition (not remove) an object. Only the UNAMBIGUOUS object-move
+// verbs (drag/push/shove) — bare "move"/"slide" collide with travel ("move to the
+// table"), so they stay out; the playloop routing gate mirrors this exact set.
+// "shove" is here, not in FORCE_RE: shoving furniture aside is movement, not an
+// attack on it (smash/kick stay FORCE).
+const MOVE_RE   = /\b(drag|push|shove)\b/;
 // INT-4-HELD — players say "set the pallet ON FIRE" / "set it ablaze" far more than
 // the contiguous "set fire to X". The old pattern only caught "set fire", so a natural
 // arson phrasing fell through to TAKE_RE ("You take the straw pallet") when a leading
@@ -538,6 +545,35 @@ function offlineFallback(world, playerText, detection) {
     }
     // impossible — too heavy to carry, or a fixed fixture (hearth, well, altar…).
     return tooHeavy();
+  }
+
+  // Move/drag/push/shove words: OBJ-MOVE-1 — reposition an AUTHORED object to a legal
+  // free tactical cell in its room (collision moves with it). Generic/procgen pieces
+  // are deferred (Model A↔B parity), so they fall through to the generic interaction.
+  if (MOVE_RE.test(text) && f.authored === true) {
+    const target = legalMoveTargetCell(w, f.objectId, actorId);
+    const noRoom = () => ({
+      plausible: true, deltas: [],
+      description: `You put your weight to ${targetName}, but there's no room to shift it.`,
+      fallbackUsed: true, hardness: fHardness, material: fMaterial
+    });
+    const heldFast = () => ({
+      plausible: true, deltas: [],
+      description: `You can't budge ${targetName}.`,
+      fallbackUsed: true, hardness: fHardness, material: fMaterial
+    });
+    if (!target) return noRoom();
+    const cap = actorObjectCapacity(actorFacts(w, actorId), objectPhysics(f), 'drag');
+    if (cap.verdict === 'impossible') return heldFast();
+    const moved = () => ({
+      plausible: true,
+      deltas: [{ op: 'moveObject', actorId, objectId: f.objectId, to: { node: nodeId, structureId: f.structureId, room: f.roomId, cell: target } }],
+      description: `You drag the ${targetName} aside.`,
+      fallbackUsed: true, hardness: fHardness, material: fMaterial
+    });
+    if (cap.verdict === 'auto') return moved();
+    const chk = rollPhysicsCheck(w, { actorId, hardness: cap.difficulty, intentText: text });
+    return chk.outcome === 'failure' ? heldFast() : moved();
   }
 
   // Default: generic interaction

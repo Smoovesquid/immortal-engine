@@ -285,7 +285,10 @@ export function floorPlanToSceneModel(fp, opts = {}) {
     material: shape.material,
     rooms, doors, corridors,
     windows: [],
-    furniture: [],
+    // OBJ-MOVE-1 — the floorPlan path draws the caller-supplied engine furniture (with
+    // overrides already applied by LocalMap at the renderer boundary). Absent (the
+    // procedural fallback + every existing caller) → [] exactly as before.
+    furniture: Array.isArray(opts.furniture) ? opts.furniture : [],
     tokens: opts.tokens || []
   };
 }

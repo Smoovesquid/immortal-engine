@@ -7,6 +7,10 @@ import { ensureWorld } from './state.js';
 import { ensureMap } from './map/mapState.js';
 import { objectsHere } from './structures/roomObjects.js';
 import { resolveBreakRuling, resolveFireRuling, resolveCoverRuling } from './rulings/index.js';
+import { rollPhysicsCheck } from './resolve.js';
+import { objectPhysics } from './objects/mobility.js';
+import { actorObjectCapacity } from './objects/capacity.js';
+import { actorFacts } from './objects/physicsActor.js';
 
 // Banned words in LLM-generated notes (Heartbreak Principle: no dramatic editorializing).
 const BANNED_WORDS = [
@@ -484,12 +488,18 @@ function offlineFallback(world, playerText, detection) {
     };
   }
 
-  // Take/grab words: only works on bulk <= 2
+  // Take/grab words: OBJ-STRENGTH-1 — capacity, not a flat bulk cutoff. Taking into
+  // inventory means the actor can lift AND carry it off (the conservative 'carry'
+  // action). The pure resolver returns auto / roll / impossible; a borderline take
+  // fires the existing seeded d20 (rollPhysicsCheck) and only a passed roll mutates.
+  // The remove delta carries the resolved objectId (OBJ-STATE-1 stable identity),
+  // with furnitureId kept only as the legacy index bridge — never index-only.
   if (TAKE_RE.test(text)) {
-    const bulk = f.bulk ?? 3;
-    if (bulk <= 2) {
-      const deltas = [
-        { op: 'removeFurniture', nodeId, furnitureId: fIdx },
+    const cap = actorObjectCapacity(actorFacts(w, actorId), objectPhysics(f), 'carry');
+    const takeResult = () => ({
+      plausible: true,
+      deltas: [
+        { op: 'removeFurniture', nodeId, objectId: f.objectId, furnitureId: fIdx },
         {
           op: 'createItem',
           entityId: actorId,
@@ -500,28 +510,34 @@ function offlineFallback(world, playerText, detection) {
             weight: clampInt(f.weight || 1, 0, 5),
             noise: 0,
             light: 0,
-            bulk: clampInt(bulk, 0, 5),
+            bulk: clampInt(f.bulk ?? 3, 0, 5),
             notes: f.notes || ''
           }
         }
-      ];
-      return {
-        plausible: true,
-        deltas,
-        description: `You take the ${targetName}.`,
-        fallbackUsed: true,
-        hardness: fHardness,
-        material: fMaterial
-      };
-    }
-    return {
+      ],
+      description: `You take the ${targetName}.`,
+      fallbackUsed: true,
+      hardness: fHardness,
+      material: fMaterial
+    });
+    const tooHeavy = () => ({
       plausible: true,
       deltas: [],
       description: `You try to take ${targetName}, but it's too heavy to carry.`,
       fallbackUsed: true,
       hardness: fHardness,
       material: fMaterial
-    };
+    });
+
+    if (cap.verdict === 'auto') return takeResult();
+    if (cap.verdict === 'roll') {
+      const chk = rollPhysicsCheck(w, { actorId, hardness: cap.difficulty, intentText: text });
+      // A passed check (success or mixed = "with effort") carries it off; a failure
+      // changes nothing.
+      return chk.outcome === 'failure' ? tooHeavy() : takeResult();
+    }
+    // impossible — too heavy to carry, or a fixed fixture (hearth, well, altar…).
+    return tooHeavy();
   }
 
   // Default: generic interaction

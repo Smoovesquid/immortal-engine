@@ -44,7 +44,10 @@ const UNIVERSAL_FIELDS = [
 // trigger with a narration beat and an unlocked action (see
 // engine/combat/bossActions.js). Optional: absent entries get the default
 // bloodied phase at runtime, so there is nothing to backfill.
-const OPTIONAL_FIELDS = ['phases'];
+// OBJ-STRENGTH-1: a creature may additionally author `size` (physical-object
+// capacity — engine/objects/physicsActor.js actorSize). Optional: absent entries
+// default to Medium at read time, so there is nothing to backfill.
+const OPTIONAL_FIELDS = ['phases', 'size'];
 
 // CR bands per tier (inclusive). Elite allows 6 per its documented header even
 // though the current floor sits at 7.

@@ -102,6 +102,9 @@ export function mintEnemyFromNpc(npc) {
     canParley,
     defeated: false,
     sourceNpcId,
+    // OBJ-STRENGTH-1 — preserve the canonical content reference the NPC carried, so a
+    // foe that begins combat keeps its bestiary size (actorSize → getMonsterDef(ref)).
+    bestiaryRef: n.bestiaryRef || null,
     lootTableRef,
     initMod,
     legendaryActions,

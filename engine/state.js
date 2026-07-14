@@ -841,9 +841,18 @@ export function ensureCombat(c) {
     occupiedFallbackCells.add(combatCellKey(cell));
     // The one-shot onDeath-revive flag (Undead Fortitude / Rejuvenation…) must
     // persist across turns so a foe refuses to fall ONCE per fight, not per death.
+    // OBJ-STRENGTH-1: bestiaryRef — the canonical content pointer back to the bestiary
+    // catalog, preserved so actorSize (engine/objects/physicsActor.js) resolves a combat
+    // foe's real size (a Cave Troll reads Large) WITHOUT storing size on the enemy. A
+    // bounded, combat-scoped optional string; added ONLY when set, so an enemy that never
+    // carried one stays byte-identical and actorSize honestly defaults it to Medium. The
+    // boot world has no combat enemies → boot worldHash unmoved, no WORLD_VERSION bump.
+    const bestiaryRefRaw = typeof eRaw.bestiaryRef === 'string' ? eRaw.bestiaryRef.trim() : '';
+    const bestiaryRef = bestiaryRefRaw ? bestiaryRefRaw.slice(0, 64) : null;
     const enemy = { id, name, hp, maxHp, damage, ac, cr, damageType, resistances, conditionImmunities, conditions, actions, multiattack, saveProficiencies, canParley, defeated, downed, dyingClock, woundLog, begged, spared, betrayed, sourceNpcId, lootTableRef, initMod, legendaryActions, reactions, lairActions, senses, tactical, traits, stats, level, cx: cell.cx, cy: cell.cy };
     // DEATH-1: carry an explicit capability only when set (otherwise derived at read).
     if (canCommunicate !== undefined) enemy.canCommunicate = canCommunicate;
+    if (bestiaryRef) enemy.bestiaryRef = bestiaryRef;
     if (eRaw._traitRevived) enemy._traitRevived = true;
     enemies.push(enemy);
     if (enemies.length >= COMBAT_ENEMY_CAP) break;

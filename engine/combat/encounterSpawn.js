@@ -214,6 +214,10 @@ function mintEnemyFromDef(def) {
     canParley: Boolean(d.canParley ?? false),
     defeated: false,
     sourceNpcId: '',
+    // OBJ-STRENGTH-1 — carry the canonical content reference so actorSize
+    // (engine/objects/physicsActor.js) can read a combat foe's real size back from
+    // the bestiary catalog (a Cave Troll reads Large). NOT duplicated size data.
+    bestiaryRef: d.ref || null,
     lootTableRef: d.lootTableRef || null,
     initMod: typeof d.initMod === 'number' ? d.initMod : 0,
     legendaryActions: d.legendaryActions || null,

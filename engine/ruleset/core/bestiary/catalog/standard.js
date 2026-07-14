@@ -3997,6 +3997,11 @@ export const standard = [
     name: 'Cave Troll',
     cr: 4,
     tier: 'standard',
+    // OBJ-STRENGTH-1 — size canonical at the content source. actorSize resolves a
+    // creature's size by reading this back through getMonsterDef(bestiaryRef) at
+    // read time; nothing is stored on the spawned enemy. Default (unspecified) is
+    // Medium. Cave Troll is the first Large exemplar (a nine-foot troll).
+    size: 'Large',
     maxHp: 95,
     ac: 14,
     speed: 30,

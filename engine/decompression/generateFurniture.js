@@ -173,6 +173,12 @@ export function containerItemText(seed, nodeId, name, item) {
   return LETTER_BODIES[rng.int(0, LETTER_BODIES.length - 1)];
 }
 
+// OBJ-STRENGTH-1 — the procgen template names, frozen and read-only, so the U695
+// mobility coverage contract can enumerate them without mutating catalog-derived
+// data. Adding a template whose name is not classified in objects/mobility.js fails
+// that test (fail-closed).
+export const TEMPLATE_NAMES = Object.freeze(TEMPLATES.map(t => t.name));
+
 /**
  * generateNodeFurniture(nodeId, seed) → furniture[]
  * Deterministic. Returns 2-4 furniture items per node.

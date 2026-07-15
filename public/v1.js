@@ -13,7 +13,7 @@ import { dayPhase, clockLabel } from '../engine/dayNight.js';
 import { escapeOutcome } from '../engine/victory.js';
 import { escapeKitView } from '../engine/combat/escapeCombat.js';
 import { getItemDef } from '../engine/ruleset/core/items/index.js';
-import { hasSlot, loadSlot, saveSlot, exportWorld, importWorld, markResume } from '../engine/save.js';
+import { hasSlot, loadSlot, saveSlot, markResume } from '../engine/save.js';
 import { buildRecap } from '../engine/composer.js';
 import { worldHash as worldHashAsync } from '../engine/worldHash.browser.js';
 import { buildMythSpec, mythSpecJson } from '../engine/mythSpec.js';
@@ -1049,8 +1049,8 @@ function renderInvoke() {
     el('div', { class: 'panel' },
       el('div', { class: 'header' },
         el('div', {},
-          el('div', { class: 'title' }, 'Immortal Engine — v0.43.0'),
-          el('div', { class: 'sub' }, 'build 162 · 2026-07-15 · object hold & carry')
+          el('div', { class: 'title' }, 'Immortal Engine — v0.44.0'),
+          el('div', { class: 'sub' }, 'build 163 · 2026-07-15 · the denied list')
         )
       ),
       // ── One-click front door: start (or resume) the Escape game ──────
@@ -2509,22 +2509,10 @@ function renderPlay() {
         const w2 = loadSlot(localStorage, 'slot1');
         if (!w2) return setStatus('No slot found.');
         startFromWorld(w2, { keepTranscript: true });
-      }}, 'Reload slot1'),
-      el('button', { class: 'btn', onClick: async () => {
-        if (!w) return; const txt = exportWorld(w);
-        try { await navigator.clipboard.writeText(txt); setStatus('Copied export JSON.'); }
-        catch { try { window.prompt('Copy export JSON:', txt); } catch {} setStatus('Export ready.'); }
-      }}, 'Export JSON'),
-      el('button', { class: 'btn', onClick: () => {
-        let txt = '';
-        try { txt = String(window.prompt('Paste export JSON:', '') || ''); } catch {}
-        if (!txt.trim()) return;
-        try {
-          const w2 = importWorld(txt); persistAndRehash(w2);
-          ui.play.lines.push({ who: 'wizard', text: 'Import accepted. What do you do?', mech: '' });
-          ui.play.input = ''; ui.play.lastResolutionKind = 'turn'; setStatus('Imported into slot1.');
-        } catch (e) { setStatus(String(e && e.message ? e.message : e)); }
-      }}, 'Import JSON')
+      }}, 'Reload slot1')
+      // DENIED-list law 21 (IMMORTAL_INVARIANTS): one timeline per world. The Export/Import
+      // JSON buttons were the last player-reachable path to a second copy of a world —
+      // removed, never to return. The save.js serializer stays test/harness-only (U700).
     )
   );
 

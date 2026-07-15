@@ -53,6 +53,9 @@ export function loadLast(storage) {
   return { slotId, world: w };
 }
 
+// DENIED-list law 21 (docs/IMMORTAL_INVARIANTS.md): one timeline per world.
+// exportWorld/importWorld are TEST/HARNESS serialization utilities only — they must
+// never be wired into a player-facing surface again (tripwire: U700 scans v1.js).
 export function exportWorld(world) {
   const safe = ensureWorld(world);
   return JSON.stringify({ kind: 'ai-dm-v2-export', world: safe });

@@ -123,9 +123,13 @@ export function objectsHere(world) {
   const interior = (world?.scene && typeof world.scene.interior === 'object' && world.scene.interior) ? world.scene.interior : null;
   const structureKey = interior ? String(interior.structureKey || '') : '';
   const roomId = interior ? String(interior.roomId || '') : '';
+  const topo = interior ? normalizeTopology(world?.structures?.byId?.[structureKey]?.topology) : null;
+  const multiRoom = !!(topo && topo.rooms.length >= 2);
+  const topoRoomIds = multiRoom ? new Set(topo.rooms.map(r => String(r.id))) : null;
 
-  // Partition: supported pieces with a LIVE override answer by identity; everything
-  // else (unsupported, or supported still at base) falls to the legacy room logic.
+  // Partition: supported pieces answer by IDENTITY; everything else (unsupported,
+  // or a supported piece whose provenance this structure cannot ground) falls to
+  // the legacy room logic byte-identically.
   const liveKeep = new Set();   // nodeIndex → included by the live projection
   const legacy = [];            // entries the legacy branches decide
   for (const entry of all) {
@@ -139,6 +143,16 @@ export function objectsHere(world) {
         }
         continue;                                              // placed → its live room ONLY
       }
+      // BASE (release correction) — a supported piece's room is ITS OWN provenance,
+      // never the name-keyed assignment map: two same-named pots in different rooms
+      // must not collapse first-wins onto one room. Scoped to pieces THIS multi-room
+      // structure can ground (piece.roomId is a real topology room); a piece with
+      // broken provenance, another structure's piece, and the single-room/not-inside
+      // branches keep the legacy path untouched.
+      if (multiRoom && String(piece.structureId || '') === structureKey && topoRoomIds.has(String(piece.roomId || ''))) {
+        if (String(piece.roomId) === roomId) liveKeep.add(entry.nodeIndex);
+        continue;
+      }
     }
     legacy.push(entry);
   }
@@ -150,9 +164,7 @@ export function objectsHere(world) {
   };
 
   if (!interior) return finish(legacy);
-
-  const topo = normalizeTopology(world?.structures?.byId?.[structureKey]?.topology);
-  if (!topo || topo.rooms.length < 2) return finish(legacy);
+  if (!multiRoom) return finish(legacy);
 
   const assignments = furnitureRoomAssignments(world, nid);
   return finish(legacy.filter(({ piece }) => {

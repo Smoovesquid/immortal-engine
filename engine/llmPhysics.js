@@ -44,6 +44,27 @@ export function heldObjectOf(world, actorId) {
   return null;
 }
 
+// OBJ-HOLD-6A (release correction) — the PARTY-WIDE carry truth: the first object
+// held by ANY party member (or the legacy 'party' key), or null. Egress travels as
+// a party, so every structure-egress seam — the structural backstop AND each
+// narrating refusal — reads THIS, never just the leader's hands: a follower-held
+// object must refuse the doorway exactly like a leader-held one, and both layers
+// sharing one truth is what keeps the recursive travel bridges from looping on an
+// unchanged world.
+export function partyHeldObject(world) {
+  const w = world && typeof world === 'object' ? world : {};
+  const party = Array.isArray(w.party) ? w.party : [];
+  const keys = new Set(['party', ...party.map(m => String(m?.id || '')).filter(Boolean)]);
+  const objects = (w.objects && typeof w.objects === 'object') ? w.objects : {};
+  for (const oid of Object.keys(objects)) {
+    const holder = objects[oid]?.heldByActorId;
+    if (holder == null || !keys.has(String(holder))) continue;
+    const found = findFurnitureByObjectId(w, oid);
+    if (found?.piece) return { objectId: String(oid), piece: found.piece, name: String(found.piece.name || 'object'), heldByActorId: String(holder) };
+  }
+  return null;
+}
+
 export function detectPhysicalInteraction(world, playerText) {
   const w = ensureWorld(world);
   const m = ensureMap(w.map);

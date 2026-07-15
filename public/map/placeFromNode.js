@@ -30,6 +30,13 @@ import { settlementLayout } from '../../engine/world/settlementLayout.js';
 // wu-space renderer already uses (one sizing truth, two output spaces).
 import { floorPlan } from '../../engine/structures/floorPlan.js';
 import { structCellToPlaceUnit } from './worldSpace.js';
+// OBJ-HOLD-6A (release correction) — the LIVE sheet's flattened furniture is the
+// ONE identity-keyed projection: held pieces leave the floor, placed pieces ink at
+// their live cell, and every authored item carries its canonical objectId through
+// to the 2D ink AND the 3D props (drawModel.placedTokenModel reads this array).
+import { authoredObjectId } from '../../engine/objects/identity.js';
+import { resolvedObjectPlacement } from '../../engine/objects/placement.js';
+import { PLACE_WU as TAC_CELLS_PER_LAYOUT_UNIT } from '../../engine/map/spatial/tacticalPos.js';
 
 const TIER_STEP = 5; // grid-distance per danger rung
 
@@ -61,7 +68,7 @@ const TIER_STEP = 5; // grid-distance per danger rung
 // exactly that catalog shape) — flattening to the SAME absolute shape keeps
 // those call sites working unchanged, now sized/positioned from the real room
 // graph instead of an unrelated catalog cottage's fixtures.
-function flattenRoomFurniture(rooms) {
+function flattenRoomFurniture(rooms, world, structureId) {
   const out = [];
   for (const r of (rooms || [])) {
     for (const f of (r.furniture || [])) {
@@ -73,17 +80,32 @@ function flattenRoomFurniture(rooms) {
       const w = Number(f.w) || (Number(f.r) ? Number(f.r) * 2 : 0);
       const h = Number(f.h) || (Number(f.r) ? Number(f.r) * 2 : 0);
       const fx = Number.isFinite(f.fx) ? f.fx : 0.5, fy = Number.isFinite(f.fy) ? f.fy : 0.5;
-      const cx = r.cx - r.w / 2 + fx * r.w, cy = r.cy - r.h / 2 + fy * r.h;
-      out.push({ type: String(f.kind || f.type || 'prop'), ux: cx - w / 2, uy: cy - h / 2, uw: w, uh: h });
+      let cx = r.cx - r.w / 2 + fx * r.w, cy = r.cy - r.h / 2 + fy * r.h;
+      // OBJ-HOLD-6A (release correction) — an AUTHORED item resolves its LIVE
+      // placement by identity: held → in someone's arms, no floor ink at all;
+      // placed → inked at its live tactical cell (cells → the plan's own layout
+      // units, the SAME conversion the engine render join uses — U696-I); base →
+      // byte-identical to the static flatten. Non-authored items are untouched.
+      let objectId = null;
+      if (f && f.authored === 1 && f.id != null && structureId) {
+        objectId = authoredObjectId(String(structureId), String(f.id));
+        const ov = world ? resolvedObjectPlacement(world, objectId) : null;
+        if (ov && ov.status === 'held') continue;
+        if (ov && ov.status === 'placed' && ov.cell) {
+          cx = ov.cell.x / TAC_CELLS_PER_LAYOUT_UNIT;
+          cy = ov.cell.y / TAC_CELLS_PER_LAYOUT_UNIT;
+        }
+      }
+      out.push({ type: String(f.kind || f.type || 'prop'), ux: cx - w / 2, uy: cy - h / 2, uw: w, uh: h, ...(objectId ? { objectId } : {}) });
     }
   }
   return out;
 }
 
-function engineBackedPlan(st) {
+function engineBackedPlan(st, world) {
   let fp; try { fp = floorPlan(st); } catch { return null; }
   if (!fp || !Array.isArray(fp.rooms) || !fp.rooms.length) return null;
-  return { rooms: fp.rooms, doors: fp.doors || [], footprint: fp.footprint, material: fp.shell, furniture: flattenRoomFurniture(fp.rooms) };
+  return { rooms: fp.rooms, doors: fp.doors || [], footprint: fp.footprint, material: fp.shell, furniture: flattenRoomFurniture(fp.rooms, world, st?.id) };
 }
 
 // ── TT-OCC THE RULE — no outdoor mini ever stands inside ink that isn't theirs ──
@@ -266,7 +288,7 @@ export function placeFromWorldNode(world, nodeId) {
       // may drive a real structure's ink (the engine layout, which can't import the
       // public catalog, scattered it by a synthetic footprint — a non-live case; no live
       // world has a topology-less structure, so no drawn village moves).
-      const rich = st ? engineBackedPlan(st) : null;
+      const rich = st ? engineBackedPlan(st, world) : null;
       if (rich) return { ...b, plan: rich };
       if (st) {
         const type = st.buildingType || buildingTypeFor(String(st.id || ''));

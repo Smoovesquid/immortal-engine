@@ -730,7 +730,11 @@ export function placedTokenModel(world, nodeId) {
         const cx = ox + (Number(f.ux) || 0) + (Number(f.uw) || 0.6) / 2;
         const cy = oy + (Number(f.uy) || 0) + (Number(f.uh) || 0.6) / 2;
         const fitted = fitCatalogPointToRect(catBounds, realPlan.rect, cx, cy);
-        props.push({ wx: fitted.wx, wy: fitted.wy, kind });
+        // OBJ-HOLD-6A (release correction) — the flattened plan already applied the
+        // identity projection (held items never reach here; placed items arrive at
+        // their live coordinates); carry the canonical objectId onto the mini so the
+        // 3D scene keys props by identity, not by kind-at-a-position.
+        props.push({ wx: fitted.wx, wy: fitted.wy, kind, ...(f.objectId ? { objectId: String(f.objectId) } : {}) });
       }
     }
   }

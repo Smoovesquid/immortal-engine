@@ -64,10 +64,20 @@ test('U576a drawModel.js\'s only change since the pre-packet base is PROP_MINI_K
   } catch { /* leave empty — precondition assertions below will fail loudly */ }
   assert.ok(baseDrawModel.length > 0, 'precondition: could read drawModel.js from the dispatch-point base via git');
   assert.ok(baseOneMap.length > 0, 'precondition: could read oneMap.js from the dispatch-point base via git');
-  const normalizeDrawModel = (src) => src.replace(
-    /(?:\/\/[^\n]*\n)*const PROP_MINI_KINDS = new Set\(\[[^\]]*\]\);/,
-    'PROP_MINI_KINDS_PLACEHOLDER'
-  );
+  const normalizeDrawModel = (src) => src
+    .replace(
+      /(?:\/\/[^\n]*\n)*const PROP_MINI_KINDS = new Set\(\[[^\]]*\]\);/,
+      'PROP_MINI_KINDS_PLACEHOLDER'
+    )
+    // OBJ-HOLD-6A release correction (2026-07-15, U698-R1d) legitimately touches
+    // ONE more line: the props push now carries each mini's canonical objectId so
+    // held/placed overlay state keys the 3-D props by identity. Same posture as
+    // the PROP_MINI_KINDS carve-out above: normalize the push (and its comment
+    // lines) in BOTH revisions so everything else stays byte-locked.
+    .replace(
+      /(?:[ \t]*\/\/[^\n]*\n)*([ \t]*)props\.push\(\{ wx: fitted\.wx[^\n]*/,
+      '$1PROPS_PUSH_PLACEHOLDER'
+    );
   assert.notEqual(normalizeDrawModel(baseDrawModel), 0, 'precondition: base drawModel.js actually contains a PROP_MINI_KINDS declaration to normalize');
   assert.equal(normalizeDrawModel(DRAWMODEL_SRC), normalizeDrawModel(baseDrawModel),
     'drawModel.js must be byte-identical to the pre-packet base OUTSIDE the PROP_MINI_KINDS set — the 2-D ink model is untouched (this packet reads INK_PARAMS, never edits it)');

@@ -116,14 +116,19 @@ export function exitStructureInterior(world) {
   // OBJ-HOLD-6A — the carry-lock's STRUCTURAL backstop: carry is structure-local, so
   // egress with a held environmental object refuses as a no-op at this one seam. The
   // narrating call sites (door exit, window exit, the interior travel bridges) all
-  // consult heldObjectOf FIRST and refuse in fiction; this guard guarantees that any
-  // future caller that forgets cannot leak a held object outside — the world simply
-  // does not change (no branch may narrate success after it).
+  // consult the SAME party-wide predicate FIRST and refuse in fiction; this guard
+  // guarantees that any future caller that forgets cannot leak a held object outside —
+  // the world simply does not change (no branch may narrate success after it).
+  // PARTY-WIDE (release correction): egress moves the whole party, so an object in
+  // ANY member's arms (or under the legacy 'party' key) blocks the crossing — checking
+  // only the leader let a follower carry furniture straight through the wall.
   {
-    const partyKey = String(w.party?.[0]?.id || 'party');
+    const party = Array.isArray(w.party) ? w.party : [];
+    const partyKeys = new Set(['party', ...party.map(m => String(m?.id || '')).filter(Boolean)]);
     const objs = (w.objects && typeof w.objects === 'object') ? w.objects : {};
     for (const oid of Object.keys(objs)) {
-      if (String(objs[oid]?.heldByActorId ?? '') === partyKey) return w;
+      const holder = objs[oid]?.heldByActorId;
+      if (holder != null && partyKeys.has(String(holder))) return w;
     }
   }
 

@@ -38,6 +38,15 @@ import { floorPlan } from '../engine/structures/floorPlan.js';
 import { moveWithinInterior, exitStructureInterior } from '../engine/structures/interiors.js';
 import { objectsHere } from '../engine/structures/roomObjects.js';
 import { buildAuthoredSceneFurniture } from '../public/map/LocalMap.js';
+// R. release-correction — the LIVE continuous-map lane (not the LocalMap fallback),
+// writer co-location against the REQUESTED actor, same-name identity, capacity.
+import { placeFromWorldNode } from '../public/map/placeFromNode.js';
+import { placedTokenModel } from '../public/map/drawModel.js';
+import { sceneSignature } from '../public/map/continuousMap.js';
+import { actorObjectCapacity } from '../engine/objects/capacity.js';
+import { objectPhysics } from '../engine/objects/mobility.js';
+import { actorFacts } from '../engine/objects/physicsActor.js';
+import { rollPhysicsCheck } from '../engine/resolve.js';
 
 const PACKS = normalizeManifest(JSON.parse(fs.readFileSync(new URL('../packs/manifest.json', import.meta.url))));
 
@@ -648,4 +657,264 @@ test('U698-H7 heldObjectOf resolves the one held object for the live actor key',
   const h = heldObjectOf(w, 'party');
   assert.ok(h && h.objectId === POT && /cooking pot/i.test(h.name), 'canonical helper agrees');
   assert.equal(heldObjectOf(boot2(), 'party'), null, 'empty hands → null');
+});
+
+// ══ R. RELEASE CORRECTION (Basecamp gate, 2026-07-15) ═════════════════════════
+// R1 — the LIVE render lane. U432 proves LocalMap is a dead/error fallback; v1
+//      mounts renderContinuousMap → placeFromWorldNode (2D furniture ink) and
+//      placedTokenModel (3D props). THOSE projections must follow held/placed.
+// R2 — writers validate co-location against the REQUESTED actor's canonical pos,
+//      never the leader's global scene.interior; the carry-lock is party-wide.
+// R3 — two same-named supported base pieces resolve by IDENTITY, never the
+//      first-wins name map.
+// R4 — the capacity ladder (auto/roll-pass/roll-fail/impossible) on supported holds.
+
+// The 2D sheet's flattened furniture for the cottage, exactly as the live map inks it.
+const liveFurn = (w) => {
+  const place = placeFromWorldNode(w, NODE2);
+  const b = (place?.buildings || []).find(x => String(x?.structureKey || '') === STRUCT2);
+  return Array.isArray(b?.plan?.furniture) ? b.plan.furniture : null;
+};
+const potBirthLayout = (w) => {
+  const a = authoredBaseAnchorCell(w, POT); // struct cell ↔ layout via PLACE_WU=4 (U696-I)
+  return { x: a.x / 4, y: a.y / 4 };
+};
+const itemCenter = (f) => ({ x: f.ux + f.uw / 2, y: f.uy + f.uh / 2 });
+
+test('U698-R1a LIVE 2D lane — base projection carries canonical objectId at the birth spot, byte-stable on empty overlays', () => {
+  const w = boot2();
+  const furn = liveFurn(w);
+  assert.ok(furn && furn.length, 'the live lane flattens the cottage furniture');
+  const pot = furn.find(f => String(f.objectId || '') === POT);
+  assert.ok(pot, 'the pot rides the LIVE flattened plan under its canonical objectId');
+  const birth = potBirthLayout(w);
+  const c = itemCenter(pot);
+  assert.ok(Math.abs(c.x - birth.x) < 0.51 && Math.abs(c.y - birth.y) < 0.51, `base ink at the birth spot (${c.x},${c.y} ≈ ${birth.x},${birth.y})`);
+  assert.deepEqual(liveFurn({ ...w, objects: {} }), furn, 'an explicitly-empty overlay projects byte-identically');
+});
+
+test('U698-R1b LIVE 2D lane — a HELD objectId disappears from the flattened furniture ink', () => {
+  let w = boot2();
+  const baseCount = liveFurn(w).length;
+  w = applyDeltas(w, [hold(POT, 'party')]);
+  const furn = liveFurn(w);
+  assert.equal(furn.find(f => String(f.objectId || '') === POT), undefined, 'held → no floor ink on the LIVE sheet');
+  assert.equal(furn.length, baseCount - 1, 'exactly the held piece is gone; everything else identical');
+});
+
+test('U698-R1c LIVE 2D lane — a released objectId reappears at resolvedObjectPlacement().cell, not its birth cell', () => {
+  let w = boot2();
+  w = applyDeltas(w, [hold(POT, 'party')]);
+  w = moveWithinInterior(w, R1);
+  w = moveWithinInterior(w, R3);
+  w = applyDeltas(w, [place(POT, { kind: 'actor' }, aKey(w))]);
+  const p = resolvedObjectPlacement(w, POT);
+  assert.equal(p.status, 'placed');
+  assert.equal(p.room, R3, 'setup: dropped in the far room');
+  const pot = (liveFurn(w) || []).find(f => String(f.objectId || '') === POT);
+  assert.ok(pot, 'released → back on the LIVE sheet');
+  const c = itemCenter(pot);
+  assert.deepEqual({ x: layoutToCells(c.x), y: layoutToCells(c.y) }, p.cell, 'inked at the LIVE cell');
+  const birth = potBirthLayout(w);
+  assert.ok(Math.abs(c.x - birth.x) > 1 || Math.abs(c.y - birth.y) > 1, 'and NOT at its birth position');
+});
+
+test('U698-R1d LIVE 3D lane — placedTokenModel props follow held/released state with identity', () => {
+  let w = boot2();
+  const baseProps = placedTokenModel(w, NODE2).props;
+  const basePot = baseProps.find(pr => String(pr.objectId || '') === POT);
+  assert.ok(basePot, 'the pot mini carries its canonical objectId at base');
+  const bedProp = baseProps.find(pr => String(pr.objectId || '') === BED2);
+  assert.ok(bedProp, 'the bed mini too');
+  // held → the exact objectId vanishes from the props; the bed mini is untouched
+  const wHeld = applyDeltas(w, [hold(POT, 'party')]);
+  const heldProps = placedTokenModel(wHeld, NODE2).props;
+  assert.equal(heldProps.find(pr => String(pr.objectId || '') === POT), undefined, 'held → no 3D mini');
+  const bedStill = heldProps.find(pr => String(pr.objectId || '') === BED2);
+  assert.ok(bedStill && bedStill.wx === bedProp.wx && bedStill.wy === bedProp.wy, 'the bed mini did not move');
+  // released across the house → the mini reappears at a genuinely different point, near the bed
+  let w2 = applyDeltas(w, [hold(POT, 'party')]);
+  w2 = moveWithinInterior(w2, R1);
+  w2 = moveWithinInterior(w2, R3);
+  w2 = applyDeltas(w2, [place(POT, { kind: 'actor' }, aKey(w2))]);
+  const placedProps = placedTokenModel(w2, NODE2).props;
+  const movedPot = placedProps.find(pr => String(pr.objectId || '') === POT);
+  assert.ok(movedPot, 'released → the mini is back');
+  const dMove = Math.hypot(movedPot.wx - basePot.wx, movedPot.wy - basePot.wy);
+  assert.ok(dMove > 1, `the mini genuinely moved (${dMove.toFixed(2)} wu from birth)`);
+  const dBed = Math.hypot(movedPot.wx - bedProp.wx, movedPot.wy - bedProp.wy);
+  assert.ok(dBed < dMove, 'and now stands nearer the bed than its birth spot');
+});
+
+test('U698-R1e sceneSignature — hold/place refresh the mounted 3D scene; durability-only does not', () => {
+  const w = boot2();
+  const sig0 = sceneSignature(w);
+  assert.equal(sceneSignature({ ...w, objects: {} }), sig0, 'empty overlay → the default-world signature is unchanged');
+  const wHeld = applyDeltas(w, [hold(POT, 'party')]);
+  const sigHeld = sceneSignature(wHeld);
+  assert.notEqual(sigHeld, sig0, 'holding changes the scene signature (the mini must vanish NOW)');
+  const wPlaced = applyDeltas(wHeld, [place(POT, { kind: 'actor' }, aKey(wHeld))]);
+  const sigPlaced = sceneSignature(wPlaced);
+  assert.notEqual(sigPlaced, sigHeld, 'releasing changes it again (the mini must reappear NOW)');
+  const wHurt = applyDeltas(w, [{ op: 'damageObject', objectId: POT, damage: 3 }]);
+  assert.equal(sceneSignature(wHurt), sig0, 'a durability-only HP change does NOT rebuild the scene');
+});
+
+// ── R2. writer co-location: the REQUESTED actor's position, not the global room ──
+const freeCellInRoom = (w, roomId, avoid = []) => {
+  const plan = floorPlan(st2(w));
+  const room = plan.rooms.find(r => String(r.id) === roomId);
+  const rect = roomRectCells(room);
+  const blocked = liveAuthoredBlockedCells(w, st2(w));
+  const doors = reservedDoorCells(plan);
+  const avoidKeys = new Set(avoid.map(key));
+  for (let y = rect.minY; y <= rect.maxY; y++) {
+    for (let x = rect.minX; x <= rect.maxX; x++) {
+      const k = `${x},${y}`;
+      if (blocked.has(k) || doors.has(k) || avoidKeys.has(k)) continue;
+      return { x, y };
+    }
+  }
+  return null;
+};
+const withMember = (w, id, pos) => ({ ...w, party: [...w.party, { id, name: id, pos }] });
+
+test('U698-R2a a named actor standing in ANOTHER room cannot hold the object', () => {
+  let w = boot2(); // pot lives in R2; leader (and scene.interior) are in R2 too
+  const cell = freeCellInRoom(w, R3);
+  assert.ok(cell, 'a free cell exists in the far room');
+  w = withMember(w, 'remote', { frame: `struct:${STRUCT2}`, gx: cell.x, gy: cell.y });
+  const w2 = applyDeltas(w, [hold(POT, 'remote')]);
+  assert.equal(w2.objects?.[POT]?.heldByActorId, undefined, 'the room-3 actor cannot take the room-2 pot through the wall');
+});
+
+test('U698-R2b a positionless / outdoor / foreign-structure actor cannot hold it', () => {
+  const w0 = boot2();
+  const wNoPos = withMember(w0, 'ghost', undefined);
+  assert.equal(applyDeltas(wNoPos, [hold(POT, 'ghost')]).objects?.[POT]?.heldByActorId, undefined, 'no pos → no take');
+  const wOut = withMember(w0, 'walker', { frame: 'region', gx: 5, gy: 5 });
+  assert.equal(applyDeltas(wOut, [hold(POT, 'walker')]).objects?.[POT]?.heldByActorId, undefined, 'outdoors → no take');
+  const wElse = withMember(w0, 'stranger', { frame: 'struct:somewhere-else', gx: 50, gy: 50 });
+  assert.equal(applyDeltas(wElse, [hold(POT, 'stranger')]).objects?.[POT]?.heldByActorId, undefined, 'another structure → no take');
+});
+
+test('U698-R2c a correctly co-located NAMED actor may use the writer', () => {
+  let w = boot2();
+  const cell = freeCellInRoom(w, R2, [authoredBaseAnchorCell(w, POT)]);
+  w = withMember(w, 'buddy', { frame: `struct:${STRUCT2}`, gx: cell.x, gy: cell.y });
+  const w2 = applyDeltas(w, [hold(POT, 'buddy')]);
+  assert.equal(w2.objects?.[POT]?.heldByActorId, 'buddy', 'same room, real position → the take commits');
+});
+
+test('U698-R2d a remote actor cannot PLACE (teleport) a base object into their own room', () => {
+  let w = boot2();
+  const cell = freeCellInRoom(w, R3);
+  w = withMember(w, 'remote', { frame: `struct:${STRUCT2}`, gx: cell.x, gy: cell.y });
+  const w2 = applyDeltas(w, [place(POT, { kind: 'actor' }, 'remote')]);
+  assert.equal(w2.objects?.[POT]?.placedAt, undefined, 'the non-held push seam requires the ACTOR to be with the object');
+});
+
+test('U698-R2e STRUCTURAL — egress refuses while ANY party member holds a structure-local object', () => {
+  let w = boot2();
+  const cell = freeCellInRoom(w, R2, [authoredBaseAnchorCell(w, POT)]);
+  w = withMember(w, 'buddy', { frame: `struct:${STRUCT2}`, gx: cell.x, gy: cell.y });
+  w = applyDeltas(w, [hold(POT, 'buddy')]);
+  assert.equal(w.objects?.[POT]?.heldByActorId, 'buddy', 'setup: the FOLLOWER holds it, not the leader');
+  const w2 = exitStructureInterior(w);
+  assert.ok(w2.scene?.interior, 'the structural seam refuses the whole party\'s exit');
+});
+
+test('U698-R2f LIVE — non-leader-held egress refuses once in fiction and never recurses', () => {
+  let w = boot2();
+  const cell = freeCellInRoom(w, R2, [authoredBaseAnchorCell(w, POT)]);
+  w = withMember(w, 'buddy', { frame: `struct:${STRUCT2}`, gx: cell.x, gy: cell.y });
+  w = applyDeltas(w, [hold(POT, 'buddy')]);
+  const rDoor = pm(w, 'go outside');
+  assert.ok(rDoor.world.scene?.interior, 'door exit refused');
+  assert.match(String(rDoor.output?.narration || ''), /arms|set it down|holding|carry/i, 'refusal is in fiction, once');
+  assert.doesNotMatch(String(rDoor.output?.narration || ''), /step (back )?outside|open ground/i, 'no success prose after the no-op');
+  const rTravel = pm(w, 'walk to the road'); // the recursive travel bridge must terminate
+  assert.ok(rTravel.world.scene?.interior, 'travel bridge refused without looping');
+});
+
+// ── R3. same-named supported base objects resolve by IDENTITY, never the name map ──
+const renamePiece = (w, objectId, fields) => ({
+  ...w,
+  map: { ...w.map, nodes: w.map.nodes.map(n => n.id === NODE2
+    ? { ...n, furniture: n.furniture.map(f => String(f.objectId || '') === objectId ? { ...f, ...fields } : f) }
+    : n) },
+});
+
+test('U698-R3 two same-named supported base pieces each answer ONLY in their own room', () => {
+  // Basecamp's repro: a second authored "cooking pot" (the renamed bed) in room 3.
+  let w = renamePiece(boot2(), BED2, { name: 'cooking pot' });
+  const unsupportedBefore = hereNames(boot2()).filter(n => !/cooking pot|bed/.test(n));
+  const idsHere = (ww) => objectsHere(ww).map(o => String(o.piece.objectId || '')).filter(oid => oid === POT || oid === BED2);
+  assert.deepEqual(idsHere(w), [POT], 'room 2 lists exactly ITS pot — not the far twin');
+  const w3 = moveWithinInterior(moveWithinInterior(w, R1), R3);
+  assert.deepEqual(idsHere(w3), [BED2], 'room 3 lists exactly ITS twin — the name map never collapses them');
+  // held/placed continue following resolvedObjectPlacement
+  const wHeld = applyDeltas(w, [hold(POT, 'party')]);
+  assert.deepEqual(idsHere(wHeld), [], 'held → off the floor list, twin unaffected in this room');
+  // unsupported/procgen pieces keep the name-keyed behavior byte-identically
+  const unsupportedAfter = hereNames(w).filter(n => !/cooking pot|bed/.test(n));
+  assert.deepEqual(unsupportedAfter, unsupportedBefore, 'procgen room membership untouched by the rename');
+});
+
+// ── R4. the capacity ladder on supported holds (physics caller owns capacity) ──
+test('U698-R4a AUTO capacity — the take commits holdObject, no pack item', () => {
+  const w = might(boot2(), 20);
+  const pot = pieceById(w, NODE2, POT);
+  assert.equal(actorObjectCapacity(actorFacts(w, aKey(w)), objectPhysics(pot), 'carry').verdict, 'auto', 'fixture really is auto');
+  const r = pm(w, 'take the cooking pot');
+  assert.equal(r.world.objects?.[POT]?.heldByActorId, aKey(r.world), 'auto take holds');
+  assert.ok(!toolsNames(r.world).some(n => /cooking pot/i.test(n)), 'no generic pack item minted');
+});
+
+test('U698-R4b/c ROLL capacity — a passed roll holds, a failed roll preserves piece and overlay', () => {
+  // Find a MIGHT that puts the heavy bed in the 'roll' band, then drive the REAL
+  // seeded check the physics caller uses to know which outcome each phrasing draws.
+  let w = boot2();
+  w = moveWithinInterior(w, R1);
+  w = moveWithinInterior(w, R3); // stand with the bed
+  let rollWorld = null;
+  for (let m = 3; m <= 20; m++) {
+    const cand = might(w, m);
+    const bed = pieceById(cand, NODE2, BED2);
+    if (actorObjectCapacity(actorFacts(cand, aKey(cand)), objectPhysics(bed), 'carry').verdict === 'roll') { rollWorld = cand; break; }
+  }
+  assert.ok(rollWorld, 'a MIGHT exists where carrying the bed is a genuine roll');
+  const bed = pieceById(rollWorld, NODE2, BED2);
+  const cap = actorObjectCapacity(actorFacts(rollWorld, aKey(rollWorld)), objectPhysics(bed), 'carry');
+  const texts = ['take the bed', 'grab the bed', 'pick up the bed', 'take the bed now', 'grab the bed frame and lift', 'pick up the bed carefully', 'take that bed', 'grab that bed'];
+  let sawPass = false, sawFail = false;
+  for (const t of texts) {
+    const chk = rollPhysicsCheck(rollWorld, { actorId: aKey(rollWorld), hardness: cap.difficulty, intentText: t });
+    const res = evaluatePhysicsSync(rollWorld, t);
+    if (chk.outcome === 'failure') {
+      sawFail = true;
+      assert.equal(res.deltas.length, 0, `failed roll ("${t}") mutates nothing`);
+      assert.match(res.description, /too heavy|can'?t|heavy/i, 'failure narrated honestly');
+    } else {
+      sawPass = true;
+      const hd = res.deltas.find(d => d.op === 'holdObject');
+      assert.ok(hd && hd.objectId === BED2, `passed roll ("${t}") emits holdObject`);
+      assert.ok(!res.deltas.some(d => d.op === 'createItem'), 'no pack item on a passed roll');
+      const w2 = applyDeltas(rollWorld, res.deltas);
+      assert.equal(w2.objects?.[BED2]?.heldByActorId, aKey(rollWorld), 'and the writer commits it');
+    }
+    if (sawPass && sawFail) break;
+  }
+  assert.ok(sawPass && sawFail, `both roll outcomes exercised (pass=${sawPass}, fail=${sawFail})`);
+});
+
+test('U698-R4d IMPOSSIBLE capacity — a fixed fixture refuses; piece and overlay preserved', () => {
+  const w = renamePiece(might(boot2(), 20), POT, { name: 'hearth', kind: 'hearth', material: 'stone' });
+  const piece = pieceById(w, NODE2, POT);
+  assert.equal(actorObjectCapacity(actorFacts(w, aKey(w)), objectPhysics(piece), 'carry').verdict, 'impossible', 'fixture really is impossible');
+  const res = evaluatePhysicsSync(w, 'take the hearth');
+  assert.equal(res.deltas.length, 0, 'impossible → zero deltas');
+  const r = pm(w, 'take the hearth');
+  assert.ok(pieceById(r.world, NODE2, POT), 'piece intact');
+  assert.equal(r.world.objects?.[POT], undefined, 'no overlay minted');
 });

@@ -1211,11 +1211,20 @@ export function applyDeltas(world, deltas = []) {
       const actorKey = String(actor.id || 'party');
       const placement = resolvedObjectPlacement(w, objId);
       if (!placement || placement.status === 'held') continue;    // idempotent re-take / held-by-other
-      const interior = (w.scene && typeof w.scene.interior === 'object') ? w.scene.interior : null;
-      if (!interior) continue;                                    // no taking through walls from outside
       if (String(found.nodeId) !== String(w.map?.currentNodeId || '')) continue;
-      if (String(placement.structureId || '') !== String(interior.structureKey || '')) continue;
-      if (String(placement.room || '') !== String(interior.roomId || '')) continue;
+      // Co-location is THE REQUESTED ACTOR's truth, never the leader's global room
+      // (release-correction blocker 2): the actor's own canonical pos must stand in
+      // the object's live structure AND live room. A positionless, outdoor, or
+      // foreign-structure actor takes nothing.
+      const apos = actor.pos;
+      const aFrame = String(apos?.frame || '');
+      if (!apos || !Number.isInteger(apos.gx) || !Number.isInteger(apos.gy) || !aFrame.startsWith('struct:')) continue;
+      const aSid = aFrame.slice('struct:'.length);
+      if (String(placement.structureId || '') !== aSid) continue;
+      const aStruct = w.structures?.byId?.[aSid];
+      if (!aStruct) continue;
+      const aRoom = roomOfStructCell(floorPlan(aStruct), apos.gx, apos.gy);
+      if (!aRoom || String(placement.room || '') !== String(aRoom)) continue;
       const objects = (w.objects && typeof w.objects === 'object') ? w.objects : {};
       let handsFull = false;
       for (const oid of Object.keys(objects)) {
@@ -1257,10 +1266,19 @@ export function applyDeltas(world, deltas = []) {
       if (held && String(placement.heldByActorId || '') !== actorKey) continue; // only the holder releases
       if (!held) {
         if (isFurnitureDestroyed(piece)) continue;
-        const interior = (w.scene && typeof w.scene.interior === 'object') ? w.scene.interior : null;
-        if (!interior) continue;
-        if (String(placement?.structureId || '') !== String(interior.structureKey || '')) continue;
-        if (String(placement?.room || '') !== String(interior.roomId || '')) continue;
+        // A non-held (push-into-place) source requires THE REQUESTED ACTOR beside
+        // the object — the actor's own pos frame/room, never the leader's global
+        // scene (release-correction blocker 2: a remote actor must not teleport a
+        // base object into their own room through this seam).
+        const apos = actor.pos;
+        const aFrame = String(apos?.frame || '');
+        if (!apos || !Number.isInteger(apos.gx) || !Number.isInteger(apos.gy) || !aFrame.startsWith('struct:')) continue;
+        const aSid = aFrame.slice('struct:'.length);
+        if (String(placement?.structureId || '') !== aSid) continue;
+        const aStruct = w.structures?.byId?.[aSid];
+        if (!aStruct) continue;
+        const aRoom = roomOfStructCell(floorPlan(aStruct), apos.gx, apos.gy);
+        if (!aRoom || String(placement?.room || '') !== String(aRoom)) continue;
       }
       if (String(found.nodeId) !== String(w.map?.currentNodeId || '')) continue;
       const target = legalPlaceTargetCell(w, objId, reqActor, ref);

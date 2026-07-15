@@ -38,7 +38,7 @@ import { FANTASY_STARTER_GEAR } from './chargen/fantasyGear.js';
 import { decompressAndCanonizeSync } from './decompression/decompress.js';
 import { containerContents, containerItemText } from './decompression/generateFurniture.js';
 import { discoverNode } from './map/mapState.js';
-import { detectPhysicalInteraction, evaluatePhysicsSync, heldObjectOf } from './llmPhysics.js';
+import { detectPhysicalInteraction, evaluatePhysicsSync, heldObjectOf, partyHeldObject } from './llmPhysics.js';
 import { rollPhysicsCheck } from './resolve.js';
 import { appendCanonEvent } from './csl/canonLog.js';
 import { createGoal, checkGoals } from './goals/goalContract.js';
@@ -7822,17 +7822,23 @@ function whereIsObjectTarget(text) {
 }
 
 // OBJ-HOLD-6A — the carry-lock refusal, shared by every structure-egress seam
-// (door exit, window exit, both interior travel bridges). Null when hands are
-// free; otherwise a fiction-first refusal that changes NOTHING (the world comes
-// back untouched — no event, no position change, still holding).
+// (door exit, window exit, both interior travel bridges). Null when the WHOLE
+// party's hands are free; otherwise a fiction-first refusal that changes NOTHING
+// (the world comes back untouched — no event, no position change, still holding).
+// PARTY-WIDE (release correction): egress moves the party, so a follower-held
+// object refuses the doorway exactly like a leader-held one — and this predicate
+// must match exitStructureInterior's structural backstop, or the travel bridges
+// would re-run their text on an unchanged world and loop.
 function carryLockRefusal(w, actorId) {
-  const held = heldObjectOf(w, actorId);
+  const held = partyHeldObject(w);
   if (!held) return null;
   const name = String(held.name || 'load').toLowerCase();
+  const leaderKey = String(w.party?.[0]?.id || 'party');
+  const whose = (held.heldByActorId === leaderKey || held.heldByActorId === 'party') ? 'your arms' : 'someone’s arms';
   return {
     world: w,
     output: {
-      narration: `Wizard: Not with the ${name} in your arms — you'd never manage the way out holding it. Set it down first.`,
+      narration: `Wizard: Not with the ${name} in ${whose} — you'd never manage the way out holding it. Set it down first.`,
       mechanics: '[carry-lock | egress refused | no roll]'
     }
   };

@@ -201,7 +201,23 @@ export function sceneSignature(world) {
   const struct = String(world?.scene?.interior?.structureKey || '');
   const combat = !!(world?.combat && world.combat.active);
   const enemies = combat ? (Array.isArray(world.combat.enemies) ? world.combat.enemies.length : 0) : 0;
-  return `${nodes}|${disc}|${here}|${struct}|${room}|c${combat ? 1 : 0}:${enemies}`;
+  // OBJ-HOLD-6A (release correction) — a held/placed overlay change moves a mini,
+  // so an already-mounted scene must refresh NOW. Only the placement-visible fields
+  // join the signature: durability (an invisible number) must never force a rebuild,
+  // and a world with no live overlays keeps today's signature byte-identically.
+  let objSeg = '';
+  const objects = world?.objects;
+  if (objects && typeof objects === 'object') {
+    const parts = [];
+    for (const oid of Object.keys(objects)) {
+      const rec = objects[oid];
+      if (!rec || typeof rec !== 'object') continue;
+      if (rec.heldByActorId != null) parts.push(`${oid}>h${rec.heldByActorId}`);
+      else if (rec.placedAt && rec.placedAt.cell) parts.push(`${oid}>p${rec.placedAt.cell.x},${rec.placedAt.cell.y}`);
+    }
+    if (parts.length) objSeg = `|o:${parts.sort().join(';')}`;
+  }
+  return `${nodes}|${disc}|${here}|${struct}|${room}|c${combat ? 1 : 0}:${enemies}${objSeg}`;
 }
 
 // The player's fine focus point in NODE-TILE units (what render3d's setCamera /

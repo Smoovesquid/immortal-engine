@@ -7,10 +7,12 @@ import { applyCondition as applyConditionPure } from './combat/conditions.js';
 import { ensureStructures } from './structures/structuresState.js';
 import { DOOR_STATES } from './structures/doors.js';
 import { escalationTier, heatAccrual } from './morality/escalation.js';
-import { legalMoveTargetCell } from './map/spatial/tacticalPos.js';
-import { findFurnitureByObjectId } from './objects/placement.js';
+import { legalMoveTargetCell, legalPlaceTargetCell, authoredBaseAnchorCell, roomOfStructCell } from './map/spatial/tacticalPos.js';
+import { findFurnitureByObjectId, resolvedObjectPlacement } from './objects/placement.js';
 import { initialDurability } from './objects/durability.js';
+import { objectPhysics } from './objects/mobility.js';
 import { isFurnitureDestroyed } from './structures/authoredFurniture.js';
+import { floorPlan } from './structures/floorPlan.js';
 
 // MR-2a — the valid target states for the `door` op (canon door-state enum).
 const DOOR_STATE_ENUM = new Set(DOOR_STATES);
@@ -1160,6 +1162,11 @@ export function applyDeltas(world, deltas = []) {
       const piece = found?.piece;
       if (!piece || piece.authored !== true) continue;
       const rot = Number.isFinite(+piece.rot) ? +piece.rot : 0;
+      // OBJ-HOLD-6A — ONE room truth inside the overlay too: commit the room OF THE
+      // TARGET CELL (the live room legalMoveTargetCell selected), never base
+      // provenance — a pot dropped in room B and dragged there must stay room B's.
+      const moveStruct = w.structures?.byId?.[String(piece.structureId)];
+      const roomAtTarget = moveStruct ? roomOfStructCell(floorPlan(moveStruct), target.x, target.y) : '';
       const prev = (w.objects && typeof w.objects === 'object' && w.objects[objId] && typeof w.objects[objId] === 'object') ? w.objects[objId] : {};
       const rest = { ...prev };
       delete rest.heldByActorId;
@@ -1168,12 +1175,112 @@ export function applyDeltas(world, deltas = []) {
         placedAt: {
           node: String(found.nodeId),
           structureId: String(piece.structureId),
-          room: String(piece.roomId),
+          room: String(roomAtTarget || piece.roomId),
           cell: { x: target.x, y: target.y },
           rot
         }
       };
       w = { ...w, objects: { ...(w.objects || {}), [objId]: nextObj } };
+      continue;
+    }
+
+    // OBJ-HOLD-6A — TAKE a supported object into an actor's arms. The identity-
+    // preserving replacement for removeFurniture+createItem on the supported domain
+    // (objectId + authored + grounded): the piece STAYS canonical in node.furniture;
+    // the overlay records who carries it. Trust boundary — every precondition is
+    // re-derived here, so a forged delta can never steal, lift masonry, take through
+    // a wall, or fill a second hand:
+    //   live piece · supported (authored+grounded) · not wrecked · mobility ≠ fixed ·
+    //   actor resolves · actor at the piece's node, inside its structure, in its LIVE
+    //   room (resolvedObjectPlacement) · not held by another actor · hands free.
+    // Effect: heldByActorId set, placedAt deleted, durability untouched. A re-take of
+    // the object you already hold is an idempotent no-op.
+    if (kind === 'holdObject') {
+      const objId = String(op.objectId || '');
+      if (!objId) continue;
+      const found = findFurnitureByObjectId(w, objId);
+      const piece = found?.piece;
+      if (!piece || piece.authored !== true) continue;            // supported domain only
+      if (!authoredBaseAnchorCell(w, objId)) continue;            // grounded only
+      if (isFurnitureDestroyed(piece)) continue;                  // wreckage is never picked up
+      if (objectPhysics(piece).mobility === 'fixed') continue;    // masonry stays
+      const party = Array.isArray(w.party) ? w.party : [];
+      const reqActor = String(op.actorId || 'party');
+      const actor = reqActor === 'party' ? (party[0] || null) : (party.find(m => String(m?.id) === reqActor) || null);
+      if (!actor) continue;
+      const actorKey = String(actor.id || 'party');
+      const placement = resolvedObjectPlacement(w, objId);
+      if (!placement || placement.status === 'held') continue;    // idempotent re-take / held-by-other
+      const interior = (w.scene && typeof w.scene.interior === 'object') ? w.scene.interior : null;
+      if (!interior) continue;                                    // no taking through walls from outside
+      if (String(found.nodeId) !== String(w.map?.currentNodeId || '')) continue;
+      if (String(placement.structureId || '') !== String(interior.structureKey || '')) continue;
+      if (String(placement.room || '') !== String(interior.roomId || '')) continue;
+      const objects = (w.objects && typeof w.objects === 'object') ? w.objects : {};
+      let handsFull = false;
+      for (const oid of Object.keys(objects)) {
+        if (oid !== objId && String(objects[oid]?.heldByActorId ?? '') === actorKey) { handsFull = true; break; }
+      }
+      if (handsFull) continue;                                    // one object, two arms
+      const prev = (objects[objId] && typeof objects[objId] === 'object') ? objects[objId] : {};
+      const rest = { ...prev };
+      delete rest.placedAt;
+      w = { ...w, objects: { ...objects, [objId]: { ...rest, heldByActorId: actorKey } } };
+      continue;
+    }
+
+    // OBJ-HOLD-6A — SET an object down (the honest release; also 6C's future push-
+    // into-place seam). Destination is ALWAYS engine-derived (legalPlaceTargetCell) —
+    // a caller-supplied cell is ignored outright. ref kinds enabled this airlock:
+    // 'actor' (beside you) and 'object' (beside a grounded floor object in your
+    // room); everything else fail-closed until its airlock. Guards: supported piece ·
+    // holder-only when held · a non-held source must be co-located (live room) and
+    // not wrecked (wreckage dying in your arms may still be set down; it can never
+    // be picked up) · NO free cell ⇒ NO mutation (it stays in your arms).
+    if (kind === 'placeObject') {
+      const objId = String(op.objectId || '');
+      if (!objId) continue;
+      const ref = (op.ref && typeof op.ref === 'object') ? op.ref : null;
+      const refKind = String(ref?.kind || '');
+      if (refKind !== 'actor' && refKind !== 'object') continue;  // 6A-enabled kinds only
+      const found = findFurnitureByObjectId(w, objId);
+      const piece = found?.piece;
+      if (!piece || piece.authored !== true) continue;
+      if (!authoredBaseAnchorCell(w, objId)) continue;
+      const party = Array.isArray(w.party) ? w.party : [];
+      const reqActor = String(op.actorId || 'party');
+      const actor = reqActor === 'party' ? (party[0] || null) : (party.find(m => String(m?.id) === reqActor) || null);
+      if (!actor) continue;
+      const actorKey = String(actor.id || 'party');
+      const placement = resolvedObjectPlacement(w, objId);
+      const held = placement?.status === 'held';
+      if (held && String(placement.heldByActorId || '') !== actorKey) continue; // only the holder releases
+      if (!held) {
+        if (isFurnitureDestroyed(piece)) continue;
+        const interior = (w.scene && typeof w.scene.interior === 'object') ? w.scene.interior : null;
+        if (!interior) continue;
+        if (String(placement?.structureId || '') !== String(interior.structureKey || '')) continue;
+        if (String(placement?.room || '') !== String(interior.roomId || '')) continue;
+      }
+      if (String(found.nodeId) !== String(w.map?.currentNodeId || '')) continue;
+      const target = legalPlaceTargetCell(w, objId, reqActor, ref);
+      if (!target) continue;                                      // nowhere to set it → still held
+      const structure = w.structures?.byId?.[String(piece.structureId)];
+      if (!structure) continue;
+      const room = roomOfStructCell(floorPlan(structure), target.x, target.y);
+      if (!room) continue;
+      const rot = Number.isFinite(+piece.rot) ? +piece.rot : 0;
+      const objects = (w.objects && typeof w.objects === 'object') ? w.objects : {};
+      const prev = (objects[objId] && typeof objects[objId] === 'object') ? objects[objId] : {};
+      const rest = { ...prev };
+      delete rest.heldByActorId;
+      w = { ...w, objects: { ...objects, [objId]: { ...rest, placedAt: {
+        node: String(found.nodeId),
+        structureId: String(piece.structureId),
+        room: String(room),
+        cell: { x: target.x, y: target.y },
+        rot
+      } } } };
       continue;
     }
 

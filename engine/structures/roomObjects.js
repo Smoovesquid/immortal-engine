@@ -16,6 +16,7 @@
 import { seedFromString, makeRng } from '../rng.js';
 import { normalizeTopology } from './topology.js';
 import { roomDetail } from './roomDetail.js';
+import { resolvedObjectPlacement } from '../objects/placement.js';
 
 // generateFurniture template name -> kindred roomDetail furniture kinds.
 const AFFINITY = {
@@ -101,6 +102,15 @@ export function furnitureRoomAssignments(world, nodeId) {
  * The Model A furniture pieces present at the player's position — THE candidate list
  * every interaction gate and survey matches against. nodeIndex is the piece's index in
  * node.furniture, so modifyFurniture/removeFurniture deltas stay keyed exactly as before.
+ *
+ * OBJ-HOLD-6A — ONE room truth. A SUPPORTED piece (objectId + authored) resolves its
+ * room membership by IDENTITY through resolvedObjectPlacement — never the name-keyed
+ * assignment map (which reads immutable provenance and would leave a barrel you dropped
+ * in room B mechanically stuck in room A):
+ *   - held    -> on NO floor list, in ANY branch (it is in someone's arms)
+ *   - placed  -> a candidate in placedAt's structure+room, and ONLY there
+ *   - base    -> the legacy room logic below, byte-identical
+ * Unsupported pieces take the legacy branches untouched:
  *   - not inside a structure          -> the full node list (behavior unchanged)
  *   - inside, no topology / one room  -> the full node list (bare-fixture fallback,
  *                                        mirrors occupantsOfRoom's)
@@ -111,16 +121,42 @@ export function objectsHere(world) {
   const furniture = Array.isArray(nodeAt(world, nid)?.furniture) ? nodeAt(world, nid).furniture : [];
   const all = furniture.map((piece, nodeIndex) => ({ piece, nodeIndex }));
   const interior = (world?.scene && typeof world.scene.interior === 'object' && world.scene.interior) ? world.scene.interior : null;
-  if (!interior) return all;
+  const structureKey = interior ? String(interior.structureKey || '') : '';
+  const roomId = interior ? String(interior.roomId || '') : '';
 
-  const structureKey = String(interior.structureKey || '');
-  const roomId = String(interior.roomId || '');
+  // Partition: supported pieces with a LIVE override answer by identity; everything
+  // else (unsupported, or supported still at base) falls to the legacy room logic.
+  const liveKeep = new Set();   // nodeIndex → included by the live projection
+  const legacy = [];            // entries the legacy branches decide
+  for (const entry of all) {
+    const piece = entry.piece;
+    if (piece && piece.authored === true && piece.objectId) {
+      const p = resolvedObjectPlacement(world, String(piece.objectId));
+      if (p && p.status === 'held') continue;                  // in someone's arms — nowhere
+      if (p && p.status === 'placed') {
+        if (interior && String(p.structureId || '') === structureKey && String(p.room || '') === roomId) {
+          liveKeep.add(entry.nodeIndex);
+        }
+        continue;                                              // placed → its live room ONLY
+      }
+    }
+    legacy.push(entry);
+  }
+
+  const finish = (legacyKept) => {
+    const keep = new Set(liveKeep);
+    for (const e of legacyKept) keep.add(e.nodeIndex);
+    return all.filter(e => keep.has(e.nodeIndex));             // node order preserved
+  };
+
+  if (!interior) return finish(legacy);
+
   const topo = normalizeTopology(world?.structures?.byId?.[structureKey]?.topology);
-  if (!topo || topo.rooms.length < 2) return all;
+  if (!topo || topo.rooms.length < 2) return finish(legacy);
 
   const assignments = furnitureRoomAssignments(world, nid);
-  return all.filter(({ piece }) => {
+  return finish(legacy.filter(({ piece }) => {
     const a = assignments.get(String(piece?.name || ''));
     return !!a && a.structureId === structureKey && a.roomId === roomId;
-  });
+  }));
 }

@@ -812,6 +812,9 @@ export function buildAuthoredSceneFurniture(fp, world, structureId) {
       if (f == null || f.id == null || f.authored !== 1) continue;
       const oid = authoredObjectId(structureId, String(f.id));
       const ov = resolvedObjectPlacement(world, oid);
+      // OBJ-HOLD-6A — a HELD object rides in someone's arms: it is on no floor cell,
+      // so the floor does not draw it (the in-hand panel shows it instead).
+      if (ov && ov.status === 'held') continue;
 
       // 1. display size in layout units.
       let uw, uh;

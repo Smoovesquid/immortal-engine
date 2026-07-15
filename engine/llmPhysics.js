@@ -11,7 +11,9 @@ import { rollPhysicsCheck } from './resolve.js';
 import { objectPhysics } from './objects/mobility.js';
 import { actorObjectCapacity } from './objects/capacity.js';
 import { actorFacts } from './objects/physicsActor.js';
-import { legalMoveTargetCell } from './map/spatial/tacticalPos.js';
+import { legalMoveTargetCell, legalPlaceTargetCell, authoredBaseAnchorCell } from './map/spatial/tacticalPos.js';
+import { findFurnitureByObjectId } from './objects/placement.js';
+import { isFurnitureDestroyed } from './structures/authoredFurniture.js';
 
 // Banned words in LLM-generated notes (Heartbreak Principle: no dramatic editorializing).
 const BANNED_WORDS = [
@@ -23,6 +25,24 @@ const BANNED_WORDS = [
 const BANNED_RE = new RegExp('\\b(' + BANNED_WORDS.join('|').replace(/\s+/g, '\\s+') + ')\\b', 'i');
 
 // --- Detection ---
+
+// OBJ-HOLD-6A — the ONE object in an actor's arms, or null. The canonical helper
+// every seam uses to ask "is the player carrying something?" — release routing,
+// the take gate's hands-free check, the playloop carry-lock and strike-on-held
+// guidance all read THIS. actorId 'party' canonicalizes to the leader's real id
+// (the key holdObject stores).
+export function heldObjectOf(world, actorId) {
+  const w = world && typeof world === 'object' ? world : {};
+  const party = Array.isArray(w.party) ? w.party : [];
+  const key = (String(actorId ?? 'party') === 'party') ? String(party[0]?.id || 'party') : String(actorId);
+  const objects = (w.objects && typeof w.objects === 'object') ? w.objects : {};
+  for (const oid of Object.keys(objects)) {
+    if (String(objects[oid]?.heldByActorId ?? '') !== key) continue;
+    const found = findFurnitureByObjectId(w, oid);
+    if (found?.piece) return { objectId: String(oid), piece: found.piece, name: String(found.piece.name || 'object') };
+  }
+  return null;
+}
 
 export function detectPhysicalInteraction(world, playerText) {
   const w = ensureWorld(world);
@@ -84,6 +104,22 @@ export function detectPhysicalInteraction(world, playerText) {
           matches.push({ type: 'item', bucket, name: item.name, match: 'name' });
         }
       }
+    }
+  }
+
+  // OBJ-HOLD-6A — the object in the player's ARMS is present and addressable, even
+  // though objectsHere correctly excludes it from the floor list. Name/head-noun
+  // match like furniture; a bare pronoun ("drop it") resolves to it ONLY when
+  // nothing else matched — the one-held rule makes that resolution deterministic.
+  const held = heldObjectOf(w, party[0]?.id || 'party');
+  if (held) {
+    const hName = held.name.toLowerCase();
+    const hHead = (hName.split(/\s+/).pop() || '').replace(/[^a-z0-9-]/g, '');
+    const hHeadHit = hHead.length >= 3 && new RegExp(`\\b${hHead}\\b`).test(text);
+    if (hName && (text.includes(hName) || hHeadHit)) {
+      matches.push({ type: 'heldObject', objectId: held.objectId, name: held.piece.name, match: 'name' });
+    } else if (!matches.length && /\b(it|this)\b/.test(text)) {
+      matches.push({ type: 'heldObject', objectId: held.objectId, name: held.piece.name, match: 'pronoun' });
     }
   }
 
@@ -389,6 +425,11 @@ const TAKE_RE   = /\b(take|grab|pick up|steal)\b/;
 // "shove" is here, not in FORCE_RE: shoving furniture aside is movement, not an
 // attack on it (smash/kick stay FORCE).
 const MOVE_RE   = /\b(drag|push|shove)\b/;
+// OBJ-HOLD-6A — the release verbs: "drop it", "set/put/lay ... down". Kept narrow so
+// FIRE_RE's "set ... on fire" family never collides, and gated in the playloop on the
+// actor actually HOLDING something — a pack-item "drop the rope" never reaches this
+// module and keeps today's trivial-gate routing byte-identically.
+const RELEASE_RE = /\bdrop\b|\b(?:set|put|lay)\b[^.!?]*\bdown\b/i;
 // INT-4-HELD — players say "set the pallet ON FIRE" / "set it ablaze" far more than
 // the contiguous "set fire to X". The old pattern only caught "set fire", so a natural
 // arson phrasing fell through to TAKE_RE ("You take the straw pallet") when a leading
@@ -410,6 +451,59 @@ function offlineFallback(world, playerText, detection) {
 
   // Find the first furniture match
   const furnitureMatch = detection.matches.find(mt => mt.type === 'furniture');
+
+  // ── OBJ-HOLD-6A — the object in your ARMS answers first ──────────────────────
+  // Release / re-take / inspect of the held object resolve here; a release phrase
+  // that names nothing you hold declines the physics claim (plausible:false) so the
+  // playloop falls through to today's routing for pack items, unchanged.
+  const heldMatch = detection.matches.find(mt => mt.type === 'heldObject');
+  if (RELEASE_RE.test(text) && !heldMatch) {
+    return { plausible: false, deltas: [], description: '', fallbackUsed: true };
+  }
+  if (heldMatch && here) {
+    const heldName = String(heldMatch.name || 'object').toLowerCase();
+    if (RELEASE_RE.test(text)) {
+      // "set X down beside Y": ground Y only when it is a real, grounded floor object
+      // in THIS room (the writer would refuse anything else); a target the map cannot
+      // ground downgrades honestly to a plain set-down at your feet — the narration
+      // then makes no spatial claim. Resting-ON is unsupported: always beside.
+      let ref = { kind: 'actor' };
+      let besideName = '';
+      const fm = detection.matches.find(mt => mt.type === 'furniture');
+      if (fm) {
+        const fPiece = (Array.isArray(here.furniture) ? here.furniture : [])[fm.index];
+        if (fPiece && fPiece.authored === true && fPiece.objectId
+            && legalPlaceTargetCell(w, heldMatch.objectId, actorId, { kind: 'object', objectId: fPiece.objectId })) {
+          ref = { kind: 'object', objectId: String(fPiece.objectId) };
+          besideName = String(fPiece.name || '').toLowerCase();
+        }
+      }
+      const target = legalPlaceTargetCell(w, heldMatch.objectId, actorId, ref);
+      if (!target) {
+        return {
+          plausible: true, deltas: [],
+          description: `There's no clear spot to set the ${heldName} — you keep hold of it.`,
+          fallbackUsed: true
+        };
+      }
+      return {
+        plausible: true,
+        deltas: [{ op: 'placeObject', actorId, objectId: heldMatch.objectId, ref }],
+        description: besideName
+          ? `You set the ${heldName} down beside the ${besideName}.`
+          : `You set the ${heldName} down.`,
+        fallbackUsed: true
+      };
+    }
+    if (TAKE_RE.test(text)) {
+      return { plausible: true, deltas: [], description: `You're already carrying the ${heldName}.`, fallbackUsed: true };
+    }
+    if (EXAMINE_RE.test(text)) {
+      return { plausible: true, deltas: [], description: `You look the ${heldName} over in your arms — it's right where you're carrying it.`, fallbackUsed: true };
+    }
+    return { plausible: true, deltas: [], description: `The ${heldName} stays in your arms.`, fallbackUsed: true };
+  }
+
   if (!furnitureMatch || !here) {
     const targetName = detection.matches[0]?.name || 'the object';
     return {
@@ -535,6 +629,42 @@ function offlineFallback(world, playerText, detection) {
       hardness: fHardness,
       material: fMaterial
     });
+
+    // OBJ-HOLD-6A — the SUPPORTED domain (authored + objectId + grounded to a plan
+    // cell) is taken into your ARMS through the holdObject writer: the piece stays
+    // canonical in node.furniture, identity and durability survive, and the map can
+    // keep drawing the truth. Everything else keeps the legacy remove+createItem
+    // path below BYTE-IDENTICALLY (procgen/generic/exterior parity is FURN-PARITY-1's).
+    const supported = f.authored === true && f.objectId && !!authoredBaseAnchorCell(w, f.objectId);
+    if (supported) {
+      if (isFurnitureDestroyed(f)) {
+        return {
+          plausible: true, deltas: [],
+          description: `The ${targetName} is wreckage now — nothing left worth carrying.`,
+          fallbackUsed: true, hardness: fHardness, material: fMaterial
+        };
+      }
+      const heldNow = heldObjectOf(w, actorId);
+      if (heldNow && heldNow.objectId !== String(f.objectId)) {
+        return {
+          plausible: true, deltas: [],
+          description: `Your hands are full with the ${String(heldNow.name).toLowerCase()} — set it down first.`,
+          fallbackUsed: true, hardness: fHardness, material: fMaterial
+        };
+      }
+      const holdResult = () => ({
+        plausible: true,
+        deltas: [{ op: 'holdObject', actorId, objectId: f.objectId }],
+        description: `You take up the ${targetName} — it's in your arms now.`,
+        fallbackUsed: true, hardness: fHardness, material: fMaterial
+      });
+      if (cap.verdict === 'auto') return holdResult();
+      if (cap.verdict === 'roll') {
+        const chk = rollPhysicsCheck(w, { actorId, hardness: cap.difficulty, intentText: text });
+        return chk.outcome === 'failure' ? tooHeavy() : holdResult();
+      }
+      return tooHeavy();
+    }
 
     if (cap.verdict === 'auto') return takeResult();
     if (cap.verdict === 'roll') {

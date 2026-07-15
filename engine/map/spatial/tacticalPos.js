@@ -25,7 +25,7 @@ import { seedFromString, makeRng } from '../../rng.js';
 import { floorPlan } from '../../structures/floorPlan.js';
 // FUNC-MINIS-1 — the walk's blocking mask subtracts placed pieces the world has
 // since destroyed (a wrecked barrel no longer bars the cell it stood on).
-import { destroyedAuthoredPieceIds } from '../../structures/authoredFurniture.js';
+import { destroyedAuthoredPieceIds, isFurnitureDestroyed } from '../../structures/authoredFurniture.js';
 import { findFurnitureByObjectId, resolvedObjectPlacement } from '../../objects/placement.js';
 // MR-3a — the wild-feature derivation is the SINGLE source of the outdoor
 // walkable-mask truth: a blocking wild feature (a tree, a boulder) makes its region
@@ -411,7 +411,26 @@ function movedAuthoredPieces(world, structure) {
     if (!c || !Number.isInteger(+c.x) || !Number.isInteger(+c.y)) continue;
     const p = findFurnitureByObjectId(world, oid)?.piece;
     if (!p || p.authored !== true || String(p.structureId) !== sid) continue;
+    // OBJ-HOLD-6A — a moved piece that has since been WRECKED blocks nothing: its
+    // override cell must not outlive it (its base anchor is already excluded via
+    // destroyedAuthoredPieceIds, so skipping here frees BOTH cells).
+    if (isFurnitureDestroyed(p)) continue;
     out.push({ pieceId: String(p.pieceId), cell: { x: +c.x, y: +c.y } });
+  }
+  return out;
+}
+
+// OBJ-HOLD-6A — the pieceIds of every authored piece of THIS structure currently in
+// someone's arms. A held object is on NO floor cell (resolvedObjectPlacement's held
+// rule), so occupancy must exclude its static anchor and add nothing back.
+function heldAuthoredPieceIds(world, structure) {
+  const out = [];
+  const objects = (world && world.objects && typeof world.objects === 'object') ? world.objects : {};
+  const sid = String(structure?.id ?? '');
+  for (const oid of Object.keys(objects)) {
+    if (objects[oid]?.heldByActorId == null) continue;
+    const p = findFurnitureByObjectId(world, oid)?.piece;
+    if (p && p.authored === true && String(p.structureId) === sid) out.push(String(p.pieceId));
   }
   return out;
 }
@@ -426,6 +445,7 @@ export function liveAuthoredBlockedCells(world, structure, cache = null) {
   const destroyed = destroyedAuthoredPieceIds(world, structure);
   if (destroyed) for (const d of destroyed) excludeIds.add(String(d));
   for (const m of moved) excludeIds.add(m.pieceId);
+  for (const h of heldAuthoredPieceIds(world, structure)) excludeIds.add(h);
   // Copy: furnitureBlockedCells may return a cached Set — never mutate it in place.
   const base = new Set(furnitureBlockedCells(structure, excludeIds.size ? null : cache, excludeIds.size ? excludeIds : null));
   for (const m of moved) base.add(`${m.cell.x},${m.cell.y}`);
@@ -446,10 +466,19 @@ export function legalMoveTargetCell(world, objectId, actorId) {
   if (!placement || placement.status === 'held') return null; // held → not this verb
   const p = findFurnitureByObjectId(world, objectId)?.piece;
   if (!p || p.authored !== true) return null;                 // authored only
-  const structure = world?.structures?.byId?.[String(p.structureId)];
+  // OBJ-HOLD-6A — the LIVE room, never base provenance: a dropped object drags in
+  // the room it stands in NOW (placed → placedAt.room/structureId; base → the
+  // authored room). Room-less placements (6C doorway thresholds) are not draggable
+  // by this verb until 6C supplies the actor-side rule.
+  const liveStructId = (placement.status === 'placed' && placement.structureId != null)
+    ? String(placement.structureId) : String(p.structureId);
+  const liveRoomId = placement.status === 'placed'
+    ? (placement.room != null ? String(placement.room) : '') : String(p.roomId);
+  if (!liveRoomId) return null;
+  const structure = world?.structures?.byId?.[liveStructId];
   if (!structure) return null;
   const plan = floorPlan(structure);
-  const room = (Array.isArray(plan?.rooms) ? plan.rooms : []).find(r => String(r?.id) === String(p.roomId));
+  const room = (Array.isArray(plan?.rooms) ? plan.rooms : []).find(r => String(r?.id) === liveRoomId);
   const rect = room ? roomRectCells(room) : null;
   if (!rect) return null;
 
@@ -478,6 +507,79 @@ export function legalMoveTargetCell(world, objectId, actorId) {
       if (d < bestD || (d === bestD && best && (y < best.y || (y === best.y && x < best.x)))) {
         best = { x, y }; bestD = d;
       }
+    }
+  }
+  return best;
+}
+
+// OBJ-HOLD-6A — the deterministic legal cell for SETTING an object down: the nearest
+// free cell in the ACTOR's current room, measured from the actor (ref:'actor') or from
+// a named grounded floor object in that same room (ref:'object'). The placeObject
+// writer re-derives THIS and commits nothing else — a caller can never supply a cell.
+// Returns {x,y} or null (no free cell → the object stays where it is / in your arms).
+// Supported domain only: authored + grounded; any other ref kind is fail-closed here.
+export function legalPlaceTargetCell(world, objectId, actorId, ref) {
+  const objId = String(objectId || '');
+  if (!objId) return null;
+  const p = findFurnitureByObjectId(world, objId)?.piece;
+  if (!p || p.authored !== true) return null;                 // supported only
+  if (!authoredBaseAnchorCell(world, objId)) return null;     // grounded only
+
+  // Destination side = wherever the ACTOR stands (indoors, in a real room).
+  const actor = resolvePartyActor(world, actorId);
+  const apos = actor?.pos;
+  if (!apos || !Number.isInteger(apos.gx) || !Number.isInteger(apos.gy)) return null;
+  const frame = String(apos.frame || '');
+  if (!frame.startsWith('struct:')) return null;              // outdoor placement is out of scope
+  const sid = frame.slice('struct:'.length);
+  if (String(p.structureId) !== sid) return null;             // carry is structure-local
+  const structure = world?.structures?.byId?.[sid];
+  if (!structure) return null;
+  const plan = floorPlan(structure);
+  const roomId = roomOfStructCell(plan, apos.gx, apos.gy);
+  if (!roomId) return null;                                   // actor in the wall band/void
+  const room = (Array.isArray(plan?.rooms) ? plan.rooms : []).find(r => String(r?.id) === roomId);
+  const rect = room ? roomRectCells(room) : null;
+  if (!rect) return null;
+
+  // The scan anchor: the actor's cell, or the reference object's LIVE cell — a real,
+  // grounded, un-wrecked floor object in the actor's current room. Anything else
+  // (held, wrecked, foreign-room, ungrounded, unknown) refuses fail-closed.
+  let anchor = { x: apos.gx, y: apos.gy };
+  const kind = String(ref?.kind || '');
+  if (kind === 'object') {
+    const rid = String(ref.objectId || '');
+    if (!rid || rid === objId) return null;
+    const rPiece = findFurnitureByObjectId(world, rid)?.piece;
+    if (!rPiece || isFurnitureDestroyed(rPiece)) return null;
+    const rp = resolvedObjectPlacement(world, rid);
+    if (!rp || rp.status === 'held') return null;
+    if (String(rp.structureId ?? rPiece.structureId ?? '') !== sid) return null;
+    if (String(rp.room ?? '') !== roomId) return null;
+    const rCell = rp.cell || authoredBaseAnchorCell(world, rid);
+    if (!rCell) return null;
+    anchor = { x: rCell.x, y: rCell.y };
+  } else if (kind !== 'actor') {
+    return null;                                              // 6A-enabled kinds only
+  }
+
+  const placement = resolvedObjectPlacement(world, objId);
+  const blocked = liveAuthoredBlockedCells(world, structure, null);
+  const doorReserved = reservedDoorCells(plan);
+  const actorKey = `${apos.gx},${apos.gy}`;
+  const curCell = (placement && placement.status !== 'held')
+    ? (placement.cell || authoredBaseAnchorCell(world, objId)) : null;
+  const curKey = curCell ? `${curCell.x},${curCell.y}` : null; // a floor source never lands on itself
+
+  let best = null, bestD = Infinity;
+  for (let y = rect.minY; y <= rect.maxY; y++) {
+    for (let x = rect.minX; x <= rect.maxX; x++) {
+      const cellKey = `${x},${y}`;
+      if (cellKey === actorKey || cellKey === curKey) continue;
+      if (roomOfStructCell(plan, x, y) !== roomId) continue;  // wall/void or another room
+      if (blocked.has(cellKey) || doorReserved.has(cellKey)) continue;
+      const d = Math.max(Math.abs(x - anchor.x), Math.abs(y - anchor.y));
+      if (d < bestD) { best = { x, y }; bestD = d; }
     }
   }
   return best;

@@ -38,7 +38,7 @@ import { FANTASY_STARTER_GEAR } from './chargen/fantasyGear.js';
 import { decompressAndCanonizeSync } from './decompression/decompress.js';
 import { containerContents, containerItemText } from './decompression/generateFurniture.js';
 import { discoverNode } from './map/mapState.js';
-import { detectPhysicalInteraction, evaluatePhysicsSync } from './llmPhysics.js';
+import { detectPhysicalInteraction, evaluatePhysicsSync, heldObjectOf } from './llmPhysics.js';
 import { rollPhysicsCheck } from './resolve.js';
 import { appendCanonEvent } from './csl/canonLog.js';
 import { createGoal, checkGoals } from './goals/goalContract.js';
@@ -1942,6 +1942,11 @@ function playerMoveCore(world, packsById, text, dqIntent) {
         return { world: w, output: { narration: 'Wizard: You loose a shot through the window — it skips off the ground outside. There\'s nothing out there to hit; save it for when there is.', mechanics: '[window:shoot|no-target]' } };
       }
       if (wv === 'exit') {
+        // OBJ-HOLD-6A — carry is structure-local: nobody shoulders through a window
+        // with a barrel in their arms. Refuse BEFORE any exit is attempted so no
+        // success prose can follow the structural no-op. Dropping it restores egress.
+        const carryLock = carryLockRefusal(w, actorId);
+        if (carryLock) return carryLock;
         // WIN-EGRESS-1 — the door pattern, extended to windows. Each window carries a compass
         // facing. When more than one qualifies the DM NEVER bounces the intent back as a "which
         // window?" cardinal menu (THE_DM_TEST.md: making the player operate the compass to do
@@ -2103,6 +2108,13 @@ function playerMoveCore(world, packsById, text, dqIntent) {
   }
 
   if (!combatEngageAction && !declaredNpcViolence && interiorAction.kind === 'exit') {
+    // OBJ-HOLD-6A — the carry-lock: refuse the doorway fiction-first while a
+    // supported object rides in your arms (exitStructureInterior would no-op anyway;
+    // this narrates WHY instead of letting a no-op read like success).
+    if (w.scene?.interior) {
+      const carryLock = carryLockRefusal(w, actorId);
+      if (carryLock) return carryLock;
+    }
     const wasDungeon = isDungeonStructureId(w.scene?.interior?.structureKey);
     const w1 = exitStructureInterior(w);
     if (w1 !== w) {
@@ -2444,6 +2456,13 @@ function playerMoveCore(world, packsById, text, dqIntent) {
     if (!reachablePersonAtNode(w)) {
       return { world: w, output: { narration: 'Wizard: You rise and go to the door, but the settlement is still — the lane empty at this hour, the shutters along it closed. There is no one about to ask just now; you will have to find a face elsewhere.', mechanics: '[seek-person → none about | no roll]' } };
     }
+    // OBJ-HOLD-6A — the carry-lock guards EVERY egress bridge (exitStructureInterior
+    // would no-op while holding, and re-running the text on an unchanged world here
+    // would loop). Refuse fiction-first instead.
+    {
+      const carryLock = carryLockRefusal(w, actorId);
+      if (carryLock) return carryLock;
+    }
     const outside = exitStructureInterior(w);
     const r = playerMoveCore(outside, packsById, text);
     const inner = String(r?.output?.narration || '').replace(/^Wizard:\s*/, '').trim();
@@ -2452,6 +2471,11 @@ function playerMoveCore(world, packsById, text, dqIntent) {
   if (w.scene?.interior && !w.combat?.active && !declaredNpcViolence && isFreeMovementIntent(text)
       && !asksPresenceQuestion
       && (bridgeTravelVerb || bridgeNamedPlace || bridgeUnknownDest)) {
+    // OBJ-HOLD-6A — same carry-lock as the seek-person bridge above.
+    {
+      const carryLock = carryLockRefusal(w, actorId);
+      if (carryLock) return carryLock;
+    }
     const outside = exitStructureInterior(w);
     const r = playerMoveCore(outside, packsById, text);
     const inner = String(r?.output?.narration || '').replace(/^Wizard:\s*/, '').trim();
@@ -2696,6 +2720,20 @@ function playerMoveCore(world, packsById, text, dqIntent) {
     // object set; outdoor structure questions stay on the survey. (D-B4 resid b.)
     if (w.scene?.interior && !w.scene?.dialogue) {
       const presenceNoun = objectPresenceTarget(text);
+      // OBJ-HOLD-6A — the thing in your ARMS answers presence and where-is questions
+      // FIRST: with held objects correctly off the floor roster, "is there a cooking
+      // pot here?" would otherwise say "no" while you carry it — a canon lie. The
+      // where-is form answers ONLY for the held object; anything else keeps its
+      // existing routing untouched.
+      {
+        const probeNoun = presenceNoun || whereIsObjectTarget(text);
+        if (probeNoun) {
+          const heldP = heldObjectOf(w, 'party');
+          if (heldP && nameMatches(heldP.name, probeNoun, probeNoun.split(/\s+/).pop())) {
+            return { world: w, output: { narration: `Wizard: You're carrying the ${String(heldP.name).toLowerCase()} — it's right there in your arms.`, mechanics: 'observe only — no roll, state unchanged' } };
+          }
+        }
+      }
       if (presenceNoun) {
         // Room-scoped (roomObjects): "is there a chest here?" answers for THIS room,
         // not the whole building's node list (WB-Q5).
@@ -3941,9 +3979,30 @@ function playerMoveCore(world, packsById, text, dqIntent) {
   // resolves out of combat against persistent object AC/HP/threshold. Gated to a
   // furniture primary target with no present NPC.
   const objectAttack = !w.combat?.active && !w.scene?.dialogue && !declaredNpcViolence && detectObjectAttackIntent(w, text);
-  if (PHYSICS_VERB_RE.test(String(text || '')) || objectAttack) {
+  // OBJ-HOLD-6A — a swing at the thing in your OWN arms is guidance, not a roll: the
+  // held object is (correctly) absent from the floor candidates, so without this arm
+  // the strike would fall through to a nonsense freeform check against nothing.
+  if (!objectAttack && !w.combat?.active && !w.scene?.dialogue && !declaredNpcViolence
+      && OBJECT_ATTACK_VERB_RE.test(String(text || ''))) {
+    const heldT = heldObjectOf(w, actorId);
+    if (heldT) {
+      const tgt = objectAttackPrimaryTarget(text).toLowerCase();
+      const hName = String(heldT.name || '').toLowerCase();
+      const hHead = (hName.split(/\s+/).pop() || '').replace(/[^a-z0-9-]/g, '');
+      if (tgt && hName && (tgt.includes(hName) || (hHead.length >= 3 && new RegExp(`\\b${hHead}\\b`).test(tgt)))) {
+        return { world: w, output: { narration: `Wizard: The ${hName} is in your arms — set it down first if you mean to swing at it.`, mechanics: '[object-strike | target held | no roll]' } };
+      }
+    }
+  }
+  // OBJ-HOLD-6A — release verbs open the physics gate ONLY while the actor holds a
+  // supported object; a pack-item "drop the rope" keeps today's trivial-gate routing
+  // byte-identically. The held-object pronoun match ("drop it") counts as a name
+  // match — the one-held rule makes it exact.
+  const RELEASE_VERB_RE = /\bdrop\b|\b(?:set|put|lay)\b[^.!?]*\bdown\b/i;
+  const heldForRelease = RELEASE_VERB_RE.test(String(text || '')) ? heldObjectOf(w, actorId) : null;
+  if (PHYSICS_VERB_RE.test(String(text || '')) || objectAttack || heldForRelease) {
     const detection = detectPhysicalInteraction(w, text);
-    const nameMatch = (detection.matches || []).some(m => m.match === 'name' || m.match === 'part');
+    const nameMatch = (detection.matches || []).some(m => m.match === 'name' || m.match === 'part' || m.type === 'heldObject');
     if (detection.detected && nameMatch) {
       // OBJ-DURABILITY-1 / DM-GATE-1b — a DECLARED FURNITURE ATTACK resolves against the
       // target's PERSISTENT AC/HP/threshold via resolveObjectStrike, which carries the ONE
@@ -7747,6 +7806,36 @@ function objectPresenceTarget(text) {
   if (OBJECT_PRESENCE_EXCLUDE.has(noun)) return null;
   if (/\b(?:way|exit|exits|out|door\s+out)\b/.test(noun)) return null; // exits → survey
   return noun;
+}
+
+// OBJ-HOLD-6A — "where's the cooking pot?" / "where is my barrel". Deliberately
+// NARROW: the caller answers it ONLY when the noun resolves to the object in the
+// player's arms; every other where-is keeps whatever routing it has today.
+function whereIsObjectTarget(text) {
+  const t = String(text || '').toLowerCase().trim();
+  const m = t.match(/^where(?:'s|\s+is)\s+(?:the|my|that)\s+([a-z][a-z '-]{1,26}?)\s*[?.!]*$/i);
+  if (!m) return null;
+  const noun = m[1].trim();
+  if (!noun || noun.split(/\s+/).length > 3) return null;
+  if (OBJECT_PRESENCE_EXCLUDE.has(noun)) return null;
+  return noun;
+}
+
+// OBJ-HOLD-6A — the carry-lock refusal, shared by every structure-egress seam
+// (door exit, window exit, both interior travel bridges). Null when hands are
+// free; otherwise a fiction-first refusal that changes NOTHING (the world comes
+// back untouched — no event, no position change, still holding).
+function carryLockRefusal(w, actorId) {
+  const held = heldObjectOf(w, actorId);
+  if (!held) return null;
+  const name = String(held.name || 'load').toLowerCase();
+  return {
+    world: w,
+    output: {
+      narration: `Wizard: Not with the ${name} in your arms — you'd never manage the way out holding it. Set it down first.`,
+      mechanics: '[carry-lock | egress refused | no roll]'
+    }
+  };
 }
 
 function isExploreIntent(text) {

@@ -14,6 +14,7 @@ import { roomWindows, windowSurveyPhrase } from '../structures/roomWindows.js';
 import { outdoorTerrainFacts, terrainSurveyPhrases } from '../world/wildFacts.js';
 import { occupantsOfRoom, outdoorOccupants, visibleThroughWindows, occupiedWindowsFromOutside } from '../structures/roomOccupancy.js';
 import { objectsHere } from '../structures/roomObjects.js';
+import { heldObjectOf } from '../llmPhysics.js';
 import { FURN } from '../structures/roomDetail.js';
 import { isFurnitureDestroyed } from '../structures/authoredFurniture.js';
 import { getRoomState } from '../structures/roomState.js';
@@ -1528,6 +1529,13 @@ function answerObjectLocation(world, lowerText) {
   const held = carried.find(it => itemNameInText(lowerText, String(it.name || '').toLowerCase()));
   if (held) {
     return `Your ${String(held.name)} is right where it's always been — on you, in your pack. Nothing's gone missing.`;
+  }
+  // OBJ-HOLD-6A — the object in your ARMS answers where-is before the floor list:
+  // objectsHere rightly excludes a held object, so without this arm the absent
+  // branch below would say "not in your hands" about the thing in your hands.
+  const inArms = heldObjectOf(world, 'party');
+  if (inArms && itemNameInText(lowerText, String(inArms.name || '').toLowerCase())) {
+    return `You're carrying the ${String(inArms.name).toLowerCase()} — it's right there in your arms.`;
   }
   // Pull the object phrase after the determiner ("the letter", "my staff") to
   // name what the player THINKS they had. Skip the where/go scaffolding words.

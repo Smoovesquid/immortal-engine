@@ -113,6 +113,20 @@ export function exitStructureInterior(world) {
   const w = ensureWorld(world);
   if (!w.scene?.interior) return w;
 
+  // OBJ-HOLD-6A — the carry-lock's STRUCTURAL backstop: carry is structure-local, so
+  // egress with a held environmental object refuses as a no-op at this one seam. The
+  // narrating call sites (door exit, window exit, the interior travel bridges) all
+  // consult heldObjectOf FIRST and refuse in fiction; this guard guarantees that any
+  // future caller that forgets cannot leak a held object outside — the world simply
+  // does not change (no branch may narrate success after it).
+  {
+    const partyKey = String(w.party?.[0]?.id || 'party');
+    const objs = (w.objects && typeof w.objects === 'object') ? w.objects : {};
+    for (const oid of Object.keys(objs)) {
+      if (String(objs[oid]?.heldByActorId ?? '') === partyKey) return w;
+    }
+  }
+
   // MR-1a — EGRESS WRITES THE DOORSTEP (docs/POSITION_AS_CANON.md §2/§3).
   // Compute where the body should land BEFORE clearing the interior: the region
   // cell just outside the door of the structure being left. The entry room is the

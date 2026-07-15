@@ -912,6 +912,7 @@ export function assertWorldInvariants(world) {
     if (objects == null || typeof objects !== 'object' || Array.isArray(objects)) {
       throw new Error('Invariant: world.objects must be a plain object map');
     }
+    const holders = new Set(); // OBJ-HOLD-6A — one actor, one object (law 2 below)
     for (const oid of Object.keys(objects)) {
       const rec = objects[oid];
       if (rec == null || typeof rec !== 'object' || Array.isArray(rec)) {
@@ -926,6 +927,21 @@ export function assertWorldInvariants(world) {
       }
       if (rec.heldByActorId != null && typeof rec.heldByActorId !== 'string') {
         throw new Error(`Invariant: world.objects[${oid}].heldByActorId must be a string or absent`);
+      }
+      // OBJ-HOLD-6A — the two one-held laws. (1) EXCLUSION: held and placed are
+      // disjoint states — a record carrying both is a corrupt split truth. (2)
+      // UNIQUENESS: an actor's hands hold at most ONE object across all records.
+      // Deliberately NO actor-existence law: an overlay held by a since-removed NPC
+      // must not brick an unrelated save (writers treat it as held-by-other;
+      // OBJ-NPC-1 owns reconciliation).
+      if (rec.heldByActorId != null && rec.placedAt != null) {
+        throw new Error(`Invariant: world.objects[${oid}] is both held and placed`);
+      }
+      if (rec.heldByActorId != null) {
+        if (holders.has(rec.heldByActorId)) {
+          throw new Error(`Invariant: actor ${rec.heldByActorId} holds more than one object`);
+        }
+        holders.add(rec.heldByActorId);
       }
       if (rec.placedAt != null) {
         const pa = rec.placedAt;

@@ -2,6 +2,7 @@ import { normalizeManifest, normalizePack } from '../engine/rulesets.js';
 import { newWorld, ensureWorld } from '../engine/state.js';
 import { beginAdventure, playerMove, newScene, setPieceCooldownGate, carriesInteriorMovementIntent, detectObjectAttackIntent, detectWindowActionIntent } from '../engine/playloop.js';
 import { isMetaQuestion, handleMetaQuestion, looksMultiAction } from '../engine/grace/gracefulAdjudication.js';
+import { heldObjectOf } from '../engine/llmPhysics.js';
 // INT-2R — buildParseCtx is browser-safe (no server-only deps; already in
 // this bundle's transitive graph via playloop.js -> assemblePacket.js). The
 // key-bearing engine/intent/llmIntent.js stays server-only — v1.js reaches
@@ -1048,8 +1049,8 @@ function renderInvoke() {
     el('div', { class: 'panel' },
       el('div', { class: 'header' },
         el('div', {},
-          el('div', { class: 'title' }, 'Immortal Engine — v0.42.0'),
-          el('div', { class: 'sub' }, 'build 161 · 2026-07-14 · object durability')
+          el('div', { class: 'title' }, 'Immortal Engine — v0.43.0'),
+          el('div', { class: 'sub' }, 'build 162 · 2026-07-15 · object hold & carry')
         )
       ),
       // ── One-click front door: start (or resume) the Escape game ──────
@@ -1940,8 +1941,21 @@ function renderInventorySection(world) {
         ) : null
       );
 
+  // OBJ-HOLD-6A — the object in your ARMS (a canonical furniture piece, not a pack
+  // item): world.objects[id].heldByActorId, joined back to its live piece. It is
+  // deliberately NOT in a category list — you're carrying it, not pocketing it.
+  const heldObj = heldObjectOf(world, 'party');
+  const heldRow = heldObj ? el('div', { class: 'inv-cat inv-held' },
+    el('div', { class: 'inv-cat-head' },
+      el('span', { class: 'inv-cat-label' }, 'In your arms'),
+      el('span', { class: 'inv-cat-count' }, '×1')
+    ),
+    el('ul', { class: 'inv-list' }, [el('li', { class: 'inv-item' }, String(heldObj.name))])
+  ) : null;
+
   return el('section', { class: 'status-section', 'aria-label': 'Inventory' },
     el('h3', { class: 'status-heading' }, 'Inventory'),
+    heldRow,
     purseRow,
     body
   );

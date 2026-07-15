@@ -338,13 +338,17 @@ test('U697-I3: invariants reject divergence between terminal furniture state and
 });
 
 test('U697-I4: v33 placement fields survive upgrade, first strike, and save round-trip', () => {
+  // OBJ-HOLD-6A (U698) made held⊥placed an invariant LAW, so the original fixture
+  // (one record carrying BOTH placedAt and heldByActorId) is now an illegal state by
+  // design. The passthrough coverage is unchanged — proven on the two legal shapes.
   const oid = authoredObjectId('t', 'crate-v33-overlay');
   const source = withFurniture(boot('objdur-v33-overlay'), [piece({ objectId: oid })], { might: 10 });
+  // (a) PLACED record: placement + unknown fields survive upgrade, strike, round-trip.
   const placedAt = { node: source.map.currentNodeId, cell: { x: 6, y: 7 } };
   const legacy = {
     ...source,
     meta: { ...source.meta, version: 33 },
-    objects: { ...source.objects, [oid]: { placedAt, heldByActorId: 'porter', keepMe: 11 } },
+    objects: { ...source.objects, [oid]: { placedAt, keepMe: 11 } },
   };
   const upgraded = ensureWorld(legacy);
   const text = actionFor(upgraded, oid, 'I attack the oaken crate', p => p.rawDie === 20);
@@ -352,10 +356,22 @@ test('U697-I4: v33 placement fields survive upgrade, first strike, and save roun
   const round = importWorld(exportWorld(struck));
   const restored = round.world ?? round;
   assert.deepEqual(restored.objects[oid].placedAt, placedAt);
-  assert.equal(restored.objects[oid].heldByActorId, 'porter');
   assert.equal(restored.objects[oid].keepMe, 11);
   assert.ok(restored.objects[oid].durability, 'first strike adds durability without replacing the v33 overlay');
   assert.doesNotThrow(() => assertWorldInvariants(restored));
+  // (b) HELD record: heldByActorId + unknown fields survive upgrade and round-trip.
+  // (No strike leg: a held object is off the floor list, so a declared attack on it
+  // correctly no longer resolves — that behavior is U698-E1's.)
+  const legacyHeld = {
+    ...source,
+    meta: { ...source.meta, version: 33 },
+    objects: { ...source.objects, [oid]: { heldByActorId: 'porter', keepMe: 11 } },
+  };
+  const roundHeld = importWorld(exportWorld(ensureWorld(legacyHeld)));
+  const restoredHeld = roundHeld.world ?? roundHeld;
+  assert.equal(restoredHeld.objects[oid].heldByActorId, 'porter');
+  assert.equal(restoredHeld.objects[oid].keepMe, 11);
+  assert.doesNotThrow(() => assertWorldInvariants(restoredHeld));
 });
 
 // A shallow clone that skips ensureWorld's validation so we can hand a deliberately

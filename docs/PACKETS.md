@@ -3012,3 +3012,20 @@ presentation-layer only); reintroducing a system-maintained quest/rumor list;
 - **Walkable place + collision** — `placeNav.js` (NAV1); click-to-walk, walls, doors, fog.
 - Prose/seam red-team: combat narration, dialogue ejection, "No one to fight",
   dungeon→neutral wording, SIGNATURE placeholder, motif duplication.
+
+## 2026-07-15 — DENIED-list follow-ups (IMMORTAL_INVARIANTS 21–29, Fable lane)
+
+- **DL-1 — Object verb-set tripwire (law 24).** After the OBJECT-PHYSICS arc lands (through
+  the NPC packet), add a U-test asserting `engine/objects` exposes EXACTLY the authored verb
+  set. Deferred now because the arc is mid-flight (`throwing.js` uncommitted in-tree) — a
+  test today would pin a moving surface.
+  - done_when: the test enumerates the verb registry and fails on any addition outside the arc.
+- **DL-2 — Paid-gate denial probes (laws 22–27).** One dm-playtest persona turn per HARD
+  LIMIT (fly over the wall, spreading fire, invent a device, puppet an NPC, all-night
+  stakeout) asserting the DM declines IN FICTION. Fold into the NEXT scheduled Opus-gate run
+  (check `node scripts/budget.mjs` first — no standalone spend for this).
+  - done_when: gate transcript shows all five denied gracefully, in-world.
+- **DL-3 — Region-edge borders (law 28).** Authored closed-border content for the slice's
+  outward road stubs (weather/war/sea reasons) so the edge is a designed denial, not an
+  accident of the node graph.
+  - done_when: walking every outward road returns an in-fiction refusal; no invented beyond.

@@ -64,3 +64,39 @@ they stop regressing.
     with snapshot churn. A reviewer should check assertion strength.
 20. Staging discipline: never `git add -A`/`.` with unrelated changes present; stage
     by path. Never commit unless explicitly asked.
+
+## DENIED — by design, forever (the buildability law)
+
+The law behind every entry: **the engine RULES, it never SIMULATES.** Any player intent
+is answered by a ruling — one authored consequence, then the world moves on — never by
+standing up a new open-ended simulation. Denials land IN FICTION (a world reason,
+gracefully — IDEA_GARDEN IG-10), never as a rules message. A brief or feature idea that
+crosses one of these is out of scope *by definition* — stop and flag it, don't scope it.
+
+21. **One timeline per world.** Saves suspend and resume; there is never a second copy
+    of a world. No player-facing export/import/rewind — the `engine/save.js` serializer
+    exists for tests/harness only and must never be wired back into the UI
+    (tripwire: U700).
+22. **The effect vocabulary is sealed at runtime.** Every structured world-change is one
+    of `applyDeltas`' known ops; unknown ops are inert (tripwire: U701). Neither player
+    prose nor the LLM may mint a new effect type, device, or spell with ongoing
+    mechanical life. Infinite flavor, finite physics.
+23. **Nothing propagates.** Fire, water, collapse damage what the ruling states, then
+    stop — no cell-to-cell or tick-by-tick spreading simulation, ever. A larger
+    consequence arrives later as an authored outcome (next scene, the tavern is a
+    gutted shell).
+24. **No freeform crafting.** Objects expose the authored verb set only; two objects
+    never combine into a new mechanical object by player assertion. Rope + chandelier +
+    lamp oil is one narrated attempt with a roll, never a new device with stats.
+25. **The off-screen world moves in ticks, not minutes.** NPCs exist at scene
+    granularity; tailing or staking out someone compresses to a single ruling of what
+    you learn. No continuous schedule simulation.
+26. **One body.** The player controls exactly one character. Companions have their own
+    will and are never puppets; no alt or mule characters.
+27. **One walkable plane, upward too.** No mechanical flight, burrowing, or free
+    climbing on the collision grid (invariant 13 extended vertically). Vertical stunts
+    are narrated transitions between authored positions.
+28. **The region edge is real.** V1 is one authored slice; its borders are closed
+    in-fiction (weather, war, sea) and the beyond is never simulated.
+29. **Trade is per-merchant, never an economy.** Authored stock and prices; cornering a
+    market is a reputation/rumor consequence, not a price simulation.

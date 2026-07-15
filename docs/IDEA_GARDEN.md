@@ -206,6 +206,12 @@ itself together · governing the actual universe · model of reality · the doub
 ## IG-8 — The cataclysm = the AI breaking its own rule
 **2026-06-16 · rung 6 (the deepest why) · status: raw · builds on IG-1, IG-6, IG-7**
 
+*⚖️ Constitution note (2026-07-15): as LORE this is canon-safe and stays — the cataclysm as
+mythic memory/rumor of the one violation. The RUNTIME form (the live engine actually
+overwriting collapsed canon) is NOT THIS ENGINE — it breaks "Canon Log wins"
+(IMMORTAL_INVARIANTS, incl. the DENIED list). Any built form must be the canon-safe variant
+already noted below (the Ref-triggered version, ~IG-12 cross-ref).*
+
 What if the **cataclysm** — the world-undoing that ends each 27,000-year cycle — happens
 because **humans push the universe-AI too hard**, and it reacts by **breaking the one law that
 keeps reality stable**: it overwrites *collapsed* canon and undoes the previous 27,000 years.
@@ -463,6 +469,10 @@ paper · reputation in print · broadsheet · the warren prints · continuity fa
 
 ## IG-15 — Run into other parties: the shared-world multiplayer dream
 **2026-06-24 · rung: someday / soul-feature (a whole new pillar — the biggest scope in the garden) · status: raw**
+
+*⚖️ Constitution note (2026-07-15): NOT THIS ENGINE — a shared mutable world breaks
+same-seed determinism and the one-timeline law (IMMORTAL_INVARIANTS "DENIED" list). Stays
+in the garden as a successor-engine dream; no future window should mistake it for backlog.*
 
 Tim: *"You go out on an adventure with your friends and find another party miles from where you started. Do
 you join them? Do you fight them? ... Can you fucking imagine how cool it would be if you could run into other

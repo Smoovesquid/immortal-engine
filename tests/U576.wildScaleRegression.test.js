@@ -77,11 +77,30 @@ test('U576a drawModel.js\'s only change since the pre-packet base is PROP_MINI_K
     .replace(
       /(?:[ \t]*\/\/[^\n]*\n)*([ \t]*)props\.push\(\{ wx: fitted\.wx[^\n]*/,
       '$1PROPS_PUSH_PLACEHOLDER'
-    );
+    )
+    // CORPSE-TRUTH-1b (2026-07-16, U706-C2) legitimately touches ONE more spot:
+    // the people push now carries dead:Boolean(t.dead) so the 3-D diorama can lay
+    // a corpse down instead of mounting a living bobbing mini. Same carve-out
+    // posture: normalize the people.push call in BOTH revisions; everything else
+    // stays byte-locked.
+    .replace(/people\.push\(\{[\s\S]*?\}\);/, 'PEOPLE_PUSH_PLACEHOLDER');
+  // OBJ-RUBBLE-1 + CORPSE-TRUTH-1b (2026-07-16, U704/U706 + the fresh-eye review
+  // fix) legitimately touch oneMap.js in exactly TWO marked blocks: the lid-lifted
+  // furniture band gained a 'rubble' debris branch (a destroyed piece must never
+  // draw as an intact-looking box), and the npc token loop gained a t.dead fallen
+  // mark (a corpse must never draw as a living — or masked-hostile — figure).
+  // Normalize those two blocks in BOTH revisions; the rest of the ink draw stays
+  // byte-locked absolutely, so the NEXT unrelated packet still fails loudly here.
+  // (Added blocks normalize to NOTHING — the base predates them, so a placeholder
+  // would itself be a diff. Stripping them from whichever revision has them makes
+  // both sides byte-comparable.)
+  const normalizeOneMap = (src) => src
+    .replace(/(?:[ \t]*\/\/[^\n]*\n)*[ \t]*if \(t === 'rubble'\) \{[\s\S]*?continue;\n[ \t]*\}\n/, '')
+    .replace(/(?:[ \t]*\/\/[^\n]*\n)*[ \t]*if \(t\.dead\) \{[\s\S]*?continue;\n[ \t]*\}\n/, '');
   assert.notEqual(normalizeDrawModel(baseDrawModel), 0, 'precondition: base drawModel.js actually contains a PROP_MINI_KINDS declaration to normalize');
   assert.equal(normalizeDrawModel(DRAWMODEL_SRC), normalizeDrawModel(baseDrawModel),
-    'drawModel.js must be byte-identical to the pre-packet base OUTSIDE the PROP_MINI_KINDS set — the 2-D ink model is untouched (this packet reads INK_PARAMS, never edits it)');
-  assert.equal(ONEMAP_SRC, baseOneMap, 'oneMap.js must be BYTE-IDENTICAL to the pre-packet base — the 2-D canvas draw is untouched');
+    'drawModel.js must be byte-identical to the pre-packet base OUTSIDE the PROP_MINI_KINDS set / props.push / people.push carve-outs — the 2-D ink model is untouched');
+  assert.equal(normalizeOneMap(ONEMAP_SRC), normalizeOneMap(baseOneMap), 'oneMap.js must be byte-identical to the pre-packet base OUTSIDE the rubble + fallen-mark blocks — the 2-D canvas draw is otherwise untouched');
 });
 
 test('U576b render3d.js reads INK_PARAMS (the live ink-truth) but never assigns/mutates it — a read-only import, matching the brief\'s "2-D ink UNTOUCHED" law', () => {

@@ -848,6 +848,13 @@ export async function mountSlice3D(container, sceneData, opts = {}) {
         const creatureKind = npcCreatureKind(npc);
         const fig = creatureKind === 'chicken' ? buildChickenMini(THREE) : buildArchetypeFigure(THREE, 'humanoid', {});
         fig.position.set(p.x, y + 0.02, p.z);
+        // CORPSE-TRUTH-1b — a dead NPC's mini lies DOWN, faded (the combat board's
+        // toppled-corpse fallback treatment), and never breathes. A standing,
+        // bobbing figure over a corpse was the diorama's version of the map lie.
+        if (npc.dead) {
+          fig.rotation.z = Math.PI / 2;
+          fig.traverse(o => { if (o.material) { o.material = o.material.clone(); o.material.transparent = true; o.material.opacity = 0.55; } });
+        }
         scene.add(fig);
         // REND-SCALE-1 — villagers default to a 6-ft medium person (their map
         // records carry no species); the sheet transform does the rest. A
@@ -855,7 +862,7 @@ export async function mountSlice3D(container, sceneData, opts = {}) {
         const nHeightWu = creatureKind === 'chicken' ? CHICKEN_HEIGHT_WU : figureHeightWu(null);
         const nAuthored = measureAuthoredSize(THREE, fig, 'y');
         const rec = {
-          group: fig, baseY: y + 0.02, baseScale: 1, rate: 1.3, phase: phaseFromKey(npc.id || npc.name), bob: 0.04, defeated: false, wx: npc.wx, wy: npc.wy, yOff: 0.02,
+          group: fig, baseY: y + 0.02, baseScale: 1, rate: 1.3, phase: phaseFromKey(npc.id || npc.name), bob: 0.04, defeated: Boolean(npc.dead), wx: npc.wx, wy: npc.wy, yOff: 0.02,
           wuPerAuthored: nHeightWu / nAuthored, heightWu: nHeightWu, authoredSize: nAuthored, floorScale: 1
         };
         sliceMinis.push(rec); entityMinis.push(rec);

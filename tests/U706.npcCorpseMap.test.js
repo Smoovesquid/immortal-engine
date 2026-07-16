@@ -25,6 +25,7 @@ import { beginAdventure, playerMove } from '../engine/playloop.js';
 import { PACKS } from '../scripts/convergence/fixtures.mjs';
 import { remainsAtNode, findDeathFacts } from '../engine/combat/deathFact.js';
 import { placeFromWorldNode } from '../public/map/placeFromNode.js';
+import { placedTokenModel } from '../public/map/drawModel.js';
 import { worldHash } from '../engine/worldHash.js';
 
 const boot = () => beginAdventure(newWorld({ seed: 'loaderDemo', fate: 0.2, mode: 'escape', pack: { primaryId: 'fantasy', mixerId: null } }), PACKS).world;
@@ -91,6 +92,23 @@ test('U706-C remainsAtNode lists Jorin once, kind npc, at the real node', () => 
   const fact = findDeathFacts(w).find(f => /jorin/i.test(String(f?.victim?.name || '')));
   assert.ok(fact, 'the kill minted a death fact');
   assert.equal(String(fact.nodeId || ''), nid, 'whose canon records the death node');
+});
+
+// ── U706-C2 the 3D diorama's people feed carries the flag too (fresh-eye fix) ──
+// The cold review caught the one-authority/many-surfaces miss: handDrawnPlace got
+// the fallen mark but the 3D people feed (placedTokenModel → render3d minis) and
+// oneMap ignored the flag — dead Jorin stood bobbing on the diorama. The data feed
+// is pure and testable; the render side lays a dead:true figure down, faded, no bob.
+test('U706-C2 placedTokenModel people carry dead:true for the corpse, false for the living', () => {
+  const { w } = killJorin();
+  const people = placedTokenModel(w, String(w.map.currentNodeId)).people || [];
+  const jorin = people.find(p => String(p.id) === 'npc_1');
+  assert.ok(jorin, 'Jorin is in the 3D people feed — the body is present');
+  assert.equal(jorin.dead, true, 'flagged dead for the diorama');
+  for (const p of people) {
+    if (String(p.id) === 'npc_1') continue;
+    assert.equal(Boolean(p.dead), false, `living person ${p.id} unflagged`);
+  }
 });
 
 // ── U706-D determinism: the whole route replays to the same hash ──

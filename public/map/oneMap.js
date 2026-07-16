@@ -1171,6 +1171,16 @@ export function renderOneMap(world, opts = {}) {
           const [fx, fy, fw, fh] = rectPxT(b.ox + f.ux, b.oy + f.uy, (f.uw || 0.6), (f.uh || 0.6));
           if (fw < 1.2 && fh < 1.2) continue;
           ctx.globalAlpha = alpha * cut;
+          // OBJ-RUBBLE-1 — a destroyed piece draws as DEBRIS on this band too,
+          // never as an intact-looking box (the generic rect below would lie).
+          if (t === 'rubble') {
+            const s = Math.min(fw, fh);
+            ctx.fillStyle = WOODF; ctx.strokeStyle = WOODI; ctx.lineWidth = Math.max(0.5, wall * 0.4);
+            ctx.beginPath(); ctx.rect(fx + fw * 0.10, fy + fh * 0.30, s * 0.32, s * 0.20); ctx.fill(); ctx.stroke();
+            ctx.beginPath(); ctx.rect(fx + fw * 0.52, fy + fh * 0.18, s * 0.26, s * 0.16); ctx.fill(); ctx.stroke();
+            ctx.beginPath(); ctx.rect(fx + fw * 0.38, fy + fh * 0.58, s * 0.22, s * 0.14); ctx.fill(); ctx.stroke();
+            continue;
+          }
           const stone = STONE_FURN.has(t), bars = t === 'bars';
           ctx.fillStyle = bars ? 'rgba(34,40,54,0.12)' : stone ? STONEF : WOODF;
           ctx.strokeStyle = bars ? METAL : stone ? STONEI : WOODI;
@@ -1216,6 +1226,14 @@ export function renderOneMap(world, opts = {}) {
         const [nx, ny] = P(t.ux, t.uy);
         const nr = Math.max(2, Math.min(6, 0.5 * PLACE_WU * z));
         ctx.globalAlpha = alpha * npcAlpha;
+        // CORPSE-TRUTH-1b — a dead NPC draws the fallen mark (handDrawnPlace's
+        // twin): body line + head, no base ring, no living circle, no label.
+        if (t.dead) {
+          ctx.strokeStyle = 'rgba(96,98,110,0.9)'; ctx.lineWidth = Math.max(1, nr * 0.3); ctx.lineCap = 'round';
+          ctx.beginPath(); ctx.moveTo(nx - nr * 0.9, ny + nr * 0.35); ctx.lineTo(nx + nr * 0.5, ny + nr * 0.35); ctx.stroke();
+          ctx.beginPath(); ctx.arc(nx + nr * 0.85, ny + nr * 0.35, nr * 0.32, 0, 7); ctx.stroke();
+          continue;
+        }
         // base ring — a soft ellipse at the feet, the tabletop-mini "standing on
         // a base" cue (docs/TABLETOP_MAP.md miniature art direction).
         ctx.strokeStyle = 'rgba(18,26,48,0.28)'; ctx.lineWidth = Math.max(0.6, nr * 0.18);

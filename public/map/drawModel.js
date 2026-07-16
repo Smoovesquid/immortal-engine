@@ -672,7 +672,8 @@ export function placedTokenModel(world, nodeId) {
       people.push({
         id: String(npc.id || ''), name: String(npc.name || t.label || '?'),
         role: (known && known.role) || npc.role || '', wx: p.x, wy: p.y,
-        hostile: npc.name === '?' // MAP-OCC-1 masks hostiles' identity but keeps them placed
+        hostile: npc.name === '?', // MAP-OCC-1 masks hostiles' identity but keeps them placed
+        dead: Boolean(t.dead) // CORPSE-TRUTH-1b — rides the token flag; 3D lays the figure down
       });
     }
   }

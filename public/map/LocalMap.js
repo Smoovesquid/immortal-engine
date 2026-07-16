@@ -691,6 +691,14 @@ function drawInterior(ctx, world, w) {
       const m = Math.min(rw, rh) * (0.16 + (seedStr('npcrad|' + t.nkey) % 100) / 100 * 0.18);
       const tx = cx + Math.cos(ang) * m, ty = cy + Math.sin(ang) * m;
       const tok = Math.max(3, unit * 0.1);
+      // CORPSE-TRUTH-1b — a dead occupant draws the fallen mark (body line + head),
+      // never a living blue-pen ring.
+      if (t.dead) {
+        ctx.strokeStyle = 'rgba(96,98,110,0.9)'; ctx.lineWidth = Math.max(1.2, tok * 0.35); ctx.lineCap = 'round';
+        ctx.beginPath(); ctx.moveTo(tx - tok * 0.9, ty + tok * 0.35); ctx.lineTo(tx + tok * 0.5, ty + tok * 0.35); ctx.stroke();
+        ctx.beginPath(); ctx.arc(tx + tok * 0.85, ty + tok * 0.35, tok * 0.32, 0, Math.PI * 2); ctx.stroke();
+        continue;
+      }
       ctx.beginPath(); ctx.arc(tx, ty, tok, 0, Math.PI * 2);
       ctx.fillStyle = PAPER.token; ctx.fill();
       ctx.strokeStyle = PAPER.npc; ctx.lineWidth = Math.max(1.4, tok * 0.4); ctx.stroke();

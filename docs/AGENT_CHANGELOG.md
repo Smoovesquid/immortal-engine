@@ -4025,3 +4025,41 @@ other agents. (none active)
   chair/barrel/bed → Preview 3D → two walled rooms, front doorstep + interior doorway gaps, GLB
   furniture standing inside at the drawn spots (hearth glowing), a person for scale, framed on the
   house; no town/NPCs/trees; localStorage after the flow = exactly ['ie.builderPreview']. Meets the bar.
+
+## 2026-07-16 — DEATH-TRUTH-1c (worker lane `death-truth-1c`, Opus) — v0.47.1 b168
+
+**Canon closed, picture NOT closed. Reported honestly; the packet's own bar (§0) is not met.**
+
+- **The scatter is deleted.** b167's `beginCombat` anchored an ambush foe at
+  `playerPos + anchorRng.int(-3,3)`. Measured on the production ambush route over 120 seeds:
+  agreed with the board in **0/120**; wrong side of the player in **80/120 (67%)**; median
+  divergence **6 cells (30 m)**; recorded the **killer's own square** on seed `scan48`.
+- **Replaced by a board world ORIGIN** (`grid.js` `boardOriginFrom`/`boardCellToWorldPos`):
+  the player's board cell is pinned to the player's canonical pos, so every cell has a true
+  world address by construction. 1:1 — one board cell == one region cell (UNIT-CLASH-1: the
+  "5-ft square" is rules-flavour; no 0.3048 near a cell). **After: 120/120, 0 wrong-side, 0
+  killer's-square.**
+- **The death fact reads the projection at assembly time**, so it records the DEATH cell by
+  construction (today only the player's token moves — `moveCombatant` is called for `'player'`
+  only — so spawn and death cells coincide; the fix does not depend on that).
+- **TWO whitelists, not one.** The origin is carried in `ensureCombat` (state.js) **and** the
+  `effectsCore` `combatState` merge. The brief warned of the first only; the second is real and
+  silently dropped the field (set in beginCombat, `undefined` one tick later). Both additive —
+  boot worldHash **unmoved**, no `WORLD_VERSION` bump.
+- Tests U711 (5) + U713 (6) assert **values**, not shapes, with anti-vacuity guards; U711-B/C
+  verified to FAIL against the re-introduced b167 defect. Suite **11467/0** (baseline 11456/0,
+  +11). `npm run check` GREEN.
+
+**THE BLOCKER FOUND (bigger than the brief describes) — canon is decorrelated from the drawn
+sheet for EVERY entity, not just corpses.** Phase 3 was built, measured, and **reverted**:
+routing the corpse through canon drew Jorin's body ~230 m outside the village, because the
+village sheet does not draw ANY entity from its canonical pos. Measured at Trader's Camp
+(seed loaderDemo): buildings span uy −2.4…21.7, yet **every** NPC's canonical pos projects to
+uy 52…70 — not one lands inside the settlement it lives in; the player's own canon (uy 23.5)
+disagrees with where the player's token draws (uy 12.2). Living NPCs draw from a road scatter
+that never reads `npc.pos`. So the corpse cannot be made truthful to the picture by wiring —
+`npc.pos` is not a position in the drawn world. This is the repo's known
+"map marker reads v1 walk-pos, not engine state" seam, and it is a renderer+v1 packet
+(explicitly out of scope here: "No renderer rewrite"). **The settlement-only gate is also worse
+than described: 24 of 25 nodes on seed loaderDemo carry no settlement object, so `placedTokenModel`
+returns `people: []` and no corpse draws at all outside the one settlement.**

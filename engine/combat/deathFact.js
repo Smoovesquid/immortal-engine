@@ -27,6 +27,8 @@
 // Kept here (engine-owned) so no number is ever set by the LLM or leaks to prose.
 export const DYING_CLOCK_ROUNDS = 3;
 
+import { deriveArchetype } from './creatureArchetype.js';
+
 // The vocabulary the fact commits to (kept as named constants so tests and the
 // prose layer share one source of truth; never surfaced as raw strings in-world).
 export const VICTIM_STANCES = Object.freeze(['fighting', 'fleeing', 'begging', 'helpless', 'defiant']);
@@ -244,8 +246,16 @@ export function assembleDeathFact(args = {}) {
       sourceNpcId: victimIsPlayer ? null : String(v.sourceNpcId ?? '') || null,
       // CORPSE-TRUTH-1 — WHAT KIND of creature died. The corpse-mini seam and the
       // remains fiction key on this; a fallen wolf must never become an anonymous
-      // marker. Additive: old facts simply lack it.
-      archetype: victimIsPlayer ? null : String(v.archetype ?? '') || null,
+      // marker. Minted from the enemy's own structured signals (deriveArchetype —
+      // the SAME derivation the combat board's living figure used) when the
+      // record carries no explicit archetype. Additive: old facts simply lack it.
+      archetype: victimIsPlayer ? null
+        : (String(v.archetype ?? '') || deriveArchetype(v).archetype || null),
+      // CORPSE-TRUTH-1 finish — the STABLE corpse/mini selection key: the exact
+      // key the combat board hashed for this foe's corpse GLB (buildCorpseMini's
+      // e.id || e.name), persisted so the revisit projection shows the SAME body
+      // the fight ended on. Additive: old facts lack it (name is the fallback key).
+      corpseKey: victimIsPlayer ? null : String(v.id ?? v.name ?? '') || null,
       canCommunicate: victimIsPlayer ? true : canCommunicate(v)
     },
     killer: killer && typeof killer === 'object'
@@ -259,6 +269,27 @@ export function assembleDeathFact(args = {}) {
     // remainsAtNode derives locatable corpses from exactly this field. Additive:
     // pre-feature facts lack it and stay honestly unlocatable (never guessed).
     nodeId: String(world?.map?.currentNodeId ?? '') || null,
+    // CORPSE-TRUTH-1 finish (2026-07-16) — the MOST SPECIFIC location the engine
+    // owns at the killing moment, captured whole and never guessed later:
+    //   structureId/roomId — the interior scene, when the fight was inside;
+    //   pos — the player's canonical tactical position (POSITION_AS_CANON), the
+    //         melee anchor the engine actually owns (the combat grid is an
+    //         abstract board that dissolves at endCombat — its cells are NOT
+    //         world positions, so they are deliberately NOT recorded).
+    // The presence of the `loc` key is the post-feature discriminator: legacy
+    // facts lack it entirely and degrade to node-level truth (never assigned a
+    // guessed room or cell).
+    loc: (() => {
+      const interior = world?.scene?.interior;
+      const p = world?.party?.[0]?.pos;
+      const pos = (p && typeof p === 'object' && Number.isInteger(p.gx) && Number.isInteger(p.gy) && p.frame)
+        ? { frame: String(p.frame), gx: p.gx, gy: p.gy } : null;
+      return {
+        structureId: interior ? String(interior.structureKey ?? '') || null : null,
+        roomId: interior ? String(interior.roomId ?? '') || null : null,
+        pos,
+      };
+    })(),
     locale: localeFor(world),
     light: lightFor(world),
     weather: weatherFor(world),
@@ -307,7 +338,12 @@ export function findDeathFacts(world) {
  * (keyed by fact t). Pure read: no RNG, no mutation, no new world shape —
  * the timeline IS the record (Canon Log wins).
  *
- * Returns [{ name, kind: 'npc'|'monster', sourceNpcId|null, archetype|null, t|null }].
+ * Returns [{ name, kind: 'npc'|'monster', sourceNpcId|null, archetype|null,
+ *            corpseKey|null, loc|null, t|null }].
+ * `loc` ({ structureId|null, roomId|null, pos|null }) is the fact's captured
+ * killing-moment location (CORPSE-TRUTH-1 finish); null on legacy facts AND on
+ * roster-derived entries — consumers must degrade those to node-level truth,
+ * never assign a guessed room or cell.
  */
 export function remainsAtNode(world, nodeId) {
   const nid = String(nodeId || '');
@@ -327,6 +363,12 @@ export function remainsAtNode(world, nodeId) {
       kind: src ? 'npc' : 'monster',
       sourceNpcId: src,
       archetype: fact.victim?.archetype ? String(fact.victim.archetype) : null,
+      corpseKey: fact.victim?.corpseKey ? String(fact.victim.corpseKey) : null,
+      loc: (fact.loc && typeof fact.loc === 'object') ? {
+        structureId: fact.loc.structureId != null ? String(fact.loc.structureId) : null,
+        roomId: fact.loc.roomId != null ? String(fact.loc.roomId) : null,
+        pos: (fact.loc.pos && typeof fact.loc.pos === 'object') ? { ...fact.loc.pos } : null,
+      } : null,
       t: fact.t == null ? null : Number(fact.t)
     });
   }
@@ -338,7 +380,7 @@ export function remainsAtNode(world, nodeId) {
     const saved = world?.meta?.npcCombatHp?.[id];
     if (!saved || !(saved.down || Number(saved.hp) <= 0)) continue;
     seenNpc.add(id);
-    out.push({ name: String(npc.name || 'a body'), kind: 'npc', sourceNpcId: id, archetype: null, t: null });
+    out.push({ name: String(npc.name || 'a body'), kind: 'npc', sourceNpcId: id, archetype: null, corpseKey: null, loc: null, t: null });
   }
   return out;
 }

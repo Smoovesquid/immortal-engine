@@ -145,6 +145,39 @@ export function destroyedObjectIdsAtNode(world, nodeId) {
   return out;
 }
 
+// U708 / DEATH-TRUTH-1 — the TERMINAL POSITION of each salvage-removed object,
+// derived from the same canon record (the salvage event now captures the piece's
+// live placement at the moment of destruction — playloop's trySalvage stamps
+// `data.pos` BEFORE removeFurniture deletes the overlay, the only other holder
+// of a moved position). Map<objectId, { cell:{x,y}, structureId?, room? } | null>:
+// null means "no override — the piece died at its plan/base position" (also
+// every pre-feature event, which is honest: nothing could move before
+// OBJ-MOVE-1). Renderers position rubble by: live placed overlay (standing
+// wreck) > this record (removed piece) > the plan anchor. Pure read; last event
+// wins per identity.
+export function destroyedObjectPositionsAtNode(world, nodeId) {
+  const w = ensureWorld(world);
+  const nid = String(nodeId || '');
+  const out = new Map();
+  if (!nid) return out;
+  for (const e of (Array.isArray(w.timeline) ? w.timeline : [])) {
+    if (!e || e.kind !== 'salvage') continue;
+    const d = e.data && typeof e.data === 'object' ? e.data : {};
+    if (String(d.nodeId || '') !== nid) continue;
+    const oid = String(d.objectId || '');
+    if (!oid) continue;
+    const p = d.pos && typeof d.pos === 'object' ? d.pos : null;
+    const cell = p && p.cell && Number.isFinite(+p.cell.x) && Number.isFinite(+p.cell.y)
+      ? { x: +p.cell.x, y: +p.cell.y } : null;
+    out.set(oid, cell ? {
+      cell,
+      ...(p.structureId != null ? { structureId: String(p.structureId) } : {}),
+      ...(p.room != null ? { room: String(p.room) } : {}),
+    } : null);
+  }
+  return out;
+}
+
 export const query = {
   objectsAtNode,
   allObjectsInWorld,

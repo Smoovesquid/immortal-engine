@@ -2755,10 +2755,39 @@ function playerMoveCore(world, packsById, text, dqIntent) {
         if (/^(?:body|bodies|corpse|corpses|carcass|carcasses|remains|dead body|the dead)$/i.test(presenceNoun)) {
           const rem = remainsAtNode(w, String(w.map?.currentNodeId ?? ''));
           if (rem.length) {
+            // CORPSE-TRUTH-1 finish (2026-07-16) — "here" means WHERE YOU STAND.
+            // A located body (post-feature fact, r.loc present) answers YES only
+            // in its own room (interior) or out in the open (outdoor death);
+            // a located body ELSEWHERE at the node gets an honest pointer, never
+            // a false "lies here" (the caught lie: Jorin fell outside, the player
+            // asked INSIDE the hut, and the old node-scoped answer said yes).
+            // A LEGACY body (no loc) keeps the node-level yes — degrading
+            // honestly beats inventing a room it was never recorded in.
+            const interior = w.scene?.interior || null;
+            const sameSpot = (r) => {
+              if (!r.loc) return true; // legacy: node-level truth
+              if (interior) {
+                return String(r.loc.structureId || '') === String(interior.structureKey || '')
+                  && String(r.loc.roomId || '') === String(interior.roomId || '');
+              }
+              return !r.loc.structureId; // outdoors: only open-ground deaths are "here"
+            };
+            const here = rem.filter(sameSpot);
             const label = (r) => r.kind === 'monster' ? `the ${String(r.name)}` : String(r.name);
-            const line = rem.length === 1
-              ? (rem[0].kind === 'monster' ? `Yes — ${label(rem[0])} lies dead here.` : `Yes — ${label(rem[0])}'s body lies here.`)
-              : `Yes — the dead lie here: ${rem.slice(0, 3).map(label).join(', ')}.`;
+            if (here.length) {
+              const line = here.length === 1
+                ? (here[0].kind === 'monster' ? `Yes — ${label(here[0])} lies dead here.` : `Yes — ${label(here[0])}'s body lies here.`)
+                : `Yes — the dead lie here: ${here.slice(0, 3).map(label).join(', ')}.`;
+              return { world: w, output: { narration: `Wizard: ${line}`, mechanics: 'observe only — no roll, state unchanged' } };
+            }
+            // Located remains exist at this node, just not in this spot — point, honestly.
+            const first = rem[0];
+            const whereClause = first.loc?.structureId
+              ? (interior ? 'in another room' : 'inside')
+              : 'outside';
+            const line = first.kind === 'monster'
+              ? `Not here — ${label(first)} fell ${whereClause}.`
+              : `Not here — ${label(first)}'s body lies ${whereClause}.`;
             return { world: w, output: { narration: `Wizard: ${line}`, mechanics: 'observe only — no roll, state unchanged' } };
           }
         }
@@ -2769,6 +2798,12 @@ function playerMoveCore(world, packsById, text, dqIntent) {
         const found = furniture.find(x => nameMatches(x?.name, presenceNoun, pWords[pWords.length - 1]));
         const art = (s) => `${/^[aeiou]/i.test(String(s).trim()) ? 'an' : 'a'} ${s}`;
         if (found) {
+          // DEATH-TRUTH-1 finish (2026-07-16) — a presence question over a
+          // destroyed-in-place piece never answers the intact thing: wreckage
+          // is what's here, and the DM says so.
+          if (isFurnitureDestroyed(found)) {
+            return { world: w, output: { narration: `Wizard: What's left of one — the ${String(found.name).toLowerCase()} is wreckage now, nothing whole.`, mechanics: 'observe only — no roll, state unchanged' } };
+          }
           const notes = String(found.notes || '').trim().replace(/[.?!]+$/, '');
           return { world: w, output: { narration: `Wizard: Yes — there's ${art(found.name)} here${notes ? `: ${notes}` : ''}.`, mechanics: 'observe only — no roll, state unchanged' } };
         }
@@ -2806,6 +2841,32 @@ function playerMoveCore(world, packsById, text, dqIntent) {
         `You stand still and read ${where}.`
       ]);
       return { world: w, output: { narration: `Wizard: ${lead} ${exitsTxt} What do you do?`, mechanics: 'observe only — no roll, state unchanged' } };
+    }
+
+    // CORPSE-TRUTH-1 finish (2026-07-16) — the OUTDOOR sibling of the interior
+    // corpse-noun presence read: "is there a body here?" in the open answers the
+    // open ground's dead (located outdoor deaths + legacy node-level remains) and
+    // points honestly at an indoor body instead of surveying past the question.
+    {
+      const noun = objectPresenceTarget(text);
+      if (noun && /^(?:body|bodies|corpse|corpses|carcass|carcasses|remains|dead body|the dead)$/i.test(noun)) {
+        const rem = remainsAtNode(w, String(w.map?.currentNodeId ?? ''));
+        if (rem.length) {
+          const here = rem.filter(r => !r.loc || !r.loc.structureId);
+          const label = (r) => r.kind === 'monster' ? `the ${String(r.name)}` : String(r.name);
+          if (here.length) {
+            const yes = here.length === 1
+              ? (here[0].kind === 'monster' ? `Yes — ${label(here[0])} lies dead here.` : `Yes — ${label(here[0])}'s body lies here.`)
+              : `Yes — the dead lie here: ${here.slice(0, 3).map(label).join(', ')}.`;
+            return { world: w, output: { narration: `Wizard: ${yes}`, mechanics: 'observe only — no roll, state unchanged' } };
+          }
+          const first = rem[0];
+          const point = first.kind === 'monster'
+            ? `Not here — ${label(first)} fell inside.`
+            : `Not here — ${label(first)}'s body lies inside.`;
+          return { world: w, output: { narration: `Wizard: ${point}`, mechanics: 'observe only — no roll, state unchanged' } };
+        }
+      }
     }
 
     const exits = exitsLine(w);
@@ -7372,11 +7433,22 @@ function trySalvage(w, text) {
       item: { id: `sv_${node.id}_${w.timeline.length}_${i}`, defRef: y.defRef, qty: y.qty, equipped: null }
     });
   });
+  // U708 / DEATH-TRUTH-1 — capture the piece's TERMINAL position BEFORE the
+  // removal deltas run: removeFurniture deletes the overlay record, the only
+  // holder of a moved/thrown position, so this is the last honest moment the
+  // engine owns it. Base-positioned pieces record null (the plan anchor is
+  // already the truth); the renderers project the evidence, never reconstruct it.
+  const terminalOv = f.objectId ? resolvedObjectPlacement(w, String(f.objectId)) : null;
+  const terminalPos = (terminalOv && terminalOv.status === 'placed' && terminalOv.cell) ? {
+    cell: { x: terminalOv.cell.x, y: terminalOv.cell.y },
+    ...(terminalOv.structureId != null ? { structureId: String(terminalOv.structureId) } : {}),
+    ...(terminalOv.room != null ? { room: String(terminalOv.room) } : {}),
+  } : null;
   let w1 = applyDeltas(w, deltas);
   // OBJ-RUBBLE-1 — the salvage event carries the piece's STABLE objectId so the
   // destruction is remembered by identity after the removal (destroyedObjectIdsAtNode
   // derives the node's destruction memory from exactly this canon record).
-  w1 = pushEvent(w1, { kind: 'salvage', data: { nodeId: node.id, target: name, objectId: String(f.objectId || ''), yields } });
+  w1 = pushEvent(w1, { kind: 'salvage', data: { nodeId: node.id, target: name, objectId: String(f.objectId || ''), yields, ...(terminalPos ? { pos: terminalPos } : {}) } });
 
   const haul = yields.map(y => {
     const def = getItemDef(y.defRef);

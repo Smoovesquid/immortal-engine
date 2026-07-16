@@ -3071,8 +3071,15 @@ export function buildLocationSurvey(world, opts = {}) {
     ]);
     parts.push(lead);
 
+    // DEATH-TRUTH-1 finish (2026-07-16) — the survey never describes a wreck as
+    // the intact thing: a destroyed-in-place piece reads as its wreckage ("the
+    // wreck of a barrel"), the same honesty the map's rubble re-type shows.
     const furniture = objectsHere(w)
-      .map(({ piece }) => String(piece?.name ?? '').trim())
+      .map(({ piece }) => {
+        const nm = String(piece?.name ?? '').trim();
+        if (!nm) return '';
+        return isFurnitureDestroyed(piece) ? `__WRECK__${nm}` : nm;
+      })
       .filter(Boolean);
     // Windows are a real, generated room feature (engine/structures/roomWindows.js):
     // above-ground rooms get 1-2, cellars/windowless rooms get none. Derived (seeded,
@@ -3081,7 +3088,8 @@ export function buildLocationSurvey(world, opts = {}) {
     const win = roomWindows(w, interior);
     const winPhrase = windowSurveyPhrase(win);
     const art = (s) => `${/^[aeiou]/i.test(s) ? 'an' : 'a'} ${s}`;
-    const features = furniture.slice(0, 5).map(art);
+    const features = furniture.slice(0, 5).map(s =>
+      s.startsWith('__WRECK__') ? `the wreck of ${art(s.slice(9))}` : art(s));
     if (winPhrase) features.push(winPhrase);
     if (features.length) {
       parts.push(`Here: ${joinList(features)}.`);

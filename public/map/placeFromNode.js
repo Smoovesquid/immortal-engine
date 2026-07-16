@@ -37,6 +37,10 @@ import { structCellToPlaceUnit } from './worldSpace.js';
 import { authoredObjectId } from '../../engine/objects/identity.js';
 import { resolvedObjectPlacement } from '../../engine/objects/placement.js';
 import { PLACE_WU as TAC_CELLS_PER_LAYOUT_UNIT } from '../../engine/map/spatial/tacticalPos.js';
+// INK-WRECK-1 — the ONE live destroyed-state authority (the same Set cover and
+// walk-blocking read). THIS sheet is the map the player actually looks at, so this
+// is where the ink truth has to land.
+import { destroyedAuthoredPieceIds } from '../../engine/structures/authoredFurniture.js';
 
 const TIER_STEP = 5; // grid-distance per danger rung
 
@@ -68,8 +72,12 @@ const TIER_STEP = 5; // grid-distance per danger rung
 // exactly that catalog shape) — flattening to the SAME absolute shape keeps
 // those call sites working unchanged, now sized/positioned from the real room
 // graph instead of an unrelated catalog cottage's fixtures.
-function flattenRoomFurniture(rooms, world, structureId) {
+function flattenRoomFurniture(rooms, world, st) {
   const out = [];
+  const structureId = st?.id;
+  // INK-WRECK-1 — the destroyed set, resolved ONCE per plan (it walks the node's
+  // furniture). Keyed by plan pieceId, exactly as cover and blocking consume it.
+  const dead = (world && st) ? destroyedAuthoredPieceIds(world, st) : null;
   for (const r of (rooms || [])) {
     for (const f of (r.furniture || [])) {
       // A circular piece (barrel, pillar, sarcophagus, …) carries `r` (radius)
@@ -88,6 +96,12 @@ function flattenRoomFurniture(rooms, world, structureId) {
       // byte-identical to the static flatten. Non-authored items are untouched.
       let objectId = null;
       if (f && f.authored === 1 && f.id != null && structureId) {
+        // INK-WRECK-1 — a DESTROYED piece draws NOTHING. The world already treats it
+        // as gone (twin absent via the salvage lane, or terminal via the rulings
+        // lane): cover releases it and its cell unblocks. The ink was the last thing
+        // in the game still claiming it stood there. Inside the authored branch by
+        // construction, so non-authored plan ink stays byte-identical.
+        if (dead && dead.has(String(f.id))) continue;
         objectId = authoredObjectId(String(structureId), String(f.id));
         const ov = world ? resolvedObjectPlacement(world, objectId) : null;
         if (ov && ov.status === 'held') continue;
@@ -105,7 +119,7 @@ function flattenRoomFurniture(rooms, world, structureId) {
 function engineBackedPlan(st, world) {
   let fp; try { fp = floorPlan(st); } catch { return null; }
   if (!fp || !Array.isArray(fp.rooms) || !fp.rooms.length) return null;
-  return { rooms: fp.rooms, doors: fp.doors || [], footprint: fp.footprint, material: fp.shell, furniture: flattenRoomFurniture(fp.rooms, world, st?.id) };
+  return { rooms: fp.rooms, doors: fp.doors || [], footprint: fp.footprint, material: fp.shell, furniture: flattenRoomFurniture(fp.rooms, world, st) };
 }
 
 // ── TT-OCC THE RULE — no outdoor mini ever stands inside ink that isn't theirs ──

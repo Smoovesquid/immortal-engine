@@ -13,6 +13,10 @@ import { seedFromString as seedStr } from '../../engine/rng.js';
 import { authoredObjectId } from '../../engine/objects/identity.js';
 import { resolvedObjectPlacement } from '../../engine/objects/placement.js';
 import { PLACE_WU } from '../../engine/map/spatial/tacticalPos.js';
+// INK-WRECK-1 — the ONE live destroyed-state authority, the same Set cover
+// (coverFeatures.js) and walk-blocking (tacticalPos.js liveAuthoredBlockedCells)
+// already read. The ink joins it here so the map cannot outlive the world.
+import { destroyedAuthoredPieceIds } from '../../engine/structures/authoredFurniture.js';
 
 function el(tag, attrs = {}, ...children) {
   const node = document.createElement(tag);
@@ -806,10 +810,26 @@ const SAFE_FALLBACK_U = 0.5; // layout-unit size for malformed dimensions only
 export function buildAuthoredSceneFurniture(fp, world, structureId) {
   const out = [];
   const rooms = Array.isArray(fp?.rooms) ? fp.rooms : [];
+  // INK-WRECK-1 — the destroyed set, resolved ONCE per projection (it walks the node's
+  // furniture, so per-piece calls would rescan it for every glyph). Keyed by plan
+  // pieceId, exactly as cover and blocking consume it.
+  const structure = world?.structures?.byId?.[String(structureId)];
+  const dead = structure ? destroyedAuthoredPieceIds(world, structure) : null;
   for (const r of rooms) {
     const roomW = Number(r.w) || 0, roomH = Number(r.h) || 0;
     for (const f of (Array.isArray(r.furniture) ? r.furniture : [])) {
       if (f == null || f.id == null || f.authored !== 1) continue;
+      // INK-WRECK-1 — a DESTROYED piece draws NOTHING. The world already treats it as
+      // gone: its twin has left node.furniture (the salvage lane) or is terminal (the
+      // rulings lane), cover releases it and its cell unblocks. Drawing the intact
+      // glyph made the map the last thing in the game still claiming it existed.
+      //
+      // ONE treatment for both destroyed shapes, deliberately: destroyedAuthoredPieceIds
+      // unions "twin absent" with "twin present but wrecked" and hands back no
+      // discriminator — and every other consumer (cover, blocking) treats them the same.
+      // A greyed-vs-debris split would be a distinction the ENGINE does not make, i.e.
+      // renderer-owned state. If that split is ever wanted, widen the authority first.
+      if (dead && dead.has(String(f.id))) continue;
       const oid = authoredObjectId(structureId, String(f.id));
       const ov = resolvedObjectPlacement(world, oid);
       // OBJ-HOLD-6A — a HELD object rides in someone's arms: it is on no floor cell,

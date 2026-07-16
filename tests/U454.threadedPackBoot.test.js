@@ -223,13 +223,26 @@ test('U454-E: default fantasy/tallow boot (real normalizePack idiom) — post-PA
   // interactable objects. Deliberate world-generation re-pin, NOT a determinism
   // break: the boot is byte-identical to itself under replay (asserted ×2 below;
   // U707 pins the seeding + identity contract).
-  // (Anchor chain: … MP-5b bbf2ef13… → SP-2 7fc17002… → OBJ-STATE-1 7f911937… → OBJ-DURABILITY-1 e1b89d6f… → FURN-PARITY-1 2fdf7b82….)
-  const HASH_AFTER_OBJDURABILITY1 = '2fdf7b82919b3f275d4765af8e9ec394d835c2b814ab9bc4f4897176d8780afa';
-  assert.equal(worldHash(result.world), HASH_AFTER_OBJDURABILITY1,
-    'default fantasy/tallow boot worldHash re-pinned post-FURN-PARITY-1 (WORLD_VERSION 35; the boot node seeds its procgen loadout as real pieces)');
+  // RE-PINNED for DEATH-TRUTH-1d (2026-07-16): the default boot's worldHash shifts
+  // ONCE MORE, and the delta is REAL CONTENT — the outdoor settlement NPC positions.
+  // "People become places": an outdoor villager's canonical tactical pos was the
+  // ±250 m placeNearNode jitter (blind to the drawn village); it is now the EXACT
+  // place-unit the map scatters them to, projected into a region cell
+  // (engine/world/settlementScatter.js → placeUnitToRegionCell). worldHash projects
+  // each present NPC's pos, so the tallow boot's outdoor folk moving from jitter
+  // cells to their drawn-scatter cells moves the fingerprint. Deliberate placement
+  // re-pin (the pos SHAPE is unchanged — still {frame:'region',gx,gy} — so NO
+  // WORLD_VERSION bump, old saves keep their stored pos via the keep-if-consistent
+  // rule), NOT a determinism break: the boot is byte-identical to itself under replay
+  // (asserted ×2 below; U19/U21/U22/U27/U30 green). SOLE DELTA vs the FURN-PARITY-1
+  // tree is the outdoor NPC pos values.
+  // (Anchor chain: … SP-2 7fc17002… → OBJ-STATE-1 7f911937… → OBJ-DURABILITY-1 e1b89d6f… → FURN-PARITY-1 2fdf7b82… → DEATH-TRUTH-1d 1483b7da….)
+  const HASH_AFTER_DEATHTRUTH1D = '1483b7da17a3da27f5dcfb2c0e3a855b5ca3a5ed4ec9db4ad0b16e3631ed72e9';
+  assert.equal(worldHash(result.world), HASH_AFTER_DEATHTRUTH1D,
+    'default fantasy/tallow boot worldHash re-pinned post-DEATH-TRUTH-1d (outdoor NPC positions became settlement-true; no WORLD_VERSION bump)');
 
   // Same seed => identical world (the placement is deterministic).
   const w2 = newWorld({ seed: 'tallow', fate: 0.3, mode: 'escape', pack: { primaryId: 'fantasy', mixerId: null } });
-  assert.equal(worldHash(beginAdventure(w2, PACKS).world), HASH_AFTER_OBJDURABILITY1,
-    'default tallow boot must be deterministic ×2 after OBJ-DURABILITY-1');
+  assert.equal(worldHash(beginAdventure(w2, PACKS).world), HASH_AFTER_DEATHTRUTH1D,
+    'default tallow boot must be deterministic ×2 after DEATH-TRUTH-1d');
 });

@@ -90,16 +90,26 @@ test('U713-D the origin survives export → import (no save-format change needed
     'a saved fight reloads with its board still anchored');
 });
 
-// ── E. ADDITIVE — the boot world never gains the key ─────────────────────────
-test('U713-E the origin is additive: the boot world is untouched and its hash does not move', () => {
+// ── E. ADDITIVE ORIGIN — the boot world never gains the origin key ────────────
+// The combat ORIGIN is still additive: the boot world has no live combat, so it
+// gains no origin key and the origin cannot move the boot hash. That claim is
+// UNCHANGED. What DID move the boot hash is a DIFFERENT, deliberate re-pin —
+// DEATH-TRUTH-1d — landed after 1c: outdoor settlement NPC positions became
+// SETTLEMENT-TRUE (people become places; the ±250 m placeNearNode jitter retired).
+// worldHash projects each present NPC's tactical pos, so the loaderDemo boot's three
+// outdoor villagers moving from jitter cells to their drawn-scatter cells moves the
+// fingerprint. NOT a determinism break (boot is byte-identical to itself under
+// replay — the whole suite's U19/U21/U22/U27/U30 hold; no WORLD_VERSION bump — the
+// pos SHAPE is unchanged, only its VALUE). Anchor: 3be46b13 8e5992e4… → 1d a2bb740b….
+test('U713-E the origin is additive: the boot combat object never gains the key', () => {
   const w = boot();
   assert.equal(w.combat?.active, false, 'setup: the boot world has no live combat');
   assert.ok(!('origin' in (w.combat || {})),
-    'the boot combat object never gains an origin key — additive, so the boot worldHash cannot move');
+    'the boot combat object never gains an origin key — additive, so the ORIGIN never moves the boot worldHash');
   assert.equal(
     worldHash(w),
-    '8e5992e4da1945ce4e3f7b3879a93ffeaeb9042a19882d6aa07ed8e87658fe9d',
-    'the boot worldHash is byte-identical to 3be46b13 — no WORLD_VERSION bump, no save migration'
+    'a2bb740b35cdfd0e8a80da90d18a3b818d73f9f2d0e336aefa65d6618c60f974',
+    'boot worldHash re-pinned post-DEATH-TRUTH-1d (outdoor NPC positions became settlement-true; no WORLD_VERSION bump)'
   );
 });
 

@@ -350,6 +350,27 @@ export function placeUnitToRegionCell(node, frame, ux, uy) {
   };
 }
 
+/**
+ * regionCellToPlaceUnit(node, frame, gx, gy) -> { ux, uy }
+ * DEATH-TRUTH-1d — the EXACT inverse of placeUnitToRegionCell: a canonical
+ * region-frame cell projected back onto the village's place-unit sheet. This is
+ * the bridge the renderer uses to draw a person / a corpse AT the cell canon says
+ * it holds (people become places: the drawn spot IS the canonical spot). Pairs
+ * with placeUnitToRegionCell so a round-trip is identity up to the region-cell
+ * snap (≤ half a cell ≈ 2.5 m — the tactical board is cell-granular). Pure;
+ * degrades to the node's own place-unit origin when the node has no grid
+ * coordinate. `frame` is a settlementLayout frame (its cx/cy re-centres the sheet).
+ */
+export function regionCellToPlaceUnit(node, frame, gx, gy) {
+  const nx = Number(node && node.x) || 0, ny = Number(node && node.y) || 0;
+  const f = frame && typeof frame === 'object' ? frame : { cx: 0, cy: 0 };
+  const k = PLACE_WU_WU / REGION_WU_PER_CELL; // 4/5 — same scale as the forward map
+  return {
+    ux: ((Number(gx) || 0) - nx * NODE_CELLS) / k + f.cx,
+    uy: ((Number(gy) || 0) - ny * NODE_CELLS) / k + f.cy,
+  };
+}
+
 // buildingAnchorFromLayout(layout, structureKey) -> { ox, oy } | null
 // The drawn place-unit anchor of a real structure in a settlementLayout, or null when
 // the structure isn't drawn in this settlement (a far node, or a lookup miss). Mirrors

@@ -50,6 +50,12 @@ import { isRegionCellBlocked } from '../../world/wildFeatures.js';
 // evaluation, so neither module observes the other half-initialised.
 
 import { settlementLayout, buildingAnchorFromLayout, placeUnitToRegionCell } from '../../world/settlementLayout.js';
+// DEATH-TRUTH-1d — the outdoor people scatter is engine truth now (people become
+// places). placementForWorld grounds every outdoor settlement occupant at the exact
+// place-unit the sheet draws, then canonises it through placeUnitToRegionCell — the
+// ±250 m placeNearNode jitter is retired for grounded nodes. Same import-cycle rule
+// as above: used only inside runtime functions.
+import { settlementScatterPlaceUnits, laneEntryPlaceUnit } from '../../world/settlementScatter.js';
 
 // ── Pinned constants (TAC-1) ────────────────────────────────────────────────
 // Mirror of the "Pinned constants (TAC-1)" block in docs/POSITION_AS_CANON.md.
@@ -1136,16 +1142,36 @@ function placeInRoomRect(rect, rng, isFree = null) {
   return { gx, gy }; // no free cell in the rect — keep the candidate (reversible)
 }
 
-// Place an entity outdoors near a node centre: within ± a quarter of the node
-// spacing, so everyone at a node clusters around it but not all on one cell, and
-// the cell always projects back to that same node (quarter-spacing < half-spacing
-// keeps nearestNode stable).
-const NODE_JITTER = Math.floor(NODE_CELLS / 4); // 50 cells
-function placeNearNode(node, rng) {
+// DEATH-TRUTH-1d — the ±250 m placeNearNode jitter is RETIRED. It placed every
+// outdoor entity in a quarter-node box blind to the drawn village, so a person's
+// canonical cell and the spot the map drew them at were decorrelated (a canon-true
+// corpse could draw ~230 m outside its own settlement). Outdoor placement now
+// grounds in the DRAWN geometry (regionPos below): a settlement occupant at the
+// exact place-unit the sheet draws (people become places), a wilderness entity at a
+// small bounded near-node scatter. See engine/world/settlementScatter.js.
+
+// A small deterministic scatter for an entity with NO drawn spot: a few cells off
+// the node centre, preferring a WALKABLE cell (wildFeatures blocking truth). Used
+// for wilderness NPCs/creatures and the rare settlement outdoor OVERFLOW (a person
+// past the drawn cap — invisible on the sheet, but still owed an honest cell). Never
+// the old ±250 m jitter: bounded to WILD_SCATTER_CELLS so nearestNode stays stable.
+const WILD_SCATTER_CELLS = 4; // ≈ 20 m
+function wildScatterPos(world, node, worldSeed, entityId) {
   const centre = nodeGridToRegionCell(node.x, node.y);
-  const gx = centre.gx + rng.int(-NODE_JITTER, NODE_JITTER);
-  const gy = centre.gy + rng.int(-NODE_JITTER, NODE_JITTER);
-  return { gx, gy };
+  const rng = placeStream(worldSeed, entityId, `wild:${node.x},${node.y}`);
+  for (let i = 0; i < 12; i++) {
+    const gx = centre.gx + rng.int(-WILD_SCATTER_CELLS, WILD_SCATTER_CELLS);
+    const gy = centre.gy + rng.int(-WILD_SCATTER_CELLS, WILD_SCATTER_CELLS);
+    if (regionWalkCellFree(world, gx, gy)) return { frame: 'region', gx, gy };
+  }
+  return { frame: 'region', gx: centre.gx, gy: centre.gy }; // no free cell found — the honest centre
+}
+
+// Snap a fractional region cell (placeUnitToRegionCell output) to the integer cell
+// canon stores. The ≤ half-cell (≈2.5 m) snap is the accepted DEATH-TRUTH-1d cost:
+// one lattice, the tactical board is cell-granular.
+function snapRegionCell(c) {
+  return c ? { frame: 'region', gx: Math.round(c.gx), gy: Math.round(c.gy) } : null;
 }
 
 // Build a struct-frame pos for an entity placed in (structureId, roomId), or null
@@ -1166,13 +1192,37 @@ function structPos(structure, roomId, worldSeed, entityId, cache) {
   return { frame: `struct:${structId}`, gx, gy };
 }
 
-// Build a region-frame pos for an entity placed outdoors at a node, or null if the
-// node has no grid coordinate.
-function regionPos(node, worldSeed, entityId) {
+// Build a region-frame pos for an entity placed OUTDOORS at a node, or null if the
+// node has no grid coordinate. DEATH-TRUTH-1d — grounded in the DRAWN geometry:
+//   • a SETTLEMENT node (ctx.layout present) — the player at the lane entry the
+//     sheet draws (the keystone: the combat board's world origin pins to the
+//     player's canonical pos, so this makes every death fact sheet-true); a person
+//     at the exact place-unit the sheet scatters them to (ctx.scatter), projected
+//     into a region cell; a person past the drawn cap at a bounded near-node
+//     scatter.
+//   • a WILDERNESS node (no layout) — the player at the node-centre cell (no
+//     jitter), everyone else at a bounded walkable near-node scatter.
+// ctx = { layout, scatter: Map<entityId,{ux,uy}>, isPlayer } — layout+scatter are
+// computed ONCE per placementForWorld call and threaded in (one settlementLayout
+// call, one shared rng draw order, byte-identical to the renderer scatter).
+function regionPos(world, node, worldSeed, entityId, ctx = {}) {
   if (!node || !Number.isInteger(node.x) || !Number.isInteger(node.y)) return null;
-  const rng = placeStream(worldSeed, entityId, `region:${node.x},${node.y}`);
-  const { gx, gy } = placeNearNode(node, rng);
-  return { frame: 'region', gx, gy };
+  const { layout, scatter, isPlayer } = ctx;
+  if (layout) {
+    if (isPlayer) {
+      const u = laneEntryPlaceUnit(layout);
+      return snapRegionCell(placeUnitToRegionCell(node, layout.frame, u.ux, u.uy));
+    }
+    const u = scatter && scatter.get(String(entityId));
+    if (u) return snapRegionCell(placeUnitToRegionCell(node, layout.frame, u.ux, u.uy));
+    return wildScatterPos(world, node, worldSeed, entityId); // outdoor overflow — no drawn spot
+  }
+  // Wilderness — no drawn settlement layout to ground in.
+  if (isPlayer) {
+    const centre = nodeGridToRegionCell(node.x, node.y);
+    return { frame: 'region', gx: centre.gx, gy: centre.gy };
+  }
+  return wildScatterPos(world, node, worldSeed, entityId);
 }
 
 // Reuse the occupancy derivation so placed NPCs sit exactly where the game already
@@ -1216,9 +1266,12 @@ function npcBuildingAtNode(world, npcId, structures, cache) {
  *
  * The deterministic tactical placement for everyone who gets a position in TAC-1:
  *   • party[0] (the player) — in the wake room's rect if indoors (scene.interior),
- *     else on the region grid near the current node;
+ *     at the drawn lane entry if outdoors in a settlement, at the node centre in the
+ *     wilderness;
  *   • settlement NPCs present at the current node — indoors NPCs in their assigned
- *     building+room rect, outdoor NPCs on the region grid near the node.
+ *     building+room rect, outdoor NPCs at the exact place-unit the sheet SCATTERS
+ *     them to (DEATH-TRUTH-1d: people become places — the drawn spot IS the
+ *     canonical spot), a bounded near-node scatter for anyone past the drawn cap.
  *
  * pos is only produced when it can be validly grounded; otherwise the entity is
  * simply absent from this map (the caller keeps pos = null, always a legal state).
@@ -1230,6 +1283,17 @@ export function placementForWorld(world) {
   const map = world?.map || {};
   const curNodeId = String(map.currentNodeId ?? '');
   const planCache = new Map();
+  const node = nodeById(map, curNodeId);
+
+  // DEATH-TRUTH-1d — the drawn settlement geometry (null for a wilderness node) and
+  // the outdoor people scatter, computed ONCE and threaded into every outdoor
+  // placement so the whole node shares ONE settlementLayout call and ONE rng draw
+  // order (byte-identical to the renderer scatter — U714). The scatter continues the
+  // layout's rng exactly where the renderer picks it up, so passing `layout` in is
+  // load-bearing, not just an optimisation.
+  const layout = settlementLayout(world, curNodeId);
+  const scatter = layout ? settlementScatterPlaceUnits(world, curNodeId, layout) : null;
+  const outdoorCtx = { layout, scatter };
 
   // ── Party ──────────────────────────────────────────────────────────────
   const party = Array.isArray(world?.party) ? world.party : [];
@@ -1247,14 +1311,12 @@ export function placementForWorld(world) {
       }
     }
     if (!placed) {
-      const node = nodeById(map, curNodeId);
-      placed = regionPos(node, worldSeed, pid);
+      placed = regionPos(world, node, worldSeed, pid, { ...outdoorCtx, isPlayer: true });
     }
     if (placed) out.set(pid, placed);
   }
 
   // ── Present NPCs (settlement roster at the current node) ──────────────────
-  const node = nodeById(map, curNodeId);
   const roster = Array.isArray(node?.settlement?.npcs) ? node.settlement.npcs : [];
   if (roster.length) {
     const structures = buildingsAtNode(world, curNodeId);
@@ -1272,7 +1334,7 @@ export function placementForWorld(world) {
         }
       }
       if (!placed) {
-        placed = regionPos(node, worldSeed, nid);
+        placed = regionPos(world, node, worldSeed, nid, { ...outdoorCtx, isPlayer: false });
       }
       if (placed) out.set(nid, placed);
     }

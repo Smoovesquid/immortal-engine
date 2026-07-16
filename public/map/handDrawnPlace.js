@@ -110,6 +110,10 @@ export function createPlaceMap(canvas, opts = {}) {
       case 'chest': { const p = wrect(x0 + W * 0.12, y0 + H * 0.22, W * 0.76, H * 0.56, k); fll(p, WOODF); strk(p, WOODI, 1.8); ctx.fillStyle = ACC; ctx.fillRect(cx - 2, y0 + H * 0.42, 5, 6); break; }
       case 'barrel': { const rr = Math.min(W, H) * 0.4; fll(wcirc(cx, cy, rr, k, 0.4), WOODF); strk(wcirc(cx, cy, rr, k, 0.4), WOODI, 1.6); break; }
       case 'crate': { const p = wrect(x0 + W * 0.16, y0 + H * 0.16, W * 0.68, H * 0.68, k); fll(p, WOODF); strk(p, WOODI, 1.8); ln(x0 + W * 0.16, y0 + H * 0.16, x0 + W * 0.84, y0 + H * 0.84, WOODI, 1); break; }
+      // OBJ-RUBBLE-1 — the generic wreck treatment (see handDrawnInterior's twin case):
+      // dust + seeded shards + splinters; MUST exist here too or the default box would
+      // draw the wreck as an intact-looking prop.
+      case 'rubble': { const rr = Math.min(W, H); ctx.fillStyle = 'rgba(70,78,98,0.10)'; ctx.beginPath(); ctx.arc(cx, cy, rr * 0.40, 0, 7); ctx.fill(); const s1 = wrect(cx - rr * 0.28, cy - rr * 0.14, rr * 0.24, rr * 0.14, k + 's1', 1.1); fll(s1, WOODF); strk(s1, WOODI, 1.1); const s2 = wrect(cx + rr * 0.02, cy - rr * 0.02, rr * 0.18, rr * 0.12, k + 's2', 1.1); fll(s2, WOODF); strk(s2, WOODI, 1); const s3 = wrect(cx - rr * 0.08, cy + rr * 0.12, rr * 0.14, rr * 0.10, k + 's3', 1.1); fll(s3, WOODF); strk(s3, WOODI, 1); ln(cx - rr * 0.32, cy + rr * 0.24, cx - rr * 0.14, cy + rr * 0.30, 'rgba(96,62,32,0.5)', 1.2); ln(cx + rr * 0.16, cy - rr * 0.22, cx + rr * 0.30, cy - rr * 0.12, 'rgba(96,62,32,0.5)', 1.2); break; }
       case 'shelf': { const p = wrect(x0 + W * 0.1, y0, W * 0.8, H, k); fll(p, WOODF); strk(p, WOODI, 1.8); for (let i = 1; i < 3; i++) ln(x0 + W * 0.1, y0 + i * H / 3, x0 + W * 0.9, y0 + i * H / 3, WOODI, 1); break; }
       case 'brazier': { strk(wcirc(cx, cy, Math.min(W, H) * 0.3, k, 0.4), STONEI, 1.8); ctx.fillStyle = ACC; ctx.beginPath(); ctx.arc(cx, cy, Math.min(W, H) * 0.14, 0, 7); ctx.fill(); break; }
       case 'altar': { const p = wrect(x0 + W * 0.15, cy - H * 0.05, W * 0.7, H * 0.4, k); fll(p, STONEF); strk(p, STONEI, 2); ctx.fillStyle = ACC; ctx.beginPath(); ctx.arc(cx, cy - H * 0.2, 3, 0, 7); ctx.fill(); break; }
@@ -158,6 +162,18 @@ export function createPlaceMap(canvas, opts = {}) {
     const x = gx(t.ux), y = gy(t.uy), r = TT.s * 0.34;
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     if (t.type === 'player') { ctx.fillStyle = PLAYER; ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fill(); ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5; ctx.stroke(); ctx.fillStyle = '#fff'; ctx.font = 'bold ' + (r * 1.3) + 'px ' + HAND; ctx.fillText('@', x, y + 1); }
+    else if (t.type === 'npc' && t.dead) {
+      // CORPSE-TRUTH-1b — a dead NPC draws as a FALLEN mark, never a living circle
+      // (and never a masked live ambusher): a lying figure — body line + head — in
+      // a spent grey, no label. Same slot, same position as the living token had.
+      const DEADC = 'rgba(96,98,110,0.9)';
+      ctx.strokeStyle = DEADC; ctx.lineWidth = 2.4; ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(x - r * 0.9, y + r * 0.35); ctx.lineTo(x + r * 0.5, y + r * 0.35); ctx.stroke();
+      ctx.beginPath(); ctx.arc(x + r * 0.85, y + r * 0.35, r * 0.32, 0, 7); ctx.stroke();
+      ctx.lineWidth = 1.4;
+      ctx.beginPath(); ctx.moveTo(x - r * 0.45, y + r * 0.35); ctx.lineTo(x - r * 0.7, y + r * 0.8); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(x - r * 0.1, y + r * 0.35); ctx.lineTo(x + r * 0.1, y + r * 0.85); ctx.stroke();
+    }
     else if (t.type === 'npc') { ctx.fillStyle = PAPER; ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fill(); ctx.strokeStyle = NPC; ctx.lineWidth = 2.2; ctx.stroke(); ctx.fillStyle = NPC; ctx.font = 'bold ' + (r * 1.1) + 'px ' + HAND; ctx.fillText(t.label || '?', x, y + 1); }
     else if (t.type === 'mon') { ctx.fillStyle = 'rgba(107,43,43,0.14)'; ctx.beginPath(); ctx.arc(x, y, r * 1.15, 0, 7); ctx.fill(); const ic = t.info ? iconKindFor(t.info) : { kind: 'quadruped', color: '#6b4a2b' }; drawCreatureIcon(ctx, x, y, r * 0.95, { ...ic, seed: String((t.info && (t.info.ref || t.info.name)) || 'mon') }); }
     HITBOXES.push({ x, y, r: r * 1.3, t });

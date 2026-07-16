@@ -77,6 +77,7 @@ import { resolveCompanionTurn } from './combat/companionTurn.js';
 // DEATH-2 — the four verbs on a DOWNED foe (mercy · worse · spare · walk away).
 // The fight ends over a DOWNED foe (DEATH-1); the verbs resolve out of combat here.
 import { classifyDownedVerb, resolveDownedVerb, begPleaLine } from './combat/downedResolve.js';
+import { remainsAtNode } from './combat/deathFact.js';
 import { castSpell } from './spell/castSpell.js';
 import { classifyOffensiveCast, castConsequence } from './magic/castConsequence.js';
 import { evaluateEncounter, selectCreatures, spawnEncounter } from './combat/encounterSpawn.js';
@@ -2746,6 +2747,21 @@ function playerMoveCore(world, packsById, text, dqIntent) {
         }
       }
       if (presenceNoun) {
+        // CORPSE-TRUTH-1 — a corpse noun asks about the DEAD, not the furniture.
+        // remainsAtNode is the one canonical read; denying here while a body lay
+        // at this node was the packet's quotable lie ("No — no body here." over a
+        // fresh kill). Non-corpse nouns keep the existing routing byte-identically;
+        // no remains ⇒ fall through to the honest no.
+        if (/^(?:body|bodies|corpse|corpses|carcass|carcasses|remains|dead body|the dead)$/i.test(presenceNoun)) {
+          const rem = remainsAtNode(w, String(w.map?.currentNodeId ?? ''));
+          if (rem.length) {
+            const label = (r) => r.kind === 'monster' ? `the ${String(r.name)}` : String(r.name);
+            const line = rem.length === 1
+              ? (rem[0].kind === 'monster' ? `Yes — ${label(rem[0])} lies dead here.` : `Yes — ${label(rem[0])}'s body lies here.`)
+              : `Yes — the dead lie here: ${rem.slice(0, 3).map(label).join(', ')}.`;
+            return { world: w, output: { narration: `Wizard: ${line}`, mechanics: 'observe only — no roll, state unchanged' } };
+          }
+        }
         // Room-scoped (roomObjects): "is there a chest here?" answers for THIS room,
         // not the whole building's node list (WB-Q5).
         const furniture = objectsHere(w).map(o => o.piece);
@@ -7357,7 +7373,10 @@ function trySalvage(w, text) {
     });
   });
   let w1 = applyDeltas(w, deltas);
-  w1 = pushEvent(w1, { kind: 'salvage', data: { nodeId: node.id, target: name, yields } });
+  // OBJ-RUBBLE-1 — the salvage event carries the piece's STABLE objectId so the
+  // destruction is remembered by identity after the removal (destroyedObjectIdsAtNode
+  // derives the node's destruction memory from exactly this canon record).
+  w1 = pushEvent(w1, { kind: 'salvage', data: { nodeId: node.id, target: name, objectId: String(f.objectId || ''), yields } });
 
   const haul = yields.map(y => {
     const def = getItemDef(y.defRef);
@@ -9744,6 +9763,19 @@ export function genericGroundedOutcome(world, text, outcome, meta = {}) {
         `Your sense catches on ${name} — dead, and near enough to feel.`,
         `The sense pulls toward ${name}'s body; the dead don't hide from it.`,
       ]);
+    }
+    // CORPSE-TRUTH-1 — monster remains answer the sense too. Roster NPCs above keep
+    // their exact existing lines; this only fills the previously-false "rare quiet"
+    // over a fresh monster kill (remains derive from death-fact canon).
+    {
+      const rem = remainsAtNode(world, nodeId).filter(r => r.kind === 'monster');
+      if (rem.length) {
+        const name = `the ${String(rem[0].name || 'dead thing')}`;
+        return V(`sense:dead:${rem[0].t ?? name}`, [
+          `Your sense catches on ${name} — dead, and near enough to feel.`,
+          `The sense pulls toward ${name}'s carcass; the dead don't hide from it.`,
+        ]);
+      }
     }
     return V('sense:dead:empty', [
       `Your sense sweeps ${place} and finds nothing dead within reach — a rare quiet.`,

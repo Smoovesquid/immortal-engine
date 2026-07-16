@@ -242,6 +242,10 @@ export function assembleDeathFact(args = {}) {
       name: String(v.name ?? (victimIsPlayer ? 'you' : 'the foe')),
       isPlayer: Boolean(victimIsPlayer),
       sourceNpcId: victimIsPlayer ? null : String(v.sourceNpcId ?? '') || null,
+      // CORPSE-TRUTH-1 — WHAT KIND of creature died. The corpse-mini seam and the
+      // remains fiction key on this; a fallen wolf must never become an anonymous
+      // marker. Additive: old facts simply lack it.
+      archetype: victimIsPlayer ? null : String(v.archetype ?? '') || null,
       canCommunicate: victimIsPlayer ? true : canCommunicate(v)
     },
     killer: killer && typeof killer === 'object'
@@ -251,6 +255,10 @@ export function assembleDeathFact(args = {}) {
       ? { name: String(means.name ?? 'a blow'), type: String(means.type ?? 'physical') }
       : { name: 'a blow', type: 'physical' },
     woundPath: wounds,
+    // CORPSE-TRUTH-1 — WHERE it died. Kills resolve at the player's current node;
+    // remainsAtNode derives locatable corpses from exactly this field. Additive:
+    // pre-feature facts lack it and stay honestly unlocatable (never guessed).
+    nodeId: String(world?.map?.currentNodeId ?? '') || null,
     locale: localeFor(world),
     light: lightFor(world),
     weather: weatherFor(world),
@@ -282,4 +290,55 @@ export function recordDeathFactEvent(world, fact) {
 export function findDeathFacts(world) {
   const tl = Array.isArray(world?.timeline) ? world.timeline : [];
   return tl.filter(e => e && e.kind === 'death-fact').map(e => e.data);
+}
+
+/**
+ * remainsAtNode — CORPSE-TRUTH-1: the ONE canonical "what bodies lie here" read
+ * (the heldObjectOf pattern: one derived truth, every consumer projects it).
+ *
+ * Sources, unified and deduped by victim identity:
+ *   (a) death-fact canon with a matching nodeId — monster corpses (sourceNpcId
+ *       null → kind 'monster') AND NPC kills (kind 'npc');
+ *   (b) the pre-existing NPC corpse truth — a node-roster NPC whose persisted
+ *       combat record says down (meta.npcCombatHp) — so pre-feature NPC corpses
+ *       keep working with no fact to back them.
+ * An NPC that appears in both (a kill mints the fact AND stamps npcCombatHp) is
+ * ONE body, keyed by sourceNpcId. Distinct unnamed monster kills stay distinct
+ * (keyed by fact t). Pure read: no RNG, no mutation, no new world shape —
+ * the timeline IS the record (Canon Log wins).
+ *
+ * Returns [{ name, kind: 'npc'|'monster', sourceNpcId|null, archetype|null, t|null }].
+ */
+export function remainsAtNode(world, nodeId) {
+  const nid = String(nodeId || '');
+  const out = [];
+  if (!nid) return out;
+  const seenNpc = new Set();
+  for (const fact of findDeathFacts(world)) {
+    if (!fact || fact.victim?.isPlayer) continue;
+    if (String(fact.nodeId || '') !== nid) continue;
+    const src = fact.victim?.sourceNpcId ? String(fact.victim.sourceNpcId) : null;
+    if (src) {
+      if (seenNpc.has(src)) continue;
+      seenNpc.add(src);
+    }
+    out.push({
+      name: String(fact.victim?.name || 'something'),
+      kind: src ? 'npc' : 'monster',
+      sourceNpcId: src,
+      archetype: fact.victim?.archetype ? String(fact.victim.archetype) : null,
+      t: fact.t == null ? null : Number(fact.t)
+    });
+  }
+  const node = (Array.isArray(world?.map?.nodes) ? world.map.nodes : []).find(n => n && String(n.id) === nid);
+  const npcs = Array.isArray(node?.settlement?.npcs) ? node.settlement.npcs : [];
+  for (const npc of npcs) {
+    const id = String(npc?.id || '');
+    if (!id || seenNpc.has(id)) continue;
+    const saved = world?.meta?.npcCombatHp?.[id];
+    if (!saved || !(saved.down || Number(saved.hp) <= 0)) continue;
+    seenNpc.add(id);
+    out.push({ name: String(npc.name || 'a body'), kind: 'npc', sourceNpcId: id, archetype: null, t: null });
+  }
+  return out;
 }

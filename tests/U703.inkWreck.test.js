@@ -131,9 +131,12 @@ test('U703-B AFTER — the DESTROYED barrel no longer draws as intact, while the
   assert.ok(!coverForRoom(hutRoom(w), { world: w, structureId: stId(w) }).some(c => c.kind === 'barrel'),
     'cover already released it — the ink was the last liar');
 
-  // THE FIX — the ink stops claiming an intact barrel.
+  // THE FIX (evolved by OBJ-RUBBLE-1/U704) — the ink stops claiming an intact
+  // barrel: the entry survives, RE-TYPED to rubble at the same spot.
+  const gDead = ink(w).find(x => String(x.id) === bId);
+  assert.ok(gDead, 'the destroyed barrel still has an entry — rubble, not a hole');
+  assert.equal(gDead.type, 'rubble', 'inked as rubble, never as an intact barrel');
   const ids = inkIds(w);
-  assert.ok(!ids.includes(bId), 'the destroyed barrel is NOT inked as an intact glyph');
   // …and the honest neighbour is untouched: suppression is per-piece, not a blanket.
   assert.ok(ids.includes(bedId), 'the intact bed still draws normally');
   const bedBefore = ink(w0).find(g => String(g.id) === bedId);
@@ -155,7 +158,9 @@ test('U703-B2 THE PLAYER MAP — the LIVE sheet (placeFromNode) also stops inkin
   assert.ok(destroyedAuthoredPieceIds(w, st(w)).has(barrelPieceId(w)), 'engine truth: destroyed');
 
   const ids = liveSheetIds(w);
-  assert.ok(!ids.includes(bId), 'the destroyed barrel is GONE from the live player sheet');
+  const sheetDead = liveSheet(w).find(f => String(f.objectId) === bId);
+  assert.ok(sheetDead, 'the destroyed barrel keeps a live-sheet entry — rubble, not a hole (OBJ-RUBBLE-1/U704)');
+  assert.equal(sheetDead.type, 'rubble', 'typed rubble on the sheet the player actually sees');
   assert.ok(ids.includes(bedId), 'the intact bed still inks on the live sheet');
   const bedBefore = liveSheet(w0).find(f => String(f.objectId) === bedId);
   const bedAfter = liveSheet(w).find(f => String(f.objectId) === bedId);
@@ -181,12 +186,13 @@ test('U703-C the suppression is keyed to the ENGINE authority, not a name or typ
   assert.equal(destroyedAuthoredPieceIds(w, st(w)).size, 0, 'nothing destroyed');
   assert.deepEqual(ink(w), ink(boot()), 'an empty destroyed set ⇒ the projection is unchanged, byte for byte');
 
-  // And the suppressed id is exactly the authority's Set, joined by pieceId → objectId.
+  // And the re-typed ids are exactly the authority's Set, joined by pieceId → objectId
+  // (OBJ-RUBBLE-1/U704 evolved suppression into re-typing; the key stays the authority).
   const wDead = smashToWreck(boot());
   const dead = [...destroyedAuthoredPieceIds(wDead, st(wDead))];
-  const suppressed = inkIds(boot()).filter(id => !inkIds(wDead).includes(id));
-  assert.deepEqual(suppressed.sort(), dead.map(pid => authoredObjectId(stId(wDead), pid)).sort(),
-    'the set of glyphs that vanished IS the authority\'s destroyed set — no more, no less');
+  const retyped = ink(wDead).filter(g => g.type === 'rubble').map(g => String(g.id));
+  assert.deepEqual(retyped.sort(), dead.map(pid => authoredObjectId(stId(wDead), pid)).sort(),
+    'the set of glyphs re-typed to rubble IS the authority\'s destroyed set — no more, no less');
 });
 
 test('U703-D SCOPE — absent and wrecked are ONE state at this boundary, exactly as the engine treats them', () => {

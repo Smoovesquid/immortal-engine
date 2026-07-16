@@ -17,6 +17,8 @@ import { PLACE_WU } from '../../engine/map/spatial/tacticalPos.js';
 // (coverFeatures.js) and walk-blocking (tacticalPos.js liveAuthoredBlockedCells)
 // already read. The ink joins it here so the map cannot outlive the world.
 import { destroyedAuthoredPieceIds } from '../../engine/structures/authoredFurniture.js';
+// CORPSE-TRUTH-1b — the one canonical "what bodies lie here" read (deathFact.js).
+import { remainsAtNode } from '../../engine/combat/deathFact.js';
 
 function el(tag, attrs = {}, ...children) {
   const node = document.createElement(tag);
@@ -717,8 +719,17 @@ function renderNpcRoster(world) {
   if (!npcs.length) {
     return el('div', { class: 'small', style: { opacity: '0.5', fontStyle: 'italic' } }, 'No known persons here.');
   }
+  // CORPSE-TRUTH-1b — the roster tells the truth about the dead: a corpse keeps
+  // its row (the body is here) but drops the living tags — no trust score, no
+  // disposition, no pretending there's a person to talk to.
+  const deadIds = new Set(remainsAtNode(world, String(world?.map?.currentNodeId || '')).filter(r => r.sourceNpcId).map(r => String(r.sourceNpcId)));
   const rows = npcs.map(n => {
     const name = String(n?.name || 'unknown').trim() || 'unknown';
+    if (deadIds.has(String(n?.id || ''))) {
+      return el('div', { class: 'small', style: { opacity: '0.6' } },
+        el('strong', {}, name), ' — dead'
+      );
+    }
     const role = String(n?.role || '').trim();
     const trust = Number(n?.conversationState?.trustLevel ?? 5);
     const met = Boolean(n?.conversationState?.metPlayer);
@@ -819,17 +830,14 @@ export function buildAuthoredSceneFurniture(fp, world, structureId) {
     const roomW = Number(r.w) || 0, roomH = Number(r.h) || 0;
     for (const f of (Array.isArray(r.furniture) ? r.furniture : [])) {
       if (f == null || f.id == null || f.authored !== 1) continue;
-      // INK-WRECK-1 — a DESTROYED piece draws NOTHING. The world already treats it as
-      // gone: its twin has left node.furniture (the salvage lane) or is terminal (the
-      // rulings lane), cover releases it and its cell unblocks. Drawing the intact
-      // glyph made the map the last thing in the game still claiming it existed.
-      //
-      // ONE treatment for both destroyed shapes, deliberately: destroyedAuthoredPieceIds
-      // unions "twin absent" with "twin present but wrecked" and hands back no
-      // discriminator — and every other consumer (cover, blocking) treats them the same.
-      // A greyed-vs-debris split would be a distinction the ENGINE does not make, i.e.
-      // renderer-owned state. If that split is ever wanted, widen the authority first.
-      if (dead && dead.has(String(f.id))) continue;
+      // INK-WRECK-1 → OBJ-RUBBLE-1 — a DESTROYED piece draws as RUBBLE, never as its
+      // intact glyph and never as a blank spot. Same authority (destroyedAuthoredPieceIds,
+      // the Set cover and blocking subtract), same identity, same geometry source —
+      // the entry is RE-TYPED, so the wreck sits exactly where the piece stood.
+      // ONE generic treatment for both destroyed shapes (twin absent via the salvage
+      // lane | twin terminal via the rulings lane), deliberately: the authority hands
+      // back no discriminator and every other consumer treats them the same.
+      const isDead = !!(dead && dead.has(String(f.id)));
       const oid = authoredObjectId(structureId, String(f.id));
       const ov = resolvedObjectPlacement(world, oid);
       // OBJ-HOLD-6A — a HELD object rides in someone's arms: it is on no floor cell,
@@ -862,8 +870,8 @@ export function buildAuthoredSceneFurniture(fp, world, structureId) {
       }
       if (!Number.isFinite(centerX) || !Number.isFinite(centerY)) continue;
 
-      // 3. center → top-left.
-      out.push({ type: String(f.kind || f.type || ''), ux: centerX - uw / 2, uy: centerY - uh / 2, uw, uh, id: oid });
+      // 3. center → top-left. A destroyed piece keeps its entry — re-typed to rubble.
+      out.push({ type: isDead ? 'rubble' : String(f.kind || f.type || ''), ux: centerX - uw / 2, uy: centerY - uh / 2, uw, uh, id: oid });
     }
   }
   return out;

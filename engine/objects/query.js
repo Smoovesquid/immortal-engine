@@ -4,6 +4,7 @@
 import { ensureWorld } from '../state.js';
 import { ensureMap } from '../map/mapState.js';
 import { schema } from './schema.js';
+import { isFurnitureDestroyed } from '../structures/authoredFurniture.js';
 
 // Get all objects at a specific node
 export function objectsAtNode(world, nodeId) {
@@ -111,6 +112,37 @@ export function flammableObjects(world, nodeId) {
 // Find objects that can be taken at a node
 export function takeableObjects(world, nodeId) {
   return objectsAtNode(world, nodeId).filter(canTake);
+}
+
+// OBJ-RUBBLE-1 / DEATH-TRUTH-1 — node-scoped destruction memory, DERIVED from
+// canon. Two shapes, one Set of stable objectIds:
+//   (a) pieces destroyed-and-REMOVED by the salvage lane — the lane's own timeline
+//       event ('salvage', pushed at the playloop emit site) now carries the piece's
+//       objectId, so the removal is remembered by identity, never by name;
+//   (b) pieces still STANDING in node.furniture with a terminal state (the
+//       durability/rulings lanes mirror to state 'wrecked' in place).
+// No new world field backs this — the timeline IS the record (Canon Log wins),
+// and the overlay invariant deliberately forbids world.objects records for
+// removed pieces. Pre-feature salvage events carry no objectId and are honestly
+// invisible here (old destructions stay unlocatable rather than guessed at).
+// A TAKEN piece (physics/take path — no salvage event) never appears.
+export function destroyedObjectIdsAtNode(world, nodeId) {
+  const w = ensureWorld(world);
+  const nid = String(nodeId || '');
+  const out = new Set();
+  if (!nid) return out;
+  for (const e of (Array.isArray(w.timeline) ? w.timeline : [])) {
+    if (!e || e.kind !== 'salvage') continue;
+    const d = e.data && typeof e.data === 'object' ? e.data : {};
+    if (String(d.nodeId || '') !== nid) continue;
+    const oid = String(d.objectId || '');
+    if (oid) out.add(oid);
+  }
+  const node = (Array.isArray(w.map?.nodes) ? w.map.nodes : []).find(n => n && String(n.id) === nid);
+  for (const p of (Array.isArray(node?.furniture) ? node.furniture : [])) {
+    if (p && p.objectId && isFurnitureDestroyed(p)) out.add(String(p.objectId));
+  }
+  return out;
 }
 
 export const query = {

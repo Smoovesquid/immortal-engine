@@ -326,15 +326,29 @@ test('U696-J a FINALIZED authored building selects the branch and returns its re
   assert.equal(items.length, 2, 'exactly the two authored pieces, no more');
 });
 
-test('U696-J a PROCGEN building does NOT select the branch and yields no authored scene items', () => {
+// EVOLVED 2026-07-16 (FURN-PARITY-1, DEATH-TRUTH-1 finish): this test used to pin
+// the OLD suppression — a procgen plan's roomDetail furniture yielded an EMPTY
+// scene set (only Builder-authored pieces drew from engine truth). That
+// suppression was the lie the parity packet closes: the loadout is now seeded as
+// real Model A pieces, so the scene builder emits every loadout item with its
+// live status. isFinalizedAuthored stays false (the piece is plan-sourced, not
+// Builder-authored — supported-domain verbs still exclude it); what changed is
+// that the drawn furniture is engine truth now, for procgen too.
+test('U696-J a PROCGEN building yields its loadout as identity-carrying scene items', () => {
   const w = bootProcgen();
-  const proc = Object.values(w.structures?.byId || {}).find(s => !s.authoredPlan);
-  assert.ok(proc, 'the slice has a procedural structure');
-  assert.equal(isFinalizedAuthored(proc), false, 'no authoredPlan → NOT the engine-furniture branch');
+  const proc = Object.values(w.structures?.byId || {}).find(s => !s.authoredPlan
+    && String(s.nodeId) === String(w.map.currentNodeId) && floorPlan(s).rooms.length);
+  assert.ok(proc, 'the slice has a procedural structure at the boot node');
+  assert.equal(isFinalizedAuthored(proc), false, 'no authoredPlan → still not Builder-authored');
   const fp = floorPlan(proc);
-  const hasProcFurniture = fp.rooms.some(r => (r.furniture || []).length > 0);
-  assert.ok(hasProcFurniture, 'the procgen plan really does carry roomDetail furniture (the old length-gate trap)');
-  assert.deepEqual(buildAuthoredSceneFurniture(fp, w, String(proc.id)), [], 'yet NONE of it is authored → empty scene set');
+  const loadout = fp.rooms.flatMap(r => (r.furniture || []).filter(f => f && f.authored !== 1));
+  assert.ok(loadout.length > 0, 'the procgen plan really does carry roomDetail furniture');
+  const items = buildAuthoredSceneFurniture(fp, w, String(proc.id));
+  assert.equal(items.length, loadout.length, 'every loadout item is a scene item (seeded structure, nothing taken)');
+  for (const it of items) {
+    assert.ok(String(it.id).startsWith(`au:${proc.id}:`), `scene item carries canonical identity (${it.id})`);
+    assert.notEqual(it.type, 'rubble', 'a fresh world has no rubble');
+  }
 });
 
 test('U696-J an EMPTY authored building selects the branch but renders no furniture', () => {

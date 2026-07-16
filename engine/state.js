@@ -103,7 +103,16 @@ import { authoredObjectId, procgenObjectId } from './objects/identity.js';
 // version delta (save.js), then loads cleanly. worldHash projects w.objects wholesale,
 // so a damaged object's HP is already in the fingerprint; boot worlds carry no
 // durability record, so the boot hash is unmoved.
-export const WORLD_VERSION = 34;
+// FURN-PARITY-1 (v34 → v35) — WORLD GENERATION change: a PROCGEN structure now
+// seeds its roomDetail loadout into node.furniture as real Model A pieces
+// (seedProcgenNodeFurniture; provenance planSourced/structureId/roomId/pieceId,
+// identity au:<structureId>:<planPieceId>), so render/cover/blocking/destruction
+// share ONE object per drawn item. Fresh worlds gain the pieces at node arrival
+// (worldHash VALUE moves; replay-equality holds — the seam is deterministic).
+// Old saves load cleanly (loadSlot warns once on the version delta): visited
+// nodes seed on their NEXT arrival via the same once-per-structure marker;
+// nothing is resurrected, nothing migrates in place.
+export const WORLD_VERSION = 35;
 
 // Crunch caps (T1). Kept here so they're colocated with ensureEntity.
 const FOCI_CAP = 6;

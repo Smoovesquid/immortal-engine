@@ -79,7 +79,11 @@ export function furnitureRoomAssignments(world, nodeId) {
     // FUNC-MINIS-1 — an authored piece KNOWS its room (the Builder drew it there).
     // Explicit provenance always beats the affinity guess; the seeded pick below
     // remains byte-identical for every generic piece.
-    if (piece.authored === true && piece.structureId && piece.roomId) {
+    if ((piece.authored === true || piece.planSourced === true) && piece.structureId && piece.roomId) {
+      // FUNC-MINIS-1 — an authored piece KNOWS its room (the Builder drew it there).
+      // FURN-PARITY-1 — a plan-sourced piece knows its room the same way (it was
+      // seeded FROM that room's loadout). Explicit provenance always beats the
+      // affinity guess; the seeded pick below stays byte-identical for templates.
       const home = kindsByRoom.find(r =>
         String(r.structureId) === String(piece.structureId) && String(r.roomId) === String(piece.roomId));
       if (home) {
@@ -134,7 +138,11 @@ export function objectsHere(world) {
   const legacy = [];            // entries the legacy branches decide
   for (const entry of all) {
     const piece = entry.piece;
-    if (piece && piece.authored === true && piece.objectId) {
+    // FURN-PARITY-1 — a plan-sourced procgen piece answers by the same identity
+    // path as an authored one (its provenance IS its room); held/placed can't
+    // occur for it (supported-domain writers stay authored-only), so only the
+    // BASE clause below ever applies.
+    if (piece && (piece.authored === true || piece.planSourced === true) && piece.objectId) {
       const p = resolvedObjectPlacement(world, String(piece.objectId));
       if (p && p.status === 'held') continue;                  // in someone's arms — nowhere
       if (p && p.status === 'placed') {

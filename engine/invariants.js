@@ -905,6 +905,17 @@ export function assertWorldInvariants(world) {
         }
         seenObjectIds.add(oid);
         furnitureByObjectId.set(oid, p);
+        // FURN-PARITY-1 (v35) — a plan-sourced piece must carry complete, typed
+        // provenance: the identity join (render/cover/blocking/aftermath) keys on
+        // exactly these fields, so a partial record is a silent desync, not a default.
+        if (p.planSourced != null) {
+          if (p.planSourced !== true) {
+            throw new Error(`Invariant: furniture ${oid} planSourced must be true or absent`);
+          }
+          if (!p.structureId || !p.roomId || !p.pieceId) {
+            throw new Error(`Invariant: plan-sourced furniture ${oid} missing structureId/roomId/pieceId provenance`);
+          }
+        }
       }
     }
 

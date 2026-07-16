@@ -25,7 +25,7 @@ import path from 'node:path';
 import { newWorld } from '../engine/state.js';
 import { beginAdventure, playerMove } from '../engine/playloop.js';
 import { normalizeManifest, normalizePack } from '../engine/rulesets.js';
-import { getGoal, buildingCoverage } from '../engine/harness/goals.js';
+import { getGoal, buildingCoverage, probeCoverage } from '../engine/harness/goals.js';
 import { buildLocationSurvey, isMetaQuestion } from '../engine/grace/gracefulAdjudication.js';
 
 const __dirname = path.dirname(new URL(import.meta.url).pathname);
@@ -114,6 +114,16 @@ test('U258-F: tour-building completes by walking + examining the house in plain 
     const r = move(w, phrase);
     assert.equal(ROLL_RE.test(r.output.mechanics || ''), false, `[${phrase}] a walk through the house must not roll: ${r.output.mechanics}`);
     w = r.world; actionsLog.push(phrase);
+  }
+  // EVOLVED 2026-07-16 (FURN-PARITY-1): the building's rooms now hold their full
+  // drawn loadout as REAL objects, so "examine what's in each room" means more
+  // than the four legacy templates. Probe whatever the final room actually holds
+  // — derived from the SAME universe the goal reads, never a hand-kept list.
+  const remainingProbes = probeCoverage(w, { actionsLog });
+  for (const o of remainingProbes.universe) {
+    if (remainingProbes.probed.includes(o)) continue;
+    const phrase = `I examine the ${String(o.name).toLowerCase()}`;
+    w = move(w, phrase).world; actionsLog.push(phrase);
   }
   const cov = buildingCoverage(w);
   assert.equal(goal.satisfied(w, { actionsLog }), true, `every room visited (${cov.visited}/${cov.total}) and objects probed`);

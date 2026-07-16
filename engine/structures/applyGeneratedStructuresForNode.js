@@ -8,7 +8,7 @@ import { ensureStructures } from './structuresState.js';
 // reads the export's own provenance.finalized stamp, so a finalized artifact loads
 // strict (never silently orphan-repaired) while drafts/demos stay tolerant (§14).
 import { hasAuthoredPlan, makeAuthoredStructure, materializeAuthoredExport } from './authoredStructure.js';
-import { seedAuthoredNodeFurniture } from './authoredFurniture.js';
+import { seedAuthoredNodeFurniture, seedProcgenNodeFurniture } from './authoredFurniture.js';
 import loaderDemoHouse from '../../packs/base/structures/authored/loader_demo.house.js';
 import threeRoomDemoHouse from '../../packs/base/structures/authored/three_room_demo.house.js';
 
@@ -154,5 +154,11 @@ export function applyGeneratedStructuresForNode(world, nodeId) {
   // barrel/bed/cookpot/dresser are REAL interactable objects: objectsHere
   // candidates, llmPhysics smash/search targets, effectsCore-mutable state.
   // No authored structures at this node → the world is returned untouched.
-  return seedAuthoredNodeFurniture({ ...w, structures: merged }, nid);
+  //
+  // FURN-PARITY-1 — and a PROCGEN structure seeds its roomDetail loadout the
+  // same way (once per structure, same marker), so the furniture the map draws
+  // IS the furniture you can smash — one identity across render, cover,
+  // blocking, destruction, and aftermath.
+  const seeded = seedAuthoredNodeFurniture({ ...w, structures: merged }, nid);
+  return seedProcgenNodeFurniture(seeded, nid);
 }

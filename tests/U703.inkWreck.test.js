@@ -210,24 +210,28 @@ test('U703-D SCOPE — absent and wrecked are ONE state at this boundary, exactl
   for (const id of dead) assert.equal(typeof id, 'string', 'carrying no absent-vs-wrecked discriminator');
 });
 
-test('U703-E PROCGEN ink is untouched — the authored branch never emits a procgen piece', () => {
+// EVOLVED 2026-07-16 (FURN-PARITY-1, DEATH-TRUTH-1 finish): the second half of
+// this test used to pin the OLD suppression (a procgen structure's plan
+// furniture yielded an EMPTY scene set — "procgen keeps its hand-drawn catalog
+// art"). The parity packet retired that: procgen loadout pieces are engine truth
+// now and DO emit scene glyphs. What this test still owns: (1) the AUTHORED
+// structure's ink stays authored-only, and (2) a destruction in the authored
+// building leaves the procgen structure's scene set byte-identical (no
+// cross-structure bleed).
+test('U703-E authored ink stays authored; destruction never bleeds across structures', () => {
   const w = boot();
-  // Every emitted glyph corresponds to a plan piece marked authored === 1.
+  // Every emitted glyph of the AUTHORED hut corresponds to a plan piece marked authored === 1.
   const authoredIds = new Set(planPieceIds(w).map(pid => authoredObjectId(stId(w), pid)));
   for (const id of inkIds(w)) assert.ok(authoredIds.has(id), `${id} is an authored piece — no procgen leaks in`);
 
-  // A structure with no authoredPlan never takes this branch at all…
   const proc = Object.values(w.structures.byId).find(s => s && !isFinalizedAuthored(s));
   if (proc) {
-    assert.equal(isFinalizedAuthored(proc), false, 'a procgen structure is not the engine-furniture branch');
-    assert.deepEqual(buildAuthoredSceneFurniture(floorPlan(proc), w, String(proc.id)), [],
-      'and its plan furniture yields NO authored scene glyphs — procgen keeps its hand-drawn catalog art');
-  }
-  // …and destroying the authored barrel changes nothing about that.
-  const wDead = smashToWreck(boot());
-  if (proc) {
+    assert.equal(isFinalizedAuthored(proc), false, 'a procgen structure is still not Builder-authored');
+    const before = buildAuthoredSceneFurniture(floorPlan(proc), w, String(proc.id));
+    // …and destroying the authored barrel changes nothing about the NEIGHBOUR.
+    const wDead = smashToWreck(boot());
     const procAfter = Object.values(wDead.structures.byId).find(s => s && String(s.id) === String(proc.id));
-    assert.deepEqual(buildAuthoredSceneFurniture(floorPlan(procAfter), wDead, String(procAfter.id)), [],
-      'still byte-identical after a destruction elsewhere');
+    assert.deepEqual(buildAuthoredSceneFurniture(floorPlan(procAfter), wDead, String(procAfter.id)), before,
+      'the procgen structure\'s scene set is byte-identical after a destruction elsewhere');
   }
 });

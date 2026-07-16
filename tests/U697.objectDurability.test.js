@@ -300,12 +300,12 @@ test('U697-H2: a landed strike changes the worldHash (object HP is in the finger
 });
 
 // ── I. v33 → v34 upgrade + invariant rejects malformed durability ────────────
-test('U697-I1: WORLD_VERSION is 34 and a v33-shaped save upgrades cleanly', () => {
-  assert.equal(WORLD_VERSION, 34);
+test('U697-I1: WORLD_VERSION is 35 and a v33-shaped save upgrades cleanly', () => {
+  assert.equal(WORLD_VERSION, 35);
   const legacy = { meta: { version: 33, seed: 'old' }, objects: {} };
   const up = ensureWorld(legacy);
-  assert.equal(up.meta.version, 34, 'ensureWorld stamps the current version');
-  assert.doesNotThrow(() => assertWorldInvariants(up), 'a v33 save with an empty overlay is valid at v34');
+  assert.equal(up.meta.version, 35, 'ensureWorld stamps the current version');
+  assert.doesNotThrow(() => assertWorldInvariants(up), 'a v33 save with an empty overlay is valid at v35');
 });
 
 test('U697-I2: invariants reject a malformed durability record', () => {

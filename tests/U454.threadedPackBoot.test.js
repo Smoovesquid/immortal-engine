@@ -214,10 +214,19 @@ test('U454-E: default fantasy/tallow boot (real normalizePack idiom) — post-PA
   // durability record and world.objects stays {} (byte-identical). Deliberate additive-state
   // re-pin, NOT a determinism break: the boot is byte-identical to itself under replay
   // (asserted ×2 below; U697 pins the durability persistence + v33→v34 migration).
-  // (Anchor chain: … MP-5b bbf2ef13… → SP-2 7fc17002… → OBJ-STATE-1 7f911937… → OBJ-DURABILITY-1 e1b89d6f….)
-  const HASH_AFTER_OBJDURABILITY1 = 'e1b89d6fab9fc77462d9c38d550dbe910815395b3ecfdcf9a1e0b1e9532c077d';
+  // RE-PINNED for FURN-PARITY-1 (2026-07-16, WORLD_VERSION 34 → 35): the default
+  // boot's worldHash shifts ONCE MORE, and this time the delta is REAL CONTENT,
+  // not just meta.version — the boot node's procgen structure now seeds its
+  // roomDetail loadout into node.furniture (seedProcgenNodeFurniture), so the
+  // furniture the map draws IS the furniture you can smash (one identity across
+  // render/cover/blocking/destruction). Player-visible: the drawn pieces became
+  // interactable objects. Deliberate world-generation re-pin, NOT a determinism
+  // break: the boot is byte-identical to itself under replay (asserted ×2 below;
+  // U707 pins the seeding + identity contract).
+  // (Anchor chain: … MP-5b bbf2ef13… → SP-2 7fc17002… → OBJ-STATE-1 7f911937… → OBJ-DURABILITY-1 e1b89d6f… → FURN-PARITY-1 2fdf7b82….)
+  const HASH_AFTER_OBJDURABILITY1 = '2fdf7b82919b3f275d4765af8e9ec394d835c2b814ab9bc4f4897176d8780afa';
   assert.equal(worldHash(result.world), HASH_AFTER_OBJDURABILITY1,
-    'default fantasy/tallow boot worldHash re-pinned post-OBJ-DURABILITY-1 (WORLD_VERSION 34; overlay durability written only on a strike)');
+    'default fantasy/tallow boot worldHash re-pinned post-FURN-PARITY-1 (WORLD_VERSION 35; the boot node seeds its procgen loadout as real pieces)');
 
   // Same seed => identical world (the placement is deterministic).
   const w2 = newWorld({ seed: 'tallow', fate: 0.3, mode: 'escape', pack: { primaryId: 'fantasy', mixerId: null } });

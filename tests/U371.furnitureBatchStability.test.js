@@ -81,7 +81,12 @@ test('U371-B: two ascending removes in one batch drop BOTH intended pieces, not 
   ]);
 
   const remaining = furnNames(w2);
-  assert.deepEqual(remaining.sort(), [keepA, keepB].sort(), 'exactly the two intended pieces are gone');
+  // EVOLVED 2026-07-16 (FURN-PARITY-1): the node now also carries the procgen
+  // structure's plan-sourced loadout pieces, so "remaining" is no longer exactly
+  // [keepA, keepB]. The batch-shift claim this test owns is unchanged: BOTH
+  // intended pieces drop, NO shifted survivor drops in their place.
+  assert.ok(!remaining.includes(dropA) && !remaining.includes(dropB), 'both intended pieces are gone');
+  assert.ok(remaining.includes(keepA) && remaining.includes(keepB), 'the neighbours survive un-spliced');
   assert.equal(pieceNamed(w2, dropA), null, `${dropA} gone`);
   assert.equal(pieceNamed(w2, dropB), null, `${dropB} gone`);
 });

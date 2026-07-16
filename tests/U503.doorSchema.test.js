@@ -44,10 +44,10 @@ function bootSlice() {
 const registeredStructures = (w) => Object.values(w.structures?.byId || {});
 
 // ── version + enum ───────────────────────────────────────────────────────────
-test('U503: WORLD_VERSION is 34 (MR-2a doors → 31; SP-2 faction ethos → 32; OBJ-STATE-1 objects → 33; OBJ-DURABILITY-1 → 34)', () => {
-  assert.equal(WORLD_VERSION, 34);
+test('U503: WORLD_VERSION is 35 (MR-2a doors → 31; SP-2 faction ethos → 32; OBJ-STATE-1 objects → 33; OBJ-DURABILITY-1 → 34; FURN-PARITY-1 → 35)', () => {
+  assert.equal(WORLD_VERSION, 35);
   const w = ensureWorld(newWorld({ seed: 'u503' }));
-  assert.equal(w.meta.version, 34);
+  assert.equal(w.meta.version, 35);
 });
 
 test('U503: the door-state enum is exactly {open,shut,barred,locked}', () => {
@@ -140,7 +140,7 @@ test('U503: a pre-v31 save (no doors[]) backfills door records on load AND warns
   assert.equal(doorsOf(loaded.structures.byId[sk]).filter(d => d.exterior).length, 1, 'exactly one exterior door after upgrade');
   // Old saves must WARN before upgrade (protocol step 4).
   assert.ok(warnings.length > 0, 'a version-mismatch warning fired');
-  assert.ok(warnings[0].includes('v30') && warnings[0].includes('v34'),
+  assert.ok(warnings[0].includes('v30') && warnings[0].includes('v35'),
     `the warn names both versions: ${warnings[0]}`);
   // The upgraded world is invariant-clean.
   assert.doesNotThrow(() => assertWorldInvariants(loaded), 'the backfilled world is invariant-clean');

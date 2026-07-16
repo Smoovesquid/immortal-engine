@@ -130,8 +130,16 @@ for (const phrase of FURNITURE_FORCE) {
     const { world, sk, door } = lockAdjacent(bootSlice(), 'locked');
     const { world: after, output } = playerMove(world, PACKS, phrase);
     const mech = String(output?.mechanics || '');
-    assert.ok(!tookDoorPath(mech),
-      `"${phrase}" must NOT route to the door-force path: ${mech}`);
+    // EVOLVED 2026-07-16 (FURN-PARITY-1): tookDoorPath's mechanics heuristic
+    // (approach:force + stake:action + DC 14/16) can no longer discriminate —
+    // the room now holds a REAL iron chest (plan-sourced Model A piece), and a
+    // furniture physics check on iron rolls hardness-derived DC 16 at
+    // stake:action too (rollPhysicsCheck), textually identical to a door force.
+    // The claim this test owns is that the force NEVER lands on the DOOR — so
+    // assert the world's door truth directly (state untouched) and that the
+    // reply doesn't narrate a door, rather than fingerprinting the roll line.
+    assert.ok(!/\bdoor\b/i.test(String(output?.narration || '')),
+      `"${phrase}" must not resolve against the door: ${output?.narration} | ${mech}`);
     // …and the secured door is untouched by a furniture-directed force.
     const stateAfter = doorsOf(after.structures.byId[sk]).find(d => d.id === door.id).state;
     assert.equal(stateAfter, 'locked',

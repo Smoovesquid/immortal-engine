@@ -25,7 +25,7 @@ import { seedFromString, makeRng } from '../../rng.js';
 import { floorPlan } from '../../structures/floorPlan.js';
 // FUNC-MINIS-1 — the walk's blocking mask subtracts placed pieces the world has
 // since destroyed (a wrecked barrel no longer bars the cell it stood on).
-import { destroyedAuthoredPieceIds, isFurnitureDestroyed } from '../../structures/authoredFurniture.js';
+import { destroyedAuthoredPieceIds, isFurnitureDestroyed, procgenPlanPieceStatus } from '../../structures/authoredFurniture.js';
 import { findFurnitureByObjectId, resolvedObjectPlacement } from '../../objects/placement.js';
 // OBJ-THROW-6B — the engine-owned throw reach. Imported DIRECTLY from the pure
 // module (never via objects/index.js) so this layer pulls in one zero-import leaf
@@ -450,6 +450,20 @@ export function liveAuthoredBlockedCells(world, structure, cache = null) {
   if (destroyed) for (const d of destroyed) excludeIds.add(String(d));
   for (const m of moved) excludeIds.add(m.pieceId);
   for (const h of heldAuthoredPieceIds(world, structure)) excludeIds.add(h);
+  // FURN-PARITY-1 — a PROCGEN loadout piece stops blocking once its Model A twin
+  // is destroyed or carried off (the same identity join cover uses). Unseeded
+  // structures exclude nothing — the static FURN-1 mask stays byte-identical.
+  const pg = procgenPlanPieceStatus(world, structure);
+  if (pg.seeded) {
+    let plan; try { plan = floorPlan(structure); } catch { plan = null; }
+    for (const r of (Array.isArray(plan?.rooms) ? plan.rooms : [])) {
+      for (const f of (Array.isArray(r.furniture) ? r.furniture : [])) {
+        if (!f || f.authored === 1 || f.id == null) continue;
+        const pid = String(f.id);
+        if (pg.destroyed.has(pid) || !pg.present.has(pid)) excludeIds.add(pid);
+      }
+    }
+  }
   // Copy: furnitureBlockedCells may return a cached Set — never mutate it in place.
   const base = new Set(furnitureBlockedCells(structure, excludeIds.size ? null : cache, excludeIds.size ? excludeIds : null));
   for (const m of moved) base.add(`${m.cell.x},${m.cell.y}`);

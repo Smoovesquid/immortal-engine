@@ -116,12 +116,29 @@ test('U307-E: the survey lists only THIS room\'s pieces', () => {
   const w = boot();
   const topo = normalizeTopology(structOf(w).topology);
   const assigned = furnitureRoomAssignments(w, w.map.currentNodeId);
+  // EVOLVED 2026-07-16 (FURN-PARITY-1): two adjustments, claim unchanged
+  // ("only THIS room's pieces"). (1) Plan-sourced pieces uniquify by ROM-4
+  // ordinal suffixes ('web mass', 'web mass 3'), so a raw substring check
+  // false-positives — skip names that are strict prefixes of another piece's
+  // name. (2) A room can now hold more pieces than the survey's DM cap lists,
+  // so the MUST-LIST direction becomes "at least one of the room's pieces";
+  // the MUST-NOT-LIST direction (the scoping law itself) stays exhaustive.
+  const allNames = (nodeOf(w).furniture || []).map(f => String(f.name));
+  const prefixAmbiguous = (n) => allNames.some(o => o !== n && o.startsWith(n));
   for (const r of topo.rooms) {
     const survey = buildLocationSurvey(inRoom(w, r.id));
+    let roomHasUnambiguous = false;
+    let listedOne = false;
     for (const f of nodeOf(w).furniture) {
-      const here = assigned.get(String(f.name)).roomId === String(r.id);
-      assert.equal(survey.includes(String(f.name)), here,
-        `[room ${r.id}] survey ${here ? 'must list' : 'must NOT list'} ${f.name}: ${survey}`);
+      const name = String(f.name);
+      if (prefixAmbiguous(name)) continue;
+      const here = assigned.get(name).roomId === String(r.id);
+      if (here) { roomHasUnambiguous = true; if (survey.includes(name)) listedOne = true; continue; }
+      assert.equal(survey.includes(name), false,
+        `[room ${r.id}] survey must NOT list ${name}: ${survey}`);
+    }
+    if (roomHasUnambiguous) {
+      assert.ok(listedOne, `[room ${r.id}] survey lists at least one of the room's own pieces: ${survey}`);
     }
   }
 });

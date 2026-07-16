@@ -39,8 +39,8 @@ test('U694-A: authored/procgen ids are namespaced and structure/node-scoped', ()
   assert.equal(hasObjectId({ name: 'Barrel' }), false);
 });
 
-test('U694-B: WORLD_VERSION is 34', () => {
-  assert.equal(WORLD_VERSION, 34);
+test('U694-B: WORLD_VERSION is 35', () => {
+  assert.equal(WORLD_VERSION, 35);
 });
 
 // ── C. procgen mints a stable id AT BIRTH, deterministically ──

@@ -19,7 +19,7 @@
  */
 
 import { roomDetail, COVER_BONUS } from './roomDetail.js';
-import { destroyedAuthoredPieceIds } from './authoredFurniture.js';
+import { destroyedAuthoredPieceIds, procgenPlanPieceStatus } from './authoredFurniture.js';
 
 /**
  * coverForRoom(room, ctx?) -> Array<{ id, kind, label, tier, bonus, fx, fy }>
@@ -38,6 +38,20 @@ export function coverForRoom(room, ctx = null) {
     if (st) {
       const dead = destroyedAuthoredPieceIds(world, st);
       if (dead.size) pieces = pieces.filter(f => !dead.has(String(f.id)));
+    }
+  }
+  // FURN-PARITY-1 — a PROCGEN loadout piece grants cover only while its Model A
+  // twin stands intact: smashed (destroyed) or carried off (absent) both stop
+  // sheltering. Unseeded structures (no twins yet) keep full cover, exactly as
+  // before — the map still draws every piece there.
+  if (world && structureId && pieces.some(f => f && f.authored !== 1)) {
+    const st = world?.structures?.byId?.[structureId];
+    if (st && !st.authoredPlan) {
+      const s = procgenPlanPieceStatus(world, st);
+      if (s.seeded) {
+        pieces = pieces.filter(f => f.authored === 1
+          || (s.present.has(String(f.id)) && !s.destroyed.has(String(f.id))));
+      }
     }
   }
 

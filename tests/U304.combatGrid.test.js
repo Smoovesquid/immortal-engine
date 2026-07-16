@@ -68,8 +68,8 @@ function assertGridCells(combat) {
   }
 }
 
-test('U304-01: WORLD_VERSION is 34 and ensureCombat preserves grid + cells', () => {
-  assert.equal(WORLD_VERSION, 34);
+test('U304-01: WORLD_VERSION is 35 and ensureCombat preserves grid + cells', () => {
+  assert.equal(WORLD_VERSION, 35);
   const raw = {
     active: true,
     round: 1,

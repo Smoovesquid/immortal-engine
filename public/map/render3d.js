@@ -846,12 +846,27 @@ export async function mountSlice3D(container, sceneData, opts = {}) {
         // CARL-FOWL — a creature-NPC (Carl the chicken) draws its own mini at its
         // own true size; everyone else is the 6-ft humanoid villager.
         const creatureKind = npcCreatureKind(npc);
-        const fig = creatureKind === 'chicken' ? buildChickenMini(THREE) : buildArchetypeFigure(THREE, 'humanoid', {});
+        // CORPSE-TRUTH-1 finish — a dead figure with persisted corpse identity
+        // renders CREATURE-SPECIFIC: the authored corpse GLB first (keyed by the
+        // SAME corpseKey the combat board hashed for this foe — the body you saw
+        // fall is the body you find), else the toppled figure of its own
+        // archetype (buildArchetypeFigure's defeated branch — the documented
+        // fallback), else the laid-down villager treatment below.
+        let fig = null;
+        let corpseBuilt = false;
+        if (npc.dead && (npc.corpseKey || npc.archetype)) {
+          fig = buildCorpseMini(THREE, npc.corpseKey || npc.id || npc.name);
+          if (fig) corpseBuilt = true;
+          else if (npc.archetype) { fig = buildArchetypeFigure(THREE, npc.archetype, { defeated: true, variant: npc.id || npc.name }); corpseBuilt = true; }
+        }
+        if (!fig) fig = creatureKind === 'chicken' ? buildChickenMini(THREE) : buildArchetypeFigure(THREE, 'humanoid', {});
         fig.position.set(p.x, y + 0.02, p.z);
         // CORPSE-TRUTH-1b — a dead NPC's mini lies DOWN, faded (the combat board's
         // toppled-corpse fallback treatment), and never breathes. A standing,
         // bobbing figure over a corpse was the diorama's version of the map lie.
-        if (npc.dead) {
+        // (A corpse GLB / toppled-archetype figure is already ground-true — no
+        // extra rotation on those.)
+        if (npc.dead && !corpseBuilt) {
           fig.rotation.z = Math.PI / 2;
           fig.traverse(o => { if (o.material) { o.material = o.material.clone(); o.material.transparent = true; o.material.opacity = 0.55; } });
         }
@@ -859,8 +874,14 @@ export async function mountSlice3D(container, sceneData, opts = {}) {
         // REND-SCALE-1 — villagers default to a 6-ft medium person (their map
         // records carry no species); the sheet transform does the rest. A
         // creature-NPC uses its own true height (a hen ≈ 1.4 ft, not 6).
+        // A DEAD figure lies down, so its size-law axis is the BODY LENGTH
+        // (horizontal footprint ≈ the standing height), never the post-rotation
+        // y-extent — measuring 'y' on a lying body reads its THICKNESS (~0.4
+        // authored units) against the 6-ft law and inflates the corpse ~5-15×
+        // (caught 2026-07-16 while wiring corpse minis; the b166 laid-down
+        // villager had exactly this latent bug).
         const nHeightWu = creatureKind === 'chicken' ? CHICKEN_HEIGHT_WU : figureHeightWu(null);
-        const nAuthored = measureAuthoredSize(THREE, fig, 'y');
+        const nAuthored = npc.dead ? measureAuthoredFootprint(THREE, fig) : measureAuthoredSize(THREE, fig, 'y');
         const rec = {
           group: fig, baseY: y + 0.02, baseScale: 1, rate: 1.3, phase: phaseFromKey(npc.id || npc.name), bob: 0.04, defeated: Boolean(npc.dead), wx: npc.wx, wy: npc.wy, yOff: 0.02,
           wuPerAuthored: nHeightWu / nAuthored, heightWu: nHeightWu, authoredSize: nAuthored, floorScale: 1

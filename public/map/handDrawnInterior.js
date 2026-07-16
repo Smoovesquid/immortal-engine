@@ -181,6 +181,13 @@ export function createInteriorMap(canvas, opts = {}) {
       } else {
         ctx.fillStyle = MON; ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fill(); ctx.strokeStyle = '#1a0f0f'; ctx.lineWidth = 1.5; ctx.stroke(); ctx.fillStyle = '#f0e6d8'; ctx.font = 'bold ' + (r * 1.2) + 'px ' + HAND; ctx.fillText(label || '?', x, y + 1); }
     }
+    // CORPSE-TRUTH-1 finish — a body on the floor: the SAME fallen mark the other
+    // sheets draw (grey body line + head circle, no living ring, no label ring).
+    else if (type === 'dead') {
+      ctx.strokeStyle = 'rgba(96,98,110,0.9)'; ctx.lineWidth = Math.max(1.2, r * 0.35); ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(x - r * 0.9, y + r * 0.35); ctx.lineTo(x + r * 0.5, y + r * 0.35); ctx.stroke();
+      ctx.beginPath(); ctx.arc(x + r * 0.85, y + r * 0.35, r * 0.32, 0, Math.PI * 2); ctx.stroke();
+    }
     else if (type === 'loot') { ctx.fillStyle = LOOT; ctx.beginPath(); ctx.moveTo(x, y - r); ctx.lineTo(x + r, y); ctx.lineTo(x, y + r); ctx.lineTo(x - r, y); ctx.closePath(); ctx.fill(); ctx.strokeStyle = '#15402a'; ctx.lineWidth = 1.4; ctx.stroke(); }
     else if (type === 'light') { ctx.fillStyle = LIGHT; ctx.beginPath(); ctx.arc(x, y, r * 0.5, 0, 7); ctx.fill(); ctx.strokeStyle = LIGHT; ctx.lineWidth = 1.4; for (let i = 0; i < 8; i++) { const a = i / 8 * Math.PI * 2; ctx.beginPath(); ctx.moveTo(x + Math.cos(a) * r * 0.7, y + Math.sin(a) * r * 0.7); ctx.lineTo(x + Math.cos(a) * r, y + Math.sin(a) * r); ctx.stroke(); } }
     HITBOXES.push({ x, y, r: r * 1.35, token: t });

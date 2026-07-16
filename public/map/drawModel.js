@@ -673,7 +673,12 @@ export function placedTokenModel(world, nodeId) {
         id: String(npc.id || ''), name: String(npc.name || t.label || '?'),
         role: (known && known.role) || npc.role || '', wx: p.x, wy: p.y,
         hostile: npc.name === '?', // MAP-OCC-1 masks hostiles' identity but keeps them placed
-        dead: Boolean(t.dead) // CORPSE-TRUTH-1b — rides the token flag; 3D lays the figure down
+        dead: Boolean(t.dead), // CORPSE-TRUTH-1b — rides the token flag; 3D lays the figure down
+        // CORPSE-TRUTH-1 finish — persisted corpse identity rides through to the
+        // 3D scene: corpseKey selects the authored corpse GLB (the SAME hash the
+        // combat board used), archetype the toppled-figure fallback family.
+        archetype: t.archetype ? String(t.archetype) : null,
+        corpseKey: t.corpseKey ? String(t.corpseKey) : null
       });
     }
   }

@@ -39,10 +39,18 @@ import { resolvedObjectPlacement } from '../../engine/objects/placement.js';
 import { PLACE_WU as TAC_CELLS_PER_LAYOUT_UNIT } from '../../engine/map/spatial/tacticalPos.js';
 // INK-WRECK-1 — the ONE live destroyed-state authority (the same Set cover and
 // walk-blocking read). THIS sheet is the map the player actually looks at, so this
-// is where the ink truth has to land.
-import { destroyedAuthoredPieceIds } from '../../engine/structures/authoredFurniture.js';
+// is where the ink truth has to land. FURN-PARITY-1 adds the procgen sibling:
+// procgenPlanPieceStatus is the identity join for loadout pieces (destroyed →
+// rubble; taken → no ink at all; unseeded structures draw everything intact).
+import { destroyedAuthoredPieceIds, procgenPlanPieceStatus } from '../../engine/structures/authoredFurniture.js';
+// U708 — terminal positions of salvage-removed pieces: rubble draws where the
+// piece actually died (the event is the record; the removal deleted the overlay).
+import { destroyedObjectPositionsAtNode } from '../../engine/objects/query.js';
 // CORPSE-TRUTH-1b — the one canonical "what bodies lie here" read (deathFact.js).
 import { remainsAtNode } from '../../engine/combat/deathFact.js';
+// CORPSE-TRUTH-1 finish — pinned corpse tokens draw their positions from a
+// PRIVATE identity-keyed rng stream (never the settlement scatter's stream).
+import { makeRng, seedFromString } from '../../engine/rng.js';
 
 const TIER_STEP = 5; // grid-distance per danger rung
 
@@ -80,6 +88,10 @@ function flattenRoomFurniture(rooms, world, st) {
   // INK-WRECK-1 — the destroyed set, resolved ONCE per plan (it walks the node's
   // furniture). Keyed by plan pieceId, exactly as cover and blocking consume it.
   const dead = (world && st) ? destroyedAuthoredPieceIds(world, st) : null;
+  // FURN-PARITY-1 — the procgen identity join, resolved ONCE per plan.
+  const pgStatus = (world && st && !st.authoredPlan) ? procgenPlanPieceStatus(world, st) : null;
+  // U708 — terminal positions of salvage-removed pieces, resolved ONCE per plan.
+  const deadPos = (world && st) ? destroyedObjectPositionsAtNode(world, String(st.nodeId || '')) : null;
   for (const r of (rooms || [])) {
     for (const f of (r.furniture || [])) {
       // A circular piece (barrel, pillar, sarcophagus, …) carries `r` (radius)
@@ -98,6 +110,16 @@ function flattenRoomFurniture(rooms, world, st) {
       // byte-identical to the static flatten. Non-authored items are untouched.
       let objectId = null;
       let isDead = false;
+      // FURN-PARITY-1 — a PROCGEN loadout item resolves its live status by the
+      // Model A twin's identity: destroyed → re-typed rubble at its own spot;
+      // TAKEN (twin absent, no salvage record) → no ink at all (never rubble);
+      // unseeded structure → intact, byte-identical to before.
+      if (f && f.authored !== 1 && f.id != null && structureId && pgStatus && pgStatus.seeded) {
+        const pid = String(f.id);
+        if (pgStatus.destroyed.has(pid)) isDead = true;
+        else if (!pgStatus.present.has(pid)) continue;
+        objectId = authoredObjectId(String(structureId), pid);
+      }
       if (f && f.authored === 1 && f.id != null && structureId) {
         // INK-WRECK-1 → OBJ-RUBBLE-1 — a DESTROYED piece draws as RUBBLE at the spot
         // it stood, never as its intact glyph and never as nothing. Same authority
@@ -111,6 +133,16 @@ function flattenRoomFurniture(rooms, world, st) {
         if (ov && ov.status === 'placed' && ov.cell) {
           cx = ov.cell.x / TAC_CELLS_PER_LAYOUT_UNIT;
           cy = ov.cell.y / TAC_CELLS_PER_LAYOUT_UNIT;
+        }
+      }
+      // U708 — a salvage-REMOVED piece's rubble inks at its terminal position
+      // (the event record); a standing wreck already took its live placed cell
+      // above, and an unmoved destruction has no record → plan anchor stands.
+      if (isDead && objectId && deadPos) {
+        const tp = deadPos.get(objectId);
+        if (tp && tp.cell) {
+          cx = tp.cell.x / TAC_CELLS_PER_LAYOUT_UNIT;
+          cy = tp.cell.y / TAC_CELLS_PER_LAYOUT_UNIT;
         }
       }
       out.push({ type: isDead ? 'rubble' : String(f.kind || f.type || 'prop'), ux: cx - w / 2, uy: cy - h / 2, uw: w, uh: h, ...(objectId ? { objectId } : {}) });
@@ -330,13 +362,19 @@ export function placeFromWorldNode(world, nodeId) {
   const laneX = terrain.paths?.[0]?.pts?.[0]?.[0] ?? 0; // the road's west end (== old x0)
   const fallbackPlayerUnit = { ux: laneX + 1.5, uy: roadY(laneX + 1.5) };
   tokens.push({ type: 'player', ...playerTokenPlaceUnit(world, buildings, fallbackPlayerUnit) });
-  const shown = outdoorNpcs.filter(n => n && !n.hostile).slice(0, 12).concat(outdoorNpcs.filter(n => n && n.hostile).slice(0, 2).map(n => ({ ...n, name: '?' })));
-  // CORPSE-TRUTH-1b — the ONE canonical corpse read flags dead NPCs' tokens.
-  // Flagging, never filtering: the token rides the SAME iteration and the SAME
-  // rng draws (filtering would shift every neighbour's seeded scatter), and the
-  // draw side renders a fallen mark instead of a living figure — a dead hostile
-  // must never keep haunting the map as a masked live ambusher.
-  const deadNpcIds = new Set(remainsAtNode(world, String(node.id || '')).filter(r => r.sourceNpcId).map(r => String(r.sourceNpcId)));
+  // CORPSE-TRUTH-1 finish (2026-07-16) — the dead stop walking the scatter.
+  // A remains entry that CARRIES its killing-moment location (r.loc — every
+  // post-feature fact) leaves the living roster feed entirely and comes back
+  // below as a PINNED corpse token: seeded from its own identity, never from the
+  // roster list order, so no later roster change can re-scatter a body. A LEGACY
+  // dead NPC (npcCombatHp only / a pre-feature fact — r.loc absent) keeps the
+  // old behavior byte-for-byte: it rides the scatter flagged `dead`, honest
+  // node-level truth with no invented precision.
+  const remains = remainsAtNode(world, String(node.id || ''));
+  const locatedDeadIds = new Set(remains.filter(r => r.sourceNpcId && r.loc).map(r => String(r.sourceNpcId)));
+  const legacyDeadIds = new Set(remains.filter(r => r.sourceNpcId && !r.loc).map(r => String(r.sourceNpcId)));
+  const outdoorAlive = outdoorNpcs.filter(n => !locatedDeadIds.has(String(n?.id || '')));
+  const shown = outdoorAlive.filter(n => n && !n.hostile).slice(0, 12).concat(outdoorAlive.filter(n => n && n.hostile).slice(0, 2).map(n => ({ ...n, name: '?' })));
   shown.forEach((n, i) => {
     const ax0 = minX + ((i + 1) / (shown.length + 1)) * (maxX - minX) + (rng.nextFloat() - 0.5) * 2;
     const ay0 = roadY(ax0) + (rng.nextFloat() < 0.5 ? -1 : 1) * (0.8 + rng.nextFloat() * 1.4);
@@ -347,8 +385,34 @@ export function placeFromWorldNode(world, nodeId) {
     // fiction says otherwise.
     const { x: ax, y: ay } = pushClearOfBuildings(ax0, ay0, placed, NPC_MARGIN_LU);
     const tokenId = n.id || ('npc' + i);
-    tokens.push({ type: 'npc', ux: ax, uy: ay, label: String(n.name || 'V').trim().charAt(0).toUpperCase() || 'V', npc: { id: tokenId, name: n.name, role: n.role }, ...(deadNpcIds.has(String(tokenId)) ? { dead: 1 } : {}) });
+    tokens.push({ type: 'npc', ux: ax, uy: ay, label: String(n.name || 'V').trim().charAt(0).toUpperCase() || 'V', npc: { id: tokenId, name: n.name, role: n.role }, ...(legacyDeadIds.has(String(tokenId)) ? { dead: 1 } : {}) });
   });
+  // The pinned corpse tokens: every located OUTDOOR death at this node — NPC and
+  // monster alike. A body that fell INSIDE a structure belongs to the interior
+  // surfaces (interiorTokens/the framed room), not the village sheet — exactly
+  // like living indoor folk never draw out here. Positions are seeded from the
+  // corpse's own identity on a PRIVATE rng stream (the settlement scatter's
+  // stream is untouched — its draws stay byte-identical), clear of buildings.
+  // (The sheet has no canonical projection for a region-frame cell — the same
+  // documented limit the PLAYER token has here — so a stable identity-keyed
+  // spot is the honest maximum; the fact still carries the true pos in canon.)
+  for (const r of remains) {
+    if (!r.loc) continue;                       // legacy: handled by the scatter flag above
+    if (r.loc.structureId) continue;            // died inside — the interior surfaces own it
+    const key = r.sourceNpcId || `remains:${r.t != null ? r.t : String(r.name || '')}`;
+    const rr = makeRng(seedFromString(`${seed}|remains|${key}`));
+    const rx0 = minX + rr.nextFloat() * (maxX - minX);
+    const ry0 = roadY(rx0) + (rr.nextFloat() < 0.5 ? -1 : 1) * (0.8 + rr.nextFloat() * 1.4);
+    const { x: rx, y: ry } = pushClearOfBuildings(rx0, ry0, placed, NPC_MARGIN_LU);
+    tokens.push({
+      type: 'npc', ux: rx, uy: ry, dead: 1,
+      label: String(r.name || 'X').trim().charAt(0).toUpperCase() || 'X',
+      npc: { id: key, name: r.name, role: r.kind === 'monster' ? 'remains' : '' },
+      ...(r.kind === 'monster' ? { monster: 1 } : {}),
+      ...(r.archetype ? { archetype: r.archetype } : {}),
+      ...(r.corpseKey ? { corpseKey: r.corpseKey } : {}),
+    });
+  }
 
   return { nodeType: node.nodeType || 'settlement', tier: tierForNode(world, node), seed, terrain, buildings, tokens, footprintW };
 }

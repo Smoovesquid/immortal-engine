@@ -16,7 +16,8 @@ import { PLACE_WU } from '../../engine/map/spatial/tacticalPos.js';
 // INK-WRECK-1 — the ONE live destroyed-state authority, the same Set cover
 // (coverFeatures.js) and walk-blocking (tacticalPos.js liveAuthoredBlockedCells)
 // already read. The ink joins it here so the map cannot outlive the world.
-import { destroyedAuthoredPieceIds } from '../../engine/structures/authoredFurniture.js';
+import { destroyedAuthoredPieceIds, procgenPlanPieceStatus } from '../../engine/structures/authoredFurniture.js';
+import { destroyedObjectPositionsAtNode } from '../../engine/objects/query.js';
 // CORPSE-TRUTH-1b — the one canonical "what bodies lie here" read (deathFact.js).
 import { remainsAtNode } from '../../engine/combat/deathFact.js';
 
@@ -834,23 +835,52 @@ export function buildAuthoredSceneFurniture(fp, world, structureId) {
   // pieceId, exactly as cover and blocking consume it.
   const structure = world?.structures?.byId?.[String(structureId)];
   const dead = structure ? destroyedAuthoredPieceIds(world, structure) : null;
+  // FURN-PARITY-1 — the procgen identity join (destroyed → rubble; taken → no
+  // glyph; unseeded → nothing drawn here, matching the pre-parity empty array
+  // for procgen structures whose loadout has no Model A twins yet... except the
+  // interior render now passes procgen structures through this builder, so an
+  // UNSEEDED procgen structure draws its full loadout INTACT — see the loop).
+  const pgStatus = (structure && !structure.authoredPlan) ? procgenPlanPieceStatus(world, structure) : null;
+  // U708 — terminal positions of salvage-removed pieces (a moved/thrown piece
+  // destroyed away from its plan anchor leaves its rubble THERE; the event is
+  // the record because the removal deleted the overlay).
+  const deadPos = structure ? destroyedObjectPositionsAtNode(world, String(structure.nodeId || '')) : null;
   for (const r of rooms) {
     const roomW = Number(r.w) || 0, roomH = Number(r.h) || 0;
     for (const f of (Array.isArray(r.furniture) ? r.furniture : [])) {
-      if (f == null || f.id == null || f.authored !== 1) continue;
-      // INK-WRECK-1 → OBJ-RUBBLE-1 — a DESTROYED piece draws as RUBBLE, never as its
-      // intact glyph and never as a blank spot. Same authority (destroyedAuthoredPieceIds,
-      // the Set cover and blocking subtract), same identity, same geometry source —
-      // the entry is RE-TYPED, so the wreck sits exactly where the piece stood.
-      // ONE generic treatment for both destroyed shapes (twin absent via the salvage
-      // lane | twin terminal via the rulings lane), deliberately: the authority hands
-      // back no discriminator and every other consumer treats them the same.
-      const isDead = !!(dead && dead.has(String(f.id)));
-      const oid = authoredObjectId(structureId, String(f.id));
-      const ov = resolvedObjectPlacement(world, oid);
-      // OBJ-HOLD-6A — a HELD object rides in someone's arms: it is on no floor cell,
-      // so the floor does not draw it (the in-hand panel shows it instead).
-      if (ov && ov.status === 'held') continue;
+      if (f == null || f.id == null) continue;
+      let isDead;
+      let oid;
+      let ov = null;
+      if (f.authored === 1) {
+        // INK-WRECK-1 → OBJ-RUBBLE-1 — a DESTROYED piece draws as RUBBLE, never as its
+        // intact glyph and never as a blank spot. Same authority (destroyedAuthoredPieceIds,
+        // the Set cover and blocking subtract), same identity, same geometry source —
+        // the entry is RE-TYPED, so the wreck sits exactly where the piece stood.
+        // ONE generic treatment for both destroyed shapes (twin absent via the salvage
+        // lane | twin terminal via the rulings lane), deliberately: the authority hands
+        // back no discriminator and every other consumer treats them the same.
+        isDead = !!(dead && dead.has(String(f.id)));
+        oid = authoredObjectId(structureId, String(f.id));
+        ov = resolvedObjectPlacement(world, oid);
+        // OBJ-HOLD-6A — a HELD object rides in someone's arms: it is on no floor cell,
+        // so the floor does not draw it (the in-hand panel shows it instead).
+        if (ov && ov.status === 'held') continue;
+      } else if (pgStatus) {
+        // FURN-PARITY-1 — a PROCGEN loadout item: destroyed → rubble at its own
+        // spot; taken (twin absent, no salvage record) → no glyph; unseeded
+        // structure → the full loadout draws intact (the world hasn't
+        // materialized twins yet, so nothing can honestly be missing).
+        const pid = String(f.id);
+        if (pgStatus.seeded && !pgStatus.destroyed.has(pid) && !pgStatus.present.has(pid)) continue;
+        isDead = pgStatus.seeded && pgStatus.destroyed.has(pid);
+        oid = authoredObjectId(structureId, pid);
+      } else {
+        // Role-fallback loadout items inside an AUTHORED building stay
+        // narration-only (FUNC-MINIS ruling: an empty authored room stays
+        // visibly empty) — exactly the pre-parity skip.
+        continue;
+      }
 
       // 1. display size in layout units.
       let uw, uh;
@@ -867,11 +897,17 @@ export function buildAuthoredSceneFurniture(fp, world, structureId) {
         uh = Number.isFinite(fh) && fh > 0 ? fh * roomH : SAFE_FALLBACK_U;
       }
 
-      // 2. center in layout units.
+      // 2. center in layout units. Position truth, in order: the live placed
+      // overlay (a moved piece / a standing wreck) > the salvage event's terminal
+      // position (a removed piece — U708) > the plan anchor.
+      const termPos = isDead && deadPos ? deadPos.get(oid) : null;
       let centerX, centerY;
       if (ov && ov.status === 'placed' && ov.cell) {
         centerX = ov.cell.x / PLACE_WU;
         centerY = ov.cell.y / PLACE_WU;
+      } else if (termPos && termPos.cell) {
+        centerX = termPos.cell.x / PLACE_WU;
+        centerY = termPos.cell.y / PLACE_WU;
       } else {
         centerX = Number(r.cx) + (Number(f.fx) - 0.5) * roomW;
         centerY = Number(r.cy) + (Number(f.fy) - 0.5) * roomH;
@@ -892,18 +928,47 @@ function drawInteriorV2(canvas, world) {
 
   // OBJ-MOVE-1 — a FINALIZED authored (Builder) building draws the ENGINE's own
   // furniture (real pieceIds), so a moved piece is visibly repositioned by its
-  // overlay. Gated on the durable authored-plan marker, NOT "the floor plan has
-  // furniture" — every procgen plan carries furniture too, and those keep their
-  // hand-drawn catalog art below. An authored building with nothing placed still
-  // renders its OWN empty room shell (empty furniture array): an empty authored
-  // house must stay visibly empty, never borrow a decorative catalog room.
-  if (isFinalizedAuthored(st)) {
+  // overlay. An authored building with nothing placed still renders its OWN
+  // empty room shell (empty furniture array): an empty authored house must stay
+  // visibly empty, never borrow a decorative catalog room.
+  //
+  // FURN-PARITY-1 (DEATH-TRUTH-1 finish, 2026-07-16) — PROCGEN interiors now
+  // take this SAME engine-truth branch: the roomDetail loadout the engine
+  // seeded as real Model A pieces is what this floor plan draws, so a smashed
+  // barrel shows rubble and a carried-off lantern shows nothing — INSIDE the
+  // building too, not just on the village sheet. This retires the old
+  // catalog-art path (an index-mapping of engine rooms onto a DIFFERENT
+  // building's hand-drawn plan — decorative fiction that could never register
+  // destruction; it survives below only for a structure with no drawable
+  // topology). Flagged against IMMORTAL_INVARIANTS #14 in the landing report:
+  // the render pipeline is still the hand-drawn createInteriorMap — what
+  // changed is WHICH truth it projects.
+  const engineTruth = isFinalizedAuthored(st) || (() => {
+    try { const p = floorPlan(st); return Array.isArray(p?.rooms) && p.rooms.length > 0; } catch { return false; }
+  })();
+  if (engineTruth) {
     const engFp = floorPlan(st);
     const authoredFurniture = buildAuthoredSceneFurniture(engFp, world, String(st.id || ''));
     const roomId = String(interior?.roomId || '');
     const visited = Array.isArray(interior?.visited) && interior.visited.length ? interior.visited : [roomId];
     const cur = engFp.rooms.find(r => String(r.id) === roomId);
     const tokens = cur ? [{ type: 'player', ux: cur.cx, uy: cur.cy }] : [];
+    // CORPSE-TRUTH-1 finish — bodies draw in their DEATH room (fact.loc pins
+    // them), in DISCOVERED rooms only, at an identity-keyed offset that no
+    // roster change can re-scatter. Legacy dead (no loc) never reach here —
+    // the plain renderer's occupancy flags own their honest node-level truth.
+    const visitedIds = new Set(visited.map(String));
+    for (const rr of remainsAtNode(world, String(world?.map?.currentNodeId || ''))) {
+      if (!rr.loc || String(rr.loc.structureId || '') !== String(st.id || '')) continue;
+      const rid = String(rr.loc.roomId || '');
+      if (!rid || !visitedIds.has(rid)) continue;
+      const room = engFp.rooms.find(r0 => String(r0.id) === rid);
+      if (!room) continue;
+      const key = String(rr.sourceNpcId || `remains:${rr.t != null ? rr.t : String(rr.name || '')}`);
+      const ang = (seedStr('deadang|' + key) % 360) * Math.PI / 180;
+      const rad = Math.min(Number(room.w) || 1, Number(room.h) || 1) * (0.18 + (seedStr('deadrad|' + key) % 100) / 100 * 0.15);
+      tokens.push({ type: 'dead', ux: room.cx + Math.cos(ang) * rad, uy: room.cy + Math.sin(ang) * rad, label: String(rr.name || '') });
+    }
     const model = floorPlanToSceneModel(engFp, { currentRoomId: roomId, visited, tokens, furniture: authoredFurniture });
     createInteriorMap(canvas, { seed: String(st.id || 'interior') }).draw(model);
     return;

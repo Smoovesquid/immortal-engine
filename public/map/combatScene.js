@@ -33,33 +33,11 @@ const trunc = (v) => { const n = Math.trunc(Number(v)); return Number.isFinite(n
 const clampInt = (v, lo, hi) => Math.max(lo, Math.min(hi, trunc(v)));
 
 // ── archetype derivation (structured signals first, name as last resort) ──────
-const UNDEAD_NAME = /\b(skeleton|skeletal|zombie|ghoul|ghast|wight|wraith|spectre|specter|shade|ghost|ghostly|revenant|lich|undead|risen|corpse|cadaver|bone|barrow|draugr|mummy|haunt|phantom|wisp|husk|deathless)\b/;
-const BEAST_NAME = /\b(wolf|wolves|bear|boar|rat|rats|spider|snake|serpent|hound|dog|mastiff|cat|lion|tiger|panther|stag|elk|deer|crow|raven|hawk|eagle|bat|bats|toad|frog|beast|drake|lizard|ape|hyena|jackal|vulture|scorpion|wasp|hornet|swarm|owl|moth|adder|viper|crocodile|shark|worm|leech|tick|centipede|mantis|roach)\b/;
-const LEADER_NAME = /\b(captain|chief|chieftain|boss|warlord|champion|leader|lord|lady|tyrant|matron|priest|priestess|sergeant|knight|commander|queen|king|alpha|broodmother|elder|baron|warden|herald|overseer)\b/;
-const UNDEAD_TRAIT = /undead|undeath|incorporeal|life sense|deathless|rejuven|necrotic (resilience|fortitude)|sunlight sensitivity|grave/i;
-const BEAST_TRAIT = /pack tactics|keen (hearing|smell|sight)|pounce|trampl|blood frenzy|\bweb\b|beast/i;
-
-function deriveArchetype(e) {
-  const name = String(e?.name || '').toLowerCase();
-  const traits = (Array.isArray(e?.traits) ? e.traits : []).join(' ');
-  const immun = (Array.isArray(e?.conditionImmunities) ? e.conditionImmunities : []).map(s => String(s).toLowerCase());
-  const cr = Number(e?.cr) || 0;
-  const hasLegendary = (Array.isArray(e?.legendaryActions) && e.legendaryActions.length > 0)
-    || (Array.isArray(e?.lairActions) && e.lairActions.length > 0);
-
-  // elite/leader overlay — the renderer upscales any base + adds a crown.
-  const elite = hasLegendary || cr >= 2 || LEADER_NAME.test(name);
-
-  // undead: immunity fingerprint (poisoned + a mind condition) OR an undead-ish
-  // trait → name fallback. (canParley is NOT a signal — brigands have it false.)
-  const undeadByImmun = immun.includes('poisoned')
-    && (immun.includes('charmed') || immun.includes('frightened') || immun.includes('exhaustion'));
-  if (undeadByImmun || UNDEAD_TRAIT.test(traits) || UNDEAD_NAME.test(name)) return { archetype: 'undead', elite };
-
-  if (BEAST_NAME.test(name) || BEAST_TRAIT.test(traits)) return { archetype: 'beast', elite };
-
-  return { archetype: 'humanoid', elite };
-}
+// CORPSE-TRUTH-1 finish (2026-07-16): the derivation moved VERBATIM to
+// engine/combat/creatureArchetype.js so the death fact can mint the victim's
+// archetype at the killing moment (engine can't import from public/). Behavior
+// here is byte-identical — same function, one authority.
+import { deriveArchetype } from '../../engine/combat/creatureArchetype.js';
 
 /**
  * combatSceneFromWorld(world) → combat-scene/v1.

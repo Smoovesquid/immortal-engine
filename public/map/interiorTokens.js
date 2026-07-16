@@ -13,15 +13,33 @@ export function interiorPeopleTokens(world, structureKey, discoveredRoomIds) {
   const out = [];
   const key = String(structureKey || '');
   if (!key) return out;
-  // CORPSE-TRUTH-1b — a dead occupant keeps its token (the body is in the room)
-  // but carries the dead flag so the sheet draws a fallen mark, never a living ring.
-  const deadIds = new Set(remainsAtNode(world, String(world?.map?.currentNodeId || '')).filter(r => r.sourceNpcId).map(r => String(r.sourceNpcId)));
-  for (const rid of (discoveredRoomIds || [])) {
+  const discovered = (discoveredRoomIds || []).map(String);
+  const discoveredSet = new Set(discovered);
+  // CORPSE-TRUTH-1 finish (2026-07-16) — a LOCATED body (post-feature fact,
+  // r.loc present) draws in its DEATH room, pinned by canon, and leaves the
+  // living-occupancy feed (a corpse has no story anchor to walk back to). A
+  // LEGACY dead occupant (no loc — pre-feature kill) keeps the old behavior:
+  // its token stays where occupancy anchors it, flagged dead — honest
+  // node-level truth with no invented room.
+  const remains = remainsAtNode(world, String(world?.map?.currentNodeId || ''));
+  const locatedDeadIds = new Set(remains.filter(r => r.sourceNpcId && r.loc).map(r => String(r.sourceNpcId)));
+  const legacyDeadIds = new Set(remains.filter(r => r.sourceNpcId && !r.loc).map(r => String(r.sourceNpcId)));
+  for (const rid of discovered) {
     const occ = occupantsOfRoom(world, key, String(rid)) || [];
     for (let i = 0; i < occ.length; i++) {
       const n = occ[i] || {};
-      out.push({ roomId: String(rid), nkey: String(n.id || n.name || ('npc' + i)), dead: deadIds.has(String(n.id || '')) ? 1 : 0 });
+      const nid = String(n.id || '');
+      if (locatedDeadIds.has(nid)) continue; // its body draws at the death room below
+      out.push({ roomId: String(rid), nkey: String(n.id || n.name || ('npc' + i)), dead: legacyDeadIds.has(nid) ? 1 : 0 });
     }
+  }
+  // The death-room corpse tokens — NPC and monster alike, for THIS structure
+  // only, in DISCOVERED rooms only (the knowledge rule holds for the dead too).
+  for (const r of remains) {
+    if (!r.loc || String(r.loc.structureId || '') !== key) continue;
+    const rid = String(r.loc.roomId || '');
+    if (!rid || !discoveredSet.has(rid)) continue;
+    out.push({ roomId: rid, nkey: String(r.sourceNpcId || `remains:${r.t != null ? r.t : String(r.name || '')}`), dead: 1 });
   }
   return out;
 }

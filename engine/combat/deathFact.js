@@ -28,6 +28,7 @@
 export const DYING_CLOCK_ROUNDS = 3;
 
 import { deriveArchetype } from './creatureArchetype.js';
+import { boardCellToWorldPos } from './grid.js';
 
 // The vocabulary the fact commits to (kept as named constants so tests and the
 // prose layer share one source of truth; never surfaced as raw strings in-world).
@@ -201,13 +202,24 @@ export function routeKillerIntent(actionText, { onBeggingFoe = false } = {}) {
 // coordinates records where the player stood, not where the victim fell.
 //
 // The honest anchor, in order of authority — all pure reads of committed state:
-//   1. an explicit victim-owned `worldPos`, stamped at the encounter/placement
-//      seam (combatLifecycle mintEnemyFromNpc / beginCombat) and carried through
-//      ensureCombat's enemy whitelist — the anchor the engine owns from spawn;
-//   2. an NPC-sourced foe's own roster `pos` — already canonical under
-//      POSITION_AS_CANON (backfillTacticalPositions maintains it, invariants.js
-//      asserts it). This was always present and simply went unread.
-//   3. honest absence (null) — the fact degrades to node-level truth exactly as a
+//   1. an explicit victim-owned `worldPos` — an NPC-sourced foe's real roster pos,
+//      inherited by mintEnemyFromNpc and carried through ensureCombat's enemy
+//      whitelist. Canonical under POSITION_AS_CANON; the board never overrides it.
+//   2. DEATH-TRUTH-1c — THE PROJECTION OF THE VICTIM'S BOARD CELL AT THE MOMENT OF
+//      DEATH. This replaces the b167 `playerPos + rng.int(-3,3)` scatter, which
+//      agreed with the board the player was looking at in 0 of 120 seeds (67% on
+//      the wrong side, median 6 cells ≈ 30 m out, and on seed `scan48` it recorded
+//      the killer's own square). The board now carries a real world origin
+//      (grid.js boardOriginFrom, pinned at beginCombat so the player's cell
+//      projects to the player's canonical pos), so a foe's position is a pure 1:1
+//      projection of where it demonstrably stands. Read HERE, at assembly time,
+//      rather than stamped at spawn: the fact then records the DEATH cell by
+//      construction, and stays correct if a foe ever gains movement (today only
+//      the player's token moves — grid.js moveCombatant is called for 'player'
+//      only — so spawn and death cells coincide; this does not rely on that).
+//   3. an NPC-sourced foe's roster `pos` looked up by sourceNpcId — the pre-b167
+//      path, kept for a foe whose inherited worldPos was lost.
+//   4. honest absence (null) — the fact degrades to node-level truth exactly as a
 //      legacy fact does. NEVER the player's position: a deterministic substitution
 //      is still a substitution, and a wrong position is worse than no position.
 function normalizeWorldPos(p) {
@@ -219,6 +231,9 @@ export function victimWorldPos(world, victim) {
   const v = victim && typeof victim === 'object' ? victim : {};
   const own = normalizeWorldPos(v.worldPos);
   if (own) return own;
+  // The board projection — the ambush creature's honest first fact.
+  const projected = normalizeWorldPos(boardCellToWorldPos(world?.combat?.origin, v));
+  if (projected) return projected;
   const src = String(v.sourceNpcId ?? '');
   if (src) {
     const nodeId = String(world?.map?.currentNodeId ?? '');

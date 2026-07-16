@@ -661,6 +661,18 @@ export function applyDeltas(world, deltas = []) {
         // MX-1: engine-owned tactical grid and player cell.
         grid: set && 'grid' in set ? set.grid : cur.grid,
         playerCell: set && 'playerCell' in set ? set.playerCell : cur.playerCell,
+        // DEATH-TRUTH-1c: origin — the board's world address (grid.js
+        // boardOriginFrom). THE SECOND WHITELIST, exactly as dyingEnabled warns
+        // above: a field missing from this literal is dropped before ensureCombat
+        // ever sees it, so beginCombat's origin would evaporate between the delta
+        // and the state and every ambush corpse would degrade to node-level truth.
+        // (Verified the hard way — the first cut of this packet set the origin in
+        // beginCombat and read `undefined` one tick later.) Preserved from the
+        // current combat when absent from the set, so a mid-fight combatState
+        // update never un-anchors a live board. Spread so it stays ABSENT when
+        // neither side has one — an un-anchorable fight is byte-identical to
+        // before, and the boot world (no combat) never gains the key.
+        ...(((set && 'origin' in set) ? set.origin : cur.origin) ? { origin: (set && 'origin' in set) ? set.origin : cur.origin } : {}),
         // DX-2a: player tactical position (re-normalized by ensureCombat).
         playerTactical: set && 'playerTactical' in set ? set.playerTactical : cur.playerTactical,
         enemies

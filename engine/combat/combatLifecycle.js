@@ -17,7 +17,7 @@ import { endDialogue } from '../npc/dialogue.js';
 import { getMonsterDef } from '../ruleset/core/bestiary/index.js';
 import { makeRng, seedFromString } from '../rng.js';
 import { buildCombatants, rollInitiative } from './initiative.js';
-import { placeCombatants } from './grid.js';
+import { placeCombatants, boardOriginFrom } from './grid.js';
 
 const ENEMY_CAP = 6;
 
@@ -166,42 +166,42 @@ export function beginCombat(world, { enemies, reason } = {}) {
   const initRng = makeRng(initSeed);
   const combatants = buildCombatants(w.party, shaped);
   const initiativeOrder = rollInitiative(combatants, initRng);
-  // DEATH-TRUTH-1 — THE VICTIM'S WORLD ANCHOR, established AT THE PLACEMENT SEAM.
+  // DEATH-TRUTH-1c — THE SCATTER IS DELETED. The b167 correction anchored an
+  // ambush foe at `playerPos + anchorRng.int(-3,3)`. Reproduced 2026-07-16 over
+  // 120 seeds on the production ambush route: that anchor agreed with the board
+  // the player is actually looking at in 0 of 120 cases; it put the foe on the
+  // WRONG SIDE of the player in 67%; median divergence 6 cells (30 m of ground);
+  // and on seed `scan48` it landed on the killer's own square — the very
+  // substitution the b167 commit's own law forbids ("NEVER the player's
+  // position"). A guess drawn from a seeded rng is still a guess; it was never
+  // repairable by excluding (0,0), which only hides the worst case.
   //
-  // The combat grid's cx/cy are an abstract board that dissolves at endCombat, so
-  // they are not world truth. Before this, a foe therefore entered the world with
-  // NO world position at all — which is what let the death fact quietly substitute
-  // the killer's pos (DEATH-TRUTH-1 defect 3). The honest repair is to give the
-  // creature a real world anchor WHERE AND WHEN IT ENTERS THE FIGHT, not to invent
-  // one after it dies: an anchor minted at spawn is where the creature actually
-  // stood; an identity-hash scatter computed at render time is a guess wearing a
-  // deterministic costume.
+  // The replacement is not another anchor — it is an ORIGIN. placeCombatants
+  // already puts every combatant on a board; the board simply had no world
+  // address. Pinning the player's board cell to the player's canonical pos
+  // (grid.js boardOriginFrom) gives EVERY cell a true world address by
+  // construction, so a foe's world position is a pure projection of where it
+  // demonstrably stands — no rng, no salt, no invention. Nothing to keep in sync
+  // and nothing to drift.
   //
-  // An NPC-sourced foe already owns a canonical roster pos (POSITION_AS_CANON) and
-  // is stamped by mintEnemyFromNpc — we never overwrite that. Only a foe with no
-  // anchor of its own (the bestiary ambush path: spawnEncounter → beginCombat) is
-  // placed here, deterministically off the SAME placement seed the board uses, in
-  // the player's frame and clustered at the engagement. Combat-scoped and carried
-  // by ensureCombat's whitelist (state.js), so the boot world — which has no combat
-  // enemies — stays byte-identical and the boot worldHash does not move.
-  const anchorRng = makeRng(seedFromString(`${w.meta?.seed || ''}|combat-anchor|${beganAt}|${reasonStr}`));
-  const playerPos = w.party?.[0]?.pos;
-  const anchored = shaped.map(e => {
-    if (e.worldPos && Number.isInteger(e.worldPos.gx) && Number.isInteger(e.worldPos.gy) && e.worldPos.frame) return e;
-    if (!playerPos || !Number.isInteger(playerPos.gx) || !Number.isInteger(playerPos.gy) || !playerPos.frame) return e;
-    // Engagement spread: a foe stands within a few cells of the player it is
-    // fighting — close enough to be the same melee, far enough to be its own spot.
-    const dx = anchorRng.int(-3, 3);
-    const dy = anchorRng.int(-3, 3);
-    return { ...e, worldPos: { frame: String(playerPos.frame), gx: playerPos.gx + dx, gy: playerPos.gy + dy } };
-  });
-
+  // An NPC-sourced foe keeps the roster pos mintEnemyFromNpc gave it (that pos is
+  // canonical under POSITION_AS_CANON and invariants.js asserts it; the board is
+  // the abstraction, not the roster). Only the ambush creature — latent until it
+  // collapses into being, with no prior location to be wrong about — takes its
+  // position from the board, and the collapse IS its first true fact.
   const placementSeed = seedFromString(`${w.meta?.seed || ''}|combat-grid|${beganAt}|${reasonStr}|${shaped.map(e => e.name).join('|')}`);
   const placement = placeCombatants({
-    enemies: anchored,
+    enemies: shaped,
     reason: reasonStr,
     rng: makeRng(placementSeed)
   });
+
+  // The board's world origin: cell (0,0)'s canonical position, derived so the
+  // player's own cell projects back to the player's own pos exactly. Null (and
+  // therefore omitted) when the player has no canonical pos — the board then has
+  // no world address and the death fact degrades to node-level truth honestly,
+  // exactly as a legacy fact does. Combat-scoped: it dissolves with the fight.
+  const boardOrigin = boardOriginFrom(w.party?.[0]?.pos, placement.playerCell);
 
   // DEATH-2 (docs/DEATH_CONTRACT.md §3): flip the DOWNED/dying gate ON for escape-mode
   // fights — this is where mercy becomes possible. A felled COMMUNICATOR now enters
@@ -233,6 +233,10 @@ export function beginCombat(world, { enemies, reason } = {}) {
       initiativeOrder,
       grid: placement.grid,
       playerCell: placement.playerCell,
+      // DEATH-TRUTH-1c: the board's world origin. Added ONLY when real, so a
+      // fight begun without a canonical player pos stays byte-identical to
+      // before and the boot world (no combat at all) is untouched.
+      ...(boardOrigin ? { origin: boardOrigin } : {}),
       // DX-2b: a fresh fight starts in the open — clear any tactical position
       // carried over from a previous combat (without this, the combatState merge
       // would keep the prior fight's high-ground/cover).

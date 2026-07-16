@@ -919,6 +919,16 @@ export function ensureCombat(c) {
   // DEATH-1: include the DOWNED/dying gate ONLY when set, so an inactive/boot combat
   // object stays byte-identical to pre-DEATH-1 (boot worldHash unmoved; U454-E safe).
   if (dyingEnabled) out.dyingEnabled = true;
+  // DEATH-TRUTH-1c: origin — the board's world address (cell (0,0)'s canonical pos,
+  // grid.js boardOriginFrom). THE WHITELIST TRAP one more time (it ate traits in
+  // DX-2d-i, stats in ENSURE-STATS-1, and worldPos in DEATH-TRUTH-1): a field absent
+  // from `out` evaporates on EVERY ensureWorld, so without this carry the board would
+  // lose its world address on the very next tick and every ambush corpse would
+  // silently degrade to node-level truth. Same {frame,gx,gy} shape as an enemy
+  // worldPos, so it reuses that normalizer. Added ONLY when real, so an inactive/boot
+  // combat object stays byte-identical (boot worldHash unmoved; no WORLD_VERSION bump).
+  const origin = normalizeEnemyWorldPos(c.origin);
+  if (origin) out.origin = origin;
   return out;
 }
 

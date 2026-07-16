@@ -93,6 +93,53 @@ export function firstOpenCellNear(preferred, grid, occupied = new Set()) {
   return start;
 }
 
+// ── DEATH-TRUTH-1c — THE BOARD'S WORLD ORIGIN ────────────────────────────────
+//
+// Until now the board was an ABSTRACT frame: cells 0..w-1 / 0..h-1 with no world
+// anchor at all, which is exactly why deathFact.js could write "the combat grid
+// is an abstract board... its cells are NOT world positions". They weren't — but
+// only because nobody ever gave the board an origin. Pin ONE cell to ONE world
+// position and every other cell has a true world address by construction, with
+// no seed, no noise and no scatter.
+//
+// The pin is the PLAYER: the player's board cell IS the player's canonical pos.
+// Everything else follows by integer offset.
+//
+// THE UNIT (UNIT-CLASH-1, public/map/worldSpace.js:36): the projection is 1:1 —
+// one board cell == one region cell. Both frames step by 5 (COMBAT_CELL_FEET's 5
+// is D&D rules-FLAVOUR used only for speed→squares; REGION_WU_PER_CELL's 5 is
+// 5 wu ≈ 5 m of real ground). They are two different fives that both mean "one
+// square", so the square index carries across unchanged. Do NOT multiply by
+// 0.3048 here — converting flavour-feet into metres would put every corpse ~3.28×
+// too close and would be UNIT-CLASH-1 wearing a new coat.
+//
+// Axis convention matches on both sides: cx/gx = east(+), cy/gy = south(+)
+// (grid.js header ↔ combatScene.js ↔ tacticalPos), so the offset is a plain add.
+
+/** boardOriginFrom(playerPos, playerCell) -> {frame,gx,gy} | null
+ *  The world position of board cell (0,0), derived so that projecting the
+ *  player's own cell returns the player's own canonical pos exactly.
+ *  Null (honest absence) when either input is not real — never a guess. */
+export function boardOriginFrom(playerPos, playerCell) {
+  const p = playerPos && typeof playerPos === 'object' ? playerPos : null;
+  if (!p || !Number.isInteger(p.gx) || !Number.isInteger(p.gy) || typeof p.frame !== 'string' || !p.frame) return null;
+  const c = playerCell && typeof playerCell === 'object' ? playerCell : null;
+  if (!c || !Number.isFinite(Number(c.cx)) || !Number.isFinite(Number(c.cy))) return null;
+  return { frame: String(p.frame), gx: p.gx - Math.trunc(Number(c.cx)), gy: p.gy - Math.trunc(Number(c.cy)) };
+}
+
+/** boardCellToWorldPos(origin, cell) -> {frame,gx,gy} | null
+ *  THE projection: board cell -> canonical world position, 1:1. Pure, integer,
+ *  rng-free. Null when the board has no origin (a fight begun with no canonical
+ *  player pos) — degrade honestly, never substitute. */
+export function boardCellToWorldPos(origin, cell) {
+  const o = origin && typeof origin === 'object' ? origin : null;
+  if (!o || !Number.isInteger(o.gx) || !Number.isInteger(o.gy) || typeof o.frame !== 'string' || !o.frame) return null;
+  const c = cell && typeof cell === 'object' ? cell : null;
+  if (!c || !Number.isFinite(Number(c.cx)) || !Number.isFinite(Number(c.cy))) return null;
+  return { frame: String(o.frame), gx: o.gx + Math.trunc(Number(c.cx)), gy: o.gy + Math.trunc(Number(c.cy)) };
+}
+
 export function combatGridForCount(enemyCount = 0) {
   const n = Math.max(0, Math.trunc(Number(enemyCount) || 0));
   return {

@@ -113,7 +113,17 @@ export function mintEnemyFromNpc(npc) {
     senses,
     stats,
     traits,
-    level
+    level,
+    // DEATH-TRUTH-1 — the foe's OWN world anchor. An NPC already owns a canonical
+    // position (POSITION_AS_CANON: backfillTacticalPositions maintains npc.pos,
+    // invariants.js asserts it), so a foe minted FROM that NPC inherits the real
+    // thing — no guess, no seed, no scatter. This is the anchor the b167 death fact
+    // should have read instead of world.party[0].pos; carrying it onto the enemy
+    // keeps it true even after the roster entry stops being the source of truth
+    // (a fight can outlive the NPC's presence in the list).
+    worldPos: (n.pos && Number.isInteger(n.pos.gx) && Number.isInteger(n.pos.gy) && n.pos.frame)
+      ? { frame: String(n.pos.frame), gx: n.pos.gx, gy: n.pos.gy }
+      : null
   };
 }
 
@@ -156,9 +166,39 @@ export function beginCombat(world, { enemies, reason } = {}) {
   const initRng = makeRng(initSeed);
   const combatants = buildCombatants(w.party, shaped);
   const initiativeOrder = rollInitiative(combatants, initRng);
+  // DEATH-TRUTH-1 — THE VICTIM'S WORLD ANCHOR, established AT THE PLACEMENT SEAM.
+  //
+  // The combat grid's cx/cy are an abstract board that dissolves at endCombat, so
+  // they are not world truth. Before this, a foe therefore entered the world with
+  // NO world position at all — which is what let the death fact quietly substitute
+  // the killer's pos (DEATH-TRUTH-1 defect 3). The honest repair is to give the
+  // creature a real world anchor WHERE AND WHEN IT ENTERS THE FIGHT, not to invent
+  // one after it dies: an anchor minted at spawn is where the creature actually
+  // stood; an identity-hash scatter computed at render time is a guess wearing a
+  // deterministic costume.
+  //
+  // An NPC-sourced foe already owns a canonical roster pos (POSITION_AS_CANON) and
+  // is stamped by mintEnemyFromNpc — we never overwrite that. Only a foe with no
+  // anchor of its own (the bestiary ambush path: spawnEncounter → beginCombat) is
+  // placed here, deterministically off the SAME placement seed the board uses, in
+  // the player's frame and clustered at the engagement. Combat-scoped and carried
+  // by ensureCombat's whitelist (state.js), so the boot world — which has no combat
+  // enemies — stays byte-identical and the boot worldHash does not move.
+  const anchorRng = makeRng(seedFromString(`${w.meta?.seed || ''}|combat-anchor|${beganAt}|${reasonStr}`));
+  const playerPos = w.party?.[0]?.pos;
+  const anchored = shaped.map(e => {
+    if (e.worldPos && Number.isInteger(e.worldPos.gx) && Number.isInteger(e.worldPos.gy) && e.worldPos.frame) return e;
+    if (!playerPos || !Number.isInteger(playerPos.gx) || !Number.isInteger(playerPos.gy) || !playerPos.frame) return e;
+    // Engagement spread: a foe stands within a few cells of the player it is
+    // fighting — close enough to be the same melee, far enough to be its own spot.
+    const dx = anchorRng.int(-3, 3);
+    const dy = anchorRng.int(-3, 3);
+    return { ...e, worldPos: { frame: String(playerPos.frame), gx: playerPos.gx + dx, gy: playerPos.gy + dy } };
+  });
+
   const placementSeed = seedFromString(`${w.meta?.seed || ''}|combat-grid|${beganAt}|${reasonStr}|${shaped.map(e => e.name).join('|')}`);
   const placement = placeCombatants({
-    enemies: shaped,
+    enemies: anchored,
     reason: reasonStr,
     rng: makeRng(placementSeed)
   });

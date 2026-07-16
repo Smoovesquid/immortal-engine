@@ -193,6 +193,45 @@ export function routeKillerIntent(actionText, { onBeggingFoe = false } = {}) {
   return 'clean';
 }
 
+// ── victimWorldPos — WHERE THE VICTIM DIED (DEATH-TRUTH-1 correction) ────────
+// The b167 fact stored `world.party[0].pos` — the KILLER's position — under a
+// comment claiming it was "the melee anchor the engine actually owns". It is not:
+// reproduced 2026-07-16 on seed loaderDemo, player (-806,-390) vs Jorin
+// (-800,-353), fact recorded (-806,-390). A death fact that stores the player's
+// coordinates records where the player stood, not where the victim fell.
+//
+// The honest anchor, in order of authority — all pure reads of committed state:
+//   1. an explicit victim-owned `worldPos`, stamped at the encounter/placement
+//      seam (combatLifecycle mintEnemyFromNpc / beginCombat) and carried through
+//      ensureCombat's enemy whitelist — the anchor the engine owns from spawn;
+//   2. an NPC-sourced foe's own roster `pos` — already canonical under
+//      POSITION_AS_CANON (backfillTacticalPositions maintains it, invariants.js
+//      asserts it). This was always present and simply went unread.
+//   3. honest absence (null) — the fact degrades to node-level truth exactly as a
+//      legacy fact does. NEVER the player's position: a deterministic substitution
+//      is still a substitution, and a wrong position is worse than no position.
+function normalizeWorldPos(p) {
+  return (p && typeof p === 'object' && Number.isInteger(p.gx) && Number.isInteger(p.gy) && p.frame)
+    ? { frame: String(p.frame), gx: p.gx, gy: p.gy } : null;
+}
+
+export function victimWorldPos(world, victim) {
+  const v = victim && typeof victim === 'object' ? victim : {};
+  const own = normalizeWorldPos(v.worldPos);
+  if (own) return own;
+  const src = String(v.sourceNpcId ?? '');
+  if (src) {
+    const nodeId = String(world?.map?.currentNodeId ?? '');
+    const nodes = Array.isArray(world?.map?.nodes) ? world.map.nodes : [];
+    const node = nodes.find(n => n && String(n.id) === nodeId);
+    const npcs = Array.isArray(node?.settlement?.npcs) ? node.settlement.npcs : [];
+    const npc = npcs.find(n => n && String(n.id) === src);
+    const p = normalizeWorldPos(npc?.pos);
+    if (p) return p;
+  }
+  return null;
+}
+
 // ── The atom ─────────────────────────────────────────────────────────────────
 /**
  * assembleDeathFact — pure f(world, combat log) → the DEATH FACT (contract §2).
@@ -272,22 +311,21 @@ export function assembleDeathFact(args = {}) {
     // CORPSE-TRUTH-1 finish (2026-07-16) — the MOST SPECIFIC location the engine
     // owns at the killing moment, captured whole and never guessed later:
     //   structureId/roomId — the interior scene, when the fight was inside;
-    //   pos — the player's canonical tactical position (POSITION_AS_CANON), the
-    //         melee anchor the engine actually owns (the combat grid is an
-    //         abstract board that dissolves at endCombat — its cells are NOT
-    //         world positions, so they are deliberately NOT recorded).
+    //   pos — the VICTIM's own canonical world position (victimWorldPos above).
+    //         The combat grid is an abstract board that dissolves at endCombat —
+    //         its cells are NOT world positions, so they are deliberately NOT
+    //         recorded; but that is no licence to substitute the killer's pos.
+    //         A victim with no honest anchor records pos:null and degrades to
+    //         node-level truth (DEATH-TRUTH-1 correction).
     // The presence of the `loc` key is the post-feature discriminator: legacy
     // facts lack it entirely and degrade to node-level truth (never assigned a
     // guessed room or cell).
     loc: (() => {
       const interior = world?.scene?.interior;
-      const p = world?.party?.[0]?.pos;
-      const pos = (p && typeof p === 'object' && Number.isInteger(p.gx) && Number.isInteger(p.gy) && p.frame)
-        ? { frame: String(p.frame), gx: p.gx, gy: p.gy } : null;
       return {
         structureId: interior ? String(interior.structureKey ?? '') || null : null,
         roomId: interior ? String(interior.roomId ?? '') || null : null,
-        pos,
+        pos: victimWorldPos(world, v),
       };
     })(),
     locale: localeFor(world),

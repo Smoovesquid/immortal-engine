@@ -866,10 +866,20 @@ export function ensureCombat(c) {
     // boot world has no combat enemies → boot worldHash unmoved, no WORLD_VERSION bump.
     const bestiaryRefRaw = typeof eRaw.bestiaryRef === 'string' ? eRaw.bestiaryRef.trim() : '';
     const bestiaryRef = bestiaryRefRaw ? bestiaryRefRaw.slice(0, 64) : null;
+    // DEATH-TRUTH-1: worldPos — the foe's OWN world anchor, minted at the encounter/
+    // placement seam (combatLifecycle beginCombat / mintEnemyFromNpc). THE WHITELIST
+    // TRAP (the same one that ate traits/stats — see DX-2d-i and ENSURE-STATS-1
+    // above): a field absent from the enemy literal below evaporates on EVERY
+    // ensureWorld, so the anchor must be carried here or the death fact finds no
+    // victim position and silently degrades to node-level truth. Combat-scoped and
+    // added ONLY when present, so a foe that never carried one stays byte-identical
+    // and the boot world (no combat enemies) leaves the boot worldHash unmoved.
+    const worldPos = normalizeEnemyWorldPos(eRaw.worldPos);
     const enemy = { id, name, hp, maxHp, damage, ac, cr, damageType, resistances, conditionImmunities, conditions, actions, multiattack, saveProficiencies, canParley, defeated, downed, dyingClock, woundLog, begged, spared, betrayed, sourceNpcId, lootTableRef, initMod, legendaryActions, reactions, lairActions, senses, tactical, traits, stats, level, cx: cell.cx, cy: cell.cy };
     // DEATH-1: carry an explicit capability only when set (otherwise derived at read).
     if (canCommunicate !== undefined) enemy.canCommunicate = canCommunicate;
     if (bestiaryRef) enemy.bestiaryRef = bestiaryRef;
+    if (worldPos) enemy.worldPos = worldPos;
     if (eRaw._traitRevived) enemy._traitRevived = true;
     enemies.push(enemy);
     if (enemies.length >= COMBAT_ENEMY_CAP) break;
@@ -997,6 +1007,21 @@ function normalizeWoundLog(raw) {
     });
   }
   return out.length > 12 ? out.slice(out.length - 12) : out;
+}
+
+// DEATH-TRUTH-1: normalize a combat enemy's world anchor — the victim-owned
+// position minted at the encounter/placement seam. Shape-gated exactly like the
+// tactical-pos schema (integer gx/gy + a frame string); anything malformed is
+// dropped to null rather than repaired, because a half-trusted position is the
+// very failure this packet exists to end. Returns null (honest absence) freely:
+// the death fact degrades to node-level truth, which is the correct answer for a
+// foe the engine genuinely never located.
+function normalizeEnemyWorldPos(p) {
+  if (!p || typeof p !== 'object') return null;
+  if (!Number.isInteger(p.gx) || !Number.isInteger(p.gy)) return null;
+  const frame = typeof p.frame === 'string' ? p.frame.trim() : '';
+  if (!frame) return null;
+  return { frame: frame.slice(0, 32), gx: p.gx, gy: p.gy };
 }
 
 // ENSURE-STATS-1: normalize a combat enemy's ability-score block. mintEnemyFromNpc

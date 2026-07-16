@@ -59,6 +59,32 @@ test('U710-A the fact captures loc: no structure, the canonical region position'
     'the engine-owned region position rides the fact');
 });
 
+// ── A2. THE VICTIM'S position, not the killer's (DEATH-TRUTH-1 correction) ───
+// The shape assertion in U710-A passed while the fact recorded the PLAYER's pos:
+// reproduced 2026-07-16 — player (-806,-390), Jorin (-800,-353), fact (-806,-390).
+// A death fact that stores the killer's coordinates is not a record of where the
+// victim died; it is a record of where the player stood. Jorin owns a canonical
+// npc.pos (POSITION_AS_CANON, backfillTacticalPositions) — the honest anchor was
+// always present and simply went unread.
+test('U710-A2 the fact records WHERE THE VICTIM DIED, never the killer position', () => {
+  const w = killJorinOutside();
+  const fact = findDeathFacts(w).find(f => /jorin/i.test(String(f?.victim?.name || '')));
+  const node = w.map.nodes.find(n => String(n.id) === String(w.map.currentNodeId));
+  const jorin = (node.settlement?.npcs || []).find(n => String(n.id) === 'npc_1');
+  assert.ok(jorin?.pos, 'setup: Jorin owns a canonical npc.pos');
+  const playerPos = w.party[0].pos;
+  // The two must actually differ, or this test proves nothing.
+  assert.notDeepEqual({ gx: jorin.pos.gx, gy: jorin.pos.gy }, { gx: playerPos.gx, gy: playerPos.gy },
+    'setup: victim and killer stand at genuinely distinct positions');
+  assert.deepEqual(
+    { frame: fact.loc.pos.frame, gx: fact.loc.pos.gx, gy: fact.loc.pos.gy },
+    { frame: jorin.pos.frame, gx: jorin.pos.gx, gy: jorin.pos.gy },
+    'the fact carries the VICTIM\'s canonical position');
+  assert.notDeepEqual(
+    { gx: fact.loc.pos.gx, gy: fact.loc.pos.gy }, { gx: playerPos.gx, gy: playerPos.gy },
+    'the fact is NOT the player position');
+});
+
 // ── B. the corpse token is PINNED — out of the scatter, immovable ────────────
 test('U710-B dead Jorin leaves the living scatter and never moves again', () => {
   let w = killJorinOutside();

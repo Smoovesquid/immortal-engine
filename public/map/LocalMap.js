@@ -965,9 +965,25 @@ function drawInteriorV2(canvas, world) {
       const room = engFp.rooms.find(r0 => String(r0.id) === rid);
       if (!room) continue;
       const key = String(rr.sourceNpcId || `remains:${rr.t != null ? rr.t : String(rr.name || '')}`);
-      const ang = (seedStr('deadang|' + key) % 360) * Math.PI / 180;
-      const rad = Math.min(Number(room.w) || 1, Number(room.h) || 1) * (0.18 + (seedStr('deadrad|' + key) % 100) / 100 * 0.15);
-      tokens.push({ type: 'dead', ux: room.cx + Math.cos(ang) * rad, uy: room.cy + Math.sin(ang) * rad, label: String(rr.name || '') });
+      // DEATH-TRUTH-1d — draw the body AT the canonical cell the fact froze, when it
+      // carries a struct-frame pos (loc.pos, cells → floor-plan layout units, cell /
+      // PLACE_WU — the SAME conversion the moved-furniture ink uses above). The body
+      // lies on the square it fell on, not a room-centre scatter. A fact with no
+      // struct pos (legacy / degrade) keeps the seeded-angle spot — honest room-level
+      // truth with no invented precision.
+      const lp = rr.loc.pos;
+      let ux, uy;
+      if (lp && /^struct:/.test(String(lp.frame || '')) && Number.isInteger(lp.gx) && Number.isInteger(lp.gy)) {
+        const lux = lp.gx / PLACE_WU, luy = lp.gy / PLACE_WU;
+        const inRect = Math.abs(lux - Number(room.cx)) <= (Number(room.w) || 0) / 2 && Math.abs(luy - Number(room.cy)) <= (Number(room.h) || 0) / 2;
+        if (inRect) { ux = lux; uy = luy; }
+      }
+      if (ux == null) {
+        const ang = (seedStr('deadang|' + key) % 360) * Math.PI / 180;
+        const rad = Math.min(Number(room.w) || 1, Number(room.h) || 1) * (0.18 + (seedStr('deadrad|' + key) % 100) / 100 * 0.15);
+        ux = room.cx + Math.cos(ang) * rad; uy = room.cy + Math.sin(ang) * rad;
+      }
+      tokens.push({ type: 'dead', ux, uy, label: String(rr.name || '') });
     }
     const model = floorPlanToSceneModel(engFp, { currentRoomId: roomId, visited, tokens, furniture: authoredFurniture });
     createInteriorMap(canvas, { seed: String(st.id || 'interior') }).draw(model);

@@ -20,7 +20,15 @@ import { outdoorOccupants } from '../../engine/structures/roomOccupancy.js';
 // position, so the egress doorstep (tacticalPos.doorThresholdCells) lands on the
 // building this file draws. This module consumes that layout and adds only the
 // render-plan furniture + the outdoor-token layer.
-import { settlementLayout } from '../../engine/world/settlementLayout.js';
+import { settlementLayout, regionCellToPlaceUnit } from '../../engine/world/settlementLayout.js';
+// DEATH-TRUTH-1d — the outdoor people scatter is ENGINE truth now (people become
+// places). This module no longer INVENTS positions: it reads each person's / each
+// corpse's canonical region cell back onto the sheet through regionCellToPlaceUnit.
+// The scatter helpers (pushClearOfBuildings, the footprint margin) moved to the
+// engine so the placement and the draw share ONE geometry; re-exported below for the
+// tests/labs that import them from here.
+import { pushClearOfBuildings, insideAnyRect, NPC_MARGIN_LU, settlementScatterPlaceUnits } from '../../engine/world/settlementScatter.js';
+export { pushClearOfBuildings, insideAnyRect, NPC_MARGIN_LU };
 // MR-1b — the player token reads the engine's canonical tactical `pos` instead of
 // a fixed lane-entry seed. floorPlan is the REAL engine room graph for a
 // struct-frame pos (NOT the catalog `getPlan()` plan this module draws buildings
@@ -157,80 +165,11 @@ function engineBackedPlan(st, world) {
   return { rooms: fp.rooms, doors: fp.doors || [], footprint: fp.footprint, material: fp.shell, furniture: flattenRoomFurniture(fp.rooms, world, st) };
 }
 
-// ── TT-OCC THE RULE — no outdoor mini ever stands inside ink that isn't theirs ──
-// Tim's ruling (2026-07-05, docs/MAP_REAL.md): floorplans stay ALWAYS-OPEN
-// (roofless DM-screen look, locked), so a strict placement margin is the ONLY
-// defense against a figure reading as "in the bedroom" when the engine says
-// they're outdoors. NPC_MARGIN_LU is derived from the two things that actually
-// eat into the visual gap between a token's coordinate and "clearly outside the
-// wall": the wall stroke itself, and the token's own drawn footprint — not
-// imported (drawModel.js imports FROM this file; importing back would cycle),
-// but pinned to the same numbers so a future taste pass on either stays honest:
-//   wall stroke:  INK_PARAMS.wallWeight.fortified = 3.4 world-units (widest of
-//                 the five shells) ÷ PLACE_WU (4 wu/lu, worldSpace.js) = 0.85 lu
-//   token base:   INK_PARAMS.tokenBaseRadiusWu = 0.34*PLACE_WU wu ÷ PLACE_WU
-//                 = 0.34 lu (a token isn't a point; its own ring must clear too)
-// Sum, rounded up a hair for a real setback rather than a graze: 1.2 lu. This is
-// the exact class of miss that let Galen's 0.72-lu-from-cottage scatter point
-// (aldermere boot, node n0_2935788122) pass a bare rect-edge check while still
-// reading on screen as standing inside the wake cottage.
-export const NPC_MARGIN_LU = 1.2;
-
-// True if point (px,py) falls inside any rect in `rects`, each grown by `margin`
-// on every side. Rects are the SAME `placed` AABBs the building-scatter loop
-// above already computed (post ROADS-1 projection) — one footprint truth, no
-// re-derivation. Exported (with pushClearOfBuildings below) so tests can drive
-// the exclusion directly against synthetic tight-packed geometry, not just
-// indirectly through a full settlement boot.
-export function insideAnyRect(px, py, rects, margin) {
-  for (const r of rects) {
-    if (px >= r.minX - margin && px <= r.maxX + margin && py >= r.minY - margin && py <= r.maxY + margin) return true;
-  }
-  return false;
-}
-
-// Deterministically relocate (x,y) to the nearest point clear of every
-// building rect (+margin) — a fixed ring/angle SPIRAL SEARCH outward from the
-// original point, not a repulsion vector-field.
-//
-// Why a spiral and not "push away from the nearest/summed rect": a first draft
-// tried exactly that (push directly away from whichever rect's centre — or
-// nearest edge, or the summed away-vector of every claiming rect — was
-// nearest), mirroring ROADS-1's buildings-vs-road projection. It broke on a
-// realistic tight-packed village (several buildings only ~1-2 lu apart,
-// margin-inflated zones overlapping in the gap between them): the point
-// oscillates between two neighbours' opposing pulls, or settles into a stable
-// EQUILIBRIUM where multiple rects' push vectors exactly cancel — a known
-// failure mode of potential-field navigation, not a rare edge case (an
-// adversarial-fixture sweep hit it on ~40-75% of trials). A vector field can
-// get stuck; an exhaustive search cannot. Walking outward ring by ring and
-// taking the FIRST clear point found is instead a monotonic search — no
-// equilibrium is possible because nothing is being followed, every candidate
-// point is independently tested. Verified against the same adversarial
-// checkerboard (0/300 failures, vs. the vector approaches' 40-75%) plus a
-// realistic 2-lu-gap grid and a "deep inside one giant building" case.
-//
-// Deterministic and pure: same (x,y,rects,margin) always yields the same
-// escape point, no rng, nothing here reads world state. `angleSteps` scales
-// with ring number so the arc-length between samples stays roughly bounded as
-// the radius grows (a fixed angle count would under-sample a narrow clear
-// wedge far out); `maxRadius`/`ringStep` cap the search — the country is
-// unbounded off any settlement, so a clear point always exists well within
-// range, and the cap only protects against a pathological caller.
-export function pushClearOfBuildings(x, y, rects, margin, maxRadius = 200, ringStep = 0.5, angleSteps = 24) {
-  if (!insideAnyRect(x, y, rects, margin)) return { x, y }; // already clear — most calls, zero work
-  for (let ring = 1; ring * ringStep <= maxRadius; ring++) {
-    const r = ring * ringStep;
-    const steps = Math.min(angleSteps * ring, 720);
-    for (let a = 0; a < steps; a++) {
-      const theta = (a / steps) * Math.PI * 2;
-      const px = x + Math.cos(theta) * r, py = y + Math.sin(theta) * r;
-      if (!insideAnyRect(px, py, rects, margin)) return { x: px, y: py };
-    }
-  }
-  return { x, y }; // exhausted maxRadius — never hit in practice (see module doc); returns the original point rather than fabricating one
-}
-
+// TT-OCC THE RULE — no outdoor mini ever stands inside ink that isn't theirs. The
+// margin + spiral escape (NPC_MARGIN_LU, insideAnyRect, pushClearOfBuildings) moved
+// to engine/world/settlementScatter.js (DEATH-TRUTH-1d: the scatter is engine truth,
+// so its footprint clearance lives with it); imported + re-exported at the top of
+// this file so tests/labs that drive them from here keep working.
 
 // MR-1b — the player token's place-unit position, read from the engine's
 // canonical tactical `pos` (docs/POSITION_AS_CANON.md) instead of a fixed seed.
@@ -242,13 +181,15 @@ export function pushClearOfBuildings(x, y, rects, margin, maxRadius = 200, ringS
 //     oneMap.js's resolveEntityWuFromWorld exactly (its plan is likewise re-derived
 //     from world.structures, never the caller's drawn-plan reference) — one
 //     projection contract, two output spaces (wu there, place-units here).
-//   pos.frame === 'region'       → outdoors at this node. This module's village
-//     layout is an independently-seeded micro-scatter (its own road spine, its own
-//     local origin) with NO shared coordinate lattice against the engine's region
-//     cells (unlike oneMap.js's wu space, which anchors everything to nodeToWu) —
-//     there is no canonical sub-node point to project a region cell onto here, so
-//     outdoors resolves to the fallback (documented, not a bug: "somewhere outside,
-//     near the village entrance" is the honest resolution this layout can offer).
+//   pos.frame === 'region'       → outdoors at this node. DEATH-TRUTH-1d — the stale
+//     claim that used to sit here ("NO shared coordinate lattice against the engine's
+//     region cells") is FALSE now: MAP-EGRESS-1 built that lattice
+//     (placeUnitToRegionCell), and this packet added its inverse
+//     (regionCellToPlaceUnit). So an outdoor player draws AT the cell canon owns
+//     (its grounded lane-entry, snapped) — the token stands where the engine says,
+//     not at an unrelated fallback seed. Needs the node (region-cell anchor) + the
+//     settlement `frame`; without them (a caller that can't supply them) it degrades
+//     to the fallback, exactly as before.
 //   no pos / ungroundable pos    → the fallback (legacy lane-entry seed).
 //
 // Precedence vs. TT-OCC's no-foreign-ink rule (NPC_MARGIN_LU, above): the player
@@ -265,13 +206,22 @@ export function pushClearOfBuildings(x, y, rects, margin, maxRadius = 200, ringS
 //
 // Pure: no mutation, no rng. Never throws — any lookup failure degrades to the
 // fallback, matching every other projector in this file/worldSpace.js.
-export function playerTokenPlaceUnit(world, buildings, fallback) {
+export function playerTokenPlaceUnit(world, buildings, fallback, node = null, frame = null) {
   const pos = world?.party?.[0]?.pos;
   if (!pos || typeof pos !== 'object' || !Number.isInteger(pos.gx) || !Number.isInteger(pos.gy)) {
     return fallback;
   }
   const m = /^struct:(.+)$/.exec(String(pos.frame || ''));
-  if (!m) return fallback; // region frame (or an unrecognized frame) — see note above
+  if (!m) {
+    // DEATH-TRUTH-1d — a region-frame pos draws AT its canonical cell (the grounded
+    // lane-entry), projected through the lattice's inverse. Falls back only if the
+    // caller couldn't supply the node/frame or the frame isn't the region sheet.
+    if (String(pos.frame || '') === 'region' && node && frame) {
+      const u = regionCellToPlaceUnit(node, frame, pos.gx, pos.gy);
+      if (Number.isFinite(u?.ux) && Number.isFinite(u?.uy)) return u;
+    }
+    return fallback;
+  }
   const structId = m[1];
   const bld = (buildings || []).find(b => String(b?.structureKey || '') === structId);
   if (!bld) return fallback; // the pos's building isn't drawn in this village (e.g. a far node)
@@ -350,60 +300,80 @@ export function placeFromWorldNode(world, nodeId) {
 
   const { terrain, placed, roadY, rng, extent, footprintW } = layout;
   const { minX, maxX } = extent;
+  const frame = layout.frame;
   const tokens = [];
 
-  // MR-1b — the player token reads engine position truth when it's available;
-  // the lane-entry seed (x0+1.5, roadY(...)) survives ONLY as the no-pos legacy
-  // fallback (a fresh/legacy world with no party[0].pos, or a pos this module
-  // can't ground — e.g. a structure not drawn in this village's buildings[]).
-  // The player token is exempt from the TT-OCC exclusion below: the player may
-  // legitimately be indoors (wake = your bed) — their token comes from position
-  // truth (or the fallback), never routed through the outdoor-scatter building check.
+  // DEATH-TRUTH-1d — the player token draws AT its canonical cell. Indoors it
+  // projects the struct cell into the drawn building (as before); outdoors it now
+  // reads the region cell canon owns (the grounded lane-entry, snapped) rather than
+  // an unrelated seed. The lane-entry fallback survives ONLY for a world with no
+  // party[0].pos or a pos this sheet can't ground. Exempt from the TT-OCC exclusion:
+  // the player may legitimately be indoors (wake = your bed).
   const laneX = terrain.paths?.[0]?.pts?.[0]?.[0] ?? 0; // the road's west end (== old x0)
   const fallbackPlayerUnit = { ux: laneX + 1.5, uy: roadY(laneX + 1.5) };
-  tokens.push({ type: 'player', ...playerTokenPlaceUnit(world, buildings, fallbackPlayerUnit) });
+  tokens.push({ type: 'player', ...playerTokenPlaceUnit(world, buildings, fallbackPlayerUnit, node, frame) });
+
   // CORPSE-TRUTH-1 finish (2026-07-16) — the dead stop walking the scatter.
   // A remains entry that CARRIES its killing-moment location (r.loc — every
   // post-feature fact) leaves the living roster feed entirely and comes back
-  // below as a PINNED corpse token: seeded from its own identity, never from the
-  // roster list order, so no later roster change can re-scatter a body. A LEGACY
-  // dead NPC (npcCombatHp only / a pre-feature fact — r.loc absent) keeps the
-  // old behavior byte-for-byte: it rides the scatter flagged `dead`, honest
-  // node-level truth with no invented precision.
+  // below as a PINNED corpse token. A LEGACY dead NPC (npcCombatHp only / a
+  // pre-feature fact — r.loc absent) keeps the old behavior: it rides the living
+  // feed flagged `dead`, honest node-level truth with no invented precision.
   const remains = remainsAtNode(world, String(node.id || ''));
   const locatedDeadIds = new Set(remains.filter(r => r.sourceNpcId && r.loc).map(r => String(r.sourceNpcId)));
   const legacyDeadIds = new Set(remains.filter(r => r.sourceNpcId && !r.loc).map(r => String(r.sourceNpcId)));
   const outdoorAlive = outdoorNpcs.filter(n => !locatedDeadIds.has(String(n?.id || '')));
   const shown = outdoorAlive.filter(n => n && !n.hostile).slice(0, 12).concat(outdoorAlive.filter(n => n && n.hostile).slice(0, 2).map(n => ({ ...n, name: '?' })));
   shown.forEach((n, i) => {
+    // DEATH-TRUTH-1d — draw each living person AT the cell canon grounded them at
+    // (people become places). The engine's settlementScatter placed them; here we
+    // read their region-cell pos back through the lattice inverse, so a living
+    // villager and the corpse they may become share ONE coordinate exactly. The old
+    // seeded scatter formula survives ONLY as the fallback for an ungrounded person
+    // (no canon pos) — the rng is still consumed so that fallback stays byte-stable.
     const ax0 = minX + ((i + 1) / (shown.length + 1)) * (maxX - minX) + (rng.nextFloat() - 0.5) * 2;
     const ay0 = roadY(ax0) + (rng.nextFloat() < 0.5 ? -1 : 1) * (0.8 + rng.nextFloat() * 1.4);
-    // TT-OCC — outdoor scatter must never land inside a building's footprint
-    // (+ NPC_MARGIN_LU). `placed` is the SAME building AABB set the engine scatter
-    // resolved (post ROADS-1 projection); hostile-masked tokens (name '?') go through
-    // this identical path — no exemption, an ambusher is still outdoors until the
-    // fiction says otherwise.
-    const { x: ax, y: ay } = pushClearOfBuildings(ax0, ay0, placed, NPC_MARGIN_LU);
+    const canon = (n.pos && n.pos.frame === 'region' && Number.isInteger(n.pos.gx) && Number.isInteger(n.pos.gy))
+      ? regionCellToPlaceUnit(node, frame, n.pos.gx, n.pos.gy) : null;
+    // The cell canon owns, re-cleared of building footprints (the ≤2.5 m region-cell
+    // snap can nudge a person's projected cell a hair into the margin; the corpse
+    // path applies the IDENTICAL clear to the IDENTICAL cell, so a living villager and
+    // the body they become still share one drawn spot). No canon → the old seeded
+    // scatter (rng consumed above so that fallback is byte-stable).
+    const { x: ux, y: uy } = canon
+      ? pushClearOfBuildings(canon.ux, canon.uy, placed, NPC_MARGIN_LU)
+      : pushClearOfBuildings(ax0, ay0, placed, NPC_MARGIN_LU);
     const tokenId = n.id || ('npc' + i);
-    tokens.push({ type: 'npc', ux: ax, uy: ay, label: String(n.name || 'V').trim().charAt(0).toUpperCase() || 'V', npc: { id: tokenId, name: n.name, role: n.role }, ...(legacyDeadIds.has(String(tokenId)) ? { dead: 1 } : {}) });
+    tokens.push({ type: 'npc', ux, uy, label: String(n.name || 'V').trim().charAt(0).toUpperCase() || 'V', npc: { id: tokenId, name: n.name, role: n.role }, ...(legacyDeadIds.has(String(tokenId)) ? { dead: 1 } : {}) });
   });
+
   // The pinned corpse tokens: every located OUTDOOR death at this node — NPC and
   // monster alike. A body that fell INSIDE a structure belongs to the interior
-  // surfaces (interiorTokens/the framed room), not the village sheet — exactly
-  // like living indoor folk never draw out here. Positions are seeded from the
-  // corpse's own identity on a PRIVATE rng stream (the settlement scatter's
-  // stream is untouched — its draws stay byte-identical), clear of buildings.
-  // (The sheet has no canonical projection for a region-frame cell — the same
-  // documented limit the PLAYER token has here — so a stable identity-keyed
-  // spot is the honest maximum; the fact still carries the true pos in canon.)
+  // surfaces, not the village sheet. DEATH-TRUTH-1d — a corpse draws AT the cell
+  // the fact froze at the killing moment (loc.pos, region frame), read back through
+  // the SAME lattice inverse the living use — so the body lies exactly where the
+  // person stood (and exactly where the fight the player watched put it). A fact
+  // with no honest anchor (loc.pos null — the degrade case) keeps a stable
+  // identity-keyed spot: node-level truth, no invented precision.
   for (const r of remains) {
-    if (!r.loc) continue;                       // legacy: handled by the scatter flag above
+    if (!r.loc) continue;                       // legacy: handled by the living-feed flag above
     if (r.loc.structureId) continue;            // died inside — the interior surfaces own it
+    let rx, ry;
+    const lp = r.loc.pos;
+    if (lp && lp.frame === 'region' && Number.isInteger(lp.gx) && Number.isInteger(lp.gy)) {
+      const u = regionCellToPlaceUnit(node, frame, lp.gx, lp.gy);
+      const clr = pushClearOfBuildings(u.ux, u.uy, placed, NPC_MARGIN_LU);
+      rx = clr.x; ry = clr.y;
+    } else {
+      // No honest cell — the documented degrade: a stable identity-keyed spot.
+      const key = r.sourceNpcId || `remains:${r.t != null ? r.t : String(r.name || '')}`;
+      const rr = makeRng(seedFromString(`${seed}|remains|${key}`));
+      const rx0 = minX + rr.nextFloat() * (maxX - minX);
+      const ry0 = roadY(rx0) + (rr.nextFloat() < 0.5 ? -1 : 1) * (0.8 + rr.nextFloat() * 1.4);
+      const clr = pushClearOfBuildings(rx0, ry0, placed, NPC_MARGIN_LU);
+      rx = clr.x; ry = clr.y;
+    }
     const key = r.sourceNpcId || `remains:${r.t != null ? r.t : String(r.name || '')}`;
-    const rr = makeRng(seedFromString(`${seed}|remains|${key}`));
-    const rx0 = minX + rr.nextFloat() * (maxX - minX);
-    const ry0 = roadY(rx0) + (rr.nextFloat() < 0.5 ? -1 : 1) * (0.8 + rr.nextFloat() * 1.4);
-    const { x: rx, y: ry } = pushClearOfBuildings(rx0, ry0, placed, NPC_MARGIN_LU);
     tokens.push({
       type: 'npc', ux: rx, uy: ry, dead: 1,
       label: String(r.name || 'X').trim().charAt(0).toUpperCase() || 'X',

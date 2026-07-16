@@ -65,6 +65,17 @@ test('U576a drawModel.js\'s only change since the pre-packet base is PROP_MINI_K
   assert.ok(baseDrawModel.length > 0, 'precondition: could read drawModel.js from the dispatch-point base via git');
   assert.ok(baseOneMap.length > 0, 'precondition: could read oneMap.js from the dispatch-point base via git');
   const normalizeDrawModel = (src) => src
+    // DEATH-TRUTH-1d (1e fold, 2026-07-16) legitimately touches drawModel.js: a
+    // wilderness (non-settlement) node's located OUTDOOR dead now draw via
+    // regionCellToWu (the settlement path already carried corpses through
+    // place.tokens). Same posture as the OBJ-RUBBLE-1 carve-out below — the added
+    // import + block normalize to NOTHING (the base predates them), so both sides
+    // stay byte-comparable and the NEXT unrelated packet still fails loudly. Strip
+    // (a) the regionCellToWu import token, (b) the remainsAtNode import block, and
+    // (c) the `if (!place)` wilderness-corpse block.
+    .replace(', regionCellToWu', '')
+    .replace(/[ \t]*\/\/ DEATH-TRUTH-1d \(1e fold\) — a body outdoors[\s\S]*?import \{ remainsAtNode \}[^\n]*\n/, '')
+    .replace(/[ \t]*\/\/ DEATH-TRUTH-1d \(1e fold\) — wilderness corpses[\s\S]*?\n  \}\n/, '')
     .replace(
       /(?:\/\/[^\n]*\n)*const PROP_MINI_KINDS = new Set\(\[[^\]]*\]\);/,
       'PROP_MINI_KINDS_PLACEHOLDER'
@@ -96,7 +107,14 @@ test('U576a drawModel.js\'s only change since the pre-packet base is PROP_MINI_K
   // both sides byte-comparable.)
   const normalizeOneMap = (src) => src
     .replace(/(?:[ \t]*\/\/[^\n]*\n)*[ \t]*if \(t === 'rubble'\) \{[\s\S]*?continue;\n[ \t]*\}\n/, '')
-    .replace(/(?:[ \t]*\/\/[^\n]*\n)*[ \t]*if \(t\.dead\) \{[\s\S]*?continue;\n[ \t]*\}\n/, '');
+    .replace(/(?:[ \t]*\/\/[^\n]*\n)*[ \t]*if \(t\.dead\) \{[\s\S]*?continue;\n[ \t]*\}\n/, '')
+    // DEATH-TRUTH-1d (1e fold, 2026-07-16) — a NON-settlement node's located outdoor
+    // dead draw on the overworld sheet via regionCellToWu. Same carve-out posture:
+    // strip the import block + the wildDead block in whichever revision has them so
+    // both sides stay byte-comparable (base predates them → normalize to nothing).
+    .replace(', regionCellToWu', '')
+    .replace(/[ \t]*\/\/ DEATH-TRUTH-1d \(1e fold\) — a body outdoors[\s\S]*?import \{ remainsAtNode \}[^\n]*\n/, '')
+    .replace(/[ \t]*\/\/ DEATH-TRUTH-1d \(1e fold\) — wilderness corpses\.[\s\S]*?\n      \}\n\n/, '');
   assert.notEqual(normalizeDrawModel(baseDrawModel), 0, 'precondition: base drawModel.js actually contains a PROP_MINI_KINDS declaration to normalize');
   assert.equal(normalizeDrawModel(DRAWMODEL_SRC), normalizeDrawModel(baseDrawModel),
     'drawModel.js must be byte-identical to the pre-packet base OUTSIDE the PROP_MINI_KINDS set / props.push / people.push carve-outs — the 2-D ink model is untouched');

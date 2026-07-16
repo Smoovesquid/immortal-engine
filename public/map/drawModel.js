@@ -32,8 +32,12 @@ import { floorPlanToPlanModel } from './planModel.js';
 import { CELL_FT } from '../../engine/map/spatial/tacticalPos.js';
 import {
   PLACE_WU,
-  nodeToWu, placeFrame, placeUnitToWu, buildingAnchorInPlace, structureWorldRect
+  nodeToWu, placeFrame, placeUnitToWu, buildingAnchorInPlace, structureWorldRect, regionCellToWu
 } from './worldSpace.js';
+// DEATH-TRUTH-1d (1e fold) — a body outdoors on a NON-settlement (wilderness) node
+// still draws. It has no settlement frame, so its located outdoor death routes
+// frame-free through regionCellToWu (node-anchored — needs no frame).
+import { remainsAtNode } from '../../engine/combat/deathFact.js';
 
 // ── ink parameters — ONE place to tune the local-band look (line weights, haze
 // density, token sizing). Renderers (oneMap.js, a lab page) read these constants
@@ -679,6 +683,28 @@ export function placedTokenModel(world, nodeId) {
         // combat board used), archetype the toppled-figure fallback family.
         archetype: t.archetype ? String(t.archetype) : null,
         corpseKey: t.corpseKey ? String(t.corpseKey) : null
+      });
+    }
+  }
+  // DEATH-TRUTH-1d (1e fold) — wilderness corpses. A settlement node's dead already
+  // ride place.tokens above; a node with NO settlement layout (`!place`) draws its
+  // located OUTDOOR dead here, frame-free through regionCellToWu. Any node (current
+  // or a far one the overworld draws) — remainsAtNode is node-scoped canon, not
+  // line-of-sight, so it is valid off-node too (unlike living occupancy). Only the
+  // CORPSE tokens are un-gated; living people stay settlement + current-node only.
+  if (!place) {
+    for (const r of remainsAtNode(world, id)) {
+      if (!r.loc || r.loc.structureId) continue;      // legacy / died-inside — not the open ground
+      const lp = r.loc.pos;
+      if (!lp || lp.frame !== 'region' || !Number.isInteger(lp.gx) || !Number.isInteger(lp.gy)) continue;
+      const p = regionCellToWu(node, lp.gx, lp.gy);
+      if (!p) continue;
+      people.push({
+        id: r.sourceNpcId || `remains:${r.t != null ? r.t : String(r.name || '')}`,
+        name: String(r.name || '?'), role: r.kind === 'monster' ? 'remains' : '',
+        wx: p.wx, wy: p.wy, hostile: false, dead: true,
+        archetype: r.archetype ? String(r.archetype) : null,
+        corpseKey: r.corpseKey ? String(r.corpseKey) : null,
       });
     }
   }

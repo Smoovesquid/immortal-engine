@@ -838,8 +838,13 @@ export async function mountSlice3D(container, sceneData, opts = {}) {
   // never in an interior.
   if (opts.world && !sceneData?.combat) {
     for (const node of nodes) {
-      if (node.nodeType !== 'settlement') continue;
+      // DEATH-TRUTH-1d (1e fold) — a settlement draws its living folk + its dead; a
+      // NON-settlement node draws ONLY its wilderness corpses (placedTokenModel emits
+      // no living people off a settlement, just the located outdoor dead via
+      // regionCellToWu). So both node kinds are processed, but a wilderness node
+      // contributes corpses alone — buildings/terrain remain gated by their own paths.
       const tok = placedTokenModel(opts.world, node.id);
+      if (!(tok.people || []).length) continue;
       for (const npc of (tok.people || [])) {
         const p = entityScenePos(npc.wx, npc.wy);
         const y = heightAt(p.x, p.z);

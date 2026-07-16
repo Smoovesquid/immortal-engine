@@ -14,8 +14,13 @@ import { seedFromString, makeRng } from '../../engine/rng.js';
 import {
   NODE_WU, PLACE_WU, Z_MIN, Z_MAX, BAND,
   nodeToWu, fadeIn, discoveryTiers,
-  placeFrame, placeUnitToWu, resolveEntityWuFromWorld
+  placeFrame, placeUnitToWu, resolveEntityWuFromWorld, regionCellToWu
 } from './worldSpace.js';
+// DEATH-TRUTH-1d (1e fold) — a body outdoors on a NON-settlement (wilderness) node
+// draws on the overworld sheet too. A settlement's dead ride place.tokens (drawLayout);
+// a wilderness death has no settlement frame, so it routes frame-free through
+// regionCellToWu (node-anchored — needs no frame).
+import { remainsAtNode } from '../../engine/combat/deathFact.js';
 import { worldGeography, terrainStamps } from './geography.js';
 import { placeFromWorldNode } from './placeFromNode.js';
 import { roadNetwork } from './roadNetwork.js';
@@ -1397,6 +1402,29 @@ export function renderOneMap(world, opts = {}) {
       } else {
         ctx.fillStyle = INKSOFT;
         ctx.beginPath(); ctx.arc(x, y, r * 0.45, 0, 7); ctx.fill();
+      }
+
+      // DEATH-TRUTH-1d (1e fold) — wilderness corpses. A settlement draws its dead
+      // through drawLayout's place.tokens (above); a NON-settlement node draws its
+      // located OUTDOOR dead here, frame-free through regionCellToWu, as the same
+      // fallen mark (body line + head) the settlement sheet uses. Fades in with the
+      // region band so a body isn't a dot at world zoom.
+      const wildDeadAlpha = type !== 'settlement' ? fadeIn(z, BAND.region * 0.5, BAND.region * 1.4) : 0;
+      if (wildDeadAlpha > 0.02) {
+        for (const rr of remainsAtNode(world, id)) {
+          if (!rr.loc || rr.loc.structureId) continue;
+          const lp = rr.loc.pos;
+          if (!lp || lp.frame !== 'region' || !Number.isInteger(lp.gx) || !Number.isInteger(lp.gy)) continue;
+          const wu = regionCellToWu(n, lp.gx, lp.gy);
+          if (!wu) continue;
+          const [dx, dy] = toPx(wu.wx, wu.wy, W, H);
+          const dr = Math.max(2, Math.min(6, 0.5 * PLACE_WU * z));
+          ctx.globalAlpha = wildDeadAlpha;
+          ctx.strokeStyle = 'rgba(96,98,110,0.9)'; ctx.lineWidth = Math.max(1, dr * 0.3); ctx.lineCap = 'round';
+          ctx.beginPath(); ctx.moveTo(dx - dr * 0.9, dy + dr * 0.35); ctx.lineTo(dx + dr * 0.5, dy + dr * 0.35); ctx.stroke();
+          ctx.beginPath(); ctx.arc(dx + dr * 0.85, dy + dr * 0.35, dr * 0.32, 0, 7); ctx.stroke();
+        }
+        ctx.globalAlpha = 1;
       }
 
       // Names: settlements always; everything else as the region band arrives.

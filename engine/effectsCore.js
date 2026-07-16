@@ -1251,7 +1251,17 @@ export function applyDeltas(world, deltas = []) {
       if (!objId) continue;
       const ref = (op.ref && typeof op.ref === 'object') ? op.ref : null;
       const refKind = String(ref?.kind || '');
-      if (refKind !== 'actor' && refKind !== 'object') continue;  // 6A-enabled kinds only
+      // OBJ-THROW-6B — an EPHEMERAL ref.mode selects which landing rule the engine
+      // derives; it is never persisted. '' keeps 6A's release kinds byte-identically
+      // ('actor' | 'object', nearest cell). 'throw' enables the 6B landing kinds
+      // ('room' | 'wall' | 'object') with the writer-owned MAX_THROW_CELLS reach —
+      // which is exactly why a BARE 'room'/'wall' ref stays illegal: a release and a
+      // throw are different physical claims and must not share a spelling.
+      const refMode = String(ref?.mode || '');
+      if (refMode && refMode !== 'throw') continue;               // unknown mode → fail-closed
+      if (refMode === 'throw') {
+        if (refKind !== 'room' && refKind !== 'wall' && refKind !== 'object') continue;
+      } else if (refKind !== 'actor' && refKind !== 'object') continue;  // 6A-enabled kinds only
       const found = findFurnitureByObjectId(w, objId);
       const piece = found?.piece;
       if (!piece || piece.authored !== true) continue;

@@ -28,9 +28,20 @@ import { roomWindows, roomWindowFacings } from './structures/roomWindows.js';
 import { furnitureRoomAssignments, objectsHere } from './structures/roomObjects.js';
 import { authoredIntactBedAt, isFurnitureDestroyed } from './structures/authoredFurniture.js';
 import { hasObjectId, initialDurability } from './objects/index.js';
+// OBJ-THROW-6B — the pure throw layer + the physics vocabularies the throw reuses.
+import {
+  THROW_NOISE, parseThrowPhrases, isThrowIdiom, isSelfThrow, THROW_VERB_RE,
+  isHardSurface, wallPhysicalMaterial, filterImpact, impactMaterialOf,
+  hasExplicitOrdinal, drawThrowOutcome,
+} from './objects/throwing.js';
+import { actorObjectCapacity } from './objects/capacity.js';
+import { objectPhysics } from './objects/mobility.js';
+import { actorFacts } from './objects/physicsActor.js';
+import { resolvedObjectPlacement, findFurnitureByObjectId } from './objects/placement.js';
+import { structureMaterial } from './structures/structureMaterial.js';
 import { roomDetail } from './structures/roomDetail.js';
 import { floorPlan } from './structures/floorPlan.js';
-import { resolveTacticalWalk, roomRectCells } from './map/spatial/tacticalPos.js';
+import { resolveTacticalWalk, roomRectCells, legalPlaceTargetCell, authoredBaseAnchorCell } from './map/spatial/tacticalPos.js';
 import { reachableRooms } from './movement/interiorMovement.js';
 import { generateDungeon, dungeonLevelToStructure, isDungeonStructureId, dungeonRoomAt } from './dungeon/generate.js';
 import { createCharacter } from './chargen/genesis.js';
@@ -3994,6 +4005,20 @@ function playerMoveCore(world, packsById, text, dqIntent) {
       }
     }
   }
+  // OBJ-THROW-6B — a THROW of a supported object resolves here, BEFORE the physics
+  // gate: throw verbs were never in PHYSICS_VERB_RE, so today every throw falls all
+  // the way through to the generic freeform floor and gets adjudicated as a WITS
+  // check ("You manage the hatchet, and it goes your way") while nothing moves.
+  // Placed here deliberately: the combat (:3392/:3833/:3846), hazard (:3373), and
+  // window (:1900/:3705) gates have all already had their turn above, so an
+  // NPC-target/self/window throw is gone before we look. detectObjectThrowIntent
+  // re-checks each of those anyway — the ownership contract is explicit and tested
+  // (U699-L3/L4), not merely a consequence of line order.
+  const throwIntent = !w.combat?.active && !w.scene?.dialogue && !declaredNpcViolence
+    ? detectObjectThrowIntent(w, text, actorId)
+    : null;
+  if (throwIntent) return resolveObjectThrow(w, text, throwIntent, actorId);
+
   // OBJ-HOLD-6A — release verbs open the physics gate ONLY while the actor holds a
   // supported object; a pack-item "drop the rope" keeps today's trivial-gate routing
   // byte-identically. The held-object pronoun match ("drop it") counts as a name
@@ -11161,6 +11186,463 @@ function resolveObjectStrike(w, text, targetDetection, fullDetection, actorId) {
   const mechStr = `[object-strike:${objectId} | atk:${atkTotal} vs AC:${ac} → ${hit ? 'hit' : 'miss'}`
     + `${hit ? ` | dmg:${dmg} vs thr:${threshold}` : ''} | hp:${endHp}/${maxHp} | ${material} | approach:force]`;
   return { world: nextW, output: { narration, mechanics: mechStr } };
+}
+
+// ══ OBJ-THROW-6B — throwing a supported object ════════════════════════════════
+//
+// The sibling of resolveObjectStrike, and deliberately shaped like it: one seeded
+// stream, a canon ruling, a resolution event, a crunch-bearing mechanics line, and
+// DAMAGE-STATE prose that never prints numbers.
+//
+// What is REUSED (not invented):
+//   • capacity      — actorObjectCapacity(..., 'throw'); the resolver already has a
+//                     'throw' action offset and counts throw as a bearing action.
+//   • accuracy      — the IMPROVISED-WEAPON contract: d20 + statMod(MIGHT) vs the
+//                     TARGET's live durability AC. No proficiency. No equipped-weapon
+//                     bonus: a pot is thrown as a pot, and the sword on your belt has
+//                     no say in it (escapeCombat.js improvisedStrikeProfile is the
+//                     precedent; we take its CONTRACT, not the function — it is
+//                     unexported, keyed to combat labels, and carries a dnd-mode STR
+//                     branch that the object-physics lane deliberately does not use).
+//   • impact        — max(1, d4 + statMod(MIGHT)); improvised weapons are 1d4
+//                     (ruleset/core/items/materials.js) and a thrown BODY is d6+MIGHT
+//                     (combat/grapple.js) — an object is lighter, so d4 is its sibling.
+//   • the filter    — filterImpact: the engine's live 5e ABSORB semantics.
+//   • wall material — structureMaterial().family, the ONE canonical authority.
+//
+// RNG DISCIPLINE. Nothing is drawn until every precondition of every writer this
+// throw could emit has been proven, because applyDeltas is an ORDERED SEQUENTIAL
+// BATCH and NOT a transaction — a later op that no-ops does not roll back an earlier
+// one. So the preflight below proves the landing (and, for an object target, the MISS
+// landing too) before a die exists. A refused throw costs zero draws and zero noise.
+//
+// DELTA ORDER IS LOAD-BEARING: placeObject FIRST. legalPlaceTargetCell's object arm
+// returns null for a wrecked reference, so damaging the target first could destroy
+// the very reference the landing needs and strand the projectile in the actor's arms.
+
+// The live durability record if this piece has ever been struck, else the profile
+// derived from the piece itself. NEVER resets a damaged object to its catalog max.
+function liveDurabilityOf(w, piece, objectId) {
+  const rec = (w?.objects && typeof w.objects === 'object' && w.objects[objectId] && typeof w.objects[objectId] === 'object')
+    ? w.objects[objectId] : {};
+  return (rec.durability && typeof rec.durability === 'object')
+    ? rec.durability
+    : initialDurability(piece?.kind || piece?.type, piece?.material);
+}
+
+// The Nth furniture name-match of a phrase — resolveObjectStrike's exact identity
+// rule, applied to the projectile and target phrases INDEPENDENTLY so "throw the
+// second pot at the second barrel" carries two separate ordinals. An out-of-range
+// ordinal resolves to NOTHING (strikeOrdinalIndex returns MAX_SAFE_INTEGER); it must
+// never clamp onto some other object.
+// The COMPLETE ordered identity candidates a phrase names, floor pieces first (in
+// canonical node.furniture order, exactly as resolveObjectStrike orders them) and
+// the actor's held object last — it is present and addressable but not ON the floor.
+// This ordering is what an explicit ordinal indexes.
+function throwCandidates(w, phrase) {
+  const det = detectPhysicalInteraction(w, phrase);
+  const here = (w.map?.nodes || []).find(n => n && n.id === w.map?.currentNodeId) || null;
+  const furniture = Array.isArray(here?.furniture) ? here.furniture : [];
+  const out = [];
+  for (const m of (det.matches || [])) {
+    if (m.type !== 'furniture' || (m.match !== 'name' && m.match !== 'part')) continue;
+    if (!Number.isInteger(m.index)) continue;
+    const piece = furniture[m.index];
+    if (piece && hasObjectId(piece)) out.push({ objectId: String(piece.objectId), piece, fromHeld: false });
+  }
+  const heldMatch = (det.matches || []).find(m => m.type === 'heldObject');
+  if (heldMatch) {
+    const found = findFurnitureByObjectId(w, String(heldMatch.objectId));
+    if (found?.piece) out.push({ objectId: String(heldMatch.objectId), piece: found.piece, fromHeld: true });
+  }
+  return out;
+}
+
+/**
+ * throwIdentityPick(w, phrase, { heldFirst }) -> candidate | null
+ *
+ * ORDINAL LAW (Basecamp correction 2B). A BARE name or "it" keeps the held-object-
+ * first convenience — with one thing in your arms, "throw it at the bed" can only
+ * mean that thing. But an EXPLICIT ordinal ("the second cooking pot") must index the
+ * complete ordered candidate list and must NOT be shortcut past by that convenience,
+ * or "first" and "second" both silently collapse onto whatever you happen to hold.
+ * An out-of-range ordinal resolves to NOTHING — it never clamps onto another object
+ * (strikeOrdinalIndex returns MAX_SAFE_INTEGER, which indexes nothing).
+ */
+function throwIdentityPick(w, phrase, { heldFirst = false } = {}) {
+  const candidates = throwCandidates(w, phrase);
+  if (!candidates.length) return null;
+  if (heldFirst && !hasExplicitOrdinal(phrase)) {
+    const h = candidates.find(c => c.fromHeld);
+    if (h) return h;
+  }
+  return candidates[strikeOrdinalIndex(phrase)] || null;
+}
+
+// Is this piece in the SUPPORTED domain (authored + objectId + grounded to a plan
+// cell)? The identical gate the take path uses — everything else keeps its own path.
+function isSupportedThrowable(w, piece) {
+  return !!(piece && piece.authored === true && piece.objectId
+    && authoredBaseAnchorCell(w, String(piece.objectId)));
+}
+
+// ── THE FRAME GATE (Basecamp correction 6B-1) ────────────────────────────────
+// The approved OBJ-THROW domain is the supported structure INTERIOR. Outdoor
+// throwing is deferred and keeps its pre-packet owner.
+//
+// This gate exists because objectsHere's legacy EXTERIOR branch (roomObjects.js:166,
+// `if (!interior) return finish(legacy)`) hands back the whole node furniture list
+// while the actor stands in the region frame — so detectPhysicalInteraction, and
+// therefore throwCandidates, could see an authored cooking pot that is physically
+// inside the cottage the actor just walked out of. The throw gate then claimed the
+// command and answered with a capacity refusal about a pot in another building.
+//
+// The fix is deliberately LOCAL to throw detection: objectsHere's exterior semantics
+// belong to older seams (survey, search, inspect) and changing them globally would
+// be a different, much larger packet.
+function throwInteriorFrame(w) {
+  const i = (w?.scene && typeof w.scene.interior === 'object' && w.scene.interior) ? w.scene.interior : null;
+  return i && i.structureKey ? i : null;
+}
+
+// Is this FLOOR projectile physically present in the actor's current live interior
+// room? Same-node is NOT enough — that is exactly the bug above. Room truth is read
+// by IDENTITY through resolvedObjectPlacement (the OBJ-HOLD-6A authority), which
+// reports structureId+room for a 'placed' piece from its live placement and for a
+// 'base' piece from its authored provenance. A 'held' projectile is admitted by the
+// caller's fromHeld arm instead — it is in the actor's arms, so it is wherever the
+// actor is, and the frame gate above has already proved that is an interior.
+function inLiveThrowRoom(w, objectId) {
+  const interior = throwInteriorFrame(w);
+  if (!interior) return false;
+  const p = resolvedObjectPlacement(w, String(objectId));
+  if (!p || p.status === 'held') return false;
+  return String(p.structureId || '') === String(interior.structureKey || '')
+    && String(p.room || '') === String(interior.roomId || '');
+}
+
+/**
+ * detectObjectThrowIntent(world, text, actorId) -> intent | null
+ * Null means "not ours" — the utterance falls through to today's routing BYTE-
+ * IDENTICALLY. Every bail below is a live seam that already owns its phrasing.
+ */
+export function detectObjectThrowIntent(world, text, actorId) {
+  const t = String(text || '').trim();
+  if (!t) return null;
+  if (world?.combat?.active || world?.scene?.dialogue) return null;
+  // FRAME GATE — only the supported structure interior is in the approved domain.
+  // A region-frame (outdoor) actor keeps this utterance's pre-packet owner; outdoor
+  // throwing is a deferred packet, not this one.
+  if (!throwInteriorFrame(world)) return null;
+  if (!THROW_VERB_RE.test(t)) return null;
+  // Idioms that only LOOK like throws: "throw open the shutters" (window),
+  // "throw my weight against the door" (barrier force), "throw up a barricade"
+  // (BUILD_RE — building, not throwing).
+  if (isThrowIdiom(t)) return null;
+  // "throw myself out the window" is a FALL — the hazard path owns it (U159).
+  if (isSelfThrow(t)) return null;
+  // The window seam owns every projectile phrased through a window.
+  if (windowVerbKind(t) !== null) return null;
+  // Bystander rescues/throws belong to the combat bystander lane.
+  if (COMBAT_BYSTANDER_RE.test(t)) return null;
+
+  const phrases = parseThrowPhrases(t);
+  if (!phrases) return null;
+
+  // The PROJECTILE. A bare name or "it" takes the held-object-first convenience; an
+  // explicit ordinal indexes the complete ordered candidates instead (see
+  // throwIdentityPick). A resolved-but-not-held projectile with full hands is NOT
+  // silently swapped for the held one — the hands-full preflight refuses it honestly.
+  const proj = throwIdentityPick(world, phrases.projectilePhrase, { heldFirst: true });
+  if (!proj) return null;                         // nothing nameable to throw
+  const projectileId = proj.objectId;
+  const projectilePiece = proj.piece;
+  // DOMAIN GATE — unsupported pieces (procgen / generic / ungrounded) and pack items
+  // never enter this machine; they keep today's routing exactly.
+  if (!isSupportedThrowable(world, projectilePiece)) return null;
+  // ROOM GATE — a FLOOR projectile must be physically present in the room the actor is
+  // standing in; existing at the same NODE is not enough. A HELD projectile is exempt:
+  // it is in their arms, and the frame gate has already proved those arms are inside.
+  //
+  // HONEST NOTE on overlap: today this is DEFENCE IN DEPTH, not the only thing standing
+  // between the player and the bug. The frame gate above independently declines the
+  // outdoor case (measured: disabling either one alone still leaves U699-A6 green; A6
+  // goes red only when BOTH are removed), and for an INTERIOR actor objectsHere's
+  // multi-room identity scoping already keeps another room's pot out of the candidate
+  // list. This gate is here because the throw seam must state its own precondition
+  // rather than inherit it from another seam's incidental scoping — if objectsHere's
+  // room truth is ever relaxed, the throw domain must not silently widen with it.
+  if (!proj.fromHeld && !inLiveThrowRoom(world, projectileId)) return null;
+
+  // The TARGET.
+  let targetClass = phrases.syntacticClass;
+  let targetId = null;
+  if (targetClass !== 'room') {
+    // A target that resolves to a present NPC is COMBAT's, never ours — the same
+    // probe detectObjectAttackIntent uses.
+    const probe = `attack ${phrases.targetPhrase}`;
+    if (detectPhysicalAssault(world, probe) || detectAttackBeginIntent(world, probe) || detectAttackAnyIntent(world, probe)) return null;
+    // OBJECT BEFORE WALL — a target phrase naming a REAL object is an object target
+    // even when the name contains "wall" ("the wall shelf"), and even when it
+    // resolves to the projectile itself: the generic wall is a fallback for when no
+    // object candidate exists AT ALL, never a silent reinterpretation of a named
+    // object. A self-reference therefore reaches the self-target preflight and is
+    // refused, instead of quietly becoming "throw it at the wall".
+    const pick = throwIdentityPick(world, phrases.targetPhrase);
+    if (pick) {
+      targetClass = 'object';
+      targetId = pick.objectId;
+    } else if (phrases.syntacticClass === 'wall') {
+      targetClass = 'wall';
+    } else {
+      // A named target we cannot resolve (an absent object, an out-of-range ordinal).
+      // We still OWN the utterance — a supported projectile was named — so we refuse
+      // honestly instead of leaking to the generic floor.
+      targetClass = 'object';
+      targetId = null;
+    }
+  }
+  return { projectileId, projectilePiece, targetClass, targetId, side: phrases.side, targetPhrase: phrases.targetPhrase };
+}
+
+// DAMAGE-STATE prose for a throw. Numbers ride the mechanics line, never the prose.
+function objectThrowLine(kind, { projName, targetName, surface, wrecked, selfWrecked, absorbed, side, walls }) {
+  const o = String(projName || 'object').toLowerCase();
+  const M = {
+    wood: 'bites into the wood', iron: 'rings off the iron', stone: 'cracks against the stone',
+    glass: 'bursts against the glass', cloth: 'thumps into the cloth', bone: 'clatters against the bone',
+    web: 'snags in the web', wax: 'crushes the wax',
+  };
+  if (kind === 'room') return `You send the ${o} skidding across the floor; it comes to rest well clear of you.`;
+  if (kind === 'object-miss') return `You hurl the ${o} at the ${String(targetName || 'it').toLowerCase()} — it sails wide and clatters down.`;
+  if (kind === 'wall') {
+    const hitPhrase = surface ? (M[surface] || 'strikes the wall') : 'strikes the wall';
+    const w = walls ? ` ${String(walls).toLowerCase()}` : ' wall';
+    if (selfWrecked) return `You hurl the ${o} against the${w} — it ${hitPhrase} and comes apart.`;
+    return `You hurl the ${o} against the${w}; it ${hitPhrase} and drops.`;
+  }
+  const t = String(targetName || 'it').toLowerCase();
+  const hitPhrase = surface ? (M[surface] || 'lands') : 'lands';
+  if (wrecked && selfWrecked) return `The ${o} ${hitPhrase} of the ${t} — both come apart in the same breath.`;
+  if (wrecked) return `The ${o} ${hitPhrase} of the ${t}, and the ${t} comes apart.`;
+  if (selfWrecked) return `The ${o} ${hitPhrase} of the ${t} — and the ${o} shatters on impact.`;
+  if (absorbed) return `The ${o} ${hitPhrase} of the ${t}, but the blow isn't enough to matter.`;
+  return `The ${o} ${hitPhrase} of the ${t}, and the ${t} takes the wound.`;
+}
+
+// A routed throw that performs NO placement. It still records a deterministic
+// resolution event (the turn happened), but appends NO dm.ruling — nothing physical
+// ruled on the world, and a ruling would be a lie.
+// A CAPACITY check that actually happened is part of the turn's truth: its
+// mechanics line must reach the player's DiceRoller and its numbers must reach
+// resolution data. `chk` is rollPhysicsCheck's result, or null when the capacity
+// tier was 'auto'/'impossible' and no d20 was thrown.
+function capacityData(chk) {
+  return chk ? { capacityCheck: { roll: chk.roll, rawDie: chk.rawDie, dc: chk.dc, outcome: chk.outcome, margin: chk.margin } } : {};
+}
+
+function throwRefusal(w, text, actorId, projectileId, narration, note, chk = null) {
+  const nextW = pushEvent(w, {
+    kind: 'resolution',
+    data: {
+      actorId, intent: String(text || ''), text: String(text || ''),
+      roll: null, dc: null, outcome: 'object-throw', updateKind: 'object-throw',
+      objectId: projectileId, deltaCount: 0, ...capacityData(chk),
+    },
+  });
+  // "no roll" would be a lie when a capacity d20 was thrown — say what actually
+  // happened, and let the real [roll:… vs DC:…] ride in front so the DiceRoller
+  // sees it.
+  const mech = `[object-throw:${projectileId} | ${note} | ${chk ? 'no accuracy roll' : 'no roll'} | noise:+0]`;
+  return {
+    world: nextW,
+    output: { narration, mechanics: chk ? `${chk.mechanicsLine} ${mech}` : mech },
+  };
+}
+
+function resolveObjectThrow(w, text, intent, actorId) {
+  const { projectileId, targetClass, targetId, side } = intent;
+  const projPiece = findFurnitureByObjectId(w, projectileId)?.piece;
+  if (!projPiece) return throwRefusal(w, text, actorId, projectileId, 'Your throw finds nothing to take hold of.', 'no projectile');
+  const projName = String(projPiece.name || projPiece.kind || 'object');
+
+  // ── PREFLIGHT — every writer's preconditions, before any draw ───────────────
+  // 1. Self-targeting: never resolve, never roll, never mutate.
+  if (targetId && targetId === projectileId) {
+    return throwRefusal(w, text, actorId, projectileId,
+      `You can't throw the ${projName.toLowerCase()} at itself.`, 'self-target');
+  }
+  // 2. Wreckage is not a projectile.
+  if (isFurnitureDestroyed(projPiece)) {
+    return throwRefusal(w, text, actorId, projectileId,
+      `The ${projName.toLowerCase()} is wreckage now — there's nothing whole to throw.`, 'wrecked projectile');
+  }
+  // 3. Hands: a composite lift-and-throw needs them free.
+  const held = heldObjectOf(w, actorId);
+  if (held && held.objectId !== projectileId) {
+    return throwRefusal(w, text, actorId, projectileId,
+      `Your hands are full with the ${String(held.name).toLowerCase()} — set it down first.`, 'hands full');
+  }
+  // 4. An object target must be a real, live piece.
+  let targetPiece = null;
+  if (targetClass === 'object') {
+    targetPiece = targetId ? findFurnitureByObjectId(w, targetId)?.piece : null;
+    if (!targetPiece) {
+      return throwRefusal(w, text, actorId, projectileId, 'There\'s nothing there to throw it at.', 'no target');
+    }
+    if (isFurnitureDestroyed(targetPiece)) {
+      return throwRefusal(w, text, actorId, projectileId,
+        `The ${String(targetPiece.name || 'target').toLowerCase()} is already wreckage.`, 'target wrecked');
+    }
+  }
+  // 5. Capacity — pure; an impossible heave costs no draws.
+  const cap = actorObjectCapacity(actorFacts(w, actorId), objectPhysics(projPiece), 'throw');
+  if (cap.verdict === 'impossible') {
+    return throwRefusal(w, text, actorId, projectileId,
+      cap.reason === 'fixed'
+        ? `The ${projName.toLowerCase()} is part of the place — it moves for no one.`
+        : `You can't get the ${projName.toLowerCase()} off the ground to throw it.`,
+      `capacity:${cap.reason}`);
+  }
+  // 6. Landings — the one this throw wants AND, for an object target, the room
+  //    landing a MISS would need. Both must exist before a die is drawn.
+  const roomRef = { kind: 'room', mode: 'throw' };
+  const landRef = targetClass === 'object' ? { kind: 'object', mode: 'throw', objectId: targetId }
+    : targetClass === 'wall' ? (side ? { kind: 'wall', mode: 'throw', side } : { kind: 'wall', mode: 'throw' })
+      : roomRef;
+  if (!legalPlaceTargetCell(w, projectileId, actorId, landRef)) {
+    return throwRefusal(w, text, actorId, projectileId,
+      targetClass === 'object'
+        ? `The ${String(targetPiece?.name || 'target').toLowerCase()} is too far from here to hit.`
+        : `There's no clear line for the ${projName.toLowerCase()} from where you stand.`,
+      'no landing in range');
+  }
+  if (targetClass === 'object' && !legalPlaceTargetCell(w, projectileId, actorId, roomRef)) {
+    return throwRefusal(w, text, actorId, projectileId,
+      `There's nowhere for the ${projName.toLowerCase()} to come to rest.`, 'no miss landing');
+  }
+  // 7. The borderline heave — its OWN |physics| stream, thrown BEFORE the throw
+  //    stream ever opens. Matches the take/drag precedent exactly: only 'failure'
+  //    aborts; 'mixed' is success with effort. The result is KEPT (not discarded):
+  //    a d20 the player really rolled must show up on their dice roller and in the
+  //    turn's recorded truth.
+  let capChk = null;
+  if (cap.verdict === 'roll') {
+    capChk = rollPhysicsCheck(w, { actorId, hardness: cap.difficulty, intentText: String(text || '') });
+    if (capChk.outcome === 'failure') {
+      return throwRefusal(w, text, actorId, projectileId,
+        `You heave at the ${projName.toLowerCase()}, but it never leaves your hands.`, 'capacity roll failed', capChk);
+    }
+  }
+  const strained = capChk?.outcome === 'mixed';
+
+  // ── THE THROW STREAM ───────────────────────────────────────────────────────
+  const seed = seedFromString(`${w.meta.seed}|objthrow|${(w.timeline || []).length}|${actorId}|${projectileId}|${String(text || '')}`);
+  const rng = makeRng(seed);
+  const party = Array.isArray(w.party) ? w.party : [];
+  const actor = (String(actorId) === 'party' ? party[0] : party.find(m => String(m?.id) === String(actorId))) || party[0] || {};
+  const mod = statMod(Number(actor?.stats?.MIGHT) || 10);
+  const projDur = liveDurabilityOf(w, projPiece, projectileId);
+
+  const tDurBefore = targetClass === 'object' ? liveDurabilityOf(w, targetPiece, targetId) : null;
+  const targetAc = tDurBefore ? tDurBefore.ac : null;
+
+  // ALL of the throw's randomness, in ONE pure call — the draw order and draw count
+  // are that helper's contract, asserted directly against a counting RNG in U699.
+  const draw = drawThrowOutcome(rng, { targetClass, mightMod: mod, targetAc });
+  const { accuracyTotal: atkTotal, hit, rawImpact } = draw;
+
+  let ref = landRef, dTarget = null, dProj = null, surface = null, wallsDesc = null;
+  let noise = THROW_NOISE.landing;
+  let kindOut = 'room';
+
+  if (targetClass === 'object') {
+    if (hit) {
+      surface = impactMaterialOf(targetPiece);
+      dTarget = filterImpact(rawImpact, tDurBefore.threshold);
+      // Self-impact ONLY off a hard surface. 'unknown' (durability fallback) is in
+      // neither set and therefore gives nothing back.
+      if (isHardSurface(surface)) dProj = filterImpact(rawImpact, projDur.threshold);
+      noise = THROW_NOISE.impact;
+      kindOut = 'object-hit';
+    } else {
+      ref = roomRef;                          // a miss lands by the room rule — no
+      noise = THROW_NOISE.landing;            // second draw, no damage
+      kindOut = 'object-miss';
+    }
+  } else if (targetClass === 'wall') {
+    const mat = structureMaterial(w, String(projPiece.structureId));
+    surface = wallPhysicalMaterial(mat?.family);       // null ⇒ fail closed
+    wallsDesc = mat?.walls || null;
+    if (surface && isHardSurface(surface)) dProj = filterImpact(rawImpact, projDur.threshold);
+    noise = THROW_NOISE.impact;
+    kindOut = 'wall';
+  }
+
+  // ── DELTAS — landing FIRST (see the header) ────────────────────────────────
+  const deltas = [{ op: 'placeObject', actorId, objectId: projectileId, ref }];
+  if (dTarget !== null) deltas.push({ op: 'damageObject', objectId: targetId, damage: dTarget });
+  if (dProj !== null) deltas.push({ op: 'damageObject', objectId: projectileId, damage: dProj });
+  if (noise > 0) deltas.push({ op: 'env', key: 'noise', by: noise });
+
+  let nextW = applyDeltas(w, deltas);
+  const landed = resolvedObjectPlacement(nextW, projectileId)?.status === 'placed';
+  const landCell = resolvedObjectPlacement(nextW, projectileId)?.cell || null;
+  const tAfter = targetId ? liveDurabilityOf(nextW, findFurnitureByObjectId(nextW, targetId)?.piece, targetId) : null;
+  const pAfter = liveDurabilityOf(nextW, findFurnitureByObjectId(nextW, projectileId)?.piece, projectileId);
+  const targetWrecked = targetId ? isFurnitureDestroyed(findFurnitureByObjectId(nextW, targetId)?.piece) : false;
+  const selfWrecked = isFurnitureDestroyed(findFurnitureByObjectId(nextW, projectileId)?.piece);
+
+  const baseLine = objectThrowLine(kindOut, {
+    projName, targetName: targetPiece?.name, surface, walls: wallsDesc,
+    wrecked: targetWrecked, selfWrecked,
+    absorbed: dTarget === 0,
+  });
+  // A 'mixed' capacity check is success WITH EFFORT — the fiction has to show the
+  // strain, or a barely-managed heave reads exactly like an easy one.
+  const narration = strained
+    ? `It takes everything you have to get the ${projName.toLowerCase()} moving. ${baseLine}`
+    : baseLine;
+
+  // Canon: a ruling only where a physical landing actually happened, and its
+  // targetId is the PROJECTILE's real canonical objectId — the one id that exists in
+  // every class (a wall and a room have none, and a pseudo-id would be a fiction the
+  // Canon Log cannot check).
+  if (landed) {
+    const rulingId = `dm.ruling:${nextW.meta?.seed || ''}:${(nextW.timeline || []).length}`;
+    const cl = nextW.canonLog && typeof nextW.canonLog === 'object' ? nextW.canonLog : { events: [] };
+    nextW = { ...nextW, canonLog: appendCanonEvent(cl, { id: rulingId, type: 'dm.ruling', targetId: projectileId }) };
+  }
+
+  nextW = pushEvent(nextW, {
+    kind: 'resolution',
+    data: {
+      actorId, intent: String(text || ''), text: String(text || ''),
+      // `roll`/`dc` stay the ACCURACY semantics (null for room/wall); the capacity
+      // d20 is its own separate record so the two can never be confused.
+      roll: atkTotal, dc: targetAc, outcome: 'object-throw', updateKind: 'object-throw',
+      objectId: projectileId, ...(targetId ? { targetObjectId: targetId } : {}),
+      deltaCount: deltas.length, ...capacityData(capChk),
+    },
+  });
+
+  const bits = [`object-throw:${projectileId}${targetId ? `→${targetId}` : ''}`];
+  if (targetClass === 'object') bits.push(`atk:${atkTotal} vs AC:${targetAc} → ${hit ? 'hit' : 'miss'}`);
+  else bits.push(`${targetClass}${side ? `:${side}` : ''} | no accuracy roll`);
+  if (rawImpact) bits.push(`impact:${rawImpact}`);
+  if (dTarget !== null) bits.push(`tgt dmg:${dTarget} vs thr:${liveDurabilityOf(w, targetPiece, targetId).threshold} | tgt hp:${tAfter.hp}/${tAfter.maxHp}`);
+  if (dProj !== null) bits.push(`self dmg:${dProj} vs thr:${projDur.threshold} | self hp:${pAfter.hp}/${pAfter.maxHp}`);
+  // Only speak to self-impact when an impact actually happened: a miss and a room
+  // landing never touch a surface, so "self dmg:none" would imply a collision.
+  else if (rawImpact) bits.push(`self dmg:none (${surface ? `${surface} surface` : 'surface unresolved — fail-closed'})`);
+  if (landCell) bits.push(`landing:${landCell.x},${landCell.y}`);
+  bits.push(`noise:+${noise}`);
+
+  // A capacity d20 that really happened leads the line, so the live DiceRoller sees
+  // a real [roll:… vs DC:…] for a borderline heave that succeeded or barely managed
+  // it — not just for the ones that failed.
+  const mechStr = `[${bits.join(' | ')}]`;
+  return { world: nextW, output: { narration, mechanics: capChk ? `${capChk.mechanicsLine} ${mechStr}` : mechStr } };
 }
 
 function detectAttackAnyIntent(world, text) {

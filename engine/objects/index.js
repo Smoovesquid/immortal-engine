@@ -17,3 +17,14 @@ export { findPhysicsActor, actorSize, actorMight, actorFacts } from './physicsAc
 
 // OBJ-DURABILITY-1 — material-derived AC/HP/threshold profiles for object strikes.
 export { durabilityProfile, initialDurability, hasDurabilityProfile } from './durability.js';
+
+// OBJ-THROW-6B — the pure throw layer (grammar, product constants, impact filter).
+// NOTE: map/spatial/tacticalPos.js imports MAX_THROW_CELLS from './throwing.js'
+// DIRECTLY, never through this barrel — the same convention it already uses for
+// placement.js — so the throw constants cannot drag the whole object barrel into
+// the spatial layer's evaluation order.
+export {
+  MAX_THROW_CELLS, THROW_NOISE, THROW_VERB_RE,
+  isHardSurface, wallPhysicalMaterial, filterImpact, impactMaterialOf,
+  isThrowIdiom, isSelfThrow, parseThrowPhrases, hasExplicitOrdinal, drawThrowOutcome,
+} from './throwing.js';

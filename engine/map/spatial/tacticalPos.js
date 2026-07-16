@@ -27,6 +27,10 @@ import { floorPlan } from '../../structures/floorPlan.js';
 // since destroyed (a wrecked barrel no longer bars the cell it stood on).
 import { destroyedAuthoredPieceIds, isFurnitureDestroyed } from '../../structures/authoredFurniture.js';
 import { findFurnitureByObjectId, resolvedObjectPlacement } from '../../objects/placement.js';
+// OBJ-THROW-6B — the engine-owned throw reach. Imported DIRECTLY from the pure
+// module (never via objects/index.js) so this layer pulls in one zero-import leaf
+// instead of the whole object barrel; throwing.js must never import THIS file back.
+import { MAX_THROW_CELLS } from '../../objects/throwing.js';
 // MR-3a — the wild-feature derivation is the SINGLE source of the outdoor
 // walkable-mask truth: a blocking wild feature (a tree, a boulder) makes its region
 // cell unwalkable, exactly like a wall indoors. tacticalPos calls THROUGH to it (no
@@ -518,6 +522,21 @@ export function legalMoveTargetCell(world, objectId, actorId) {
 // writer re-derives THIS and commits nothing else — a caller can never supply a cell.
 // Returns {x,y} or null (no free cell → the object stays where it is / in your arms).
 // Supported domain only: authored + grounded; any other ref kind is fail-closed here.
+//
+// OBJ-THROW-6B — the same one entry point also derives THROW landings, selected by an
+// EPHEMERAL ref.mode of 'throw' (never persisted). Two rules change and nothing else:
+//   • REACH — every candidate must lie within MAX_THROW_CELLS (Chebyshev) of the
+//     ACTOR. The range lives here, in the writer's derivation, so no caller can
+//     supply or widen it. Exactly MAX_THROW_CELLS succeeds; one cell further refuses.
+//   • DISTANCE SENSE — room/wall landings take the FARTHEST in-range cell (you hurled
+//     it away); an object landing stays NEAREST its target (it came to rest by what
+//     it hit), which is 6A's existing sense.
+// Scan order (y ascending, then x ascending) and the first-in-scan tie-break are
+// shared by every arm — that pairing IS the replay-stable tie-break, so the
+// comparators below are deliberately bare `<` / `>`. (Do not copy the tie-break
+// clause in legalMoveTargetCell: under an ascending scan no later cell can satisfy
+// it, so it is dead code — and in a FARTHEST arm a `>=` slip would silently change
+// which cell wins and break replay.)
 export function legalPlaceTargetCell(world, objectId, actorId, ref) {
   const objId = String(objectId || '');
   if (!objId) return null;
@@ -547,9 +566,28 @@ export function legalPlaceTargetCell(world, objectId, actorId, ref) {
   // (held, wrecked, foreign-room, ungrounded, unknown) refuses fail-closed.
   let anchor = { x: apos.gx, y: apos.gy };
   const kind = String(ref?.kind || '');
+  const mode = String(ref?.mode || '');
+  // OBJ-THROW-6B — '' is 6A's release (actor|object, nearest). 'throw' is 6B's
+  // landing (room|wall|object, reach-capped). Any other mode is fail-closed.
+  if (mode && mode !== 'throw') return null;
+  const isThrow = mode === 'throw';
+  if (isThrow) {
+    if (kind !== 'room' && kind !== 'wall' && kind !== 'object') return null;
+  } else if (kind !== 'actor' && kind !== 'object') {
+    return null;                                              // 6A-enabled kinds only
+  }
+
+  // A named wall side, in the DIR_VEC convention (north is −y). An unrecognized side
+  // is fail-closed rather than silently widened to "any wall".
+  let side = null;
+  if (isThrow && kind === 'wall' && ref?.side != null) {
+    side = String(ref.side).toLowerCase();
+    if (side !== 'north' && side !== 'south' && side !== 'east' && side !== 'west') return null;
+  }
+
   if (kind === 'object') {
     const rid = String(ref.objectId || '');
-    if (!rid || rid === objId) return null;
+    if (!rid || rid === objId) return null;                   // never target yourself
     const rPiece = findFurnitureByObjectId(world, rid)?.piece;
     if (!rPiece || isFurnitureDestroyed(rPiece)) return null;
     const rp = resolvedObjectPlacement(world, rid);
@@ -558,9 +596,10 @@ export function legalPlaceTargetCell(world, objectId, actorId, ref) {
     if (String(rp.room ?? '') !== roomId) return null;
     const rCell = rp.cell || authoredBaseAnchorCell(world, rid);
     if (!rCell) return null;
+    // OBJ-THROW-6B — the TARGET itself must be within reach, not merely its landing:
+    // you cannot hit what you cannot reach, even if the cell beside it is close.
+    if (isThrow && Math.max(Math.abs(rCell.x - apos.gx), Math.abs(rCell.y - apos.gy)) > MAX_THROW_CELLS) return null;
     anchor = { x: rCell.x, y: rCell.y };
-  } else if (kind !== 'actor') {
-    return null;                                              // 6A-enabled kinds only
   }
 
   const placement = resolvedObjectPlacement(world, objId);
@@ -571,15 +610,44 @@ export function legalPlaceTargetCell(world, objectId, actorId, ref) {
     ? (placement.cell || authoredBaseAnchorCell(world, objId)) : null;
   const curKey = curCell ? `${curCell.x},${curCell.y}` : null; // a floor source never lands on itself
 
-  let best = null, bestD = Infinity;
-  for (let y = rect.minY; y <= rect.maxY; y++) {
-    for (let x = rect.minX; x <= rect.maxX; x++) {
+  // room/wall landings want the FARTHEST in-range cell; everything else the NEAREST.
+  const wantFarthest = isThrow && (kind === 'room' || kind === 'wall');
+  // A throw can only ever land within MAX_THROW_CELLS of the actor, so bound the
+  // scan to the intersection of the room rect and that window instead of walking
+  // the whole room (these rooms run to hundreds of cells). This is a pure bounds
+  // narrowing: the cells visited are a subset of those that could have passed the
+  // reach gate below, and ascending y-then-x order is preserved, so the winner and
+  // its first-in-scan tie-break are bit-for-bit what the full scan produced. The
+  // 6A release paths (no throw mode) keep the exact original bounds.
+  const y0 = isThrow ? Math.max(rect.minY, apos.gy - MAX_THROW_CELLS) : rect.minY;
+  const y1 = isThrow ? Math.min(rect.maxY, apos.gy + MAX_THROW_CELLS) : rect.maxY;
+  const x0 = isThrow ? Math.max(rect.minX, apos.gx - MAX_THROW_CELLS) : rect.minX;
+  const x1 = isThrow ? Math.min(rect.maxX, apos.gx + MAX_THROW_CELLS) : rect.maxX;
+  let best = null, bestD = wantFarthest ? -Infinity : Infinity;
+  for (let y = y0; y <= y1; y++) {
+    for (let x = x0; x <= x1; x++) {
       const cellKey = `${x},${y}`;
       if (cellKey === actorKey || cellKey === curKey) continue;
       if (roomOfStructCell(plan, x, y) !== roomId) continue;  // wall/void or another room
       if (blocked.has(cellKey) || doorReserved.has(cellKey)) continue;
+      if (isThrow) {
+        // REACH — engine-owned, measured from the ACTOR for every target class.
+        // (The bounds above already exclude everything outside this window; the
+        // check stays as the authoritative statement of the law.)
+        if (Math.max(Math.abs(x - apos.gx), Math.abs(y - apos.gy)) > MAX_THROW_CELLS) continue;
+        if (kind === 'wall') {
+          // A wall landing rests against the room's boundary ring; a named side
+          // narrows that ring to one edge.
+          const onBoundary = (x === rect.minX || x === rect.maxX || y === rect.minY || y === rect.maxY);
+          if (!onBoundary) continue;
+          if (side === 'north' && y !== rect.minY) continue;
+          if (side === 'south' && y !== rect.maxY) continue;
+          if (side === 'west' && x !== rect.minX) continue;
+          if (side === 'east' && x !== rect.maxX) continue;
+        }
+      }
       const d = Math.max(Math.abs(x - anchor.x), Math.abs(y - anchor.y));
-      if (d < bestD) { best = { x, y }; bestD = d; }
+      if (wantFarthest ? d > bestD : d < bestD) { best = { x, y }; bestD = d; }
     }
   }
   return best;

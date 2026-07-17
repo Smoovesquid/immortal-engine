@@ -17,9 +17,10 @@ import { playerMove } from './engine/playloop.js';
 import { isMetaQuestion, handleMetaQuestion } from './engine/grace/gracefulAdjudication.js';
 import { normalizeManifest, normalizePack } from './engine/rulesets.js';
 import { buildParseCtx } from './engine/intent/assemblePacket.js';
-import { proposeIntentViaLlm } from './engine/intent/llmIntent.js';
+import { proposeIntentViaLlm, intentModel } from './engine/intent/llmIntent.js';
 import { groundPacket } from './engine/intent/groundPacket.js';
-import { hasLlmKey } from './server/llmProvider.js';
+import { hasLlmKey, chatCompletion } from './server/llmProvider.js';
+import { PHYSICS_SYSTEM_PROMPT, parseFxReply, buildPhysicsFxPayload } from './engine/llmPhysics.js';
 import { isAvailable as hasLocalLlmAvailable } from './server/localLlmProvider.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -288,6 +289,48 @@ return res.json({ ok:false, reason:safe });
       return res.json({ ok: true, packet });
     } catch (e) {
       return res.json({ ok: true, packet: null });
+    }
+  });
+
+  // ── RULING-FX-1 — consequence-proposal pre-flight. The client detects a
+  // physics-shaped turn (buildPhysicsFxPayload, browser-safe pure reads) and
+  // asks the consequence model for sealed-vocabulary deltas + one census-taker
+  // sentence. This route is deliberately WORLD-BLIND: shape-parse only
+  // (parseFxReply); real grounding — op whitelist, validateDeltas
+  // all-or-nothing, banned words — happens in-engine at consumption
+  // (groundFxProposal), so a compromised client or hallucinated proposal can
+  // never mutate anything. Same race-capped budget discipline as
+  // /api/intent-packet; PHYSICS_FX=off is the escape hatch.
+  async function proposePhysicsFx(text, payload) {
+    if (process.env.PHYSICS_FX === 'off') return null;
+    if (!hasLlmKey()) return null;
+    const body = JSON.stringify({ ...payload, playerText: text });
+    if (body.length > 20000) return null; // oversized scene — skip, template rules
+    const budgetMs = 4000;
+    const reply = await Promise.race([
+      chatCompletion({
+        model: intentModel(),
+        messages: [
+          { role: 'system', content: PHYSICS_SYSTEM_PROMPT },
+          { role: 'user', content: body }
+        ],
+        temperature: 0.1,
+        max_tokens: 500
+      }).then(r => String(r?.content ?? '')).catch(() => null),
+      new Promise(r => setTimeout(r, budgetMs + 300, null))
+    ]);
+    return reply ? parseFxReply(reply) : null;
+  }
+
+  app.post('/api/physics-fx', async (req, res) => {
+    try {
+      const text = String(req.body?.text || '').trim().slice(0, 500);
+      const payload = req.body?.payload && typeof req.body.payload === 'object' ? req.body.payload : null;
+      if (!text || !payload) return res.json({ ok: true, proposal: null });
+      const proposal = await proposePhysicsFx(text, payload);
+      return res.json({ ok: true, proposal });
+    } catch {
+      return res.json({ ok: true, proposal: null });
     }
   });
 
@@ -606,7 +649,19 @@ return res.json({ ok:false, reason:safe });
         llmPacket = undefined;
       }
 
-      const { world: newState, output } = playerMove(safeWorld, packsById, action, { llmPacket });
+      // RULING-FX-1 — the server-driven turn gets the same consequence
+      // pre-flight the browser gets; a physics-shaped action asks the model,
+      // anything else (or any failure) leaves fxProposal undefined and the
+      // template rules exactly as before.
+      let fxProposal;
+      try {
+        const fxPayload = buildPhysicsFxPayload(safeWorld, action);
+        if (fxPayload) fxProposal = (await proposePhysicsFx(action, fxPayload)) || undefined;
+      } catch {
+        fxProposal = undefined;
+      }
+
+      const { world: newState, output } = playerMove(safeWorld, packsById, action, { llmPacket, fxProposal });
       saveWorld(req.user.username, worldId, newState);
       return res.json({ ok: true, worldId, state: newState, output });
     } catch (e) {

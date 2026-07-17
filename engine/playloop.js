@@ -50,7 +50,7 @@ import { FANTASY_STARTER_GEAR } from './chargen/fantasyGear.js';
 import { decompressAndCanonizeSync } from './decompression/decompress.js';
 import { containerContents, containerItemText } from './decompression/generateFurniture.js';
 import { discoverNode } from './map/mapState.js';
-import { detectPhysicalInteraction, evaluatePhysicsSync, heldObjectOf, partyHeldObject } from './llmPhysics.js';
+import { detectPhysicalInteraction, evaluatePhysicsSync, groundFxProposal, heldObjectOf, partyHeldObject } from './llmPhysics.js';
 import { rollPhysicsCheck } from './resolve.js';
 import { appendCanonEvent } from './csl/canonLog.js';
 import { createGoal, checkGoals } from './goals/goalContract.js';
@@ -745,7 +745,7 @@ export function applyEgressRepair(prevWorld, text, res, dqIntent) {
 // malformed proposal), this function's behavior is BYTE-IDENTICAL to
 // pre-INT-2 — assemblePacket + directQuestionIntent run exactly as they did
 // before this packet existed; the deterministic path is always the floor.
-export function playerMove(world, packsById, text, { llmPacket } = {}) {
+export function playerMove(world, packsById, text, { llmPacket, fxProposal } = {}) {
   // INT-3/INT-2R — compute ONE shared classifier verdict per turn, fed into
   // BOTH assemblePacket/the packet trace AND playerMoveTraced's egress family
   // (INT-3/4a/4b) — collapsing what used to be two-or-more independent
@@ -783,8 +783,16 @@ export function playerMove(world, packsById, text, { llmPacket } = {}) {
   // (deterministic packets never carry a band), and only down the explicit
   // hints wire: recursive playerMoveCore self-calls don't forward it, so a
   // compound turn's inner action falls back to the formula (reported boundary).
-  const __rulingHints = (useLlmPacket && (__intentPacket.difficultyBand || __intentPacket.difficultyStat))
-    ? { band: __intentPacket.difficultyBand || null, stat: __intentPacket.difficultyStat || null }
+  // RULING-FX-1 — a consequence proposal (live pre-flight or a replayed
+  // data.rulingFx record) rides the same hints wire; it is grounded at the
+  // consumption seat, never trusted here.
+  const __fx = (fxProposal && typeof fxProposal === 'object') ? fxProposal : null;
+  const __rulingHints = ((useLlmPacket && (__intentPacket.difficultyBand || __intentPacket.difficultyStat)) || __fx)
+    ? {
+        band: useLlmPacket ? (__intentPacket.difficultyBand || null) : null,
+        stat: useLlmPacket ? (__intentPacket.difficultyStat || null) : null,
+        fx: __fx
+      }
     : null;
   const __preTurnEvents = Array.isArray(world?.timeline) ? world.timeline.length : 0;
   const res = attachResolvedIntent(playerMoveTraced(world, packsById, text, __dqIntent, __rulingHints), __preTurnEvents, __intentPacket);
@@ -4161,6 +4169,19 @@ function playerMoveCore(world, packsById, text, dqIntent, rulingHints = null) {
       const physicsText = String(text || '');
       const physics = evaluatePhysicsSync(w, physicsText);
       if (physics && physics.plausible) {
+        // RULING-FX-1 — a grounded consequence proposal replaces WHAT the
+        // template says happens (deltas + sentence); everything that decides
+        // WHETHER it happens stays engine truth below — the seeded
+        // rollPhysicsCheck, mixed/failure gating, noise, applyDeltas.
+        // Grounding re-runs on EVERY consumption (all-or-nothing against the
+        // live world), so the live pre-flight and a replayed/imported record
+        // get identical scrutiny; a rejected proposal leaves the turn
+        // byte-identical to template play (U723-C1).
+        const rulingFx = rulingHints?.fx ? groundFxProposal(w, rulingHints.fx) : null;
+        if (rulingFx) {
+          physics.deltas = rulingFx.deltas;
+          physics.description = rulingFx.description;
+        }
         const isForce = FORCE_VERB_RE.test(String(text || ''));
         let appliedDeltas = physics.deltas ? [...physics.deltas] : [];
         let mechStr;
@@ -4238,7 +4259,13 @@ function playerMoveCore(world, packsById, text, dqIntent, rulingHints = null) {
             outcome: 'physics',
             updateKind: 'physics',
             matches: detection.matches.map(m => ({ type: m.type, name: m.name })),
-            deltaCount: appliedDeltas.length
+            deltaCount: appliedDeltas.length,
+            // RULING-FX-1 — the consumed proposal is canon: replay feeds this
+            // record back as the fxProposal (U19/U21/U723), records the
+            // PRE-FILTER grounded set (the ruling is the proposal; the dice
+            // decide what it bought), and absent-when-unconsumed keeps old
+            // saves and template turns byte-stable.
+            ...(rulingFx ? { rulingFx: { v: 1, deltas: rulingFx.deltas, description: rulingFx.description } } : {})
           }
         });
 

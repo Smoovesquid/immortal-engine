@@ -149,7 +149,7 @@ export function detectPhysicalInteraction(world, playerText) {
 
 // --- LLM Call ---
 
-const PHYSICS_SYSTEM_PROMPT = `You are a physics simulator for a tabletop dungeon crawler. Census-taker mode.
+export const PHYSICS_SYSTEM_PROMPT = `You are a physics simulator for a tabletop dungeon crawler. Census-taker mode.
 Rules:
 - A wooden table is a wooden table. No dramatic language. No Chekhov's guns.
 - Describe physical outcomes literally and flatly.
@@ -285,25 +285,52 @@ export async function evaluatePhysics({
   return fallbackResult;
 }
 
-async function callPhysicsLLM({ world, playerText, detection, apiKey, endpoint, model, fetchImpl, chatCompletionFn }) {
-  const m = ensureMap(world.map);
+// RULING-FX-1 — the compact scene payload the consequence model reads: the
+// exact userPayload callPhysicsLLM has always built, extracted so the browser
+// can build it with pure world reads and POST it to /api/physics-fx (the
+// route must never need the whole world — Purity Rule 9 keeps the key and the
+// call server-side, this keeps the payload client-buildable). Returns null
+// when the turn isn't physics-shaped, which is also the client's "don't even
+// fetch" gate.
+export function buildPhysicsFxPayload(world, playerText) {
+  const w = ensureWorld(world);
+  const detection = detectPhysicalInteraction(w, playerText);
+  if (!detection.detected) return null;
+  const m = ensureMap(w.map);
   const here = m.nodes.find(n => n.id === m.currentNodeId);
   if (!here) return null;
-
-  const scoped = objectsHere(world); // room-scoped; furnitureId stays the node index
-  const party = Array.isArray(world.party) ? world.party : [];
-  const actorId = party[0]?.id || 'party';
-  const inventory = party[0]?.inventory || {};
-
-  const userPayload = {
+  const scoped = objectsHere(w); // room-scoped; furnitureId stays the node index
+  const party = Array.isArray(w.party) ? w.party : [];
+  return {
     nodeId: here.id,
     nodeName: here.name,
     furniture: scoped.map(({ piece, nodeIndex }) => ({ ...piece, furnitureId: nodeIndex })),
-    actorId,
-    inventory,
-    playerText,
+    actorId: party[0]?.id || 'party',
+    inventory: party[0]?.inventory || {},
+    playerText: String(playerText || ''),
     matches: detection.matches
   };
+}
+
+// RULING-FX-1 — server-side reply parser for /api/physics-fx: JSON extraction
+// plus a shape floor ONLY (the route has no world to validate against). Real
+// grounding — op whitelist, validateDeltas all-or-nothing, banned words —
+// happens at consumption (groundFxProposal). Never throws.
+export function parseFxReply(text) {
+  const parsed = extractAndParseJson(String(text ?? ''));
+  if (!parsed || typeof parsed !== 'object') return null;
+  const result = String(parsed.result ?? '').trim();
+  if (!result) return null;
+  return {
+    plausible: Boolean(parsed.plausible),
+    deltas: Array.isArray(parsed.deltas) ? parsed.deltas : [],
+    result
+  };
+}
+
+async function callPhysicsLLM({ world, playerText, detection, apiKey, endpoint, model, fetchImpl, chatCompletionFn }) {
+  const userPayload = buildPhysicsFxPayload(world, playerText);
+  if (!userPayload) return null;
 
   const messages = [
     { role: 'system', content: PHYSICS_SYSTEM_PROMPT },
@@ -358,6 +385,42 @@ export function evaluatePhysicsSync(world, playerText) {
     return { plausible: false, deltas: [], description: '', fallbackUsed: false };
   }
   return offlineFallback(w, playerText, detection);
+}
+
+// --- RULING-FX-1: consequence-proposal grounding -----------------------------
+//
+// The async LLM leg (callPhysicsLLM / the /api/physics-fx pre-flight) proposes
+// {plausible, deltas, result} in the sealed vocabulary. This is the ONE gate a
+// proposal passes to become consumable: object-vocabulary ops only (the engine
+// owns env pressure and position truth — an env/position op poisons the batch),
+// full validateDeltas against the LIVE world (all-or-nothing — Invariant 22),
+// and a census-taker description with no drama words. Consumed by the
+// playloop's offline physics lane, which records the grounded set on the
+// resolution event (data.rulingFx) so replay re-grounds THIS record against
+// the replay-time world — a forged save gets exactly the scrutiny a live
+// proposal gets. Returns {deltas, description} or null; never throws.
+
+const FX_OPS = new Set(['modifyFurniture', 'createItem', 'removeItem', 'removeFurniture']);
+const FX_DESCRIPTION_MAX = 400;
+
+export function groundFxProposal(world, proposal) {
+  try {
+    if (!proposal || typeof proposal !== 'object') return null;
+    if (proposal.plausible === false) return null;
+    const description = String(proposal.description ?? proposal.result ?? '').trim();
+    if (!description || description.length > FX_DESCRIPTION_MAX) return null;
+    if (BANNED_RE.test(description)) return null;
+    const deltas = proposal.deltas;
+    if (!Array.isArray(deltas) || deltas.length > 4) return null;
+    for (const op of deltas) {
+      if (!op || typeof op !== 'object' || !FX_OPS.has(String(op.op || ''))) return null;
+    }
+    const validated = validateDeltas(deltas, world);
+    if (!validated.ok) return null;
+    return { deltas: validated.deltas, description };
+  } catch {
+    return null;
+  }
 }
 
 // --- Validation ---

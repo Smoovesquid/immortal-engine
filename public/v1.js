@@ -2,7 +2,7 @@ import { normalizeManifest, normalizePack } from '../engine/rulesets.js';
 import { newWorld, ensureWorld } from '../engine/state.js';
 import { beginAdventure, playerMove, newScene, setPieceCooldownGate, carriesInteriorMovementIntent, detectObjectAttackIntent, detectWindowActionIntent } from '../engine/playloop.js';
 import { isMetaQuestion, handleMetaQuestion, looksMultiAction } from '../engine/grace/gracefulAdjudication.js';
-import { heldObjectOf } from '../engine/llmPhysics.js';
+import { heldObjectOf, buildPhysicsFxPayload } from '../engine/llmPhysics.js';
 // INT-2R — buildParseCtx is browser-safe (no server-only deps; already in
 // this bundle's transitive graph via playloop.js -> assemblePacket.js). The
 // key-bearing engine/intent/llmIntent.js stays server-only — v1.js reaches
@@ -646,6 +646,39 @@ async function tryLlmIntentPacket(w, text) {
   return null;
 }
 
+// RULING-FX-1 — the consequence pre-flight: a physics-shaped turn (the pure
+// payload builder is also the gate — null means don't even fetch) asks
+// /api/physics-fx for sealed-vocabulary deltas + one census-taker sentence.
+// The reply is a PROPOSAL only: playerMove grounds it in-engine
+// (groundFxProposal — op whitelist, validateDeltas all-or-nothing, banned
+// words) before a single delta can apply. Any miss → null → the offline
+// template rules exactly as before.
+const PHYSICS_FX_TIMEOUT_MS = 4500;
+async function tryPhysicsFx(w, text) {
+  try {
+    const payload = buildPhysicsFxPayload(w, text);
+    if (!payload) return null;
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), PHYSICS_FX_TIMEOUT_MS);
+    let data;
+    try {
+      const res = await fetch('/api/physics-fx', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ text, payload }),
+        signal: controller.signal
+      });
+      data = await res.json();
+    } finally {
+      clearTimeout(timer);
+    }
+    if (data && data.ok && data.proposal) return data.proposal;
+  } catch {
+    // offline / timeout / bad JSON — silent fallback, the template rules
+  }
+  return null;
+}
+
 // P6 — local NPC voice (Ollama/Gemma). Presentation-only: the engine already
 // decided share/deflect/lie; the local model only phrases the spoken line.
 // Silent fallback to the deterministic voice templates. One failed call
@@ -822,8 +855,14 @@ async function doSubmitMove() {
       // own AbortController) so an offline/slow server never stalls the turn.
       // On ANY miss `llmPacket` is null and playerMove runs exactly as it
       // does with no 4th argument — the deterministic parser is the floor.
-      const llmPacket = await tryLlmIntentPacket(w, text);
-      ({ world, output } = playerMove(w, ui.packs.byId, text, { llmPacket }));
+      // RULING-FX-1 — the consequence pre-flight runs IN PARALLEL (physics-
+      // shaped turns only; tryPhysicsFx returns immediately otherwise), so
+      // the two ears share one wait instead of stacking.
+      const [llmPacket, fxProposal] = await Promise.all([
+        tryLlmIntentPacket(w, text),
+        tryPhysicsFx(w, text)
+      ]);
+      ({ world, output } = playerMove(w, ui.packs.byId, text, { llmPacket, fxProposal }));
     }
   } catch (e) {
     return setStatus(`Move failed: ${e?.message || e}`);
@@ -1049,8 +1088,8 @@ function renderInvoke() {
     el('div', { class: 'panel' },
       el('div', { class: 'header' },
         el('div', {},
-          el('div', { class: 'title' }, 'Immortal Engine — v0.49.0'),
-          el('div', { class: 'sub' }, 'build 170 · 2026-07-17 · the DM judges difficulty')
+          el('div', { class: 'title' }, 'Immortal Engine — v0.50.0'),
+          el('div', { class: 'sub' }, 'build 171 · 2026-07-17 · the DM narrates the wreckage')
         )
       ),
       // ── One-click front door: start (or resume) the Escape game ──────

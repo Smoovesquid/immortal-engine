@@ -51,9 +51,13 @@ function replayFromTimeline(seedWorld, packs) {
       }
     } else if (kind === 'resolution' || kind === 'blocked') {
       const txt = String(e?.data?.text ?? e?.data?.intent ?? '');
-      // RULING-DC-1: recorded llm packets replay through the {llmPacket} seam.
+      // RULING-DC-1/FX-1: recorded llm packets + consequence rulings replay
+      // through the {llmPacket}/{fxProposal} seams.
       const ri = e?.data?.resolvedIntent;
-      w = playerMove(w, packs, txt, ri && ri.source === 'llm' ? { llmPacket: ri } : undefined).world;
+      const opts = {};
+      if (ri && ri.source === 'llm') opts.llmPacket = ri;
+      if (e?.data?.rulingFx) opts.fxProposal = e.data.rulingFx;
+      w = playerMove(w, packs, txt, Object.keys(opts).length ? opts : undefined).world;
     }
   }
 

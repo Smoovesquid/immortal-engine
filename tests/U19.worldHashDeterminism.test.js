@@ -36,16 +36,16 @@ function replayFromTimeline(seedWorld, packs) {
       w = beginAdventure(w, packs).world;
     } else if (kind === 'scene') {
       w = newScene(w, packs).world;
-    } else if (kind === 'resolution') {
-      const txt = String(e?.data?.text ?? e?.data?.intent ?? '');
-      // RULING-DC-1: a recorded llm packet replays through the same seam it
-      // arrived by live — zero model calls; text-only events replay as before.
+    } else if (kind === 'resolution' || kind === 'blocked') {
+      const txt = String(e?.data?.text ?? (kind === 'resolution' ? e?.data?.intent : '') ?? '');
+      // RULING-DC-1/FX-1: recorded llm packets and consequence rulings replay
+      // through the same seams they arrived by live — zero model calls;
+      // text-only events replay as before.
       const ri = e?.data?.resolvedIntent;
-      w = playerMove(w, packs, txt, ri && ri.source === 'llm' ? { llmPacket: ri } : undefined).world;
-    } else if (kind === 'blocked') {
-      const txt = String(e?.data?.text ?? '');
-      const ri = e?.data?.resolvedIntent;
-      w = playerMove(w, packs, txt, ri && ri.source === 'llm' ? { llmPacket: ri } : undefined).world;
+      const opts = {};
+      if (ri && ri.source === 'llm') opts.llmPacket = ri;
+      if (e?.data?.rulingFx) opts.fxProposal = e.data.rulingFx;
+      w = playerMove(w, packs, txt, Object.keys(opts).length ? opts : undefined).world;
     } else {
       // travel/threadShift/scarFormed/endingTriggered are effects of the driven surfaces
       // and should re-emerge deterministically; do not apply directly.

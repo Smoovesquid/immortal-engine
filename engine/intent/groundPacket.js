@@ -143,6 +143,12 @@ export function groundPacket(proposed, bundle) {
       // action into a question turn (the 07-03 "everything does nothing" bug).
       // Whitelist to the kinds engine/grace/answerability.js actually emits.
       kind: LEGAL_QUESTION_KINDS.has(String(proposed.kind || '')) ? String(proposed.kind) : null,
+      // RULING-DC-1: the judge's band + governing stat are RULES tokens like
+      // `stat` — no scene grounding needed; makeIntent validates both against
+      // its enums (a hallucinated band/stat coerces to null there, and the
+      // resolver treats null as "no judgment — use the deterministic floor").
+      difficultyBand: proposed.difficulty,
+      difficultyStat: proposed.difficultyStat,
       confidence: proposed.confidence,
       source: 'llm'
     });

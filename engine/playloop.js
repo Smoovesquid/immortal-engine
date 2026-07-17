@@ -19,6 +19,7 @@ import { resolveMove } from './resolve.js';
 import { applyDeltas } from './effectsCore.js';
 import { introduceThread, resolveThread, ensureInstrumentLayer, traceIntentPacket, intentTraceOn } from './instrument.js';
 import { assemblePacket } from './intent/assemblePacket.js';
+import { persistableIntent } from './intent/intentSchema.js';
 import { declaredStat } from './intent/parseIntent.js';
 import { applyGeneratedStructuresForNode } from './structures/applyGeneratedStructuresForNode.js';
 import { enterStructureInterior, exitStructureInterior, moveWithinInterior, getInteriorView, interiorDirectionalExits, resolveStructureSelection, interiorDoorBlock } from './structures/interiors.js';
@@ -778,7 +779,15 @@ export function playerMove(world, packsById, text, { llmPacket } = {}) {
     : directQuestionIntent(text, world);
   const __intentPacket = useLlmPacket ? llmPacket : assemblePacket(world, text, __dqIntent);
   traceIntentPacket(__intentPacket);
-  const res = playerMoveTraced(world, packsById, text, __dqIntent);
+  // RULING-DC-1 — the judge's ruling rides only a grounded llm packet
+  // (deterministic packets never carry a band), and only down the explicit
+  // hints wire: recursive playerMoveCore self-calls don't forward it, so a
+  // compound turn's inner action falls back to the formula (reported boundary).
+  const __rulingHints = (useLlmPacket && (__intentPacket.difficultyBand || __intentPacket.difficultyStat))
+    ? { band: __intentPacket.difficultyBand || null, stat: __intentPacket.difficultyStat || null }
+    : null;
+  const __preTurnEvents = Array.isArray(world?.timeline) ? world.timeline.length : 0;
+  const res = attachResolvedIntent(playerMoveTraced(world, packsById, text, __dqIntent, __rulingHints), __preTurnEvents, __intentPacket);
   // intentTraceOn(), NOT bare process.env — this function runs in the browser,
   // where `process` is undefined and a bare read threw on EVERY typed turn
   // (the 07-03 "everything does nothing" root). U384 locks the graph.
@@ -788,7 +797,32 @@ export function playerMove(world, packsById, text, { llmPacket } = {}) {
   return res;
 }
 
-function playerMoveTraced(world, packsById, text, dqIntent) {
+// RULING-DC-1 — persist the grounded packet on the turn-initiating event.
+// ONE central write site: every resolution/blocked mint inside playerMoveCore
+// (14+ sites) inherits it, and replay (tests/U19/U21/U720) feeds the record
+// back through {llmPacket}, so a model-translated turn re-runs the RECORDING,
+// never the model. Only the FIRST turn event of the call is annotated — it
+// marks the turn's intent; later same-turn events are effects of it. Timeline
+// entries are canon (worldHash covers w.timeline), so live and replayed turns
+// must write byte-identical records: persistableIntent is a fixed point
+// (U720-B1), and a turn that mints no event records nothing (there is no
+// turn to replay). An event already carrying resolvedIntent is left alone —
+// first-annotation-wins keeps any nested mint deterministic across replay.
+function attachResolvedIntent(res, preLen, packet) {
+  const tl = res?.world?.timeline;
+  if (!Array.isArray(tl) || tl.length <= preLen) return res;
+  for (let i = preLen; i < tl.length; i++) {
+    const e = tl[i];
+    if (!e || (e.kind !== 'resolution' && e.kind !== 'blocked')) continue;
+    if (e.data && e.data.resolvedIntent) return res;
+    const timeline = tl.slice();
+    timeline[i] = { ...e, data: { ...(e.data || {}), resolvedIntent: persistableIntent(packet) } };
+    return { ...res, world: { ...res.world, timeline } };
+  }
+  return res;
+}
+
+function playerMoveTraced(world, packsById, text, dqIntent, rulingHints = null) {
   // INT-3 — the shared classifier verdict for the egress family, computed
   // once by playerMove (above) and threaded through — rather than letting
   // applyEgressRepair re-derive it internally (it was the second call to
@@ -803,7 +837,7 @@ function playerMoveTraced(world, packsById, text, dqIntent) {
   // playerMoveCore's own internal referent-grounding call-sites). Every
   // *recursive* self-call inside playerMoveCore must NOT forward it — see the
   // load-bearing safety comment on playerMoveCore's signature.
-  const res = applyEgressRepair(world, text, playerMoveCore(world, packsById, text, __dqIntent), __dqIntent);
+  const res = applyEgressRepair(world, text, playerMoveCore(world, packsById, text, __dqIntent, rulingHints), __dqIntent);
   // Speaking AT a present person ("tell/ask X ...") opens a sustained conversation AFTER the
   // turn resolves naturally — the social roll / info answer is unchanged; combat, "tell me
   // about …", and an absent name all skip it (see maybeEnterConversationAfterAddress).
@@ -1028,7 +1062,13 @@ const BARE_PRONOUN_LEARN_RE = /\b(find out|learn|discover|figure out|uncover|get
 // commitment opener that distinguishes a stated intention from a bare verb.
 const DECLARE_COMMIT_RE = /\b(?:i(?:['’]?ll| will| shall| intend to| vow to| mean to)|i['’]?m going to|let me|count on me to)\b/i;
 
-function playerMoveCore(world, packsById, text, dqIntent) {
+function playerMoveCore(world, packsById, text, dqIntent, rulingHints = null) {
+  // RULING-DC-1 — `rulingHints` ({band, stat} or null) is the judge's ruling
+  // for THIS typed turn, threaded only from the top-level entry (mirroring the
+  // dqIntent rule above): recursive self-calls below deliberately omit it, so
+  // an engine-synthesized inner action can never inherit a judgment made about
+  // the player's outer sentence. Consumed at exactly two seats: the impossible
+  // decline and the generic resolve floor. Everything else ignores it.
 
   // Gate III.2: after ending is locked, play surfaces must not mutate state.
   if (Boolean(world?.ending?.locked)) {
@@ -4317,6 +4357,21 @@ function playerMoveCore(world, packsById, text, dqIntent) {
     }
   }
 
+  // RULING-DC-1 — the judge called this feat impossible: decline in fiction
+  // BEFORE any die exists (DM Test: resolve the intent in the fiction, never
+  // bounce mechanics back). No canon write, no clock — one ruling, then the
+  // world moves on (DENIED 23). Only the generic floor declines this way: a
+  // feat any specific handler owns (combat, physics, social, travel) was
+  // claimed above and resolved under that handler's own truth, so a stray
+  // 'impossible' judgment can never veto a handled action.
+  if (rulingHints?.band === 'impossible') {
+    const line = pickVariant([
+      `Some things simply aren't in a body's power, and this is one of them. You size it up honestly and let it go.`,
+      `You could spend the whole day at it and the world wouldn't budge an inch. It's beyond doing, and you know it.`
+    ], w, 'ruling:impossible');
+    return { world: w, output: { narration: `Wizard: ${line}`, mechanics: '[declined | impossible feat]' } };
+  }
+
   const move = inferMoveFromText(w, pack, actorId, text);
   // DECL-STAT-1 — the one wire: a player-DECLARED ability ("Set the DC and I'll
   // roll Strength") rides the structured detector onto the generic-floor move, so
@@ -4324,6 +4379,13 @@ function playerMoveCore(world, packsById, text, dqIntent) {
   // one. declaredStat is PURE (no LLM, no rng, browser-safe); it returns null on
   // every undeclared turn, and a null statTag leaves resolveMove byte-identical.
   move.statTag = declaredStat(text);
+  // RULING-DC-1 — the judge's wire, same pattern one line down: the banded
+  // ruling rides the structured hints onto the generic-floor move, so
+  // resolveMove prices THIS feat (band → DC table) instead of the global
+  // pressure formula, and the judge's governing stat joins the precedence
+  // chain BELOW a declaration. Null hints leave the move byte-identical.
+  move.difficultyBandTag = rulingHints?.band ?? null;
+  move.difficultyStatTag = rulingHints?.stat ?? null;
 
   // H-31 R1 — an info-seeking ask with no grounded fact behind it never rolls
   // a gradeable success/mixed: there is nothing dice can deliver, so fortune

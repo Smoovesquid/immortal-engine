@@ -146,6 +146,16 @@ export function makeIntent(partial = {}) {
   const ambiguity = AMBIGUITY_KINDS.includes(p.ambiguity) ? p.ambiguity : null;
   const kind = p.kind != null && String(p.kind).length ? String(p.kind) : null;
 
+  // RULING-DC-1 — the improvised-ruling judge's two fields. The model names a
+  // coarse difficulty BAND for the attempted feat (never a number — V11 law;
+  // the engine maps band → DC in resolve.js) and the ability that governs it.
+  // Both validate to enums here, so a hallucinated value can never reach the
+  // resolver. difficultyStat is separate from `stat` on purpose: `stat` is the
+  // PLAYER's declared ability (DECL-STAT-1) and always outranks the judge.
+  const difficultyBand = DIFFICULTY_BANDS.includes(p.difficultyBand) ? p.difficultyBand : null;
+  let difficultyStat = p.difficultyStat != null ? String(p.difficultyStat).trim().toUpperCase() : '';
+  difficultyStat = STATS.includes(difficultyStat) ? difficultyStat : null;
+
   return {
     verb,
     target: p.target != null && String(p.target).length ? String(p.target) : null,
@@ -161,7 +171,9 @@ export function makeIntent(partial = {}) {
     objects,
     compoundParts,
     ambiguity,
-    kind
+    kind,
+    difficultyBand,
+    difficultyStat
   };
 }
 
@@ -223,4 +235,43 @@ export function verbPhrase(intent) {
     case 'wait': return 'hold and ready';
     default: return i.text || 'look around';
   }
+}
+
+// --- RULING-DC-1: the persisted ruling record --------------------------------
+//
+// The compact, versioned projection of a grounded IntentPacket that rides the
+// turn-initiating resolution/blocked timeline event as `data.resolvedIntent`.
+// Replay feeds this record straight back through playerMove's {llmPacket}
+// seam, so a model-translated turn replays with ZERO model calls (tests/U720).
+// The projection is a FIXED POINT: persistableIntent(persistableIntent(p)) is
+// byte-identical — replay re-persists exactly what it was fed, keeping live
+// and replayed timelines hash-equal (worldHash covers w.timeline).
+//
+// difficultyBand/difficultyStat are the improvised-ruling judge's two fields
+// (V11 law: the model names a coarse BAND, never a number; the engine maps
+// band → DC). difficultyStat is deliberately separate from `stat`: `stat` is
+// the PLAYER's declared ability (DECL-STAT-1 authority) and the judge's
+// suggestion must never impersonate it.
+
+export const DIFFICULTY_BANDS = ['trivial', 'easy', 'medium', 'hard', 'very_hard', 'impossible'];
+
+export function persistableIntent(packet) {
+  const p = packet && typeof packet === 'object' ? packet : {};
+  const str = v => (v != null && String(v).length ? String(v) : null);
+  let confidence = Number(p.confidence);
+  if (!Number.isFinite(confidence)) confidence = 1;
+  confidence = Math.round(Math.max(0, Math.min(1, confidence)) * 100) / 100;
+  return {
+    v: 1,
+    source: ['text', 'click', 'voice', 'llm'].includes(String(p.source)) ? String(p.source) : 'text',
+    verb: VERBS.includes(String(p.verb)) ? String(p.verb) : 'ask',
+    kind: str(p.kind),
+    approach: APPROACHES.includes(String(p.approach)) ? String(p.approach) : null,
+    stat: STATS.includes(p.stat) ? p.stat : null,
+    stake: STAKES.includes(String(p.stake)) ? String(p.stake) : null,
+    confidence,
+    target: str(p.target),
+    difficultyBand: DIFFICULTY_BANDS.includes(p.difficultyBand) ? p.difficultyBand : null,
+    difficultyStat: STATS.includes(p.difficultyStat) ? p.difficultyStat : null
+  };
 }

@@ -36,7 +36,10 @@ export function resolveMove(world, move) {
   // STRUCTURED intent upstream, never by a raw-text regex here — see
   // engine/intent/parseIntent.js declaredStat(). m.statTag is already
   // normalized to a valid engine stat (or null) by normalizeMove.
-  const statKey = m.statTag || statForApproach(m.approachTag);
+  // RULING-DC-1 widens the chain by one seat: declared > judge > approach.
+  // The judge's difficultyStatTag is advisory — it never impersonates a
+  // declaration and loses to one every time.
+  const statKey = m.statTag || m.difficultyStatTag || statForApproach(m.approachTag);
   const statVal = actor?.stats?.[statKey];
   const statBonus = statMod(statVal);
 
@@ -108,6 +111,21 @@ function normalizeStatTag(statTag) {
   return ENGINE_STATS.has(s) ? s : null;
 }
 
+// RULING-DC-1 — the improvised-ruling table: the judge names a coarse BAND
+// (never a number — V11 law; a raw model number can never reach the dice) and
+// this table is the ONLY place a band becomes a DC. The judged DC replaces the
+// whole pressure formula for that feat — the ruling IS the difficulty, the way
+// a DM's "that's really tough, 18 to make it" is the whole answer. 'impossible'
+// is deliberately absent: it declines in fiction upstream (playloop's floor)
+// before any move is built, so a forged 'impossible' tag on a move object
+// normalizes to null and simply falls back to the formula.
+const BAND_DC = { trivial: 5, easy: 10, medium: 12, hard: 15, very_hard: 18 };
+function normalizeDifficultyBand(tag) {
+  if (tag == null) return null;
+  const s = String(tag).trim().toLowerCase();
+  return Object.prototype.hasOwnProperty.call(BAND_DC, s) ? s : null;
+}
+
 // Focus → approach mapping (from CRUNCH_V1.md).
 // Each focus grants proficiency bonus when used with its matching approach.
 const FOCUS_APPROACH = {
@@ -159,6 +177,11 @@ function normalizeMove(move) {
     // stats at this boundary (null when absent or malformed → the roll infers
     // from the approach exactly as before, so every legacy caller is untouched).
     statTag: normalizeStatTag(x.statTag),
+    // RULING-DC-1: the judge's band + governing stat, validated at this
+    // boundary exactly like statTag (null when absent/malformed → the formula
+    // and approach-inference stand byte-identical for every legacy caller).
+    difficultyBandTag: normalizeDifficultyBand(x.difficultyBandTag),
+    difficultyStatTag: normalizeStatTag(x.difficultyStatTag),
     // DX-2a: tactical modifiers supplied by combatResolve. Defaults are no-ops,
     // so non-combat callers and old replays roll exactly as before.
     tacticalDefenseBonus: clampInt(x.tacticalDefenseBonus ?? 0, 0, 5),
@@ -167,6 +190,11 @@ function normalizeMove(move) {
 }
 
 function computeDC({ w, m, band, gearSignals }) {
+  // RULING-DC-1: a judged band IS the DC — the improvised ruling replaces the
+  // global pressure formula for this feat, exactly as a DM's spoken number
+  // would. Already validated by normalizeMove; the table is fixed and the
+  // model never sees or sets the integer.
+  if (m.difficultyBandTag) return BAND_DC[m.difficultyBandTag];
   // Base DC is subtly influenced by fate, clocks, and wounds/stress.
   const fate = clamp01(w.meta.fate);
   const clockPressure = w.clocks.pressure ?? 0;

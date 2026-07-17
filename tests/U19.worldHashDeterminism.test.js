@@ -38,10 +38,14 @@ function replayFromTimeline(seedWorld, packs) {
       w = newScene(w, packs).world;
     } else if (kind === 'resolution') {
       const txt = String(e?.data?.text ?? e?.data?.intent ?? '');
-      w = playerMove(w, packs, txt).world;
+      // RULING-DC-1: a recorded llm packet replays through the same seam it
+      // arrived by live — zero model calls; text-only events replay as before.
+      const ri = e?.data?.resolvedIntent;
+      w = playerMove(w, packs, txt, ri && ri.source === 'llm' ? { llmPacket: ri } : undefined).world;
     } else if (kind === 'blocked') {
       const txt = String(e?.data?.text ?? '');
-      w = playerMove(w, packs, txt).world;
+      const ri = e?.data?.resolvedIntent;
+      w = playerMove(w, packs, txt, ri && ri.source === 'llm' ? { llmPacket: ri } : undefined).world;
     } else {
       // travel/threadShift/scarFormed/endingTriggered are effects of the driven surfaces
       // and should re-emerge deterministically; do not apply directly.

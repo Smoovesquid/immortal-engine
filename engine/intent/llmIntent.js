@@ -22,7 +22,7 @@
 import { chatCompletion } from '../../server/llmProvider.js';
 import { queryLocal } from '../../server/localLlmProvider.js';
 import { buildParseCtx } from './assemblePacket.js';
-import { VERBS, APPROACHES, STAKES, STATS } from './intentSchema.js';
+import { VERBS, APPROACHES, STAKES, STATS, DIFFICULTY_BANDS } from './intentSchema.js';
 
 // Below this confidence, the deterministic floor (parseIntent, via
 // assemblePacket) is considered unclassified/low-confidence and worth asking
@@ -79,7 +79,9 @@ function schemaHint() {
     stat: [...STATS, null],
     stake: STAKES,
     ambiguity: ['target', 'object', 'goal', 'referent', null],
-    kind: ['npc-addressed', 'rules', 'referent-followup', 'place', null]
+    kind: ['npc-addressed', 'rules', 'referent-followup', 'place', null],
+    difficulty: [...DIFFICULTY_BANDS, null],
+    difficultyStat: [...STATS, null]
   };
 }
 
@@ -102,13 +104,13 @@ function schemaHint() {
 // (a WH-question-shaped address, matching the failing corpus rows' shape)
 // fixes this without inventing a second vocabulary.
 const FEW_SHOT = [
-  { text: 'I stab the goblin', out: { verb: 'attack', target: 'goblin', with: null, kind: null } },
-  { text: 'I ask the innkeeper about the well', out: { verb: 'talk', target: 'innkeeper', with: null, kind: 'npc-addressed' } },
-  { text: 'who lit that lantern, Elske?', out: { verb: 'talk', target: 'Elske', with: null, kind: 'npc-addressed' } },
-  { text: 'I look around the room', out: { verb: 'search', target: null, with: null, kind: null } },
-  { text: 'I light the torch', out: { verb: 'use', target: 'torch', with: null, kind: null } },
-  { text: 'I run from the fight', out: { verb: 'flee', target: null, with: null, kind: null } },
-  { text: 'I pry the hatch open — set the DC and I\'ll roll Strength', out: { verb: 'use', target: null, with: null, stat: 'MIGHT', kind: null } }
+  { text: 'I stab the goblin', out: { verb: 'attack', target: 'goblin', with: null, kind: null, difficulty: null, difficultyStat: null } },
+  { text: 'I ask the innkeeper about the well', out: { verb: 'talk', target: 'innkeeper', with: null, kind: 'npc-addressed', difficulty: null, difficultyStat: null } },
+  { text: 'who lit that lantern, Elske?', out: { verb: 'talk', target: 'Elske', with: null, kind: 'npc-addressed', difficulty: null, difficultyStat: null } },
+  { text: 'I look around the room', out: { verb: 'search', target: null, with: null, kind: null, difficulty: null, difficultyStat: null } },
+  { text: 'I light the torch', out: { verb: 'use', target: 'torch', with: null, kind: null, difficulty: 'trivial', difficultyStat: null } },
+  { text: 'I run from the fight', out: { verb: 'flee', target: null, with: null, kind: null, difficulty: null, difficultyStat: null } },
+  { text: 'I pry the hatch open — set the DC and I\'ll roll Strength', out: { verb: 'use', target: null, with: null, stat: 'MIGHT', kind: null, difficulty: 'hard', difficultyStat: 'MIGHT' } }
 ];
 
 function buildPrompt(text, bundle) {
@@ -130,6 +132,7 @@ function buildPrompt(text, bundle) {
     '"talk" is for ANY address to a person present — greeting, questioning, persuading, demanding, even a sentence that literally contains the English word "ask" or "asked". "ask" (the verb value) means something different: NO mechanical verb applies at all — pure free narration with no action and no addressee (e.g. "I admire the sunset", "what do I smell?"). Do not pick "ask" just because the player\'s SENTENCE contains that word.',
     '"kind" is null unless the player is ASKING A QUESTION; a question gets exactly one of: npc-addressed | rules | referent-followup | place. An action ("Smash the window", "go outside") is always kind:null.',
     '"stat" is null UNLESS the player explicitly names an ability to roll ("I\'ll roll Strength", "a Dexterity check", "using my WITS") — then set it to that ability as one of MIGHT | AGILITY | GRIT | CHARM | WITS (Strength=MIGHT, Dexterity=AGILITY, Constitution=GRIT, Intelligence/Wisdom=WITS, Charisma=CHARM). Never guess a stat from the action alone; a plain action leaves stat:null.',
+    '"difficulty" rates the attempted physical/skill FEAT for this character in the fiction — trivial | easy | medium | hard | very_hard | impossible — judged like a DM ("that\'s really tough"). null when no feat is attempted (conversation, questions, combat attacks, ordinary movement). "difficultyStat" is the one ability that governs that feat, or null. Rate the feat itself; never soften it because the player phrased it gently.',
     'You NEVER invent an id — only use ids/names that appear in the candidate lists below.',
     'If nothing in the scene matches, use null / an empty array rather than guessing.',
     'Reply with ONLY strict JSON matching the schema — no prose, no markdown fences, no acknowledgement. Your ENTIRE reply is the one JSON object for the final "Player said" line.',

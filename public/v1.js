@@ -1049,8 +1049,8 @@ function renderInvoke() {
     el('div', { class: 'panel' },
       el('div', { class: 'header' },
         el('div', {},
-          el('div', { class: 'title' }, 'Immortal Engine — v0.48.0'),
-          el('div', { class: 'sub' }, 'build 169 · 2026-07-16 · people become places')
+          el('div', { class: 'title' }, 'Immortal Engine — v0.49.0'),
+          el('div', { class: 'sub' }, 'build 170 · 2026-07-17 · the DM judges difficulty')
         )
       ),
       // ── One-click front door: start (or resume) the Escape game ──────

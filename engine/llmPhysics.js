@@ -412,6 +412,23 @@ export function groundFxProposal(world, proposal) {
     if (BANNED_RE.test(description)) return null;
     const deltas = proposal.deltas;
     if (!Array.isArray(deltas) || deltas.length > 4) return null;
+    // RULING-FX-1 CORRECTION (OBJ-BARRICADE-6C, live-caught) — an EMPTY proposal is
+    // never consumed. Found on the live build: "drag the cooking pot aside" returned
+    // a plausible proposal with `deltas: []` and a paragraph asserting the pot moved.
+    // The consumption seam substitutes BOTH halves (physics.deltas = fx.deltas), so
+    // the empty list wiped the lane's real moveObject delta while the prose kept
+    // claiming the move — narration asserting a world change canon does not have.
+    //
+    // This is systematic, not a one-off: the sealed fx vocabulary is deliberately
+    // object-only (modifyFurniture|createItem|removeItem|removeFurniture) because
+    // the engine owns position. So a CORRECTLY-behaving model returns [] for every
+    // positional action — and every positional action on this lane lost its effect.
+    //
+    // A proposal that proposes nothing has nothing to ground, so it is not a ruling.
+    // Rejecting it here restores the deterministic template deltas AND sentence, i.e.
+    // exactly pre-RULING-FX-1 behaviour for this case (the same fallback a rejected
+    // proposal already takes, U723-C1).
+    if (deltas.length === 0) return null;
     for (const op of deltas) {
       if (!op || typeof op !== 'object' || !FX_OPS.has(String(op.op || ''))) return null;
     }

@@ -5,6 +5,7 @@ import { adjacentRooms, normalizeTopology, interiorExitsFrom } from './topology.
 import { reachableRooms } from '../movement/interiorMovement.js';
 import { doorThresholdCells } from '../map/spatial/tacticalPos.js';
 import { doorBetween, exteriorDoorOf, crossable, needsForcing } from './doors.js';
+import { barricadeOnDoor } from '../objects/placement.js';
 
 function sortedStructuresAtNode(world) {
   const w = ensureWorld(world);
@@ -109,7 +110,7 @@ export function enterStructureInterior(world, structureRef = '') {
   });
 }
 
-export function exitStructureInterior(world) {
+export function exitStructureInterior(world, opts = {}) {
   const w = ensureWorld(world);
   if (!w.scene?.interior) return w;
 
@@ -130,6 +131,20 @@ export function exitStructureInterior(world) {
       const holder = objs[oid]?.heldByActorId;
       if (holder != null && partyKeys.has(String(holder))) return w;
     }
+  }
+
+  // OBJ-BARRICADE-6C — the barricade's STRUCTURAL backstop, the sibling of the
+  // carry-lock above with ONE deliberate difference: the carry-lock is about the
+  // BODY (you cannot manhandle a barrel through any opening, so it is unconditional),
+  // while a barricade is about ONE DOOR. Wedging the front door shut does not seal
+  // the windows — climbing out past your own barricade is exactly what a person
+  // would do — so a caller egressing by window declares `via: 'window'` and this
+  // guard stands aside. Everything else (the door, the travel bridges) is held.
+  if (String(opts?.via || '') !== 'window') {
+    const sk = String(w.scene?.interior?.structureKey || '');
+    const st = sk ? w.structures?.byId?.[sk] : null;
+    const ext = st ? exteriorDoorOf(st) : null;
+    if (ext && barricadeOnDoor(w, sk, String(ext.id))) return w;
   }
 
   // MR-1a — EGRESS WRITES THE DOORSTEP (docs/POSITION_AS_CANON.md §2/§3).
@@ -205,10 +220,17 @@ export function interiorDoorBlock(world, toRoomId) {
   if (!st) return null;
   const door = doorBetween(st, fromRoomId, targetRoomId);
   if (!door) return null; // no door record between these rooms (legacy / non-adjacent)
+  // OBJ-BARRICADE-6C — a barricade is reported ALONGSIDE the hardware state, never
+  // folded into it: `state`/`crossable`/`needsForcing` keep describing the DOOR
+  // (open, shut, barred, locked) byte-identically, and `barricade` describes what is
+  // shoved against it. The two are independent facts — an OPEN door with a wardrobe
+  // against it does not admit you, and unbarring it does not move the wardrobe — so
+  // a caller that only reads the hardware fields behaves exactly as it did before.
   return {
     state: door.state,
     crossable: crossable(door.state),
     needsForcing: needsForcing(door.state),
+    barricade: barricadeOnDoor(w, structureKey, String(door.id)),
     door,
   };
 }
@@ -241,6 +263,11 @@ export function moveWithinInterior(world, toRoomId) {
   let wMove = w;
   const door = doorBetween(st, fromRoomId, targetRoomId);
   if (door) {
+    // OBJ-BARRICADE-6C — the structural backstop, checked BEFORE the hardware: an
+    // OPEN door with furniture wedged against it still does not let a body through,
+    // so this must not sit inside the needsForcing branch. Clearing it is a physical
+    // act (drag the object off the door), never a roll against the door.
+    if (barricadeOnDoor(w, structureKey, String(door.id))) return w;
     if (needsForcing(door.state)) return w; // barred/locked — refuse (playloop resolves the roll)
     if (String(door.state) === 'shut') {
       // Open it as part of the move — the sole mutation path (the `door` op).

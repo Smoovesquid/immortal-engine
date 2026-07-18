@@ -1,3 +1,5 @@
+import { isFurnitureDestroyed } from '../structures/authoredFurniture.js';
+
 // OBJ-STATE-1 — resolvedObjectPlacement: the ONE pure projection that answers
 // "where is this object NOW?" by merging a piece's immutable base provenance with
 // the canonical live-object overlay (world.objects[objectId]). Precedence:
@@ -78,4 +80,53 @@ export function resolvedObjectPlacement(world, objectId) {
     node: base.node, structureId: base.structureId, room: base.room, cell: base.cell, rot: base.rot,
     heldByActorId: null, base,
   };
+}
+
+// ── OBJ-BARRICADE-6C — the ONE "is this door barricaded?" authority ───────────
+//
+// The overlay is keyed by objectId, so the door→object direction is a scan. It is
+// deliberately a DERIVED read rather than a second stored index on the door: two
+// stored truths about one fact is exactly the split-brain this arc keeps closing
+// (FURN-PARITY-1). world.objects holds a handful of records, and this runs on
+// traversal attempts, not per frame.
+//
+// A barricade only counts while the object can still hold the door:
+//   • the piece must still exist (a removed/salvaged piece takes its record with it);
+//   • a WRECKED piece stops obstructing — smashing the wardrobe IS how you get
+//     through it, and rubble blocks nothing (OBJ-RUBBLE-1). This is derived, not
+//     mutated on wreck: the record stays, the read stops honouring it, so a single
+//     repair of the piece would restore the barricade with no bookkeeping.
+
+/** The raw obstructs record for an object, or null. Pure. */
+export function barricadeRecordOf(world, objectId) {
+  const overlay = (world && world.objects && typeof world.objects === 'object')
+    ? world.objects[String(objectId)] : null;
+  const rec = overlay && overlay.obstructs && typeof overlay.obstructs === 'object' ? overlay.obstructs : null;
+  if (!rec) return null;
+  const structureId = String(rec.structureId || '');
+  const doorId = String(rec.doorId || '');
+  if (!structureId || !doorId) return null;
+  return { structureId, doorId };
+}
+
+/**
+ * barricadeOnDoor(world, structureId, doorId) -> { objectId, name, piece } | null
+ *
+ * What is shoved against this door right now, if anything. Pure; never throws.
+ */
+export function barricadeOnDoor(world, structureId, doorId) {
+  const sid = String(structureId || '');
+  const did = String(doorId || '');
+  if (!sid || !did) return null;
+  const objects = (world && world.objects && typeof world.objects === 'object') ? world.objects : {};
+  for (const objId of Object.keys(objects)) {
+    const rec = barricadeRecordOf(world, objId);
+    if (!rec || rec.structureId !== sid || rec.doorId !== did) continue;
+    const found = findFurnitureByObjectId(world, objId);
+    const piece = found?.piece;
+    if (!piece) continue;                        // stale record — piece is gone
+    if (isFurnitureDestroyed(piece)) continue;   // wreckage holds no door
+    return { objectId: objId, name: String(piece.name || piece.kind || 'something'), piece };
+  }
+  return null;
 }

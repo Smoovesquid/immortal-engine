@@ -24,7 +24,7 @@ import { declaredStat } from './intent/parseIntent.js';
 import { applyGeneratedStructuresForNode } from './structures/applyGeneratedStructuresForNode.js';
 import { enterStructureInterior, exitStructureInterior, moveWithinInterior, getInteriorView, interiorDirectionalExits, resolveStructureSelection, interiorDoorBlock } from './structures/interiors.js';
 import { normalizeTopology, adjacentRooms } from './structures/topology.js';
-import { exteriorDoorOf, needsForcing as doorNeedsForcing } from './structures/doors.js';
+import { exteriorDoorOf, doorsOf, needsForcing as doorNeedsForcing } from './structures/doors.js';
 import { roomWindows, roomWindowFacings } from './structures/roomWindows.js';
 import { furnitureRoomAssignments, objectsHere } from './structures/roomObjects.js';
 import { authoredIntactBedAt, isFurnitureDestroyed } from './structures/authoredFurniture.js';
@@ -38,7 +38,12 @@ import {
 import { actorObjectCapacity } from './objects/capacity.js';
 import { objectPhysics } from './objects/mobility.js';
 import { actorFacts } from './objects/physicsActor.js';
-import { resolvedObjectPlacement, findFurnitureByObjectId } from './objects/placement.js';
+import { resolvedObjectPlacement, findFurnitureByObjectId, barricadeOnDoor, barricadeRecordOf } from './objects/placement.js';
+// OBJ-BARRICADE-6C — the pure barricade layer (grammar, constants, qualification).
+import {
+  BARRICADE_VERB_RE, BARRICADE_BUILD_IDIOM_RE, BARRICADE_NOISE, BARRICADE_ACTION,
+  parseBarricadePhrases, portalIsEntrance, qualifiesAsBarricade, namesDoorPortal,
+} from './objects/barricade.js';
 import { structureMaterial } from './structures/structureMaterial.js';
 import { roomDetail } from './structures/roomDetail.js';
 import { floorPlan } from './structures/floorPlan.js';
@@ -2031,7 +2036,9 @@ function playerMoveCore(world, packsById, text, dqIntent, rulingHints = null) {
         const chosen = (namedSide && facings.includes(namedSide)) ? namedSide
           : (goalDir && facings.includes(goalDir)) ? goalDir
           : (facings[0] || '');
-        const w1 = exitStructureInterior(w);
+        // OBJ-BARRICADE-6C — declared window egress: a barricaded front door does
+        // not seal the windows (interiors.js states the door-vs-body distinction).
+        const w1 = exitStructureInterior(w, { via: 'window' });
         if (w1 !== w) {
           const w2 = pushEvent(w1, { kind: 'resolution', data: { actorId, intent: String(text || ''), text: String(text || ''), roll: 0, dc: 0, outcome: 'success', updateKind: 'interior-exit', windowFacing: chosen } });
           const via = chosen ? `the ${chosen}-facing window` : 'the window';
@@ -2174,6 +2181,9 @@ function playerMoveCore(world, packsById, text, dqIntent, rulingHints = null) {
     if (w.scene?.interior) {
       const carryLock = carryLockRefusal(w, actorId);
       if (carryLock) return carryLock;
+      // OBJ-BARRICADE-6C — your own barricade holds the door against you too.
+      const barred = barricadeEgressRefusal(w);
+      if (barred) return barred;
     }
     const wasDungeon = isDungeonStructureId(w.scene?.interior?.structureKey);
     const w1 = exitStructureInterior(w);
@@ -2203,6 +2213,30 @@ function playerMoveCore(world, packsById, text, dqIntent, rulingHints = null) {
   if (w.scene?.interior && !w.combat?.active && !combatEngageAction && !declaredNpcViolence) {
     const la = doorForceKind(text);
     if (la === 'force' || la === 'pick') {
+      // OBJ-BARRICADE-6C — a barricaded door is checked FIRST, and it is checked
+      // even when the hardware is open: facingSecuredDoor only finds barred/locked
+      // doors, so without this a shove at an open-but-barricaded door would fall to
+      // the generic floor and could narrate a success the world never performed —
+      // precisely the "break down a locked door, hear success, door stays locked"
+      // bug the block below was written to kill.
+      //
+      // The blow lands on the OBJECT, not the hardware: no `door` op, no lock roll,
+      // nothing opens. BOUNDED HONESTLY — it does not roll damage into the
+      // barricade here. resolveObjectStrike resolves its target from the player's
+      // own naming and its IDENTITY CONTRACT forbids re-addressing a piece by name
+      // on its behalf, so wiring a strike through this seam means changing that hot
+      // path's signature — its own packet. What the player gets instead is a true
+      // report plus both real affordances, and naming the object ("smash the
+      // wardrobe") reaches the full durability model that already ships.
+      const facingBarricade = facingBarricadedDoor(w);
+      if (facingBarricade) {
+        const bn = String(facingBarricade.barricade.name || 'something').toLowerCase();
+        const way = facingBarricade.exterior ? 'the door' : 'that door';
+        return { world: w, output: {
+          narration: `Wizard: You drive into ${way} and it shifts an inch — then stops dead. The ${bn} you wedged behind it takes the whole blow. Break the ${bn} apart, or drag it clear.`,
+          mechanics: `[door:barricaded|${facingBarricade.barricade.objectId} | no roll]`
+        } };
+      }
       const facing = facingSecuredDoor(w);
       if (facing && facing.door) {
         const structId = String(w.scene.interior.structureKey);
@@ -2288,6 +2322,18 @@ function playerMoveCore(world, packsById, text, dqIntent, rulingHints = null) {
         || pickAdjacentInteriorByDirection(w, interiorAction.direction)
         || (interiorAction.roomHint ? resolveInteriorRoomHint(w, interiorAction.roomHint) : '');
       const doorBlock = doorTargetRoomId ? interiorDoorBlock(w, doorTargetRoomId) : null;
+      // OBJ-BARRICADE-6C — checked BEFORE the hardware branch, because a barricade
+      // holds an OPEN door too. It is not a lock and not a bar: no pick, no force
+      // roll against the door. The fiction names what's in the way and the clear is
+      // a physical act (drag it off), which is always available to whoever put it
+      // there. Smashing it works too — a wrecked piece stops obstructing.
+      if (doorBlock && doorBlock.barricade) {
+        const bn = String(doorBlock.barricade.name || 'something').toLowerCase();
+        return { world: w, output: {
+          narration: `Wizard: The ${bn} is wedged against that door — it won't give while that's there. Drag it clear and the way opens.`,
+          mechanics: `[door:barricaded|${doorBlock.barricade.objectId}]`
+        } };
+      }
       if (doorBlock && doorBlock.needsForcing) {
         const fromRoomId = String(w.scene?.interior?.roomId || '');
         const la = lockActionKind(text);
@@ -2522,6 +2568,8 @@ function playerMoveCore(world, packsById, text, dqIntent, rulingHints = null) {
     {
       const carryLock = carryLockRefusal(w, actorId);
       if (carryLock) return carryLock;
+      const barred = barricadeEgressRefusal(w);   // OBJ-BARRICADE-6C
+      if (barred) return barred;
     }
     const outside = exitStructureInterior(w);
     const r = playerMoveCore(outside, packsById, text);
@@ -2535,6 +2583,8 @@ function playerMoveCore(world, packsById, text, dqIntent, rulingHints = null) {
     {
       const carryLock = carryLockRefusal(w, actorId);
       if (carryLock) return carryLock;
+      const barred = barricadeEgressRefusal(w);   // OBJ-BARRICADE-6C
+      if (barred) return barred;
     }
     const outside = exitStructureInterior(w);
     const r = playerMoveCore(outside, packsById, text);
@@ -4143,6 +4193,19 @@ function playerMoveCore(world, packsById, text, dqIntent, rulingHints = null) {
     ? detectObjectThrowIntent(w, text, actorId)
     : null;
   if (throwIntent) return resolveObjectThrow(w, text, throwIntent, actorId);
+
+  // OBJ-BARRICADE-6C — wedging an object against a door resolves here, beside the
+  // throw seam and for the same reason: the barricade verbs (shove/push/wedge/
+  // barricade/block/bar/brace/prop/jam) were never in PHYSICS_VERB_RE either, so
+  // today "shove the wardrobe against the door" falls to the generic freeform floor
+  // and gets adjudicated as a check while nothing moves. Placed AFTER the throw so
+  // the two families never contest a spelling — throw owns throw/hurl/toss/fling,
+  // barricade owns the shove family, and detectObjectBarricadeIntent additionally
+  // declines the barrier-force verbs (ram/bash/kick a door) outright.
+  const barricadeIntent = !w.combat?.active && !w.scene?.dialogue && !declaredNpcViolence
+    ? detectObjectBarricadeIntent(w, text, actorId)
+    : null;
+  if (barricadeIntent) return resolveObjectBarricade(w, text, barricadeIntent, actorId);
 
   // OBJ-HOLD-6A — release verbs open the physics gate ONLY while the actor holds a
   // supported object; a pack-item "drop the rope" keeps today's trivial-gate routing
@@ -8034,6 +8097,28 @@ function whereIsObjectTarget(text) {
 // object refuses the doorway exactly like a leader-held one — and this predicate
 // must match exitStructureInterior's structural backstop, or the travel bridges
 // would re-run their text on an unchanged world and loop.
+// OBJ-BARRICADE-6C — the fiction-first sibling of the carry-lock, for the SAME four
+// egress sites. Null when the party's own front door is clear; otherwise a refusal
+// that changes NOTHING (exitStructureInterior's structural backstop would no-op
+// anyway — this is what makes the no-op legible instead of a silent nothing).
+// You barricaded it; the way out is to move the thing back.
+function barricadeEgressRefusal(w) {
+  const sk = String(w?.scene?.interior?.structureKey || '');
+  const st = sk ? w?.structures?.byId?.[sk] : null;
+  const ext = st ? exteriorDoorOf(st) : null;
+  if (!ext) return null;
+  const bar = barricadeOnDoor(w, sk, String(ext.id));
+  if (!bar) return null;
+  const name = String(bar.name || 'something').toLowerCase();
+  return {
+    world: w,
+    output: {
+      narration: `Wizard: The ${name} you wedged against the door is still there — the door won't open until you drag it clear.`,
+      mechanics: '[barricade | egress refused | no roll]'
+    }
+  };
+}
+
 function carryLockRefusal(w, actorId) {
   const held = partyHeldObject(w);
   if (!held) return null;
@@ -10569,6 +10654,48 @@ function doorForceKind(text) {
 //   { door, targetRoomId, exterior } | null
 // targetRoomId is the room BEYOND an interior door (step through on success); it is
 // '' for the exterior door (forcing it opens the way OUT — no room to step into).
+// OBJ-BARRICADE-6C — the barricade sibling of facingSecuredDoor: the barricaded
+// door the player FACES from this room, hardware state irrelevant. Same adjacency
+// walk and same stable cardinal order, so the two agree about what "the door in
+// front of you" means. Returns { door, barricade, targetRoomId, exterior } | null.
+function facingBarricadedDoor(world) {
+  const w = world || {};
+  const interior = w.scene?.interior;
+  if (!interior || typeof interior !== 'object') return null;
+  const structureKey = String(interior.structureKey || '');
+  const here = String(interior.roomId || '');
+  if (!structureKey || !here) return null;
+  const st = w.structures?.byId?.[structureKey];
+  if (!st) return null;
+
+  const dirExits = interiorDirectionalExits(w) || {};
+  const adj = [];
+  for (const dir of ['north', 'east', 'south', 'west']) {
+    const to = dirExits[dir];
+    if (to && to !== here && !adj.includes(String(to))) adj.push(String(to));
+  }
+  try {
+    for (const to of adjacentRooms(normalizeTopology(st.topology), here)) {
+      const id = String(to);
+      if (id && id !== here && !adj.includes(id)) adj.push(id);
+    }
+  } catch { /* legacy structures carry no topology — cardinals still apply */ }
+
+  for (const to of adj) {
+    const block = interiorDoorBlock(w, to);
+    if (block && block.barricade) {
+      return { door: block.door, barricade: block.barricade, targetRoomId: to, exterior: false };
+    }
+  }
+
+  const front = exteriorDoorOf(st);
+  if (front && String(front.a) === here) {
+    const bar = barricadeOnDoor(w, structureKey, String(front.id));
+    if (bar) return { door: front, barricade: bar, targetRoomId: '', exterior: true };
+  }
+  return null;
+}
+
 // Pure read; the caller resolves the roll + the `door` op.
 function facingSecuredDoor(world) {
   const w = world || {};
@@ -11836,6 +11963,219 @@ function resolveObjectThrow(w, text, intent, actorId) {
   // it — not just for the ones that failed.
   const mechStr = `[${bits.join(' | ')}]`;
   return { world: nextW, output: { narration, mechanics: capChk ? `${capChk.mechanicsLine} ${mechStr}` : mechStr } };
+}
+
+// ── OBJ-BARRICADE-6C — wedging an object against a door ──────────────────────
+//
+// The same shape as the throw seam above: a pure grammar layer decides WHAT was
+// asked (objects/barricade.js), this seam resolves it against the live world, and
+// effectsCore's barricadeObject writer re-derives every precondition again before
+// anything is committed. Reuses the throw seam's identity helpers verbatim
+// (throwIdentityPick / isSupportedThrowable / throwInteriorFrame / inLiveThrowRoom)
+// — the supported-object domain is the same domain, and a second copy of it would
+// be a second truth.
+//
+// FRAME GATE: the supported structure interior only. You barricade a door from a
+// room; an outdoor actor has no door record to name.
+
+// Every door record touching the actor's current room, tagged with the name a
+// player would call it by. The exterior door is included only when it fronts THIS
+// room — you cannot bar the front door from the back bedroom.
+function barricadeDoorCandidates(w) {
+  const interior = throwInteriorFrame(w);
+  if (!interior) return [];
+  const sk = String(interior.structureKey || '');
+  const roomId = String(interior.roomId || '');
+  const st = sk ? w.structures?.byId?.[sk] : null;
+  if (!st || !roomId) return [];
+  const out = [];
+  for (const d of doorsOf(st)) {
+    if (!d) continue;
+    if (d.exterior) {
+      if (String(d.a) === roomId) out.push({ door: d, label: 'the front door', entrance: true });
+      continue;
+    }
+    const far = String(d.a) === roomId ? String(d.b) : (String(d.b) === roomId ? String(d.a) : '');
+    if (!far) continue;
+    out.push({ door: d, label: barricadeDoorLabel(w, st, far), entrance: false });
+  }
+  return out;
+}
+
+// "the door to the pantry" — the far room's own name, so a disambiguation question
+// reads like a person pointing, not like an id dump.
+function barricadeDoorLabel(w, st, farRoomId) {
+  try {
+    const plan = floorPlan(st);
+    const room = (Array.isArray(plan?.rooms) ? plan.rooms : []).find(r => String(r?.id) === String(farRoomId));
+    const nm = String(room?.name || '').trim();
+    if (nm) return `the door to the ${nm.toLowerCase()}`;
+  } catch { /* fall through to the generic label */ }
+  return 'the inner door';
+}
+
+/**
+ * detectObjectBarricadeIntent(world, text, actorId)
+ *   -> null | { objectId, doorId, door, ask }
+ *
+ * `ask` is a fiction-level question the resolver must voice instead of acting
+ * (which door / with what) — a real DM asks rather than choosing your object for
+ * you. Null means "not a barricade utterance" and the text keeps its existing
+ * owner BYTE-IDENTICALLY; every bail below is a seam that already owns its phrasing.
+ */
+export function detectObjectBarricadeIntent(world, text, actorId) {
+  const t = String(text || '').trim();
+  if (!t) return null;
+  if (world?.combat?.active || world?.scene?.dialogue) return null;
+  if (!throwInteriorFrame(world)) return null;
+  if (!BARRICADE_VERB_RE.test(t)) return null;
+  if (!namesDoorPortal(t)) return null;
+  // "throw up a barricade" / "build a barricade" — BUILDING one out of nothing is
+  // the salvage/build lane's claim (docs/SALVAGE_AND_BUILD.md), not this seam's.
+  if (BARRICADE_BUILD_IDIOM_RE.test(t)) return null;
+  // A declared ATTACK on the door (ram/bash/kick it down) is the opposite claim and
+  // keeps the barrier-force resolver. parseBarricadePhrases already requires an
+  // object-and-portal shape, but state the boundary here too rather than inherit it.
+  if (/\b(?:ram|rams|ramming|barge|barges|bash|bashes|bashing|kick|kicks|kicking|boot|boots|booting|shoulder|shoulders|shouldering|slam|slams|slamming)\b/i.test(t)) return null;
+
+  const phrases = parseBarricadePhrases(t);
+  if (!phrases) return null;
+
+  // ── Which door ──────────────────────────────────────────────────────────────
+  const candidates = barricadeDoorCandidates(world);
+  if (!candidates.length) return null;   // no door here — the room survey owns it
+  let doorPick = null;
+  if (portalIsEntrance(phrases.portalPhrase)) {
+    doorPick = candidates.find(c => c.entrance) || null;
+    if (!doorPick) {
+      return { objectId: null, doorId: null, door: null, ask: 'no-entrance' };
+    }
+  } else if (candidates.length === 1) {
+    doorPick = candidates[0];
+  } else {
+    // Try the far room's name out of the phrase ("the door to the pantry").
+    const p = phrases.portalPhrase;
+    doorPick = candidates.find(c => {
+      const nm = c.label.replace(/^the\s+(?:door\s+to\s+the\s+)?/, '').trim();
+      return nm.length >= 3 && p.includes(nm);
+    }) || null;
+    if (!doorPick) {
+      return {
+        objectId: null, doorId: null, door: null,
+        ask: 'which-door', options: candidates.map(c => c.label),
+      };
+    }
+  }
+
+  // ── Which object ────────────────────────────────────────────────────────────
+  // A bare "barricade the door" names no object. A DM asks what you mean to use
+  // rather than choosing a piece of the world for you and writing it into canon.
+  if (!phrases.objectPhrase) {
+    return { objectId: null, doorId: String(doorPick.door.id), door: doorPick.door, ask: 'with-what' };
+  }
+  const pick = throwIdentityPick(world, phrases.objectPhrase, { heldFirst: true });
+  if (!pick) return null;                                   // nothing nameable here
+  if (!isSupportedThrowable(world, pick.piece)) return null; // unsupported domain keeps its owner
+  if (!pick.fromHeld && !inLiveThrowRoom(world, pick.objectId)) return null;
+
+  return { objectId: String(pick.objectId), doorId: String(doorPick.door.id), door: doorPick.door, ask: null };
+}
+
+// A refusal that changes NOTHING — no event, no deltas, no roll. Mirrors
+// throwRefusal: the world comes back untouched so nothing downstream can mistake a
+// declined barricade for a resolved turn.
+function barricadeRefusal(w, line, why) {
+  return { world: w, output: { narration: `Wizard: ${line}`, mechanics: `[barricade | ${why} | no roll]` } };
+}
+
+function resolveObjectBarricade(w, text, intent, actorId) {
+  // ── The questions a DM asks instead of guessing ─────────────────────────────
+  if (intent.ask === 'with-what') {
+    return barricadeRefusal(w, 'You put a hand to the door — but you\'ll need something solid to hold it. What do you want to shove against it?', 'ask:with-what');
+  }
+  if (intent.ask === 'which-door') {
+    const opts = Array.isArray(intent.options) ? intent.options : [];
+    return barricadeRefusal(w, `There's more than one way into this room — ${joinFacings(opts)}. Which one?`, 'ask:which-door');
+  }
+  if (intent.ask === 'no-entrance') {
+    return barricadeRefusal(w, 'The way out isn\'t off this room — you\'d have to reach the front door first.', 'ask:no-entrance');
+  }
+
+  const { objectId, doorId, door } = intent;
+  const piece = findFurnitureByObjectId(w, objectId)?.piece;
+  if (!piece) return barricadeRefusal(w, 'There\'s nothing here to shove against it.', 'no object');
+  const name = String(piece.name || piece.kind || 'object').toLowerCase();
+
+  // ── PREFLIGHT — the writer's preconditions, voiced ─────────────────────────
+  if (isFurnitureDestroyed(piece)) {
+    return barricadeRefusal(w, `The ${name} is wreckage — it won't hold anything.`, 'wrecked');
+  }
+  const qual = qualifiesAsBarricade(objectPhysics(piece), piece);
+  if (!qual.ok) {
+    const line = qual.why === 'fixed'
+      ? `The ${name} is part of the place — it moves for no one.`
+      : qual.why === 'flat'
+        ? `The ${name} is flat to the floor; there's nothing of it to wedge.`
+        : `The ${name} is too slight to hold a door — it'd skid aside at the first shove.`;
+    return barricadeRefusal(w, line, `unqualified:${qual.why}`);
+  }
+  // Someone else's arms.
+  const rec = resolvedObjectPlacement(w, objectId);
+  const leaderKey = String(w.party?.[0]?.id || 'party');
+  if (rec?.status === 'held' && String(rec.heldByActorId || '') !== String(actorId === 'party' ? leaderKey : actorId)
+      && String(rec.heldByActorId || '') !== 'party') {
+    return barricadeRefusal(w, `The ${name} is in someone else's arms.`, 'held by other');
+  }
+  // Already doing this job.
+  const existing = barricadeOnDoor(w, String(piece.structureId), doorId);
+  if (existing && String(existing.objectId) === String(objectId)) {
+    return barricadeRefusal(w, `The ${name} is already wedged against it.`, 'already');
+  }
+  if (existing) {
+    return barricadeRefusal(w, `The ${String(existing.name).toLowerCase()} is already against that door.`, 'door taken');
+  }
+  // Capacity — pure, no draw. A barricade is a DRAG (objects/barricade.js states why
+  // that choice is a reversibility guarantee, not a tuning preference).
+  const cap = actorObjectCapacity(actorFacts(w, actorId), objectPhysics(piece), BARRICADE_ACTION);
+  if (cap.verdict === 'impossible') {
+    return barricadeRefusal(w, `You set your weight against the ${name} and it doesn't give an inch.`, `capacity:${cap.reason}`);
+  }
+
+  // ── COMMIT ─────────────────────────────────────────────────────────────────
+  const deltas = [
+    { op: 'barricadeObject', actorId, objectId, doorId },
+    { op: 'env', key: 'noise', by: BARRICADE_NOISE },
+  ];
+  let nextW = applyDeltas(w, deltas);
+
+  // The writer is the authority on whether it actually happened — never assume a
+  // delta landed (it re-derives every precondition and may legally no-op, e.g. no
+  // free approach cell on this side).
+  const landed = Boolean(barricadeRecordOf(nextW, objectId));
+  if (!landed) {
+    return barricadeRefusal(w, `There's no room to work the ${name} into the doorway — something's in the way.`, 'no approach cell');
+  }
+
+  const doorWord = door?.exterior ? 'the door' : 'the doorway';
+  const strained = cap.verdict === 'roll';
+  const narration = strained
+    ? `Wizard: You get your shoulder into it and walk the ${name} across the floor, inch by inch, until it sits hard against ${doorWord}. It won't open now — not without moving this first.`
+    : `Wizard: You drag the ${name} across and wedge it against ${doorWord}. It won't open now — not without moving this first.`;
+
+  const cell = resolvedObjectPlacement(nextW, objectId)?.cell || null;
+  nextW = pushEvent(nextW, {
+    kind: 'resolution',
+    data: {
+      actorId, intent: String(text || ''), text: String(text || ''),
+      roll: 0, dc: 0, outcome: 'success', updateKind: 'object-barricade',
+      objectId, doorId, deltaCount: deltas.length,
+    },
+  });
+
+  const bits = [`barricade:${objectId}→${doorId}`];
+  if (cell) bits.push(`cell:${cell.x},${cell.y}`);
+  bits.push(`noise:+${BARRICADE_NOISE}`);
+  return { world: nextW, output: { narration, mechanics: `[${bits.join(' | ')}]` } };
 }
 
 function detectAttackAnyIntent(world, text) {

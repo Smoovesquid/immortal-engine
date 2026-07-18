@@ -7,8 +7,9 @@ import { applyCondition as applyConditionPure } from './combat/conditions.js';
 import { ensureStructures } from './structures/structuresState.js';
 import { DOOR_STATES } from './structures/doors.js';
 import { escalationTier, heatAccrual } from './morality/escalation.js';
-import { legalMoveTargetCell, legalPlaceTargetCell, authoredBaseAnchorCell, roomOfStructCell } from './map/spatial/tacticalPos.js';
-import { findFurnitureByObjectId, resolvedObjectPlacement } from './objects/placement.js';
+import { legalMoveTargetCell, legalPlaceTargetCell, legalBarricadeTargetCell, authoredBaseAnchorCell, roomOfStructCell } from './map/spatial/tacticalPos.js';
+import { findFurnitureByObjectId, resolvedObjectPlacement, barricadeOnDoor } from './objects/placement.js';
+import { qualifiesAsBarricade } from './objects/barricade.js';
 import { initialDurability } from './objects/durability.js';
 import { objectPhysics } from './objects/mobility.js';
 import { isFurnitureDestroyed } from './structures/authoredFurniture.js';
@@ -1182,6 +1183,10 @@ export function applyDeltas(world, deltas = []) {
       const prev = (w.objects && typeof w.objects === 'object' && w.objects[objId] && typeof w.objects[objId] === 'object') ? w.objects[objId] : {};
       const rest = { ...prev };
       delete rest.heldByActorId;
+      // OBJ-BARRICADE-6C — dragging a barricade off the door IS how you clear it.
+      // The obstruction is a claim about WHERE the object stands, so it cannot
+      // survive the object moving. (Same reasoning under holdObject/placeObject.)
+      delete rest.obstructs;
       const nextObj = {
         ...rest,
         placedAt: {
@@ -1246,6 +1251,7 @@ export function applyDeltas(world, deltas = []) {
       const prev = (objects[objId] && typeof objects[objId] === 'object') ? objects[objId] : {};
       const rest = { ...prev };
       delete rest.placedAt;
+      delete rest.obstructs;   // OBJ-BARRICADE-6C — lifting it off the door clears it
       w = { ...w, objects: { ...objects, [objId]: { ...rest, heldByActorId: actorKey } } };
       continue;
     }
@@ -1314,6 +1320,7 @@ export function applyDeltas(world, deltas = []) {
       const prev = (objects[objId] && typeof objects[objId] === 'object') ? objects[objId] : {};
       const rest = { ...prev };
       delete rest.heldByActorId;
+      delete rest.obstructs;   // OBJ-BARRICADE-6C — setting it down elsewhere clears it
       w = { ...w, objects: { ...objects, [objId]: { ...rest, placedAt: {
         node: String(found.nodeId),
         structureId: String(piece.structureId),
@@ -1321,6 +1328,85 @@ export function applyDeltas(world, deltas = []) {
         cell: { x: target.x, y: target.y },
         rot
       } } } };
+      continue;
+    }
+
+    // OBJ-BARRICADE-6C — WEDGE a supported object against a door. The sole writer of
+    // world.objects[id].obstructs, and the one placement allowed to occupy a door's
+    // approach cell (legalBarricadeTargetCell states why). Trust boundary — every
+    // precondition is re-derived here, exactly like holdObject/placeObject, so a
+    // forged delta can never barricade masonry, a rug, a wrecked hulk, a door across
+    // the building, or a door in a structure the actor is not standing in:
+    //   live piece · supported (authored+grounded) · not wrecked · qualifies (pure
+    //   predicate: not fixed, not flat, bulk ≥ MIN_BARRICADE_BULK) · not held by
+    //   ANOTHER actor · actor resolves · actor's own pos is inside THIS structure ·
+    //   the door is a real record of this structure adjacent to the actor's room ·
+    //   that door is not already barricaded by a different object · an approach cell
+    //   on the actor's side is free.
+    // The cell is ALWAYS engine-derived; a caller-supplied cell is ignored outright.
+    // Effect: placedAt (the approach cell) + obstructs set, heldByActorId deleted —
+    // shoving it into place out of your own arms is legal and is the same motion.
+    if (kind === 'barricadeObject') {
+      const objId = String(op.objectId || '');
+      const doorId = String(op.doorId || '');
+      if (!objId || !doorId) continue;
+      const found = findFurnitureByObjectId(w, objId);
+      const piece = found?.piece;
+      if (!piece || piece.authored !== true) continue;             // supported domain only
+      if (!authoredBaseAnchorCell(w, objId)) continue;             // grounded only
+      if (isFurnitureDestroyed(piece)) continue;                   // wreckage holds no door
+      if (!qualifiesAsBarricade(objectPhysics(piece), piece).ok) continue;
+      if (String(found.nodeId) !== String(w.map?.currentNodeId || '')) continue;
+
+      const party = Array.isArray(w.party) ? w.party : [];
+      const reqActor = String(op.actorId || 'party');
+      const actor = reqActor === 'party' ? (party[0] || null) : (party.find(m => String(m?.id) === reqActor) || null);
+      if (!actor) continue;
+      const actorKey = String(actor.id || 'party');
+      const placement = resolvedObjectPlacement(w, objId);
+      if (placement?.status === 'held' && String(placement.heldByActorId || '') !== actorKey) continue; // another's arms
+
+      // The actor's OWN canonical pos decides which structure this is (never the
+      // leader's global scene) — the release-correction rule holdObject/placeObject
+      // already encode.
+      const apos = actor.pos;
+      const aFrame = String(apos?.frame || '');
+      if (!apos || !Number.isInteger(apos.gx) || !Number.isInteger(apos.gy) || !aFrame.startsWith('struct:')) continue;
+      const aSid = aFrame.slice('struct:'.length);
+      if (String(piece.structureId) !== aSid) continue;
+      const structure = w.structures?.byId?.[aSid];
+      if (!structure) continue;
+
+      // The door must be a REAL record of this structure — resolved here from the
+      // world, never trusted from the delta (the caller supplies only its id).
+      const door = (Array.isArray(structure.doors) ? structure.doors : []).find(d => d && String(d.id) === doorId);
+      if (!door) continue;
+      // One door, one barricade. A second object cannot stack onto a door another is
+      // already holding (the read authority returns the first match, so allowing it
+      // would make which-object-holds-the-door depend on key order).
+      const existing = barricadeOnDoor(w, aSid, doorId);
+      if (existing && String(existing.objectId) !== objId) continue;
+
+      const target = legalBarricadeTargetCell(w, objId, reqActor, door);
+      if (!target) continue;                                       // nowhere to wedge it
+      const room = roomOfStructCell(floorPlan(structure), target.x, target.y);
+      if (!room) continue;
+      const rot = Number.isFinite(+piece.rot) ? +piece.rot : 0;
+      const objects = (w.objects && typeof w.objects === 'object') ? w.objects : {};
+      const prev = (objects[objId] && typeof objects[objId] === 'object') ? objects[objId] : {};
+      const rest = { ...prev };
+      delete rest.heldByActorId;
+      w = { ...w, objects: { ...objects, [objId]: {
+        ...rest,
+        placedAt: {
+          node: String(found.nodeId),
+          structureId: String(piece.structureId),
+          room: String(room),
+          cell: { x: target.x, y: target.y },
+          rot
+        },
+        obstructs: { structureId: aSid, doorId }
+      } } };
       continue;
     }
 

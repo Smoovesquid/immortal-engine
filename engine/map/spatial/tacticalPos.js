@@ -673,6 +673,124 @@ export function legalPlaceTargetCell(world, objectId, actorId, ref) {
   return best;
 }
 
+// ── OBJ-BARRICADE-6C — the one cell a barricade may occupy ───────────────────
+//
+// This is the ONLY derivation in the engine that deliberately targets a cell inside
+// reservedDoorCells, and the distinction it draws is the packet's whole meaning:
+//
+//   • furniture can never ACCIDENTALLY seal a doorway — furnitureBlockedCells drops
+//     any plan piece whose anchor lands on a door key, and legalMoveTargetCell /
+//     legalPlaceTargetCell both refuse door-reserved cells outright (U696, U698
+//     assert exactly that, and this packet leaves all three untouched);
+//   • a body can DELIBERATELY wedge one there, because that is what barricading is.
+//
+// The chosen cell is the door's approach cell ON THE ACTOR'S SIDE — never the far
+// side (you cannot barricade a door from a room you are not in) and never the
+// threshold cell itself (the doorway proper stays the doorway). Because the cell
+// resolves to a real room, the object stays fully draggable by legalMoveTargetCell:
+// clearing your own barricade is always available, which is the reversibility law
+// objects/barricade.js states. (This supersedes the "room-less doorway threshold"
+// sketch legalMoveTargetCell's comment anticipated for 6C — a room-less placement
+// would have made the barricade undraggable, i.e. a soft-lock.)
+//
+// `door` is a doors.js DoorRecord shape ({ a, b, exterior }) passed BY VALUE — this
+// module must never import doors.js (that cycle is documented at doorThresholdCells).
+// Returns { x, y } or null; null means "nowhere to wedge it" and the caller refuses.
+export function legalBarricadeTargetCell(world, objectId, actorId, door) {
+  const objId = String(objectId || '');
+  if (!objId || !door || typeof door !== 'object') return null;
+  const p = findFurnitureByObjectId(world, objId)?.piece;
+  if (!p || p.authored !== true) return null;                 // supported domain only
+  if (!authoredBaseAnchorCell(world, objId)) return null;     // grounded only
+
+  const actor = resolvePartyActor(world, actorId);
+  const apos = actor?.pos;
+  if (!apos || !Number.isInteger(apos.gx) || !Number.isInteger(apos.gy)) return null;
+  const frame = String(apos.frame || '');
+  if (!frame.startsWith('struct:')) return null;              // outdoors barricades nothing
+  const sid = frame.slice('struct:'.length);
+  if (String(p.structureId) !== sid) return null;             // the object must be in this building
+  const structure = world?.structures?.byId?.[sid];
+  if (!structure) return null;
+  const plan = floorPlan(structure);
+  const actorRoom = roomOfStructCell(plan, apos.gx, apos.gy);
+  if (!actorRoom) return null;                                // actor in the wall band/void
+
+  // THE OBJECT MUST BE HERE. Same structure is NOT enough — without this a delta
+  // could wedge a bed from the far bedchamber against the door in front of you
+  // (found by U725-B2, which asserts exactly that no-op). A piece in the actor's
+  // arms is exempt: it is already here by definition. Room truth is read by
+  // IDENTITY through the live placement, never base provenance, so a piece dragged
+  // into this room counts and one dragged out of it stops counting.
+  const objPlacement = resolvedObjectPlacement(world, objId);
+  if (!objPlacement) return null;
+  if (objPlacement.status === 'held') {
+    if (String(objPlacement.heldByActorId || '') !== String(actor.id || 'party')
+        && String(objPlacement.heldByActorId || '') !== 'party') return null;
+  } else {
+    const objRoom = objPlacement.status === 'placed'
+      ? String(objPlacement.room || '')
+      : String(p.roomId || '');
+    if (!objRoom || objRoom !== actorRoom) return null;
+    if (String(objPlacement.structureId ?? p.structureId ?? '') !== sid) return null;
+  }
+
+  // The door must be one this room actually touches — you barricade the door in
+  // front of you, never one across the building.
+  const a = String(door.a ?? '');
+  const b = String(door.b ?? '');
+  const isExterior = Boolean(door.exterior);
+  if (isExterior) {
+    if (a !== actorRoom) return null;                         // front door fronts another room
+  } else if (a !== actorRoom && b !== actorRoom) {
+    return null;
+  }
+
+  // Join to the PLAN door record for its drawn position + wall orientation.
+  const planDoors = Array.isArray(plan?.doors) ? plan.doors : [];
+  const pd = isExterior
+    ? planDoors.find(d => d && String(d.b ?? '') === '' && String(d.a ?? '') === a)
+    : planDoors.find(d => d && (
+      (String(d.a ?? '') === a && String(d.b ?? '') === b) ||
+      (String(d.a ?? '') === b && String(d.b ?? '') === a)
+    ));
+  if (!pd) return null;
+  const dx = layoutToCells(pd.x), dy = layoutToCells(pd.y);
+  if (!Number.isFinite(dx) || !Number.isFinite(dy)) return null;
+
+  // The approach cells straddling the threshold. DELIBERATELY GEOMETRIC — every
+  // orthogonal neighbour of the door cell is a candidate, and the one that lands in
+  // the actor's own room wins.
+  //
+  // Do NOT narrow this by the plan door's `dir` (as reservedDoorCells does). `dir`
+  // is the TOPOLOGY compass — the direction authoredStructure assigned walking from
+  // room a to room b on its compass layout — and it does not have to agree with
+  // where the rooms were DRAWN. Measured on the loaderDemo2 fixture: the hall→boot-
+  // room door carries dir 'south' while the two rooms actually sit side by side, so
+  // a dir-derived pair yields two cells in the wall band and the barricade silently
+  // becomes impossible. Geometry is the single source (POSITION_AS_CANON §1); the
+  // compass is a label. Scan order is fixed for replay stability.
+  const pair = [
+    { x: dx - 1, y: dy }, { x: dx + 1, y: dy },
+    { x: dx, y: dy - 1 }, { x: dx, y: dy + 1 },
+  ];
+
+  const blocked = liveAuthoredBlockedCells(world, structure, null);
+  const actorKey = `${apos.gx},${apos.gy}`;
+  const curCell = (objPlacement.status !== 'held')
+    ? (objPlacement.cell || authoredBaseAnchorCell(world, objId)) : null;
+  const curKey = curCell ? `${curCell.x},${curCell.y}` : null;
+
+  for (const c of pair) {
+    if (roomOfStructCell(plan, c.x, c.y) !== actorRoom) continue; // the far side / a wall
+    const k = `${c.x},${c.y}`;
+    if (k === actorKey) continue;              // you are standing there; step aside first
+    if (k !== curKey && blocked.has(k)) continue; // something else already fills it
+    return { x: c.x, y: c.y };
+  }
+  return null;
+}
+
 // ── Door thresholds (MR-1a) — the struct↔region cells a doorway maps ─────────
 // docs/POSITION_AS_CANON.md §2 ("arrivals enter at the doorway/road edge they came
 // by") + §3 ("stepping through an entry doorway swaps frame struct: ↔ region at the

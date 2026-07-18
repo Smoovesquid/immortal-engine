@@ -924,6 +924,7 @@ export function assertWorldInvariants(world) {
       throw new Error('Invariant: world.objects must be a plain object map');
     }
     const holders = new Set(); // OBJ-HOLD-6A — one actor, one object (law 2 below)
+    const barricadedDoors = new Set(); // OBJ-BARRICADE-6C — one door, one barricade
     for (const oid of Object.keys(objects)) {
       const rec = objects[oid];
       if (rec == null || typeof rec !== 'object' || Array.isArray(rec)) {
@@ -969,6 +970,39 @@ export function assertWorldInvariants(world) {
         if (!c || !Number.isInteger(c.x) || !Number.isInteger(c.y)) {
           throw new Error(`Invariant: world.objects[${oid}].placedAt.cell must be an integer { x, y }`);
         }
+      }
+      // OBJ-BARRICADE-6C — the obstruction laws. A barricade is a claim about where
+      // an object STANDS, so (1) it is well-shaped, (2) it implies a placement (an
+      // obstruction with no cell is a barricade nowhere), and (3) it excludes being
+      // carried (you cannot hold the thing that is wedged against the door). One
+      // door may carry at most ONE barricade, or which object holds it would depend
+      // on overlay key order.
+      // Deliberately NO door-existence law, for the same reason there is no
+      // actor-existence law above: a structure that stops carrying a door record
+      // (a legacy save, a plan change) must not brick the world — barricadeOnDoor
+      // simply stops matching, and the object reads as ordinary placed furniture.
+      if (rec.obstructs != null) {
+        const ob = rec.obstructs;
+        if (typeof ob !== 'object' || Array.isArray(ob)) {
+          throw new Error(`Invariant: world.objects[${oid}].obstructs must be an object or absent`);
+        }
+        if (typeof ob.structureId !== 'string' || !ob.structureId) {
+          throw new Error(`Invariant: world.objects[${oid}].obstructs.structureId must be a non-empty string`);
+        }
+        if (typeof ob.doorId !== 'string' || !ob.doorId) {
+          throw new Error(`Invariant: world.objects[${oid}].obstructs.doorId must be a non-empty string`);
+        }
+        if (rec.placedAt == null) {
+          throw new Error(`Invariant: world.objects[${oid}] obstructs a door without a placement`);
+        }
+        if (rec.heldByActorId != null) {
+          throw new Error(`Invariant: world.objects[${oid}] is both held and obstructing`);
+        }
+        const doorKey = `${ob.structureId}|${ob.doorId}`;
+        if (barricadedDoors.has(doorKey)) {
+          throw new Error(`Invariant: door ${doorKey} carries more than one barricade`);
+        }
+        barricadedDoors.add(doorKey);
       }
       // OBJ-DURABILITY-1 (v34) — a durability snapshot, when present, is well-shaped:
       // a positive AC and maxHp, hp in [0, maxHp], a non-negative threshold (0 is
